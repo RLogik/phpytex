@@ -33,7 +33,7 @@ def main():
     tokens, kwargs = parse_cli_args(sys.argv[1:]);
     setup_log();
     get_version();
-    log.info('This version \033[1;92m{}\033[0m of the \033[1;32m(Ph(P)y)TeX\033[0m! programme. At the moment nothing has been implemented.'.format(VERSION));
+    log.info('At the moment nothing has been implemented.'.format(VERSION));
     run_command(tokens=tokens, **kwargs);
     return;
 
@@ -70,8 +70,9 @@ def run_command(tokens: List[str], **kwargs):
     global log;
     global VERSION;
     if 'version' in tokens:
-        log.info('This version \033[1;92m{}\033[0m of the \033[1;32m(Ph(P)y)TeX\033[0m! programme.'.format(VERSION));
+        log.info('This is version \033[1;92m{}\033[0m of the \033[1;32m(Ph(P)y)TeX\033[0m programme.'.format(VERSION));
     else:
         log.info('You called this programme with the tokens:   ' + str(tokens) + '.');
         log.info('You called this programme with the keywords: ' + str(kwargs) + '.');
+        log.info('Try calling the programme with the argument \033[1;94m--version\033[0m.');
     return;

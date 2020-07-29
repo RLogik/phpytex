@@ -2,3 +2,4 @@
 29.07.2020 ??:?? | 0.0.1 | minor structural change to the configuration files
 29.07.2020 20:13 | 0.0.2 | project compilation improved, due to the need transfer multiple configuration object to build.
                            This was previously not possible.
+29.07.2020 22:15 | 0.0.3 | Minor cosmetic fixes.
