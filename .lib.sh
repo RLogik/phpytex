@@ -19,6 +19,36 @@ function get_kwarg() {
     echo $value | grep -E -q "[^[:space:]]" && echo "$value" || echo "$3";
 }
 
+## $1 = full argument string
+## $2 = key (including connecter: either = or space)
+## $3 = new-key (ditto)
+## $4 = true/false whether to force quotation marks on values.
+## example:
+## value=$(get_all_kwargs "$@" "degree " "major=" true);
+function get_all_kwargs() {
+    arguments="$1";
+    key="$2";
+    new_key="$3";
+    force_quotes="$4";
+
+    pattern="(^.*[[:space:]]|^)$key([^[:space:]]*).*$";
+    new_arguments="";
+    while ! [[ "$arguments" == "" ]]; do
+        if ! ( echo $arguments | grep -E -q "$pattern" ); then
+            arguments="";
+            break;
+        fi
+        value="$(echo "$arguments" | sed -E "s/$pattern/\2/g" || echo "")";
+        arguments="$(echo "$arguments" | sed -E "s/$pattern/\1/g" || echo "")";
+        if [[ "$force_quotes" == "true" ]]; then
+            new_arguments="$new_key\"$value\" $new_arguments"
+        else
+            new_arguments="$new_key$value $new_arguments"
+        fi
+    done
+    echo $new_arguments;
+}
+
 ## $1 = full argument string, $2 = argument.
 ## example:
 ## if [ $(has_arg "$@" "help") ]; then ...
