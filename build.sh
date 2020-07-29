@@ -59,7 +59,7 @@ if ! [ $(has_arg "$SCRIPTARGS" "skip-build") ]; then
         setup-file=setup.py \
         spec-path="$spec_path" \
         --add-data "config.yml:src" \
-        --add-data "./../dist/VERSION:src" \;
+        --add-data "./../dist/VERSION:src";
 fi
 
 if [ $(has_arg "$SCRIPTARGS" "-*release") ]; then
