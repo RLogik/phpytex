@@ -3,9 +3,10 @@
 !.gitignore
 !README.md
 # needed for project
+!.lib.sh
 !build.sh
 !test.sh
-!.lib.sh
+!localpython.sh
 # setup files for programme
 !logging.yml
 !setup.yml
