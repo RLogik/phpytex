@@ -33,8 +33,6 @@ function _fail() {
 }
 
 export PYTHON="env/bin/python3";
-[ -f "$PYTHON" ] || _fail "python not found";
-
 export PIP="$PYTHON -m pip";
 
 function _empty() {
@@ -64,14 +62,33 @@ function setup_build() {
     return;
 }
 
+function post_build_create_release_version() {
+    VERSION="$(get_version)";
+    file="$DIST_DIRECTORY/$NAME_OF_PROGRAMME";
+    file_zip="$file.zip";
+    file_zip_version="$file-$VERSION.zip";
+
+    # check if file exists
+    [ -f "$file" ] || _fail "Programme file missing in the distribution directory!";
+
+    # create zip
+    [ -f "$file_zip_version" ] && rm -r "$file_zip_version";
+    echo -e "Creating zip for version \033[1;92m$VERSION\033[0m..." >> "$OUT";
+    zip -r "$file_zip_version"  \
+        "$file" "$DIST_DIRECTORY/VERSION" "./README.md" \
+        >> "$VERBOSE" 2>> "$ERR" \
+        && cp "$file_zip_version" "$file_zip";
+    echo -e "...done" >> "$OUT";
+}
+
 function get_version {
     file=$DIST_DIRECTORY/VERSION;
     [ -f "$file" ] || _fail "VERSION file missing in the distribution directory!";
-    VERSION="$(cat "$file" | grep -E "^[[:digit:]]+.[[:digit:]]+.[[:digit:]]+$")";
-    echo "$VERSION";
+    cat "$file" | grep -E "^[[:digit:]]+.[[:digit:]]+.[[:digit:]]+$";
 }
 
 function run_tests() {
+    [ -f "$PYTHON" ] || _fail "python not found";
     $PYTHON $TEST_DIRECTORY/main.py $@;
 }
 
