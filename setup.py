@@ -2,15 +2,23 @@ import os;
 import re;
 from pyinstaller_setuptools import setup;
 
-WORKINGDIRECTORY = os.getcwd();
 CURRENTDIRECTORY = os.path.dirname(os.path.realpath(__file__));
 
-def get_version():
-    global CURRENTDIRECTORY, WORKINGDIRECTORY;
-    os.chdir(CURRENTDIRECTORY);
-    version = os.popen('. .lib.sh && get_version').read();
-    version = re.sub(r'^[\s\n\r]+|[\s\n\r]+$', r'', version);
-    os.chdir(WORKINGDIRECTORY);
+def get_version() -> str:
+    global CURRENTDIRECTORY;
+    version = None;
+    try:
+        with open(os.path.join(CURRENTDIRECTORY, 'dist', 'VERSION')) as fp:
+            for line in fp.readlines():
+                line = re.sub(r'^[\s\n\r]+|[\s\n\r]+$', r'', line);
+                if not re.match(r'^\d+\.\d+\.\d+$', line):
+                    continue;
+                version = line;
+                break;
+    except:
+        pass;
+    if version is None:
+        raise ValueError('VERSION file missing in the distribution folder or the value is invalid!');
     return version;
 
 setup(
