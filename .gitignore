@@ -33,6 +33,7 @@ test/logs/**/*
 !dist
 dist/**/*
 !dist/VERSION
+!dist/*.zip
 
 ## allow preservation of non-empty folders:
 !**/.gitkeep
