@@ -50,10 +50,14 @@ SCRIPTARGS="$@";
 app_name="phpytex";
 python_path="$(python_for_pyinstaller --which)";
 spec_path="src";
-add_data="logging.yml:src"; # NOTE: first arguments are relative to spec_path
 
 if ! [ $(has_arg "$SCRIPTARGS" "skip-build") ]; then
-    compile_pyinstaller python-path="$python_path" app-name="$app_name" setup-file=setup.py spec-path="$spec_path" add-data="$add_data";
+    compile_pyinstaller \
+        python-path="$python_path" \
+        app-name="$app_name" \
+        setup-file=setup.py \
+        spec-path="$spec_path" \
+        add-data="config.yml:src"; # NOTE: first arguments are relative to spec_path
 fi
 
 if [ $(has_arg "$SCRIPTARGS" "-*release") ]; then

@@ -1,5 +1,0 @@
-name: phpytex
-dateformat: "%Y%m%d %H:%M"
-level: DEBUG
-stdout: true
-format: "\\033[1;32m%(name)s\\033[0m | \\033[1;33m%(levelname)s\\033[0m | %(message)s"
