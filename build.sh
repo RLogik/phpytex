@@ -35,8 +35,8 @@
 #
 #    The arguments are as follows:
 #
-#       skip-build ⟹ the PyInstall process will be skipped
-#       --release  ⟹ the created binary will be zipped and version for the release.
+#       --skip-build ⟹ the PyInstall process will be skipped
+#       --release    ⟹ the created binary will be zipped and version for the release.
 #
 #    Note: There are safety measures in place to prevent willy-nilly overwriting
 #    of existing release versions.
