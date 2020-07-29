@@ -26,6 +26,10 @@ function has_arg() {
     echo "$1" | grep -E -q "^(.*\s|)$2(\s.*|)$" && echo 0 | echo 1;
 }
 
+function check_answer() {
+    echo "$1" | grep -q -E -i "^(y|yes|j|ja|1)$";
+}
+
 function _fail() {
     MESSAGE="$1";
     echo -e "\033[1;91mERROR\033[0m! $MESSAGE" >> "$ERR";
@@ -68,8 +72,19 @@ function post_build_create_release_version() {
     file_zip="$file.zip";
     file_zip_version="$file-$VERSION.zip";
 
-    # check if file exists
+    # check if binary exists:
     [ -f "$file" ] || _fail "Programme file missing in the distribution directory!";
+    # check if version already exists:
+    if [[ -f "$file_zip_version" ]]; then
+        echo -n -e "Version \033[1;92m$VERSION\033[0m already exists! Are you sure you wish to overwite this? (y/n) ";
+        read answer;
+        if ! ( check_answer "$answer" ); then
+            echo -e "The release '\033[1;94m$file_zip_version\033[0m' will not be overwritten.";
+            return;
+        else
+            echo -e "The release '\033[1;94m$file_zip_version\033[0m' will be \033[1;91moverwritten\033[0m.";
+        fi
+    fi
 
     # create zip
     [ -f "$file_zip_version" ] && rm -r "$file_zip_version";
