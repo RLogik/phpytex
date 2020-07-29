@@ -68,14 +68,14 @@ function setup_build() {
 
 function post_build_create_release_version() {
     VERSION="$(get_version)";
-    file="$DIST_DIRECTORY/$NAME_OF_PROGRAMME";
+    file="$NAME_OF_PROGRAMME";
     file_zip="$file.zip";
     file_zip_version="$file-$VERSION.zip";
 
     # check if binary exists:
-    [ -f "$file" ] || _fail "Programme file missing in the distribution directory!";
+    [ -f "$DIST_DIRECTORY/$file" ] || _fail "Programme file missing in the distribution directory!";
     # check if version already exists:
-    if [[ -f "$file_zip_version" ]]; then
+    if [[ -f "$DIST_DIRECTORY/$file_zip_version" ]]; then
         echo -n -e "Version \033[1;92m$VERSION\033[0m already exists! Are you sure you wish to overwite this? (y/n) ";
         read answer;
         if ! ( check_answer "$answer" ); then
@@ -87,12 +87,14 @@ function post_build_create_release_version() {
     fi
 
     # create zip
-    [ -f "$file_zip_version" ] && rm -r "$file_zip_version";
     echo -e "Creating zip for version \033[1;92m$VERSION\033[0m..." >> "$OUT";
-    zip -r "$file_zip_version"  \
-        "./README.md" "$BUILD_DIRECTORY/lib" "$file" "$DIST_DIRECTORY/VERSION" \
+    zip -r "$DIST_DIRECTORY/$file_zip_version"  \
+            "./README.md" \
+            "$BUILD_DIRECTORY/lib" \
+            "$DIST_DIRECTORY/$file" \
+            "$DIST_DIRECTORY/VERSION" \
         >> "$OUT" 2>> "$ERR" \
-        && cp "$file_zip_version" "$file_zip";
+        && cp "$DIST_DIRECTORY/$file_zip_version" "$DIST_DIRECTORY/$file_zip";
     echo -e "...done" >> "$OUT";
 }
 
