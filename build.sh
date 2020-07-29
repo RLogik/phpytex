@@ -51,7 +51,7 @@ app_name="phpytex";
 python_path="$(python_for_pyinstaller --which)";
 spec_path="src";
 
-if ! [ $(has_arg "$SCRIPTARGS" "skip-build") ]; then
+if ! [ $(has_arg "$SCRIPTARGS" "-*skip-build") ]; then
     # NOTE for each --add-data argument the first parts (in 1:2) are relative to spec_path.
     compile_pyinstaller \
         python-path="$python_path" \
