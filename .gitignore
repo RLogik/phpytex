@@ -1,5 +1,6 @@
 *
 
+## files at root level:
 !.gitignore
 !README.md
 # needed for project
@@ -23,8 +24,12 @@ src/**/__pycache__
 !test
 !test/**
 test/**/__pycache__
+!test/logs
 test/logs/**/*
 # DIST:
 !dist
 dist/**/*
 !dist/VERSION
+
+## allow preservation of non-empty folders:
+!**/.gitkeep
