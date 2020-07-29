@@ -9,21 +9,25 @@ import os;
 import sys;
 
 TESTDIRECTORY = os.path.dirname(os.path.realpath(__file__));
-SOURCEDIRECTORY = os.path.dirname(os.path.realpath(__file__) + '../src');
-os.chdir(TESTDIRECTORY)
+SOURCEDIRECTORY = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'src'));
 
 sys.path.insert(0, SOURCEDIRECTORY);
-# import methods from src/**
+from core.config import extractConfig;
+from core.logger import Logger;
 
 sys.path.insert(0, TESTDIRECTORY);
 # import methods from test/**
+
+os.chdir(TESTDIRECTORY)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MAIN METHOD
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def main():
-    print('\n\033[1;33mINFO\033[0m: Testing not yet implemented.\n');
+    config = extractConfig('logging.yml');
+    log = Logger(config);
+    log.info('Testing not yet implemented!');
     return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

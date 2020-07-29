@@ -1,0 +1,15 @@
+name: phpytex
+dateformat: "%Y%m%d %H:%M"
+level: DEBUG
+
+# ## use the following if logging to a file:
+# stdout: false
+# format: "%(name)s | %(levelname)s | %(message)s"
+# directory: logs
+# file: out.log
+# mode: a
+
+## use the following if logging to the console:
+stdout: true
+format: "\\033[1;32m%(name)s\\033[0m | \\033[1;33m%(levelname)s\\033[0m | %(message)s"
+  # Note: can also add: %(asctime)s
