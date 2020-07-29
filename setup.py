@@ -38,6 +38,7 @@ setup(
         'src',
         'src/core',
         'src/create',
+        'src/info',
         'src/transpiler',
     ],
     include_package_data=True,
