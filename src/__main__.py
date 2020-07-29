@@ -7,6 +7,7 @@
 
 import os;
 import sys;
+import re;
 from typing import List;
 
 WORKINGDIRECTORY = os.getcwd();
@@ -22,6 +23,7 @@ from .core.utils import get_dict_value;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 log: Logger;
+VERSION: str;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MAIN METHOD
@@ -30,13 +32,32 @@ log: Logger;
 def main():
     tokens, kwargs = parse_cli_args(sys.argv[1:]);
     setup_log();
-    log.info('This is the \033[1;32m(Ph(P)y)TeX\033[0m! programme. At the moment nothing has been implemented.');
+    get_version();
+    log.info('This version \033[1;92m{}\033[0m of the \033[1;32m(Ph(P)y)TeX\033[0m! programme. At the moment nothing has been implemented.'.format(VERSION));
     run_command(tokens=tokens, **kwargs);
     return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # AUXLIARY METHODS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def get_version() -> str:
+    global VERSION;
+    version = None;
+    try:
+        with open(os.path.join(SOURCEDIRECTORY, 'VERSION')) as fp:
+            for line in fp.readlines():
+                line = re.sub(r'^[\s\n\r]+|[\s\n\r]+$', r'', line);
+                if not re.match(r'^\d+\.\d+\.\d+$', line):
+                    continue;
+                version = line;
+                break;
+    except:
+        pass;
+    if version is None:
+        raise ValueError('VERSION file missing in the distribution folder or the value is invalid!');
+    VERSION = version;
+    return version;
 
 def setup_log():
     global log;
@@ -47,6 +68,10 @@ def setup_log():
 
 def run_command(tokens: List[str], **kwargs):
     global log;
-    log.info('You called this programme with the tokens:   ' + str(tokens) + '.');
-    log.info('You called this programme with the keywords: ' + str(kwargs) + '.');
+    global VERSION;
+    if 'version' in tokens:
+        log.info('This version \033[1;92m{}\033[0m of the \033[1;32m(Ph(P)y)TeX\033[0m! programme.'.format(VERSION));
+    else:
+        log.info('You called this programme with the tokens:   ' + str(tokens) + '.');
+        log.info('You called this programme with the keywords: ' + str(kwargs) + '.');
     return;
