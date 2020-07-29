@@ -20,7 +20,7 @@
 #     Usage:
 #     ~~~~~~~~~~~~~
 #
-#       ./localpython.sh [ARGUMENTS]
+#       ./localpython [ARGUMENTS]
 #
 #    where the arguments are just as you would use them
 #    for the python/python3 command
