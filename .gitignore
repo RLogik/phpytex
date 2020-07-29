@@ -20,6 +20,8 @@
 !src
 !src/**
 src/**/__pycache__
+!src/logs
+src/logs/**/*
 # TEST:
 !test
 !test/**
