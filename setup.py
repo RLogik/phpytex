@@ -1,8 +1,21 @@
+import os;
+import re;
 from pyinstaller_setuptools import setup;
+
+WORKINGDIRECTORY = os.getcwd();
+CURRENTDIRECTORY = os.path.dirname(os.path.realpath(__file__));
+
+def get_version():
+    global CURRENTDIRECTORY, WORKINGDIRECTORY;
+    os.chdir(CURRENTDIRECTORY);
+    version = os.popen('. .lib.sh && get_version').read();
+    version = re.sub(r'^[\s\n\r]+|[\s\n\r]+$', r'', version);
+    os.chdir(WORKINGDIRECTORY);
+    return version;
 
 setup(
     name='phpytex',
-    version='2.0.0',
+    version=get_version(),
     description='(Ph(P)y)TeX and (Ph(P)y)create',
     long_description='README.md',
     long_description_content_type='text/markdown',
