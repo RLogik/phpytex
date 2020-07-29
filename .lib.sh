@@ -90,8 +90,8 @@ function post_build_create_release_version() {
     [ -f "$file_zip_version" ] && rm -r "$file_zip_version";
     echo -e "Creating zip for version \033[1;92m$VERSION\033[0m..." >> "$OUT";
     zip -r "$file_zip_version"  \
-        "$file" "$DIST_DIRECTORY/VERSION" "./README.md" \
-        >> "$VERBOSE" 2>> "$ERR" \
+        "./README.md" "$BUILD_DIRECTORY/lib" "$file" "$DIST_DIRECTORY/VERSION" \
+        >> "$OUT" 2>> "$ERR" \
         && cp "$file_zip_version" "$file_zip";
     echo -e "...done" >> "$OUT";
 }
