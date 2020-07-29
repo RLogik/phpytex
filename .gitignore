@@ -1,0 +1,24 @@
+*
+
+!.gitignore
+!README.md
+# needed for project
+!build.sh
+!test.sh
+!.lib.sh
+# setup files for programme
+!logging.yml
+!setup.yml
+# needed for pyinstaller
+!LICENSE
+!MANIFEST.in
+
+# project structure
+!src
+!src/**
+src/**/__pycache__
+!test
+!test/**
+test/**/__pycache__
+!dist
+dist/**/__pycache__
