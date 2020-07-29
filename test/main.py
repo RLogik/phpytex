@@ -23,7 +23,7 @@ sys.path.insert(0, TESTDIRECTORY);
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def main():
-    print('\033[1mINFO\033[0m: Testing not yet implemented.');
+    print('\n\033[1;33mINFO\033[0m: Testing not yet implemented.\n');
     return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

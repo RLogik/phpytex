@@ -22,8 +22,6 @@
 #
 #       ./test.sh
 #
-#    At the moment there is no testing.
-#
 ##############################################################################
 
-echo -e "\033[1mINFO\033[0m: Testing not yet not implement."
+./localpython.sh test/main.py
