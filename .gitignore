@@ -8,18 +8,23 @@
 !test.sh
 !localpython.sh
 # setup files for programme
-!logging.yml
 !setup.yml
 # needed for pyinstaller
 !LICENSE
 !MANIFEST.in
+!setup.py
 
-# project structure
+## project structure
+# SRC:
 !src
 !src/**
 src/**/__pycache__
+# TEST:
 !test
 !test/**
 test/**/__pycache__
+test/logs/**/*
+# DIST:
 !dist
-dist/**/__pycache__
+dist/**/*
+!dist/VERSION
