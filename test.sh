@@ -24,4 +24,9 @@
 #
 ##############################################################################
 
-./localpython.sh test/main.py
+SCRIPTARGS="$@";
+
+. .lib.sh;
+
+echo -e "The current version being tested is \033[1;92m$(get_version)\033[0m...";
+run_tests $SCRIPTARGS
