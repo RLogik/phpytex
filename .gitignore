@@ -21,6 +21,7 @@
 !src/**
 src/**/__pycache__
 !src/logs
+src/*.spec
 src/logs/**/*
 # TEST:
 !test
