@@ -1,0 +1,179 @@
+#! /bin/bash
+
+##############################################################################
+# FILE: (bash script) compile
+# AUTHOR: R-Logik, Deutschland. https://github.com/RLogik/phpytex
+# CREATED: 28.07.2020
+# DESCRIPTION:
+#    A script which allows simple, reliable compilation of a python project
+#    via the pyinstaller compiler. It deals with all the versioning pitfalls
+#    by creating a virtual python environment and working locally with this.
+#
+#    Based on https://github.com/RLogik/bash-scripts > compile_pytinstaller
+# NOTES:
+#
+#    Installation:
+#    ~~~~~~~~~~~~~
+#    1. modify the first 2 lines of this script if necessary.
+#    2. place this in a folder, which is in the PATH variable (or extend this)
+#    3. you may need to run
+#            dos2unix <name of this script>
+#       beforehand. Then run
+#            sudo chmod +x <name of this script>
+#       in bash. The command is now available everywhere on your system.
+#
+#    Usage:
+#    ~~~~~~~~~~~~~
+#
+#    ./compile.sh
+#        [required] python-path=<path to suitable python distribution>
+#        [required] app-name=<desired name of programme>
+#        [required] setup-file=<name of python setup file>
+#        [optional] --icon=<relative location of a .ico file>
+#        [optional] --specpath=<path where .spec will be placed>
+#            DEFAULT = .
+#        [optional, multiple]
+#                   --add-data <path1:path2>
+#                   --add-data <path1:path2>
+#                   ...
+#                   --add-data <path1:path2>
+#            path1 relative to specpath
+#            path2 relative to build folder
+#
+#    - you can/should use "$(python_for_pyinstaller --which)" for the pytho-path argument.
+#    - In your setup file use pyinstaller_setuptools.
+#    Consult https://pypi.org/project/pyinstaller-setuptools/
+#
+##############################################################################
+
+SCRIPTARGS="$@";
+
+################################################################
+# AUXILLIARY FUNCTIONS:
+################################################################
+## $1 = full argument string, $2 = key, $3 = default value.
+## example:
+## value=$(get_kwarg "$@" "name" "N/A");
+function get_kwarg() {
+    value="$(echo "$1" | grep -E -q "^.*$2=" && echo "$1" | sed -E "s/^.*$2=([^[:space:]]*).*$/\1/g" || echo "")";
+    echo $value | grep -E -q "[^[:space:]]" && echo "$value" || echo "$3";
+}
+
+## $1 = full argument string
+## $2 = key (including connecter: either = or space)
+## $3 = new-key (ditto)
+## $4 = true/false whether to force quotation marks on values.
+## example:
+## value=$(get_all_kwargs "$@" "degree " "major=" true);
+function get_all_kwargs() {
+    arguments="$1";
+    key="$2";
+    new_key="$3";
+    force_quotes="$4";
+
+    pattern="(^.*[[:space:]]|^)$key([^[:space:]]*).*$";
+    new_arguments="";
+    while ! [[ "$arguments" == "" ]]; do
+        if ! ( echo $arguments | grep -E -q "$pattern" ); then
+            arguments="";
+            break;
+        fi
+        value="$(echo "$arguments" | sed -E "s/$pattern/\2/g" || echo "")";
+        arguments="$(echo "$arguments" | sed -E "s/$pattern/\1/g" || echo "")";
+        if [[ "$force_quotes" == "true" ]]; then
+            new_arguments="$new_key\"$value\" $new_arguments"
+        else
+            new_arguments="$new_key$value $new_arguments"
+        fi
+    done
+    echo $new_arguments;
+}
+
+## $1 = full argument string, $2 = argument.
+## example:
+## if [ $(has_arg "$@" "help") ]; then ...
+function has_arg() {
+    echo "$1" | grep -E -q "^(.*\s|)$2(\s.*|)$" && echo 0 | echo 1;
+}
+################################################################
+
+PYTHONPATH="$(get_kwarg "$SCRIPTARGS" "python-path" "")";
+NAMEOFAPP="$(get_kwarg "$SCRIPTARGS" "app-name" "")";
+SETUPFILE="$(get_kwarg "$SCRIPTARGS" "setup-file" "")";
+ICONIMAGE="$(get_kwarg "$SCRIPTARGS" "--icon" "")";
+SPECPATH="$(get_kwarg "$SCRIPTARGS" "--specpath" ".")";
+ADDDATA="$(get_all_kwargs "$SCRIPTARGS" "--add-data " "--add-data " true)";
+
+if [[ "$PYTHONPATH" == "" ]]; then
+    echo -e "\033[1;91mERROR\033[0m! Need \033[1mpython-path\033[0m argument.";
+    exit 1;
+fi
+
+if [[ "$NAMEOFAPP" == "" ]]; then
+    echo -e "\033[1;91mERROR\033[0m! Need \033[1mapp-name\033[0m argument.";
+    exit 1;
+fi
+
+if [[ "$SETUPFILE" == "" ]]; then
+    echo -e "\033[1;91mERROR\033[0m! Need \033[1msetup-file\033[0m argument.";
+    exit 1;
+fi
+
+################################################################
+# ACTIVATE venv:
+################################################################
+echo -e "";
+echo -e "\033[1;4;32mPrelimenaries:\033[0m";
+echo -e "";
+echo -e "  \033[4;34m1. Create Virtual Python Environment:\033[0m";
+$($PYTHONPATH -m venv env);
+echo -e "";
+echo -e "  \033[4;34m2. Switch To Virtual Python Environment:\033[0m";
+source env/bin/activate;
+vpython_path="$(which python3)";
+echo -e "  Path to python3: \033[1;96m$vpython_path\033[0m.";
+echo -e "  Version used:    \033[1;92m$(python3 -V 2>&1)\033[0m.";
+echo -e "";
+
+################################################################
+# INSTALL REQUIREMENTS:
+################################################################
+echo -e "\033[1;4;32mInstalling any missing python dependencies:\033[0m";
+python3 -m pip install --upgrade pip
+python3 -m pip install PyInstaller
+python3 -m pip install pyinstaller_setuptools
+echo -e "";
+
+################################################################
+# COMPILE PROJECT:
+# cf. https://pypi.org/project/pyinstaller-setuptools/
+################################################################
+echo -e "\033[1;4;32mCompiling project:\033[0m";
+paths="$vpython_path/lib/*:$vpython_path/lib/*/site-packages";
+echo -e "";
+echo -e "  \033[4;34m1. Build:\033[0m";
+python3 $SETUPFILE build
+echo -e "";
+echo -e "  \033[4;34m2. Install:\033[0m";
+python3 $SETUPFILE install
+echo -e "";
+echo -e "  \033[4;34m3. Create executable:\033[0m";
+PYTHONOPTIMIZE=2 python3 -O -m PyInstaller $SETUPFILE \
+    --onefile \
+    --paths "$paths" \
+    --name="$NAMEOFAPP" \
+    --icon="$ICONIMAGE" \
+    --specpath="$SPECPATH" \
+    $ADDDATA;
+
+################################################################
+# GARBAGE ENTFERNUNG
+################################################################
+echo -e "";
+echo -e "\033[1;4;32mGarbage collection:\033[0m";
+ls . | grep -E "^.*.egg.info$" | awk '{print "./"$1}' | xargs rm -r; # removes all .egg.info folders and subfolders recursively.
+ls dist | grep -E "^.*(.egg|_entry.py|__pycache__)$" | awk '{print "dist/"$1}' | xargs rm -r; # remove everything but the app from dist.
+
+echo -e "";
+echo -e "\033[1;32mFinished!\033[0m";
+echo -e "";

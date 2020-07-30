@@ -8,6 +8,7 @@
 !build.sh
 !test.sh
 !clean.sh
+!compile
 !localpython
 # setup files for programme
 !setup.yml

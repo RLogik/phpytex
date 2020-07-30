@@ -48,23 +48,22 @@ SCRIPTARGS="$@";
 
 . .lib.sh;
 
-app_name="phpytex";
-python_path="$(python_for_pyinstaller --which)";
-spec_path=".";
+APPNAME="phpytex";
+PATHTOPYTHON="$(python_for_pyinstaller --which)";
 
 if [ $(has_arg "$SCRIPTARGS" "-*release") ]; then
     ./clean.sh --force;
 fi
 
 # NOTE for each --add-data argument the first parts (in 1:2) are relative to spec_path.
-compile_pyinstaller \
-    python-path="$python_path" \
-    app-name="$app_name" \
+./compile \
+    python-path="$PATHTOPYTHON" \
+    app-name="$APPNAME" \
     setup-file=setup.py \
     --add-data "dist/VERSION:src" \
     --add-data "src/config.yml:src" \
     --add-data "src/logs:src/logs" \
-    spec-path="$spec_path";
+    --specpath=".";
 
 if [ $(has_arg "$SCRIPTARGS" "-*release") ]; then
     post_build_create_release_version
