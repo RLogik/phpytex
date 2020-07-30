@@ -1,12 +1,10 @@
 # cf. https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
 on:
-  # Trigger the workflow on push or pull request,
-  # but only for the master branch
   push:
     branches:
     - master
-  schedule:
-    - cron:  '*/5 * * * *'
+  # schedule:
+  #   - cron:  '*/5 * * * *'
 env:
   SERVER: production
 defaults:
