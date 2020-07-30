@@ -35,10 +35,11 @@
 #
 #    The arguments are as follows:
 #
+#       --clean   ⟹ cleans artefacts before the build process
 #       --release ⟹ the created binary will be zipped and version for the release.
 #
 #    Note:
-#      1) The release option force cleans the project directory first (see clean.sh).
+#      1) The --release option force cleans the project directory first (see clean.sh).
 #      2) There are safety measures in place to prevent willy-nilly overwriting
 #         of existing release versions.
 #
@@ -51,7 +52,7 @@ SCRIPTARGS="$@";
 APPNAME="phpytex";
 PATHTOPYTHON="$(python_for_pyinstaller --which)";
 
-if [ $(has_arg "$SCRIPTARGS" "-*release") ]; then
+if [ $(has_arg "$SCRIPTARGS" "-+(clean|release)") ]; then
     ./clean.sh --force;
 fi
 
@@ -60,9 +61,9 @@ fi
     python-path="$PATHTOPYTHON" \
     app-name="$APPNAME" \
     setup-file=setup.py \
-    --add-data "dist/VERSION:src" \
-    --add-data "src/config.yml:src" \
-    --add-data "src/logs:src/logs" \
+    --add-data "dist/VERSION":"src" \
+    --add-data "src/config.yml":"src" \
+    --add-data "src/logs":"src/logs" \
     --specpath=".";
 
 if [ $(has_arg "$SCRIPTARGS" "-*release") ]; then

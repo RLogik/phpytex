@@ -102,7 +102,7 @@ NAMEOFAPP="$(get_kwarg "$SCRIPTARGS" "app-name" "")";
 SETUPFILE="$(get_kwarg "$SCRIPTARGS" "setup-file" "")";
 ICONIMAGE="$(get_kwarg "$SCRIPTARGS" "--icon" "")";
 SPECPATH="$(get_kwarg "$SCRIPTARGS" "--specpath" ".")";
-ADDDATA="$(get_all_kwargs "$SCRIPTARGS" "--add-data " "--add-data " true)";
+ADDDATA="$(get_all_kwargs "$SCRIPTARGS" "--add-data " "--add-data " false)";
 
 if [[ "$PYTHONPATH" == "" ]]; then
     echo -e "\033[1;91mERROR\033[0m! Need \033[1mpython-path\033[0m argument.";
