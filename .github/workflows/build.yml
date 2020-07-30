@@ -1,39 +1,58 @@
 # cf. https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
+# workflows are currenty deactivated
 on:
-  push:
-    branches:
-    - master
+  # push:
+  #   branches:
+  #   - master
   # schedule:
   #   - cron:  '*/5 * * * *'
-env:
-  SERVER: production
 defaults:
   run:
     shell: bash
-    working-directory: .
+    working-directory: ./../.. # -> _work
 jobs:
-  authorise-scripts:
+  pull-repo:
     runs-on: [self-hosted, unix]
-    name: Authorise the bash scripts
+    name: Pull the repository
     steps:
-    - run: "chmod +x clean.sh"
-    - run: "chmod +x compile"
-    - run: "chmod +x build.sh"
-  clean-repo:
+    - run: |
+        [ -d phpytex ] && rm -rf phpytex
+        [ -d project ] && rm -rf project
+        mkdir project && cd project
+        git clone https://github.com/RLogik/phpytex.git .
+        git checkout runner
+        git pull
+  pre-clean-repo:
     runs-on: [self-hosted, unix]
-    needs: [authorise-scripts]
+    needs: [pull-repo]
     name: Clean the project of any build artefacts
     steps:
-    - run: "./clean.sh --force"
+    - run: |
+        cd project
+        ./clean.sh --force
   compile-repo:
     name: Compile the project
-    needs: [clean-repo]
+    needs: [pre-clean-repo]
     runs-on: [self-hosted, unix]
     steps:
-    - run: "./build.sh"
+    - run: |
+        cd project
+        ./build.sh
   release:
     name: Create release artefact
     needs: [compile-repo]
     runs-on: [self-hosted, unix]
     steps:
-    - run: ". .lib.sh  && post_build_create_release_version"
+    - run: |
+        [ -d release ] || mkdir release
+        cd project
+        . .lib.sh && post_build_create_release_version --force
+        mv dist/phpytex.zip ../release/phpytex.zip
+        . .lib.sh && mv dist/phpytex-$(get_version).zip ../release/phpytex-$(get_version).zip
+  remove-repo:
+    runs-on: [self-hosted, unix]
+    needs: [release]
+    name: Remove the repository
+    steps:
+    - run: |
+        [ -d project ] && rm -rf project
