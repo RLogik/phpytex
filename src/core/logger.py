@@ -153,6 +153,10 @@ class Logger():
     ################################################################
     ################################
     ## START OF MAIN METHODS
+    def plain(self, *messages: str):
+        print(*messages);
+        return True;
+
     def info(self, message: str):
         if not self.isSet:
             return False;
