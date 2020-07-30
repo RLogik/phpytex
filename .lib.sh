@@ -106,7 +106,7 @@ function post_build_create_release_version() {
     [ -f "$DIST_DIRECTORY/$file" ] || _fail "Programme file missing in the distribution directory!";
     # check if version already exists:
     if [[ -f "$DIST_DIRECTORY/$file_zip_version" ]]; then
-        echo -n -e "Version \033[1;92m$VERSION\033[0m already exists! Are you sure you wish to overwite this? (y/n) ";
+        echo -n -e "\033[1;91mWarning\033[0m: Version \033[1;92m$VERSION\033[0m already exists! Are you sure you wish to overwite this? (y/n) ";
         read answer;
         if ! ( check_answer "$answer" ); then
             echo -e "The release '\033[1;94m$file_zip_version\033[0m' will not be overwritten.";
@@ -114,10 +114,12 @@ function post_build_create_release_version() {
         else
             echo -e "The release '\033[1;94m$file_zip_version\033[0m' will be \033[1;91moverwritten\033[0m.";
         fi
+        echo -e "";
     fi
 
     # create zip
     echo -e "Creating zip for version \033[1;92m$VERSION\033[0m..." >> "$OUT";
+    echo -e "";
     zip -r "$DIST_DIRECTORY/$file_zip_version"  \
             "./README.md" \
             "$BUILD_DIRECTORY/lib" \
@@ -125,7 +127,9 @@ function post_build_create_release_version() {
             "$DIST_DIRECTORY/VERSION" \
         >> "$OUT" 2>> "$ERR" \
         && cp "$DIST_DIRECTORY/$file_zip_version" "$DIST_DIRECTORY/$file_zip";
+    echo -e "";
     echo -e "...done" >> "$OUT";
+    echo -e "";
 }
 
 function get_version {
