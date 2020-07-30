@@ -64,6 +64,9 @@ def determine_version():
 def run_cli_arguments(tokens: List[str], **kwargs):
     global log;
     global VERSION;
+    if 'help' in tokens:
+        log.info('A help-method has not yet been implemented.');
+        log.info('Try calling the programme with the arguments \033[1;94m--version\033[0m, \033[1;94m--help\033[0m, \033[1;94m--create\033[0m, \033[1;94m--traanspile\033[0m.');
     if 'version' in tokens:
         log.plain('\033[1;32m(Ph(P)y)TeX\033[0m version \033[1;92m{}\033[0m'.format(VERSION or '???'));
     elif 'create' in tokens:
