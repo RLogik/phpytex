@@ -39,10 +39,10 @@ dist/**/*
 !dist/RELEASENOTES
 !dist/phpytex
 
-## for build jobs
-!.github
-!.github/workflows
-!.github/workflows/**/*
+# ## for build jobs
+# !.github
+# !.github/workflows
+# !.github/workflows/**/*
 
 ## allow preservation of non-empty folders:
 !**/.gitkeep
