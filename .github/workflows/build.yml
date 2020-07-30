@@ -1,1 +1,33 @@
 # cf. https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
+on:
+  # Trigger the workflow on push or pull request,
+  # but only for the master branch
+  push:
+    branches:
+    - master
+  # schedule:
+  #   - cron:  '*/15 * * * *'
+env:
+  SERVER: production
+defaults:
+  run:
+    shell: bash
+    working-directory: .
+jobs:
+  clean-repo:
+    runs-on: [self-hosted, linux, ubuntu-latest]
+    name: Clean the project of any build artefacts
+    steps:
+    - run: "./clean.sh --force"
+  compile-repo:
+    name: Compile the project
+    needs: [clean-repo]
+    runs-on: [self-hosted, linux, ubuntu-latest]
+    steps:
+    - run: "./build.sh"
+  release:
+    name: Create release artefact
+    needs: [clean-repo, compile-repo]
+    runs-on: [self-hosted, linux, ubuntu-latest]
+    steps:
+    - run: ". .lib.sh  && post_build_create_release_version"
