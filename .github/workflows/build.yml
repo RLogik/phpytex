@@ -13,14 +13,14 @@ defaults:
     working-directory: .
 jobs:
   authorise-scripts:
-    runs-on: [self-hosted, linux, ubuntu-latest]
+    runs-on: [self-hosted, unix]
     name: Authorise the bash scripts
     steps:
     - run: "chmod +x clean.sh"
     - run: "chmod +x compile"
     - run: "chmod +x build.sh"
   clean-repo:
-    runs-on: [self-hosted, linux, ubuntu-latest]
+    runs-on: [self-hosted, unix]
     needs: [authorise-scripts]
     name: Clean the project of any build artefacts
     steps:
@@ -28,12 +28,12 @@ jobs:
   compile-repo:
     name: Compile the project
     needs: [clean-repo]
-    runs-on: [self-hosted, linux, ubuntu-latest]
+    runs-on: [self-hosted, unix]
     steps:
     - run: "./build.sh"
   release:
     name: Create release artefact
     needs: [compile-repo]
-    runs-on: [self-hosted, linux, ubuntu-latest]
+    runs-on: [self-hosted, unix]
     steps:
     - run: ". .lib.sh  && post_build_create_release_version"
