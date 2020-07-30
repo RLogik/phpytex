@@ -52,11 +52,12 @@ setup(
         'json',
     ],
     install_requires=[
-        'setuptools',
-        'typing',
-        'logging',
-        'PyYAML', # installs package 'yaml'
-        'gitignore_parser',
+        'pyinstaller_setuptools==2019.3',
+        'setuptools==40.6.2',
+        'typing>=3.7.4.3',
+        'logging>=0.4.9.6',
+        'PyYAML==5.3.1', # installs package 'yaml'
+        'gitignore_parser==0.0.6',
     ],
     entry_points={
         'console_scripts': ['phpytex=src.__main__:main'], # note only one entry point allowed!

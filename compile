@@ -140,6 +140,8 @@ echo -e "";
 ################################################################
 echo -e "\033[1;4;32mInstalling any missing python dependencies:\033[0m";
 python3 -m pip install --upgrade pip
+python3 -m pip install PyInstaller==3.6
+python3 -m pip install pyinstaller_setuptools==2019.3
 echo -e "";
 
 ################################################################
