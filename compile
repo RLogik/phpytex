@@ -171,8 +171,7 @@ python3 $SETUPFILE pyinstaller -- \
 ################################################################
 echo -e "";
 echo -e "\033[1;4;32mGarbage collection:\033[0m";
-ls . | grep -E "^.*.egg.info$" | awk '{print "./"$1}' | xargs rm -r; # removes all .egg.info folders and subfolders recursively.
-ls dist | grep -E "^.*(.egg|_entry.py|__pycache__)$" | awk '{print "dist/"$1}' | xargs rm -r; # remove everything but the app from dist.
+ls dist | grep -E "^__pycache__$" | awk '{print "dist/"$1}' | xargs rm -r; # remove everything but the app from dist.
 
 echo -e "";
 echo -e "\033[1;32mFinished!\033[0m";
