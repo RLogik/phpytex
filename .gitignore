@@ -36,7 +36,11 @@ test/logs/**/*
 dist/**/*
 !dist/VERSION
 !dist/RELEASENOTES
-!dist/*.zip
+
+## for build jobs
+!.github
+!.github/workflows
+!.github/workflows/**/*
 
 ## allow preservation of non-empty folders:
 !**/.gitkeep
