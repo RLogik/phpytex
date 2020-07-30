@@ -27,7 +27,7 @@
 #    Usage:
 #    ~~~~~~~~~~~~~
 #
-#       ./build.sh [skip-build] [--release]
+#       ./build.sh [--release]
 #
 #    This compiles the project via compile_pyinstaller,
 #    which first creates a python virtualenvironment in ./env,
@@ -35,11 +35,12 @@
 #
 #    The arguments are as follows:
 #
-#       --skip-build ⟹ the PyInstall process will be skipped
-#       --release    ⟹ the created binary will be zipped and version for the release.
+#       --release ⟹ the created binary will be zipped and version for the release.
 #
-#    Note: There are safety measures in place to prevent willy-nilly overwriting
-#    of existing release versions.
+#    Note:
+#      1) The release option force cleans the project directory first (see clean.sh).
+#      2) There are safety measures in place to prevent willy-nilly overwriting
+#         of existing release versions.
 #
 ##############################################################################
 
@@ -51,16 +52,19 @@ app_name="phpytex";
 python_path="$(python_for_pyinstaller --which)";
 spec_path=".";
 
-if ! [ $(has_arg "$SCRIPTARGS" "-*skip-build") ]; then
-    # NOTE for each --add-data argument the first parts (in 1:2) are relative to spec_path.
-    compile_pyinstaller \
-        python-path="$python_path" \
-        app-name="$app_name" \
-        setup-file=setup.py \
-        spec-path="$spec_path" \
-        --add-data "src/config.yml:src" \
-        --add-data "dist/VERSION:src";
+if [ $(has_arg "$SCRIPTARGS" "-*release") ]; then
+    ./clean.sh --force;
 fi
+
+# NOTE for each --add-data argument the first parts (in 1:2) are relative to spec_path.
+compile_pyinstaller \
+    python-path="$python_path" \
+    app-name="$app_name" \
+    setup-file=setup.py \
+    --add-data "dist/VERSION:src" \
+    --add-data "src/config.yml:src" \
+    --add-data "src/logs:src/logs" \
+    spec-path="$spec_path";
 
 if [ $(has_arg "$SCRIPTARGS" "-*release") ]; then
     post_build_create_release_version
