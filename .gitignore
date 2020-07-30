@@ -33,9 +33,11 @@ test/**/__pycache__
 test/logs/**/*
 # DIST:
 !dist
+dist/*
 dist/**/*
 !dist/VERSION
 !dist/RELEASENOTES
+!dist/phpytex
 
 ## for build jobs
 !.github
