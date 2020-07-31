@@ -37,7 +37,6 @@ setup(
     packages=[
         'src',
         'src/core',
-        'src/create',
         'src/info',
         'src/programmes',
     ],

@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -11,13 +11,10 @@ import re;
 from typing import List;
 from typing import Union;
 
-WORKINGDIRECTORY = os.getcwd();
-SOURCEDIRECTORY = os.path.dirname(os.path.realpath(__file__));
-
 from .core.config import Struct;
 from .core.logger import Logger;
 from .core.utils import parse_cli_args;
-from .info.versions import get_version;
+from .info.info import get_version;
 from .programmes import phpycreate;
 from .programmes import phpytex;
 
@@ -25,7 +22,8 @@ from .programmes import phpytex;
 # GLOBAL VARIABLES
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-log: Logger;
+WORKINGDIRECTORY = os.getcwd();
+LOG: Logger;
 VERSION: Union[str, None] = None;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -44,35 +42,36 @@ def main():
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def setup_log():
-    global log;
-    fname = os.path.join(SOURCEDIRECTORY, 'config.yml');
-    config = Struct.get_from_file(fname);
+    global LOG;
+
+    config = Struct.get_from_file('config.yml');
     config_logging = Struct.get_value(config, 'logging', default=dict());
-    log = Logger(config_logging);
+    LOG = Logger(config_logging);
     return;
 
 def determine_version():
-    global log;
+    global LOG;
     global VERSION;
+
     try:
-        VERSION = get_version(SOURCEDIRECTORY);
+        VERSION = get_version();
     except Exception as err:
         VERSION = None;
-        log.error(str(err));
+        LOG.error(str(err));
     return;
 
 def run_cli_arguments(tokens: List[str], **kwargs):
-    global log;
+    global LOG;
     global VERSION;
-    if 'help' in tokens:
-        log.info('A help-method has not yet been implemented.');
-        log.info('Try calling the programme with the arguments \033[1;94m--version\033[0m, \033[1;94m--help\033[0m, \033[1;94m--create\033[0m, \033[1;94m--traanspile\033[0m.');
-    if 'version' in tokens:
-        log.plain('\033[1;32m(Ph(P)y)TeX\033[0m version \033[1;92m{}\033[0m'.format(VERSION or '???'));
-    elif 'create' in tokens:
-        phpycreate.main(log, VERSION or '???', *tokens, **kwargs);
+
+    if 'create' in tokens:
+        phpycreate.main(LOG, VERSION or '???', *tokens, **kwargs);
     elif 'transpile' in tokens:
-        phpytex.main(log, VERSION or '???', *tokens, **kwargs);
+        phpytex.main(LOG, VERSION or '???', *tokens, **kwargs);
+    elif 'version' in tokens:
+        LOG.plain(VERSION or '???');
+    elif 'help' in tokens:
+        LOG.info('Try calling \033[1;96mphpytex --transpile --help\033[0m, \033[1;96mphpytex --create --help\033[0m.');
     else:
-        log.info('Try calling the programme with the arguments \033[1;94m--version\033[0m, \033[1;94m--help\033[0m, \033[1;94m--create\033[0m, \033[1;94m--traanspile\033[0m.');
+        LOG.info('Try calling \033[1;96mphpytex\033[0m [\033[1;96m--version\033[0m|\033[1;96m--help\033[0m].');
     return;

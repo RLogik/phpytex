@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -153,8 +153,8 @@ class Logger():
     ################################################################
     ################################
     ## START OF MAIN METHODS
-    def plain(self, *messages: str):
-        print(*messages);
+    def plain(self, *messages: str, sep='\n'):
+        print(*messages, sep=sep);
         return True;
 
     def info(self, message: str):
