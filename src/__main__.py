@@ -31,10 +31,11 @@ VERSION: Union[str, None] = None;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def main():
-    tokens, kwargs = parse_cli_args(sys.argv[1:]);
+    args = sys.argv[1:];
+    tokens, _ = parse_cli_args(args);
     setup_log();
     determine_version();
-    run_cli_arguments(tokens=tokens, **kwargs);
+    run_cli_arguments(args, tokens);
     return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -60,14 +61,14 @@ def determine_version():
         LOG.error(str(err));
     return;
 
-def run_cli_arguments(tokens: List[str], **kwargs):
+def run_cli_arguments(args: List[str], tokens: List[str]):
     global LOG;
     global VERSION;
 
     if 'create' in tokens:
-        phpycreate.main(LOG, VERSION or '???', *tokens, **kwargs);
+        phpycreate.main(LOG, VERSION or '???', *args);
     elif 'transpile' in tokens:
-        phpytex.main(LOG, VERSION or '???', *tokens, **kwargs);
+        phpytex.main(LOG, VERSION or '???', *args);
     elif 'version' in tokens:
         LOG.plain(VERSION or '???');
     elif 'help' in tokens:

@@ -22,9 +22,7 @@ from ..__path__ import project_path;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def transfer_config(cls):
-    '''
-    Transfers dictionary like attributes to a class
-    '''
+    ### Transfers dictionary like attributes to a class
 
     def __init__(self, *args, **kwargs):
         for key in kwargs:

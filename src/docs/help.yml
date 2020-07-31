@@ -7,18 +7,18 @@ cli:
     command: phpytex --create
     arguments:
       version:
-        type: key
         key: --version
         required: false
+        cli_type: key
         description: Shows the current version being used.
         example:
           eg1:
             command: phpytex --create --version
             result: "Displays '<some message> version ##.##.##'."
       help:
-        type: key
-        key: --help
+        key: ['--help', '--man']
         required: false
+        cli_type: key
         description: Shows usage guide.
         example:
           eg1:
@@ -29,92 +29,178 @@ cli:
     command: phpytex --transpile
     arguments:
       version:
-        type: key
         key: --version
         required: false
+        cli_type: key
         description: Shows the current version being used.
         example:
           eg1:
             command: phpytex --transpile --version
             result: "Displays '<some message> version ##.##.##'."
       help:
-        type: key
-        key: --help
+        key: ['--help', '--man']
         required: false
+        cli_type: key
         description: Shows usage guide.
         example:
           eg1:
             command: phpytex --transpile --help
             result: "Displays usage guide."
       input:
-        type: key-space-value
         key: -i
         required: true
-        value: path
+        cli_type: key-space-value
+        value_type: file
         description: Path to input file
         example:
           eg1:
             command: phpytex --transpile -i root.tex -o main.tex
             result: "Treats root.tex as the input file to be transpiled."
       output:
-        type: key-space-value
         key: -o
         required: true
-        value: path
+        cli_type: key-space-value
+        value_type: file
         description: Path to output file
         example:
           eg1:
             command: phpytex --transpile -i root.tex -o main.tex
             result: "The result of the transpilation (phpytex -> latex) will be stored in main.tex."
-      stamp:
-        type: key-space-value
-        key: -head
+      path:
+        key: -path
         required: false
-        value: path
+        cli_type: key-space-value
+        value_type: path
+        default:
+          description: If not provided, is taken to be directory, in which the command is called.
+        description: Path to project. By default
+        example:
+          eg1:
+            command: "phpytex --transpile -i root.tex -path 'group/slides' -o main.tex"
+            result: "Treats the relative path './group/slides' as the root of the project"
+          eg2:
+            command: "phpytex --transpile -i root.tex -path './group/slides' -o main.tex"
+            result: "Treats the relative path './group/slides' as the root of the project"
+          eg3:
+            command: "phpytex --transpile -i root.tex -path '/Users/me/Documents/project/slides' -o main.tex"
+            result: "Treats the absolute path '/Users/me/Documents/project/slides' as the root of the project"
+      stamp:
+        key: -stamp
+        required: false
+        cli_type: key-space-value
+        value_type: file
         description: "Path to a 'stamp' file. This (should) consist entirely of comments (e.g. name, institution, etc.), which are to be placed at the top of the output of transpilation."
         example:
           eg1:
             command: phpytex --transpile -i root.tex -h front/stamp.tex -o main.tex
             result: "The contents of front/stamp.tex will be placed at the beginning of the transpilation result in main.tex."
       debug:
-        type: key
         key: --debug
         required: false
+        cli_type: key
         description: "Use in order to see the python file computed before the transpilation."
         example:
           eg1:
             command: phpytex --transpile -i root.tex -o main.tex --debug
             result: "Transpilation will not take place. The result before the transpilation will be stored in main.tex."
       latex:
-        type: key
-        key: --no-compile
+        key: compile-latex
         required: false
+        cli_type: key-value
+        value_type: boolean
+        default: true
         description: "Use in order to stop after transpilation. Otherwise the pdflatex compiler will be called. Cannot be used in combination with --debug."
         example:
           eg1:
-            command: phpytex --transpile -i root.tex -o main.tex --no-compile
+            command: phpytex --transpile -i root.tex -o main.tex compile-latex=false
             result: "After transpilation, result is stored in main.tex, but pdflatex will not be called."
           eg2:
-            command: phpytex --transpile -i root.tex -o main.tex
+            command: phpytex --transpile -i root.tex -o main.tex [ compile-latex=true ]
             result: "After transpilation, result is stored in main.tex, and pdflatex will be called."
       seed:
-        type: key-value
         key: seed
-        value: int
+        cli_type: key-value
         required: false
+        value_type: int
+        default:
+          description: If not used, no random seed will be set.
         description: Set a random seed. Useful for reproducability.
         example:
           eg1:
             command: phpytex --transpile -i root.tex -o main.tex seed=598273
-            result: "Transpiles phytex to latex, and initialises the random seed in python to 598273."
+            result: "At the start of the transpilation, the random seed in python is initialised to 598273."
       max-lines:
-        type: key-value
         key: max-lines
-        value: int
+        cli_type: key-value
         required: false
+        value_type: int
         default: 10000
         description: Prevents infinite output by limiting the number of lines.
         example:
           eg1:
             command: phpytex --transpile -i root.tex -o main.tex max-lines=8000
             result: "Limits the number of lines produced in main.tex to 8000."
+      insert-bibliography:
+        key: --insert-bib
+        required: false
+        cli_type: key
+        description: Inserts the contents of .bbl-files in the transpiled files.
+        default:
+          description: "If not set, phpytex-bibliography commands are replaced by LaTeX's standard \\bibliography command."
+        example:
+          eg1:
+            command: phpytex --transpile -i root.tex -o main.tex --insert-bib
+            result: The contents of .bbl files will be hard-coded into main.tex, where the phpytex-bibliography command is used.
+      show-tree:
+        key: show-tree
+        required: false
+        cli_type: key-value
+        value_type: boolean
+        default: true
+        description: Whether or not to show the project tree at the top of the transpiled file.
+        example:
+          eg1:
+            command: phpytex --transpile -i root.tex -o main.tex show-tree=false
+            result: In main.tex the project tree will not be shown.
+          eg2:
+            command: phpytex --transpile -i root.tex -o main.tex show-tree=true
+            result: In main.tex the project tree will be shown.
+      commenting:
+        key: --comments
+        required: false
+        cli_type: key-value
+        value_type: ['on', 'partial', 'off']
+        default: 'on'
+        description: Handling of LaTeX comments.
+        example:
+          eg1:
+            command: phpytex --transpile -i root.tex -o main.tex --comments=on
+            result: In the transpiled file (main.tex) no comments will be removed.
+          eg2:
+            command: phpytex --transpile -i root.tex -o main.tex --comments=off
+            result: In the transpiled file (main.tex) all trailing comments (% ...) will be removed.
+          eg3:
+            command: phpytex --transpile -i root.tex -o main.tex --comments=partial
+            result: "In the transpiled file (main.tex) all trailing comments will be removed, bar comments beginning with '%%'."
+      tabbing:
+        key: --tabs
+        required: false
+        cli_type: key
+        default:
+          description: If not set, will use spacing.
+        description: "Use tab-stops (\\t) as the unit for indentation."
+        example:
+          eg1:
+            command: phpytex --transpile -i root.tex -o main.tex --tabs
+            result: Python blocks will be read with tab-stops as the unit of indentation.
+      spacing:
+        key: --spaces
+        required: false
+        cli_type: key-value
+        value_type: int
+        default: 4
+        description: "Use n spaces as the unit for indentation."
+        example:
+          eg1:
+            command: phpytex --transpile -i root.tex -o main.tex --spaces=2
+            result: Python blocks will be read with 2 spaces as the unit of indentation.

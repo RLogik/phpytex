@@ -9,11 +9,11 @@ import os;
 import sys;
 
 TESTDIRECTORY = os.path.dirname(os.path.realpath(__file__));
-SOURCEDIRECTORY = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'src'));
+PROJECTDIRECTORY = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'));
 
-sys.path.insert(0, SOURCEDIRECTORY);
-from core.config import Struct;
-from core.logger import Logger;
+sys.path.insert(0, PROJECTDIRECTORY);
+from src.core.config import Struct;
+from src.core.logger import Logger;
 
 sys.path.insert(0, TESTDIRECTORY);
 # import methods from test/**
