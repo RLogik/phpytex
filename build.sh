@@ -63,6 +63,7 @@ fi
     setup-file=setup.py \
     --add-data "dist/VERSION":"src" \
     --add-data "src/config.yml":"src" \
+    --add-data "src/docs":"src/docs" \
     --add-data "src/logs":"src/logs" \
     --specpath=".";
 
