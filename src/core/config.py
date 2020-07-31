@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -15,6 +15,7 @@ from typing import Tuple;
 from typing import Union;
 
 from .utils import static;
+from ..__path__ import project_path;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Decorator: @transfer_config
@@ -57,7 +58,7 @@ class Struct:
     @classmethod
     def get_from_file(cls, fname: str) -> Dict[str, Any]:
         try:
-            with open(fname, 'r') as fp:
+            with open(project_path(fname), 'r') as fp:
                 struct = load(fp, Loader=FullLoader);
         except:
             struct = dict();
@@ -83,10 +84,12 @@ class Struct:
         self.__struct = Struct.get_from_file(fname);
         return;
 
-    def getValue(self, *keys: str, key: str, default=None):
-        return Struct.get_value(self.__struct, *keys, key, default=default);
+    def getValue(self, *keys: str, default=None):
+        return Struct.get_value(self.__struct, *keys, default=default);
 
-    def getName(self, *keys: str, key: str) -> str:
+    def getName(self, *keys: str) -> str:
+        n = len(keys);
+        key = keys[n-1] if n > 0 else None;
         return self.getValue(*keys, Struct.NAME_KEY, default=key);
 
     def getParts(self, *keys: str) -> List[Tuple[str, str, Any]]:
