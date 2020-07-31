@@ -139,10 +139,12 @@ function get_version {
 }
 
 function run_tests() {
-    [ -f "$PYTHON" ] || _fail "python not found";
+    [ -f "$PYTHON" ] || _fail "Python not found!";
     $PYTHON $TEST_DIRECTORY/main.py $@;
 }
 
 function run_programme() {
-    $DIST_DIRECTORY/$NAME_OF_PROGRAMME $@;
+    programme="$DIST_DIRECTORY/$NAME_OF_PROGRAMME";
+    [ -f "$programme" ] || _fail "Binary of $NAME_OF_PROGRAMME could not be found!";
+    $programme $@;
 }
