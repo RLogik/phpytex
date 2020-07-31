@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -38,9 +38,27 @@ def clean_string(s: str, trim: bool = False) -> str:
     return s if not trim else re.sub(r'^\s*|\s*$', '', s);
 
 def truncate_string(s: str, max_length: Union[int, None] = None) -> str:
-    if len(s) > max_length:
+    if len_pure(s) > max_length:
         s = s[:(max_length-3)] + r'...';
     return s;
+
+def purify(s: str) -> str:
+    return re.sub(r'\x1b[^m]*m', '', s);
+
+def len_pure(s: str) -> int:
+    return len(purify(s));
+
+def pad_string(s: str, n: int, sep=' ') -> str:
+    m = len_pure(s);
+    if n > m:
+        s += sep*(n-m);
+    return s;
+
+def pad_strings(*lines: str, sep=' ') -> List[str]:
+    N = len(lines);
+    lengths = [len_pure(s) for s in lines];
+    L = max(lengths);
+    return [lines[k] + sep*(L-lengths[k]) for k in range(N)];
 
 def parse_cli_args(args: List[str]) -> Tuple[List[str], Dict[str, str]]:
     tokens = [];
