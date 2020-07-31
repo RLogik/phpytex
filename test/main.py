@@ -25,8 +25,7 @@ os.chdir(TESTDIRECTORY)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def main():
-    fname = 'config.yml';
-    config = Struct.get_from_file(fname);
+    config = Struct.get_from_file('config.yml');
     config_logging = Struct.get_value(config, 'logging', default=dict());
     log = Logger(config_logging);
     log.info('Testing not yet implemented!');
