@@ -102,20 +102,48 @@ def pad_strings(*lines: str, sep=' ') -> List[str]:
     L = max(lengths);
     return [lines[k] + sep*(L-lengths[k]) for k in range(N)];
 
-def parse_cli_args(args: List[str]) -> Tuple[List[str], Dict[str, str]]:
+# separates cli arguments into tokens, key-value arguments, and key-space-value arguments,
+# whilst retaining the order and duplicate key-(space-)value arguments.
+# Use strict=False to remove leading -'s from keys.
+# Use ignorecase=True to place all keys in lower case.
+def parse_cli_args(*args: str, strict=True, ignorecase=True) -> Tuple[List[str], Dict[str, List[str]], Dict[str, List[str]]]:
     tokens = [];
-    kwargs = {};
-    for arg in args:
+    kwargs = dict();
+    ksargs = dict();
+
+    def clean_key(key: str) -> str:
+        if not strict:
+            key = re.sub(r'^\-*', '', key);
+        if ignorecase:
+            key = key.lower();
+        return key;
+
+    n = len(args);
+    first_run = [];
+    for k, arg in enumerate(args):
         m = re.match(r'^(.*?)\=(.*)$', arg);
         if not m:
-            arg = re.sub(r'^\-*', '', arg);
-            arg = arg.lower();
-            tokens.append(arg);
+            first_run.append((k, False, arg, None));
         else:
             key = m.group(1);
             value = m.group(2);
-            kwargs[key] = value;
-    return tokens, kwargs;
+            first_run.append((k, True, key, value));
+    for k, is_kwarg, key, value in first_run:
+        key = clean_key(key);
+        if is_kwarg:
+            if not key in kwargs:
+                kwargs[key] = [];
+            kwargs[key].append(value);
+        else:
+            tokens.append(key);
+            # get next value, provided next argument ist not a kwarg:
+            if k < n-1:
+                _, is_kwarg_next, value, _ = first_run[k+1];
+                if not is_kwarg_next:
+                    if not key in kwargs:
+                        ksargs[key] = [];
+                    ksargs[key].append(value);
+    return tokens, kwargs, ksargs;
 
 def parse_type(value: str, value_type: Union[str, List[str]]) -> Tuple[Any, bool]:
     if isinstance(value_type, list):

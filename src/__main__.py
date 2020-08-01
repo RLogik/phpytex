@@ -7,7 +7,6 @@
 
 import os;
 import sys;
-import re;
 from typing import List;
 from typing import Union;
 
@@ -15,8 +14,8 @@ from .core.config import Struct;
 from .core.logger import Logger;
 from .core.utils import parse_cli_args;
 from .info.info import get_version;
-from .programmes import phpycreate;
-from .programmes import phpytex;
+from .info.info import Help;
+from . import programmes;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES
@@ -24,7 +23,9 @@ from .programmes import phpytex;
 
 WORKINGDIRECTORY = os.getcwd();
 LOG: Logger;
+HELP: Help;
 VERSION: Union[str, None] = None;
+PARTS: List[List[str]];
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MAIN METHOD
@@ -32,22 +33,26 @@ VERSION: Union[str, None] = None;
 
 def main():
     args = sys.argv[1:];
-    tokens, _ = parse_cli_args(args);
-    setup_log();
+
+    setup_log_and_help();
     determine_version();
-    run_cli_arguments(args, tokens);
+    determine_parts();
+
+    run_cli_arguments(*args);
     return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # AUXLIARY METHODS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def setup_log():
+def setup_log_and_help():
     global LOG;
+    global HELP
 
     config = Struct.get_from_file('config.yml');
     config_logging = Struct.get_value(config, 'logging', default=dict());
     LOG = Logger(config_logging);
+    HELP = Help(LOG);
     return;
 
 def determine_version():
@@ -61,18 +66,54 @@ def determine_version():
         LOG.error(str(err));
     return;
 
-def run_cli_arguments(args: List[str], tokens: List[str]):
+def determine_parts():
+    global HELP;
+    global PARTS;
+
+    PARTS = [];
+    for part in HELP.get_attributes('cli', default={}):
+        arg = HELP.get_attributes('cli', part, 'key', default=part);
+        cmd = HELP.get_attributes('cli', part, 'command', default=part);
+        PARTS.append([part, arg, cmd]);
+    return;
+
+def run_cli_arguments(*args: str):
     global LOG;
     global VERSION;
 
-    if 'create' in tokens:
-        phpycreate.main(LOG, VERSION or '???', *args);
-    elif 'transpile' in tokens:
-        phpytex.main(LOG, VERSION or '???', *args);
-    elif 'version' in tokens:
+    # check if the argument is a (sub)programme:
+    if len(args) > 0:
+        arg_first = args[0];
+        for [part, arg, _] in PARTS:
+            if arg == arg_first:
+                run_sub_programme(part, *args);
+                return;
+
+    # if not, then only limitted functionality available:
+    tokens, _, _ = parse_cli_args(*args, strict=False, ignorecase=True);
+    if 'version' in tokens:
         LOG.plain(VERSION or '???');
     elif 'help' in tokens:
-        LOG.info('Try calling \033[1;96mphpytex --transpile --help\033[0m, \033[1;96mphpytex --create --help\033[0m.');
+        LOG.info('Try calling ' + ', '.join(['\033[1;96m{} --help\033[0m'.format(cmd) for [_, _, cmd] in PARTS]) + '.');
     else:
-        LOG.info('Try calling \033[1;96mphpytex\033[0m [\033[1;96m--version\033[0m|\033[1;96m--help\033[0m].');
+        LOG.info('Try using the argments \033[1;96m--version\033[0m or \033[1;96m--help\033[0m.');
+    return;
+
+def run_sub_programme(part: str, *args: str):
+    global LOG;
+    global HELP;
+    global VERSION;
+
+    arguments = HELP.parse_arguments(part);
+    arguments.parse(*args);
+    name = HELP.get_name('cli', part);
+    cmd = HELP.get_attributes('cli', part, 'command');
+
+    if 'version' in arguments.tokens:
+        LOG.plain('\033[1;32m{name}\033[0m version \033[1;92m{v}\033[0m'.format(name=name, v=VERSION or '???'));
+    elif 'help' in arguments.tokens or 'man' in arguments.tokens:
+        HELP.console_help(part);
+    else:
+        LOG.info('Try calling \033[1;96m{cmd}\033[0m [\033[1;96m--version\033[0m|\033[1;96m--help\033[0m].'.format(cmd=cmd));
+        LOG.info('You used the cli-argument {}'.format(arguments));
     return;
