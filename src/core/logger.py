@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# AUTHOR:   rbitlogik@gmail.com / GitHub: RLogik
+# AUTHOR:   RLogik/GitHub
 # CREATED:  4. April 2020
 # FILE:     local_log.py
 #

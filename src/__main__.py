@@ -14,7 +14,8 @@ from .core.config import Struct;
 from .core.logger import Logger;
 from .core.utils import parse_cli_args;
 from .info.info import Info;
-from . import programmes;
+from .programmes.transpile import main as subprogramme_transpile;
+from .programmes.create import main as subprogramme_create;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES
@@ -105,8 +106,8 @@ def run_sub_programme(part: str, *args: str):
 
     arguments = INFO.parse_arguments(part);
     arguments.parse(*args);
+    module = INFO.get_attributes('cli', part, 'module', default=part);
     name = INFO.get_name('cli', part);
-    cmd = INFO.get_attributes('cli', part, 'command');
 
     if 'version' in arguments.tokens:
         LOG.plain('\033[1;32m{name}\033[0m version \033[1;92m{v}\033[0m'.format(name=name, v=VERSION or '???'));
@@ -116,6 +117,14 @@ def run_sub_programme(part: str, *args: str):
         cli_validity = INFO.check_validity(quiet=False);
         if not cli_validity:
             return;
-        LOG.info('Method not implemented. Try calling \033[1;96m{cmd}\033[0m [\033[1;96m--version\033[0m|\033[1;96m--help\033[0m].'.format(cmd=cmd));
-        ## TO DO: from this point the CLI command is valid and the subprogramme can run.
+        ## From this point the CLI command is valid and the subprogramme can run.
+        argumentValues = INFO.arguments.values
+        if module == 'transpile':
+            subprogramme_transpile(LOG, argumentValues);
+            return;
+        elif module == 'create':
+            subprogramme_create(LOG, argumentValues);
+            return;
+        else:
+            LOG.error('The subprogramme \033[1;32m{module}\033[0m has not been implemented.'.format(module=module));
     return;

@@ -128,21 +128,22 @@ def parse_cli_args(*args: str, strict=True, ignorecase=True) -> Tuple[List[str],
             key = m.group(1);
             value = m.group(2);
             first_run.append((k, True, key, value));
+
     for k, is_kwarg, key, value in first_run:
-        key = clean_key(key);
+        label = clean_key(key);
         if is_kwarg:
-            if not key in kwargs:
-                kwargs[key] = [];
-            kwargs[key].append(value);
+            if not label in kwargs:
+                kwargs[label] = [];
+            kwargs[label].append(value);
         else:
-            tokens.append(key);
+            tokens.append(label);
             # get next value, provided next argument ist not a kwarg:
-            if k < n-1:
+            if k < n-1 and re.match(r'^(-+)', key):
                 _, is_kwarg_next, value, _ = first_run[k+1];
                 if not is_kwarg_next:
                     if not key in kwargs:
-                        ksargs[key] = [];
-                    ksargs[key].append(value);
+                        ksargs[label] = [];
+                    ksargs[label].append(value);
     return tokens, kwargs, ksargs;
 
 def parse_type(value: str, value_type: Union[str, List[str]]) -> Tuple[Any, bool]:

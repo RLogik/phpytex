@@ -5,6 +5,7 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+from typing import Any;
 from typing import Dict;
 from typing import List;
 from typing import Union;
@@ -16,7 +17,7 @@ from ..core.utils import INFINITY;
 from ..core.utils import parse_cli_args;
 from ..core.utils import parse_type;
 from .examples import Examples;
-from .values import Value;
+from .multivalues import MultiValue;
 from .keys import Key;
 from .validity import Validity;
 
@@ -37,7 +38,7 @@ class Argument:
     numberofarguments: List[Union[int, Inf]] = [1, 1];
     cli_type: str = '';
     value_type: Union[None, str, List[str]] = None;
-    value: Value = Value();
+    multivalue: MultiValue = MultiValue();
     default: Union[None, str, bool, int, float] = None;
     default_description: Union[None, str] = None;
     description: str = r'—';
@@ -55,15 +56,26 @@ class Argument:
         example: Dict[str, Dict[str, str]] = None,
         **kwargs
     ):
+        # key
         if isinstance(key, (str, list)):
             self.key = Key(key);
         if not cli_type is None:
             self.cli_type = cli_type;
+
+        # value and default values
         if not value_type is None:
             self.value_type = value_type;
-        if not description is None:
-            self.description = description;
+        default_description = None;
+        if isinstance(default, dict):
+            default_description = Struct.get_value(default, 'description', default=None);
+            default = Struct.get_value(default, 'value', default=None);
+        if not default is None:
+            self.default = default;
+        if not default_description is None:
+            self.default_description = default_description;
+        self.multivalue = MultiValue(values=[], default=self.default);
 
+        # multiplicity of arguments
         if self.takes_value:
             if not required is None:
                 self.required = required;
@@ -76,15 +88,9 @@ class Argument:
             self.required = False;
             self.numberofarguments = [0, 0];
 
-        default_description = None;
-        if isinstance(default, dict):
-            default_description = Struct.get_value(default, 'description', default=None);
-            default = Struct.get_value(default, 'value', default=None);
-        if not default is None:
-            self.default = default;
-        if not default_description is None:
-            self.default_description = default_description;
-
+        # descriptions and examples
+        if not description is None:
+            self.description = description;
         if not example is None:
             self.examples = Examples(*[example[_] for _ in example]);
         return;
@@ -94,12 +100,20 @@ class Argument:
         return self.cli_type in ['key-value', 'key-space-value'];
 
     @property
+    def value(self):
+        return self.multivalue.value;
+
+    @property
+    def values(self):
+        return self.multivalue.values;
+
+    @property
     def state(self) -> List[Validity]:
         validities = [];
         if self.takes_value:
             [u, v] = self.numberofarguments;
-            n = len(self.value);
-            value_valid = self.value.valid;
+            n = len(self.multivalue);
+            value_valid = self.multivalue.valid;
             if n == 0 and u == 1:
                 validities.append(Validity(kind='required'));
             elif n < u:
@@ -131,12 +145,33 @@ class Argument:
             return [u, v];
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Class: ArgumentValues
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+class ArgumentValues:
+    __multivalues: List[Tuple[str, MultiValue]];
+
+    def __init__(self, **kwargs):
+        self.__multivalues = [];
+        for label in kwargs:
+            item = kwargs[label];
+            if isinstance(item, MultiValue):
+                self.__multivalues.append((label, item));
+        return;
+
+    def __iter__(self):
+        for label, item in self.__multivalues:
+            yield label, item;
+
+    def __str__(self):
+        return str({label: str(item) for label, item in self.__iter__()});
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Class: Arguments
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 class Arguments:
     __arguments: Dict[str, Argument] = dict();
-    __tokens: List[Tuple[str, bool]] = [];
 
     def __init__(self):
         return;
@@ -149,23 +184,19 @@ class Arguments:
         return len(self.__arguments);
 
     def __str__(self):
-        values = self.values;
-        return str(dict(
-            tokens=self.tokens,
-            values={key: str(values[key]) for key in values},
-        ));
+        return str(dict(tokens=self.tokens, values=str(self.kwvalues)));
 
     @property
     def tokens(self) -> List[str]:
-        return [label for label, accept in self.__tokens if accept];
+        return [label for label, argument in self.__iter__() if not argument.takes_value and argument.value];
 
     @property
-    def labels(self) -> List[str]:
-        return [label for label in self.__arguments  if self.__arguments[label].takes_value];
+    def kwvalues(self) -> ArgumentValues:
+        return ArgumentValues(**{label: argument.multivalue for label, argument in self.__iter__() if argument.takes_value});
 
     @property
-    def values(self) -> Dict[str, Value]:
-        return {label: self.__arguments[label].value for label in self.labels};
+    def values(self) -> ArgumentValues:
+        return ArgumentValues(**{label: argument.multivalue for label, argument in self.__iter__()});
 
     @property
     def state(self) -> List[Tuple[str, List[Validity], Argument]]:
@@ -177,21 +208,14 @@ class Arguments:
         self.__arguments[label] = argument;
 
     def parse(self, *args: str):
-        self.__tokens = [];
         tokens, kwargs, ksargs = parse_cli_args(*args, strict=True, ignorecase=True);
         for label, argument in self.__iter__():
             if argument.takes_value:
                 valid, values = parse_one_kw(argument, kwargs, ksargs);
-                value = Value(
-                    default=argument.default,
-                    values=values,
-                    value=values[0] if len(values) > 0 else argument.default,
-                    valid=valid
-                );
-                argument.value = value;
             else:
-                value = parse_one_token(argument, tokens);
-                self.__tokens.append((label, value));
+                values = [parse_one_token(argument, tokens)];
+                valid = True;
+            argument.multivalue = MultiValue(items=values, valid=valid, default=argument.default);
         return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

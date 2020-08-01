@@ -3,9 +3,12 @@ site: github
 date: 2020
 cli:
   create:
-    key: create
-    name: (Ph(P)y)create
+    name: (PH(p)y)create
+    # python module name:
+    module: create
+    # cli commands:
     command: phpytex create
+    key: create
     arguments:
       version:
         key: ['-v', '--version']
@@ -26,9 +29,12 @@ cli:
             command: phpytex create --help
             result: "Displays usage guide."
   transpile:
-    key: transpile
-    name: (Ph(P)y)TeX
+    name: (PH(p)y)TeX
+    # python module name:
+    module: transpile
+    # cli commands:
     command: phpytex transpile
+    key: transpile
     arguments:
       version:
         key: ['-v', '--version']
