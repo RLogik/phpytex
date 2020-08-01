@@ -5,4 +5,5 @@
 29.07.2020 22:15 | 0.0.3 | Minor cosmetic fixes.
 29.07.2020 22:15 | 0.0.4 | Forks between phpytex (transpiler) and phpycreate. First proper release in repository.
 31.07.2020 14:30 | 0.0.5 | Added yml help file and parser. Note: installation of pyyaml is flaky. Need to consider alternative.
-31.07.2020 14:30 | 0.0.6 | Added robust parsing for cli commands.
+31.07.2020 23:00 | 0.0.6 | Added robust parsing for cli commands.
+01.08.2020 11:00 | 0.0.7 | Changes to convention for cli keys, refactoring of subprogramme launches. Note: need to consider using OAS3 for parsing of schemata.

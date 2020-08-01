@@ -7,7 +7,6 @@
 
 import os;
 import re;
-from typing import Any;
 from typing import Dict;
 from typing import List;
 from typing import Union;
@@ -20,6 +19,7 @@ from ..core.utils import Inf;
 from ..core.utils import INFINITY;
 from ..core.utils import len_pure;
 from ..core.utils import pad_strings;
+from ..core.utils import parse_cli_args;
 from ..core.utils import parse_type;
 from ..core.logger import Logger;
 
@@ -41,6 +41,23 @@ class Example:
         if not result is None:
             self.result = result;
         return;
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Class: Values
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+class Value:
+    values: Union[None, bool, str, int, float, List[Union[None, bool, str, int, float]]];
+    value: Union[None, bool, str, int, float];
+    default: Union[None, bool, str, int, float];
+
+    def __init__(self, values=None, value=None, default=None, **kwargs):
+        self.values = values;
+        self.value = value;
+        self.default = default;
+
+    def __str__(self):
+        return str(self.value);
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Class: Argument
@@ -157,30 +174,13 @@ class Argument:
         return self.cli_type in ['key-value', 'key-space-value'];
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Class: Values
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-class Value:
-    value: Union[None, bool, str, int, float, List[Union[None, bool, str, int, float]]];
-    value_one: Union[None, bool, str, int, float];
-    default: Union[None, bool, str, int, float];
-
-    def __init__(self, value=None, value_one=None, default=None, **kwargs):
-        self.value = value;
-        self.value_one = value_one;
-        self.default = default;
-
-    def __str__(self):
-        return str(self.value);
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Class: Arguments
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 class Arguments:
     __arguments: Dict[str, Argument] = dict();
     __tokens: List[Tuple[str, bool]] = [];
-    __kwargs: Dict[str, Value] = dict();
+    __labelled_values: Dict[str, Value] = dict();
 
     def __init__(self):
         return;
@@ -190,10 +190,10 @@ class Arguments:
             yield label, self.__arguments[label];
 
     def __str__(self):
-        kwvalues = self.kwvalues;
+        values = self.values;
         return str(dict(
-            tokens=str(self.tokens),
-            kwvalues=str({key: str(kwvalues[key]) for key in kwvalues}),
+            tokens=self.tokens,
+            values={key: str(values[key]) for key in values},
         ));
 
     def add(self, label: str, argument: Argument):
@@ -206,43 +206,45 @@ class Arguments:
         return [label for label, accept in self.__tokens if accept];
 
     @property
-    def kwvalues(self) -> Dict[str, Value]:
-        return self.__kwargs;
+    def values(self) -> Dict[str, Value]:
+        return self.__labelled_values;
 
     def parse(self, *args: str):
+        self.__tokens = [];
+        self.__labelled_values = dict();
+        tokens, kwargs, ksargs = parse_cli_args(*args, strict=True, ignorecase=True);
         for label in self.__arguments:
             argument = self.__arguments[label];
-            value = Arguments.parse_one(argument, *args);
-            if isinstance(value, list):
-                self.__kwargs[label] = Value(
+            values = Arguments.parse_one(argument, tokens, kwargs, ksargs);
+            if isinstance(values, list):
+                self.__labelled_values[label] = Value(
                     default=argument.default,
-                    value=value,
-                    value_one=value[0] if len(value) > 0 else argument.default,
+                    values=values,
+                    value=values[0] if len(values) > 0 else argument.default,
                 );
             else:
+                value = values;
                 self.__tokens.append((label, value));
         return;
 
     @classmethod
-    def parse_one(cls, argument: Argument, *args: str) -> Union[bool, list]:
+    def parse_one(cls,
+        argument: Argument,
+        tokens: List[str],
+        kwargs: Dict[str, List[str]],
+        ksargs: Dict[str, List[str]]
+    ) -> Union[bool, list]:
         keys = argument.key;
         if not isinstance(keys, list):
             keys = [keys];
         if argument.takes_value():
             values = [];
-            if argument.cli_type == 'key-value':
-                for arg in args:
-                    m = re.match(r'^(.*?)\=(.*)$', arg);
-                    if not m:
-                        continue;
-                    _key = m.group(1);
-                    if _key in keys:
-                        value = m.group(2);
-                        values.append(value);
-            else:
-                n = len(args);
-                values = [args[k+1] for k in range(n-1) if args[k] in keys];
-
+            for key in keys:
+                if key in kwargs:
+                    if argument.cli_type == 'key-value':
+                        values += kwargs[key];
+                    else:
+                        values += ksargs[key];
             # parse values to type, and only retain acceptable values:
             if not argument.value_type is None:
                 values = [parse_type(val, argument.value_type) for val in values];
@@ -260,7 +262,7 @@ class Arguments:
             return values
         else:
             for key in keys:
-                if key in args:
+                if key in tokens:
                     return True;
             return False;
 
@@ -301,16 +303,21 @@ class Help:
     def arguments(self) -> Arguments:
         return self.__arguments;
 
-    def get_cli_structure(self, part):
+    def get_attributes(self, *keys: str, default=None):
+        return self.struct.getValue(*keys, default=default);
+
+    def get_name(self, *keys: str):
+        return self.struct.getName(*keys);
+
+    def parse_arguments(self, part):
         self.__arguments = Arguments();
-        arguments = self.struct.getValue('cli', part, 'arguments', default={});
+        arguments = self.get_attributes('cli', part, 'arguments', default={});
         for key in arguments:
             argument = Argument(**(arguments[key] or {}));
             self.__arguments.add(key, argument);
         return self.__arguments;
 
     def console_help(self, part: str):
-        self.get_cli_structure(part);
         self.log.plain('');
         self.console_print_title(part);
         self.log.plain('');
@@ -323,10 +330,10 @@ class Help:
         return;
 
     def console_print_title(self, part: str):
-        author = self.struct.getValue('author');
-        date = self.struct.getValue('date');
-        site = self.struct.getValue('site');
-        name = self.struct.getName('cli', part);
+        author = self.get_attributes('author');
+        date = self.get_attributes('date');
+        site = self.get_attributes('site');
+        name = self.get_name('cli', part);
         version = self.version or '???';
         title = pad_strings(
             '',
@@ -342,7 +349,7 @@ class Help:
         return;
 
     def console_print_command(self, part: str):
-        command = self.struct.getValue('cli', part, 'command');
+        command = self.get_attributes('cli', part, 'command');
         self.log.plain('  \033[1;4;92mBasic command\033[0m:', '', sep='\n');
         self.log.plain('    \033[1;93m{}\033[0m \033[2m[+ arguments]\033[0m'.format(command));
         return;

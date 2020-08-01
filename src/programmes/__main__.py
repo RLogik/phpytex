@@ -5,13 +5,10 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from typing import List;
 from typing import Union;
 
-from ..core.config import Struct;
 from ..core.logger import Logger;
 from ..info.info import Help;
-from ..info.info import Argument;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES
@@ -20,13 +17,13 @@ from ..info.info import Argument;
 LOG: Logger;
 HELP: Help;
 VERSION: Union[str, None] = None;
-PART: str = 'transpile';
+PART: str;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MAIN METHOD
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def main(log: Logger, version: str, *args: str):
+def main(log: Logger, part: str, version: str, *args: str):
     global LOG;
     global HELP;
     global VERSION;
@@ -35,8 +32,10 @@ def main(log: Logger, version: str, *args: str):
     LOG = log;
     HELP = Help(LOG);
     VERSION = version;
+    PART = part;
 
-    run_cli_arguments(*args);
+    name = HELP.get_name('cli', PART);
+    LOG.info('Methods for \033[1;32m{name}\033[0m version \033[1;92m{v}\033[0m are under construction.'.format(name=name, v=VERSION));
     return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -47,21 +46,3 @@ def main(log: Logger, version: str, *args: str):
 # AUXILIARY METHODS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def run_cli_arguments(*args: str):
-    global LOG;
-    global HELP;
-    global VERSION;
-    global PART;
-
-    arguments = HELP.get_cli_structure(PART);
-    arguments.parse(*args);
-
-    if 'version' in arguments.tokens:
-        LOG.plain('\033[1;32m(Ph(P)y)TeX\033[0m version \033[1;92m{}\033[0m'.format(VERSION or '???'));
-    elif 'help' in arguments.tokens:
-        HELP.console_help(PART);
-    else:
-        LOG.info('Methods for \033[1;32m(Ph(P)y)TeX\033[0m version \033[1;92m{}\033[0m are under construction.'.format(VERSION));
-        LOG.info('Try calling \033[1;96mphpytex --transpile\033[0m [\033[1;96m--version\033[0m|\033[1;96m--help\033[0m].');
-        LOG.info('You used the cli-argument {}'.format(arguments));
-    return;

@@ -51,11 +51,10 @@ setup(
         'json',
     ],
     install_requires=[
-        'pyinstaller_setuptools==2019.3',
-        'setuptools==40.6.2',
+        # 'oas==0.1.13', # installs package 'pyyaml', 'yaml', usw.
+        'pyyaml==5.3.1', # installs package 'yaml'
         'typing>=3.7.4.3',
         'logging>=0.4.9.6',
-        'PyYAML==5.3.1', # installs package 'yaml'
         'gitignore_parser==0.0.6',
     ],
     entry_points={
