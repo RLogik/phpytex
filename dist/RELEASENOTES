@@ -8,3 +8,4 @@
 31.07.2020 23:00 | 0.0.6 | Added robust parsing for cli commands.
 01.08.2020 11:00 | 0.0.7 | Changes to convention for cli keys, refactoring of subprogramme launches. Note: need to consider using OAS3 for parsing of schemata.
 01.08.2020 15:14 | 0.0.8 | Added validity checking together with console output for CLI arguments.
+01.08.2020 20:15 | 0.0.9 | Cleaned up value extraction from CLI argument. Corrected Name: (Ph(P)y)Tex —> (PH(p)y)TeX.
