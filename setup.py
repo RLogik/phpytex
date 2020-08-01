@@ -24,12 +24,12 @@ def get_version() -> str:
 setup(
     name='phpytex',
     version=get_version(),
-    description='(Ph(P)y)TeX and (Ph(P)y)create',
+    description='(PH(p)y)TeX and (PH(p)y)create',
     long_description='README.md',
     long_description_content_type='text/markdown',
-    url='https://github.com/RLogik/bla',
+    url='https://github.com/RLogik/',
     author='RLogik',
-    author_email='rbitlogik@gmail.com',
+    author_email='author@email.com',
     license='PYTHON',
     classifiers=[
         'Programming Language :: Python :: 3.6',

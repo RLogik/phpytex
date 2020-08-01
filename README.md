@@ -1,4 +1,4 @@
-# (Ph(P)y)TeX and (Ph(P)y)create #
+# (PH(p)y)TeX and (PH(p)y)create #
 
 This project (will!) contain versioned releases of the programmes (compiled as single binaries) as well as a more clearer and thus easier to understand and debug project structure. For our project compilation, we rely on `PyInstaller`, which in turn limits us to using Python 3.0–3.6.
 
