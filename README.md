@@ -51,7 +51,7 @@ The key reason I wrote phpytex (some time around early/mid 2018) was quite simpl
 
 The second primary reason was that want wanted to access the full robustness of a half decent programming language. TeX/LaTeX is _not_ a programming language—its strength is producing (very) nice pdfs and it is based on a (frustrating) macro-expansion logic. I always wanted to enhance latex with some programming language, and the former necessity provided the occasion to do so.
 
-In 2019 I continue to improve phpytex, but simply overwrote my changes. I artificially added version numbers, but was painfully aware that this not be best practice. A proper project structure was needed and a proper archive of release versions, as well as testing. That is the aim of this revived project. As of 28.07.2020, the phpytex project under this new vision will be actively developed.
+In 2019, I continued to improve phpytex, but simply overwrote my changes. I artificially added version numbers, but was painfully aware that this not be best practice. A proper project structure was needed and a proper archive of release versions, as well as testing. That is the aim of this revived project. As of 28.07.2020, the phpytex project under this new vision will be actively developed.
 
 ## <a name="usage-short">USAGE (short)</a> ##
 

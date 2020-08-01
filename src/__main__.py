@@ -13,8 +13,7 @@ from typing import Union;
 from .core.config import Struct;
 from .core.logger import Logger;
 from .core.utils import parse_cli_args;
-from .info.info import get_version;
-from .info.info import Help;
+from .info.info import Info;
 from . import programmes;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -23,7 +22,7 @@ from . import programmes;
 
 WORKINGDIRECTORY = os.getcwd();
 LOG: Logger;
-HELP: Help;
+INFO: Info;
 VERSION: Union[str, None] = None;
 PARTS: List[List[str]];
 
@@ -42,17 +41,17 @@ def main():
     return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# AUXLIARY METHODS
+# SECONDARY METHODS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def setup_log_and_help():
     global LOG;
-    global HELP
+    global INFO
 
     config = Struct.get_from_file('config.yml');
     config_logging = Struct.get_value(config, 'logging', default=dict());
     LOG = Logger(config_logging);
-    HELP = Help(LOG);
+    INFO = Info(LOG);
     return;
 
 def determine_version():
@@ -60,20 +59,20 @@ def determine_version():
     global VERSION;
 
     try:
-        VERSION = get_version();
+        VERSION = Info.version;
     except Exception as err:
         VERSION = None;
         LOG.error(str(err));
     return;
 
 def determine_parts():
-    global HELP;
+    global INFO;
     global PARTS;
 
     PARTS = [];
-    for part in HELP.get_attributes('cli', default={}):
-        arg = HELP.get_attributes('cli', part, 'key', default=part);
-        cmd = HELP.get_attributes('cli', part, 'command', default=part);
+    for part in INFO.get_attributes('cli', default={}):
+        arg = INFO.get_attributes('cli', part, 'key', default=part);
+        cmd = INFO.get_attributes('cli', part, 'command', default=part);
         PARTS.append([part, arg, cmd]);
     return;
 
@@ -101,19 +100,22 @@ def run_cli_arguments(*args: str):
 
 def run_sub_programme(part: str, *args: str):
     global LOG;
-    global HELP;
+    global INFO;
     global VERSION;
 
-    arguments = HELP.parse_arguments(part);
+    arguments = INFO.parse_arguments(part);
     arguments.parse(*args);
-    name = HELP.get_name('cli', part);
-    cmd = HELP.get_attributes('cli', part, 'command');
+    name = INFO.get_name('cli', part);
+    cmd = INFO.get_attributes('cli', part, 'command');
 
     if 'version' in arguments.tokens:
         LOG.plain('\033[1;32m{name}\033[0m version \033[1;92m{v}\033[0m'.format(name=name, v=VERSION or '???'));
     elif 'help' in arguments.tokens or 'man' in arguments.tokens:
-        HELP.console_help(part);
+        INFO.console_help(part);
     else:
-        LOG.info('Try calling \033[1;96m{cmd}\033[0m [\033[1;96m--version\033[0m|\033[1;96m--help\033[0m].'.format(cmd=cmd));
-        LOG.info('You used the cli-argument {}'.format(arguments));
+        cli_validity = INFO.check_validity(quiet=False);
+        if not cli_validity:
+            return;
+        LOG.info('Method not implemented. Try calling \033[1;96m{cmd}\033[0m [\033[1;96m--version\033[0m|\033[1;96m--help\033[0m].'.format(cmd=cmd));
+        ## TO DO: from this point the CLI command is valid and the subprogramme can run.
     return;
