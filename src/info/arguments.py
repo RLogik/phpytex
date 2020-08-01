@@ -11,29 +11,37 @@ from typing import Union;
 from typing import Tuple;
 
 from ..core.config import Struct;
-from ..core.utils import static;
 from ..core.utils import Inf;
 from ..core.utils import INFINITY;
 from ..core.utils import parse_cli_args;
 from ..core.utils import parse_type;
-from .examples import Example;
+from .examples import Examples;
 from .values import Value;
+from .keys import Key;
+from .validity import Validity;
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# CONSTANTS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+BASIC_TYPES = ['boolean', 'bool', 'numeric', 'int', 'float', 'string' 'url', 'email'];
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Class: Argument
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 class Argument:
-    key: Union[str, List[str]];
+    key: Key = Key();
     required: bool = False;
     multiple_specified: bool = False;
     numberofarguments: List[Union[int, Inf]] = [1, 1];
     cli_type: str = '';
     value_type: Union[None, str, List[str]] = None;
+    value: Value = Value();
     default: Union[None, str, bool, int, float] = None;
     default_description: Union[None, str] = None;
     description: str = r'—';
-    examples: List[Example] = [];
+    examples: Examples = Examples();
 
     def __init__(
         self,
@@ -47,23 +55,25 @@ class Argument:
         example: Dict[str, Dict[str, str]] = None,
         **kwargs
     ):
-        if not key is None:
-            self.key = key;
-        if not required is None:
-            self.required = required;
+        if isinstance(key, (str, list)):
+            self.key = Key(key);
+        if not cli_type is None:
+            self.cli_type = cli_type;
         if not value_type is None:
             self.value_type = value_type;
         if not description is None:
             self.description = description;
-        if not cli_type is None:
-            self.cli_type = cli_type;
-        if self.takes_value():
+
+        if self.takes_value:
+            if not required is None:
+                self.required = required;
             minimum = 1 if self.required else 0;
-            self.numberofarguments[0] = minimum;
+            self.numberofarguments = [minimum, 1];
             if not multiple is None:
                 self.multiple_specified = True;
                 self.numberofarguments = Argument.set_range(minimum, multiple);
         else:
+            self.required = False;
             self.numberofarguments = [0, 0];
 
         default_description = None;
@@ -76,12 +86,29 @@ class Argument:
             self.default_description = default_description;
 
         if not example is None:
-            self.examples = [Example(**example[key]) for key in example];
+            self.examples = Examples(*[example[_] for _ in example]);
         return;
 
-    @static
-    def BASIC_TYPES(cls) -> List[str]:
-        return ['boolean', 'bool', 'numeric', 'int', 'float', 'string' 'url', 'email'];
+    @property
+    def takes_value(self) -> bool:
+        return self.cli_type in ['key-value', 'key-space-value'];
+
+    @property
+    def state(self) -> List[Validity]:
+        validities = [];
+        if self.takes_value:
+            [u, v] = self.numberofarguments;
+            n = len(self.value);
+            value_valid = self.value.valid;
+            if n == 0 and u == 1:
+                validities.append(Validity(kind='required'));
+            elif n < u:
+                validities.append(Validity(kind='min-args', expected=u, actual=n));
+            if n > v:
+                validities.append(Validity(kind='max-args', expected=v, actual=n));
+            if not value_valid:
+                validities.append(Validity(kind='value'));
+        return validities;
 
     @classmethod
     def set_range(cls, MIN: int, _interval: Union[bool, List[Union[int, float]]]) -> List[Union[int, Inf]]:
@@ -103,36 +130,6 @@ class Argument:
             v = int(v) if v < float('inf') else INFINITY;
             return [u, v];
 
-    @classmethod
-    def display_key(cls, key: Union[str, List[str]]) -> str:
-        if isinstance(key, str):
-            return '\033[93m{}\033[0m'.format(key);
-        return ' / '.join([ cls.display_key(x) for x in key]);
-
-    @classmethod
-    def display_value_type(cls, value_type: Union[None, str, List[str]]) -> str:
-        if value_type is None:
-            return '';
-        if isinstance(value_type, str):
-            if value_type in cls.BASIC_TYPES:
-                return '<{}>'.format(value_type);
-            return value_type;
-        return ' | '.join([ cls.display_value_type(x) for x in value_type]);
-
-    @classmethod
-    def display_command(cls, typ: str, key: Union[str, List[str]], value_type: Union[None, str, List[str]], required: bool) -> str:
-        key_ = cls.display_key(key);
-        if typ in ['key-value', 'key-space-value']:
-            sep = ' ' if typ == 'key-space-value' else '=';
-            value_type_ = cls.display_value_type(value_type);
-            command = '{key}{sep}{value_type}'.format(key=key_, sep=sep, value_type=value_type_);
-        else:
-            command = key_;
-        return command if required else '[ {} ]'.format(command);
-
-    def takes_value(self) -> bool:
-        return self.cli_type in ['key-value', 'key-space-value'];
-
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Class: Arguments
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -140,7 +137,6 @@ class Argument:
 class Arguments:
     __arguments: Dict[str, Argument] = dict();
     __tokens: List[Tuple[str, bool]] = [];
-    __labelled_values: Dict[str, Value] = dict();
 
     def __init__(self):
         return;
@@ -149,6 +145,9 @@ class Arguments:
         for label in self.__arguments:
             yield label, self.__arguments[label];
 
+    def __len__(self) -> int:
+        return len(self.__arguments);
+
     def __str__(self):
         values = self.values;
         return str(dict(
@@ -156,72 +155,92 @@ class Arguments:
             values={key: str(values[key]) for key in values},
         ));
 
-    def add(self, label: str, argument: Argument):
-        if label in self.__arguments:
-            del self.__arguments[label];
-        self.__arguments[label] = argument;
-
     @property
     def tokens(self) -> List[str]:
         return [label for label, accept in self.__tokens if accept];
 
     @property
+    def labels(self) -> List[str]:
+        return [label for label in self.__arguments  if self.__arguments[label].takes_value];
+
+    @property
     def values(self) -> Dict[str, Value]:
-        return self.__labelled_values;
+        return {label: self.__arguments[label].value for label in self.labels};
+
+    @property
+    def state(self) -> List[Tuple[str, List[Validity], Argument]]:
+        return [(label, argument.state, argument) for label, argument in self.__iter__()];
+
+    def add(self, label: str, argument: Argument):
+        if label in self.__arguments:
+            del self.__arguments[label];
+        self.__arguments[label] = argument;
 
     def parse(self, *args: str):
         self.__tokens = [];
-        self.__labelled_values = dict();
         tokens, kwargs, ksargs = parse_cli_args(*args, strict=True, ignorecase=True);
-        for label in self.__arguments:
-            argument = self.__arguments[label];
-            values = Arguments.parse_one(argument, tokens, kwargs, ksargs);
-            if isinstance(values, list):
-                self.__labelled_values[label] = Value(
+        for label, argument in self.__iter__():
+            if argument.takes_value:
+                valid, values = parse_one_kw(argument, kwargs, ksargs);
+                value = Value(
                     default=argument.default,
                     values=values,
                     value=values[0] if len(values) > 0 else argument.default,
+                    valid=valid
                 );
+                argument.value = value;
             else:
-                value = values;
+                value = parse_one_token(argument, tokens);
                 self.__tokens.append((label, value));
         return;
 
-    @classmethod
-    def parse_one(cls,
-        argument: Argument,
-        tokens: List[str],
-        kwargs: Dict[str, List[str]],
-        ksargs: Dict[str, List[str]]
-    ) -> Union[bool, list]:
-        keys = argument.key;
-        if not isinstance(keys, list):
-            keys = [keys];
-        if argument.takes_value():
-            values = [];
-            for key in keys:
-                if key in kwargs:
-                    if argument.cli_type == 'key-value':
-                        values += kwargs[key];
-                    else:
-                        values += ksargs[key];
-            # parse values to type, and only retain acceptable values:
-            if not argument.value_type is None:
-                values = [parse_type(val, argument.value_type) for val in values];
-                values = [val for val, accept in values if accept];
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Methods
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-            [u, v] = argument.numberofarguments;
-            # truncate arguments, if too many are given:
-            if len(values) > v and isinstance(v, int):
-                values = values[:v];
-            # append arguments, if too few are given:
-            if len(values) < u and isinstance(u, int):
-                default = argument.default;
-                n = u-len(values);
-                values += [default for _ in range(n)];
-            return values
-        else:
-            for key in keys:
-                if key in tokens:
-                    return True;
-            return False;
+def parse_one_token(argument: Argument, tokens: List[str]) -> bool:
+    for key in argument.key:
+        if key in tokens:
+            return True;
+    return False;
+
+def parse_one_kw(argument: Argument, kwargs: Dict[str, List[str]], ksargs: Dict[str, List[str]]) -> Tuple[bool, list]:
+    values = [];
+    if argument.cli_type == 'key-value':
+        for key in argument.key:
+            if key in kwargs:
+                values += kwargs[key];
+    else:
+        for key in argument.key:
+            if key in ksargs:
+                values += ksargs[key];
+    # parse values to type, and only retain acceptable values:
+    if argument.value_type is None:
+        valid = True;
+    else:
+        values = [parse_type(val, argument.value_type) for val in values];
+        valid = not(False in [accept for _, accept in values]);
+        values = [val for val, accept in values if accept];
+    return valid, values
+
+def display_key(key: Key) -> str:
+    return ' / '.join([ '\033[93m{}\033[0m'.format(x) for x in key]);
+
+def display_value_type(value_type: Union[None, str, List[str]]) -> str:
+    if value_type is None:
+        return '';
+    if isinstance(value_type, str):
+        if value_type in BASIC_TYPES:
+            return '<{}>'.format(value_type);
+        return value_type;
+    return ' | '.join([ display_value_type(x) for x in value_type]);
+
+def display_command(typ: str, key: Key, value_type: Union[None, str, List[str]], required: bool) -> str:
+    key_ = display_key(key);
+    if typ in ['key-value', 'key-space-value']:
+        sep = ' ' if typ == 'key-space-value' else '=';
+        value_type_ = display_value_type(value_type);
+        command = '{key}{sep}{value_type}'.format(key=key_, sep=sep, value_type=value_type_);
+    else:
+        command = key_;
+    return command if required else '[ {} ]'.format(command);

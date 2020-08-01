@@ -7,6 +7,8 @@
 
 import os;
 import re;
+from typing import List;
+from typing import Tuple;
 from typing import Union;
 
 from ..__path__ import project_path;
@@ -17,6 +19,9 @@ from ..core.utils import pad_strings;
 from ..core.logger import Logger;
 from .arguments import Argument;
 from .arguments import Arguments;
+from .arguments import display_command;
+from .validity import Validity;
+from .validity import display_reason;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Class: Info
@@ -26,7 +31,7 @@ class Info:
     __log: Logger;
     __struct: Struct;
     __version: Union[str, None] = None;
-    __arguments: Arguments;
+    arguments: Arguments = Arguments();
 
     def __init__(self, log: Logger):
         self.__initialise(log);
@@ -52,8 +57,8 @@ class Info:
         return self.__struct;
 
     @property
-    def arguments(self) -> Arguments:
-        return self.__arguments;
+    def state(self) -> List[Tuple[str, List[Validity], Argument]]:
+        return self.arguments.state;
 
     @static
     def version(cls) -> str:
@@ -72,6 +77,14 @@ class Info:
             raise FileNotFoundError('VERSION file missing in the distribution folder or could not be opened in read mode!');
         return version;
 
+    def check_validity(self, quiet=True):
+        badstates = [(label, state, argument) for label, state, argument in self.state if len(state) > 0];
+        if len(badstates) == 0:
+            return True;
+        if not quiet:
+            self.console_print_bad_arguments(badstates);
+        return False;
+
     def get_attributes(self, *keys: str, default=None):
         return self.struct.getValue(*keys, default=default);
 
@@ -79,12 +92,12 @@ class Info:
         return self.struct.getName(*keys);
 
     def parse_arguments(self, part):
-        self.__arguments = Arguments();
-        arguments = self.get_attributes('cli', part, 'arguments', default={});
-        for key in arguments:
-            argument = Argument(**(arguments[key] or {}));
-            self.__arguments.add(key, argument);
-        return self.__arguments;
+        self.arguments = Arguments();
+        struct = self.get_attributes('cli', part, 'arguments', default={});
+        for key in struct:
+            argument = Argument(**(struct[key] or {}));
+            self.arguments.add(key, argument);
+        return self.arguments;
 
     def console_help(self, part: str):
         self.log.plain('');
@@ -129,7 +142,7 @@ class Info:
             self.log.plain('');
 
             ## display command:
-            self.log.plain('    {}'.format(Argument.display_command(argument.cli_type, argument.key, argument.value_type, argument.required)));
+            self.log.plain('    {}'.format(display_command(argument.cli_type, argument.key, argument.value_type, argument.required)));
 
             ## display information re. multiple argument, provided the 'multiple:' argument has been specified:
             if argument.multiple_specified:
@@ -158,9 +171,25 @@ class Info:
 
     def console_print_examples(self):
         self.log.plain('  \033[1;4;92mExamples\033[0m:');
-        for _, argument in self.arguments:
-            for example in argument.examples:
+        for label, argument in self.arguments:
+            for command, result in argument.examples:
                 self.log.plain('');
-                self.log.plain('    \033[3mcommand\033[0m: \033[96m{}\033[0m'.format(example.command));
-                self.log.plain('    \033[3mresult\033[0m: {}'.format(example.result));
+                self.log.plain('    \033[3mcommand\033[0m: \033[96m{}\033[0m'.format(command));
+                self.log.plain('    \033[3mresult\033[0m: {}'.format(result));
+        return;
+
+    def console_print_bad_arguments(self, badstates: List[Tuple[str, List[Validity], Argument]]):
+        self.log.plain('');
+        self.log.error('Invalid arguments!');
+        for label, state, argument in badstates:
+            self.log.error('');
+            self.log.error('  \033[3;4;2m\'{label}\' argument\033[0m: {cmd}'.format(
+                label=label,
+                cmd=display_command(argument.cli_type, argument.key, argument.value_type, argument.required
+            )));
+            for validity in state:
+                reason = display_reason(validity);
+                if not reason is None:
+                    self.log.error('    \033[3;2mIssue\033[0m: {}'.format(reason));
+        self.log.plain('');
         return;

@@ -41,7 +41,7 @@ def main():
     return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# AUXLIARY METHODS
+# SECONDARY METHODS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def setup_log_and_help():
@@ -113,6 +113,9 @@ def run_sub_programme(part: str, *args: str):
     elif 'help' in arguments.tokens or 'man' in arguments.tokens:
         INFO.console_help(part);
     else:
-        LOG.info('Try calling \033[1;96m{cmd}\033[0m [\033[1;96m--version\033[0m|\033[1;96m--help\033[0m].'.format(cmd=cmd));
-        LOG.info('You used the cli-argument {}'.format(arguments));
+        cli_validity = INFO.check_validity(quiet=False);
+        if not cli_validity:
+            return;
+        LOG.info('Method not implemented. Try calling \033[1;96m{cmd}\033[0m [\033[1;96m--version\033[0m|\033[1;96m--help\033[0m].'.format(cmd=cmd));
+        ## TO DO: from this point the CLI command is valid and the subprogramme can run.
     return;

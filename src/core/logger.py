@@ -157,47 +157,52 @@ class Logger():
         print(*messages, sep=sep);
         return True;
 
-    def info(self, message: str):
+    def info(self, *messages: str):
         if not self.isSet:
             return False;
         try:
-            self.__LOGGER.info(message);
+            for message in messages:
+                self.__LOGGER.info(message);
             return True;
         except:
             return False;
 
-    def debug(self, message: str):
+    def debug(self, *messages: str):
         if not self.isSet:
             return False;
         try:
-            self.__LOGGER.debug(message);
+            for message in messages:
+                self.__LOGGER.debug(message);
             return True;
         except:
             return False;
 
-    def warning(self, message: str):
+    def warning(self, *messages: str):
         if not self.isSet:
             return False;
         try:
-            self.__LOGGER.warning(message);
+            for message in messages:
+                self.__LOGGER.warning(message);
             return True;
         except:
             return False;
 
-    def error(self, message: str):
+    def error(self, *messages: str):
         if not self.isSet:
             return False;
         try:
-            self.__LOGGER.error(message);
+            for message in messages:
+                self.__LOGGER.error(message);
             return True;
         except:
             return False;
 
-    def critical(self, message: str):
+    def critical(self, *messages: str):
         if not self.isSet:
             return False;
         try:
-            self.__LOGGER.critical(message);
+            for message in messages:
+                self.__LOGGER.critical(message);
             return True;
         except:
             return False;
