@@ -123,7 +123,6 @@ cli:
         key: --seed
         cli_type: key-value
         required: false
-        multiple: [2,4]
         value_type: int
         default:
           description: If not used, no random seed will be set.
