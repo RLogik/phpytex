@@ -67,7 +67,7 @@ class Argument:
     key: Union[str, List[str]];
     required: bool = False;
     multiple_specified: bool = False;
-    multiple: List[Union[int, Inf]] = [1, 1];
+    numberofarguments: List[Union[int, Inf]] = [1, 1];
     cli_type: str = '';
     value_type: Union[None, str, List[str]] = None;
     default: Union[None, str, bool, int, float] = None;
@@ -99,12 +99,12 @@ class Argument:
             self.cli_type = cli_type;
         if self.takes_value():
             minimum = 1 if self.required else 0;
-            self.multiple[0] = minimum;
+            self.numberofarguments[0] = minimum;
             if not multiple is None:
                 self.multiple_specified = True;
-                self.multiple = Argument.set_range(minimum, multiple);
+                self.numberofarguments = Argument.set_range(minimum, multiple);
         else:
-            self.multiple = [0, 0];
+            self.numberofarguments = [0, 0];
 
         default_description = None;
         if isinstance(default, dict):
@@ -250,7 +250,7 @@ class Arguments:
                 values = [parse_type(val, argument.value_type) for val in values];
                 values = [val for val, accept in values if accept];
 
-            [u, v] = argument.multiple;
+            [u, v] = argument.numberofarguments;
             # truncate arguments, if too many are given:
             if len(values) > v and isinstance(v, int):
                 values = values[:v];
@@ -364,7 +364,7 @@ class Help:
 
             ## display information re. multiple argument, provided the 'multiple:' argument has been specified:
             if argument.multiple_specified:
-                [u, v] = argument.multiple;
+                [u, v] = argument.numberofarguments;
                 if u == 1 and v == INFINITY:
                     self.log.plain('      \033[3;2mmultiple arguments\033[0m: allowed.'.format());
                 elif u > 1 and v == INFINITY:
