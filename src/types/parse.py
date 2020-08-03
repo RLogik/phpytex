@@ -11,8 +11,8 @@ from typing import List;
 from typing import Tuple;
 from typing import Union;
 
-from ..types.file import FileType;
-from ..types.path import PathType;
+from .file import FileType;
+from .path import PathType;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Type: FlattenedType
