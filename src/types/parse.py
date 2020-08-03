@@ -35,9 +35,9 @@ def string_to_type(s: Union[str, None, List[str]]) -> FlatType:
             return bool;
         if s in ['str', 'string']:
             return str;
-        if s in ['file']:
+        if s in ['file', 'filename']:
             return FileType;
-        if s in ['path', 'dir', 'directory']:
+        if s in ['path', 'pathname', 'dir', 'directory']:
             return PathType;
         if re.match(r'^None$', s, re.IGNORECASE):
             return None;
