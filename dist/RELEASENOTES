@@ -1,7 +1,6 @@
 29.07.2020 ??:?? | 0.0.0 | basic functionality
 29.07.2020 ??:?? | 0.0.1 | minor structural change to the configuration files
-29.07.2020 20:13 | 0.0.2 | project compilation improved, due to the need transfer multiple configuration object to build.
-                           This was previously not possible.
+29.07.2020 20:13 | 0.0.2 | project compilation improved, due to the need transfer multiple configuration object to build. This was previously not possible.
 29.07.2020 22:15 | 0.0.3 | Minor cosmetic fixes.
 29.07.2020 22:15 | 0.0.4 | Forks between phpytex (transpiler) and phpycreate. First proper release in repository.
 31.07.2020 14:30 | 0.0.5 | Added yml help file and parser. Note: installation of pyyaml is flaky. Need to consider alternative.
@@ -10,3 +9,5 @@
 01.08.2020 15:14 | 0.0.8 | Added validity checking together with console output for CLI arguments.
 01.08.2020 20:15 | 0.0.9 | Cleaned up value extraction from CLI argument. Corrected Name: (Ph(P)y)Tex —> (PH(p)y)TeX.
 03.08.2020 13:30 | 0.0.10 | Refactoring: simplified logging. Added options for colour and verbosity. Cleaned up logic for typed arguments, and cleaned up parsing.
+xx.xx.2020 xx:xx | 0.0.11 | Corrected type checking of union types. Corrected basic cli-argument parser, which was ignoring multiple key-space-values due to a semantic error. Removed path argument.
+                 |        | Added prelimenary functionality of phpycreate.
