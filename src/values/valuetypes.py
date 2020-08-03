@@ -9,6 +9,8 @@ from typing import Any;
 from typing import List;
 from typing import Union;
 
+from ..types.parse import FlatType;
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Class ValueType
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -41,7 +43,7 @@ class ValueType:
 class MultiValueType:
     default: Any;
     __items: List[Any];
-    __valuetype: Union[type, list, None];
+    __valuetype: FlatType;
 
     def __init__(self, items=[], item=None, default=None, valuetype=None, **kwargs):
         self.default = default;
@@ -92,12 +94,14 @@ class MultiValueType:
     def all_valid(self) -> List[bool]:
         return [self.matchestype(_) for _ in self.__iter__()];
 
-    def matchestype(self, o: Any) -> bool:
-        t = self.__valuetype;
+    def matchestype(self, o: Any, main_type=True, t=None) -> bool:
+        if main_type:
+            t = self.__valuetype;
         if t is None:
             return True;
         elif isinstance(t, type):
             return type(o) == t;
-        elif isinstance(t, list):
-            return o in t;
-        return False;
+        elif isinstance(t, str):
+            return o == t;
+        else:
+            return True in [self.matchestype(o, False, tt) for tt in t];
