@@ -282,9 +282,10 @@ class Arguments:
                 if k < n-1 and re.match(r'^(-+)', key):
                     _, is_kwarg_next, value, _ = first_run[k+1];
                     if not is_kwarg_next:
-                        if not key in kwargs:
+                        if not label in ksargs:
                             ksargs[label] = [];
                         ksargs[label].append(value);
+
         return tokens, kwargs, ksargs;
 
     @staticmethod
