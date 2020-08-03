@@ -22,13 +22,13 @@ class FileTypeMeta(type):
             return False;
 
 class FileType(metaclass=FileTypeMeta):
-    __value: str;
+    value: str;
 
     def __init__(self, value=None, *arg, **kwargs):
         if isinstance(value, str):
-            self.__value = value;
+            self.value = value;
 
     def __str__(self) -> str:
-        if not hasattr(self, '__value'):
+        if not hasattr(self, 'value'):
             raise ValueError('No value set.');
-        return self.__value;
+        return self.value;
