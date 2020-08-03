@@ -138,24 +138,24 @@ cli:
           eg1:
             command: phpytex transpile -i root.tex -o main.tex
             result: "The result of the transpilation (phpytex -> latex) will be stored in main.tex."
-      path:
-        key: ['-p', '--path']
-        required: false
-        cli_type: key-space-value
-        value_type: path
-        default:
-          description: "If not provided, is taken to be directory, in which the command is called."
-        description: Path to project.
-        example:
-          eg1:
-            command: "phpytex transpile -i root.tex --path 'group/slides' -o main.tex"
-            result: "Treats the relative path './group/slides' as the root of the project"
-          eg2:
-            command: "phpytex transpile -i root.tex --path './group/slides' -o main.tex"
-            result: "Treats the relative path './group/slides' as the root of the project"
-          eg3:
-            command: "phpytex transpile -i root.tex --path '/Users/me/Documents/project/slides' -o main.tex"
-            result: "Treats the absolute path '/Users/me/Documents/project/slides' as the root of the project"
+      # path:
+      #   key: ['-p', '--path']
+      #   required: false
+      #   cli_type: key-space-value
+      #   value_type: path
+      #   default:
+      #     description: "If not provided, is taken to be directory, in which the command is called."
+      #   description: Path to project.
+      #   example:
+      #     eg1:
+      #       command: "phpytex transpile -i root.tex --path 'group/slides' -o main.tex"
+      #       result: "Treats the relative path './group/slides' as the root of the project"
+      #     eg2:
+      #       command: "phpytex transpile -i root.tex --path './group/slides' -o main.tex"
+      #       result: "Treats the relative path './group/slides' as the root of the project"
+      #     eg3:
+      #       command: "phpytex transpile -i root.tex --path '/Users/me/Documents/project/slides' -o main.tex"
+      #       result: "Treats the absolute path '/Users/me/Documents/project/slides' as the root of the project"
       stamp:
         key: ['-h', '--stamp']
         required: false
