@@ -41,6 +41,8 @@ setup(
         'src/values',
         'src/types',
         'src/programmes',
+        'src/programmes/create',
+        'src/programmes/transpile',
     ],
     include_package_data=True,
     requires=[

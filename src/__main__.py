@@ -14,8 +14,8 @@ from typing import Union;
 from .values.struct import Struct;
 from .core.logger import Logger;
 from .info.info import Info;
-from .programmes.transpile import main as subprogramme_transpile;
-from .programmes.create import main as subprogramme_create;
+from .programmes.transpile.main import main as subprogramme_transpile;
+from .programmes.create.main import main as subprogramme_create;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES
@@ -49,7 +49,7 @@ def setup_log_and_help():
     global LOG;
     global INFO
 
-    config = Struct.get_from_file('config.yml');
+    config = Struct.get_from_file('config.yml', internal=True);
     config_logging = Struct.get_value(config, 'logging', default=dict());
     LOG = Logger(config_logging);
     INFO = Info(LOG);
@@ -82,6 +82,8 @@ def determine_parts():
 def run_cli_arguments(*args: str):
     global LOG;
     global VERSION;
+
+
 
     # first extract main arguments
     arguments = INFO.parse_arguments('main');
@@ -133,11 +135,12 @@ def run_sub_programme(part: str, module: str, *args: str):
             return;
 
         # else, command is valid. Attempt to open module:
+        config = Struct(struct=INFO.struct.getValue('configuration'), internal=True);
         if module == 'transpile':
-            subprogramme_transpile(LOG, argumentValues);
+            subprogramme_transpile(LOG, config, argumentValues);
             return;
         elif module == 'create':
-            subprogramme_create(LOG, argumentValues);
+            subprogramme_create(LOG, config, argumentValues);
             return;
         else:
             LOG.error('The subprogramme \033[1;32m{module}\033[0m has not been implemented.'.format(module=module));

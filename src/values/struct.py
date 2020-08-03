@@ -25,30 +25,39 @@ class Struct:
     def NAME_KEY(cls):
         return 'name';
 
-    __struct: Union[None, Dict[str, Any]];
+    __struct: Dict[str, Any];
 
-    def __init__(self, fname: str = None, struct: Dict[str, Any] = None, **kwargs):
+    def __init__(self, fname: str = None, struct: Dict[str, Any] = None, internal: bool = False, **kwargs):
         if not fname is None:
-            self.fromFile(fname);
-        elif not struct is None:
+            self.__struct = Struct.get_from_file(fname, internal=internal);
+        elif isinstance(struct, dict):
             self.__struct = struct;
         else:
             self.__struct = dict();
         return;
 
+    def __str__(self):
+        return str(self.__struct);
+
     @classmethod
-    def get_from_file(cls, fname: str) -> Dict[str, Any]:
+    def get_from_file(cls, fname: str, internal: bool = False) -> Dict[str, Any]:
         try:
-            with open(project_path(fname), 'r') as fp:
-                struct = load(fp, Loader=FullLoader);
+            with open(project_path(fname) if internal else fname, 'r') as fp:
+                spec = load(fp, Loader=FullLoader);
         except:
-            struct = dict();
-        return struct;
+            spec = dict();
+        return spec;
 
     @classmethod
     def get_value(cls, obj: Any, key: str, *keys: str, default: Any = None) -> Any:
-        obj_ = obj[key] if isinstance(obj, dict) and key in obj else default;
-        return obj_ if len(keys) == 0 else cls.get_value(obj_, *keys);
+        # overwrites [missing key as well as None (=key defined but value)] by 'default':
+        if isinstance(obj, dict) and key in obj:
+            obj_ = obj[key];
+            if len(keys) == 0:
+                return default if obj_ is None else obj_;
+            return cls.get_value(obj_, *keys, default=default);
+        else:
+            return default;
 
     @classmethod
     # extracts name of attribute --- either the key itself, or the 'name' attribute, if defined.
@@ -60,10 +69,6 @@ class Struct:
         if isinstance(struct, list):
             return [(key, key, {}) for key in struct];
         return [(key, cls.get_name(struct[key], key), struct[key]) for key in struct];
-
-    def fromFile(self, fname: str):
-        self.__struct = Struct.get_from_file(fname);
-        return;
 
     def getValue(self, *keys: str, default=None):
         return Struct.get_value(self.__struct, *keys, default=default);

@@ -12,7 +12,7 @@ TESTDIRECTORY = os.path.dirname(os.path.realpath(__file__));
 PROJECTDIRECTORY = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'));
 
 sys.path.insert(0, PROJECTDIRECTORY);
-from src.core.config import Struct;
+from src.values.struct import Struct;
 from src.core.logger import Logger;
 
 sys.path.insert(0, TESTDIRECTORY);
@@ -25,7 +25,7 @@ os.chdir(TESTDIRECTORY)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def main():
-    config = Struct.get_from_file('config.yml');
+    config = Struct.get_from_file('config.yml', internal=True);
     config_logging = Struct.get_value(config, 'logging', default=dict());
     log = Logger(config_logging);
     log.info('Testing not yet implemented!');

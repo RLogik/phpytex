@@ -23,15 +23,17 @@ class ValueType:
         self.value = value;
         self.__valuetype = valuetype;
 
-    def matchestype(self, o: Any) -> bool:
-        t = self.__valuetype;
+    def matchestype(self, o: Any, main_type=True, t=None) -> bool:
+        if main_type:
+            t = self.__valuetype;
         if t is None:
             return True;
         elif isinstance(t, type):
             return type(o) == t;
-        elif isinstance(t, list):
-            return o in t;
-        return False;
+        elif isinstance(t, str):
+            return o == t;
+        else:
+            return True in [self.matchestype(o, False, tt) for tt in t];
 
     def __str__(self):
         return str(self.value);

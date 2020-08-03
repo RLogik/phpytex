@@ -39,7 +39,7 @@ class Info:
 
     def __initialise(self, log: Logger):
         self.__log = log;
-        self.__struct = Struct(fname=os.path.join('docs', 'help.yml'));
+        self.__struct = Struct(fname=os.path.join('docs', 'help.yml'), internal=True);
         return;
 
     @property

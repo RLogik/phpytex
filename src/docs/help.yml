@@ -1,6 +1,9 @@
 author: RLogik
 site: github
 date: 2020
+configuration:
+  file-extension-create-ignore: .phpycreate.ignore
+  file-extension-create: .phpycreate.yaml
 cli:
   main:
     name: (PH(p)y)TeX
@@ -92,6 +95,15 @@ cli:
           eg1:
             command: phpytex create --help
             result: "Displays usage guide."
+      recursive:
+        key: ['-r', '--recursive']
+        required: false
+        cli_type: key
+        description: If used, will recursively process all .phpycreate.yml files in project directory.
+        example:
+          eg1:
+            command: phpytex create --recursive
+            result: "Finds and proccesses all .phpycreate.yml files. Only treats ./*.phpycreate.yml as root instruction."
   transpile:
     name: (PH(p)y)TeX
     # python module name:

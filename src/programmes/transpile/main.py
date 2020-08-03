@@ -5,24 +5,34 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from ..core.logger import Logger;
-from ..info.info import Info
-from ..info.arguments import ArgumentValues
+import os;
+
+from ...core.logger import Logger;
+from ...info.arguments import ArgumentValues;
+from ...values.struct import Struct;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 LOG: Logger;
-MODULENAME: str = 'create';
+MODULENAME: str = 'transpile';
+CONFIG: Struct;
+WORKINGDIRECTORY: str;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MAIN METHOD
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def main(log: Logger, argumentValues: ArgumentValues):
+def main(log: Logger, config: Struct, argumentValues: ArgumentValues):
     global LOG;
+    global CONFIG;
+    global WORKINGDIRECTORY;
+
     LOG = log;
+    CONFIG = config;
+    WORKINGDIRECTORY = os.getcwd();
+
     LOG.info('The \033[1;32m{module}\033[0m subprogramme has been called with the arguments {values}.'.format(module=MODULENAME, values=argumentValues));
     return;
 
