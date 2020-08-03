@@ -39,6 +39,10 @@ class Struct:
     def __str__(self):
         return str(self.__struct);
 
+    def __iter__(self):
+        for key in self.__struct:
+            yield key, self.__struct[key];
+
     @classmethod
     def get_from_file(cls, fname: str, internal: bool = False) -> Dict[str, Any]:
         try:
@@ -69,6 +73,10 @@ class Struct:
         if isinstance(struct, list):
             return [(key, key, {}) for key in struct];
         return [(key, cls.get_name(struct[key], key), struct[key]) for key in struct];
+
+    def getSubStruct(self, *keys: str):
+        spec = self.getValue(*keys, default=dict());
+        return Struct(struct=spec);
 
     def getValue(self, *keys: str, default=None):
         return Struct.get_value(self.__struct, *keys, default=default);

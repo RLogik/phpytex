@@ -15,7 +15,8 @@
 # PAKETE
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-import os;
+import os
+from src.values.struct import Struct;
 from typing import Any;
 from typing import Union;
 
@@ -44,14 +45,14 @@ class LoggerConfig(Configurable):
     );
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Class: Logger
+# Class: LoggerService
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-class Logger:
+class LoggerService:
     __config: LoggerConfig;
 
-    def __init__(self, config):
-        self.__config = LoggerConfig(**config);
+    def __init__(self, spec: Struct):
+        self.__config = LoggerConfig(**{key: value for key, value in spec});
         return;
 
     ################################################################
@@ -64,6 +65,10 @@ class Logger:
     @property
     def entryname(self) -> str:
         return self.__config.name;
+
+    @entryname.setter
+    def entryname(self, x: str):
+        self.__config.name = x;
 
     @property
     def path(self) -> Union[str, None]:

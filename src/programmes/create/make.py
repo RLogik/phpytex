@@ -9,8 +9,7 @@ import os
 from subprocess import Popen
 from typing import List, Union;
 
-from ...core.logger import Logger;
-from ...types.file import FileType;
+from ...core.logger import LoggerService;
 from ...values.configurable import Configurable;
 from ...values.configurable import transfer;
 from ...values.struct import Struct;
@@ -42,10 +41,10 @@ class CompilerConfig(Configurable):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 class Make:
-    log: Logger;
+    log: LoggerService;
     wd: str;
 
-    def __init__(self, log: Logger, wd: str):
+    def __init__(self, log: LoggerService, wd: str):
         self.log = log;
         self.wd = wd;
 

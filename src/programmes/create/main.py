@@ -10,7 +10,7 @@ import os;
 from .make import Make;
 from .parser import extract_specs;
 from .parser import process_specs;
-from ...core.logger import Logger;
+from ...core.logger import LoggerService;
 from ...info.arguments import ArgumentValues;
 from ...values.struct import Struct;
 
@@ -18,7 +18,7 @@ from ...values.struct import Struct;
 # GLOBAL VARIABLES
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-LOG: Logger;
+LOG: LoggerService;
 MODULENAME: str = 'create';
 CONFIG: Struct;
 WORKINGDIRECTORY: str;
@@ -28,7 +28,7 @@ MAKE: Make;
 # MAIN METHOD
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def main(log: Logger, config: Struct, argumentValues: ArgumentValues):
+def main(log: LoggerService, config: Struct, argumentValues: ArgumentValues):
     global LOG;
     global CONFIG;
     global WORKINGDIRECTORY;
