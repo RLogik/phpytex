@@ -12,16 +12,16 @@ from typing import Tuple;
 from typing import Union;
 
 from ..__path__ import project_path;
-from ..core.config import Struct;
+from .arguments import Argument;
+from .arguments import Arguments;
+from .arguments import display_command;
+from ..values.struct import Struct;
 from ..core.utils import INFINITY, static;
 from ..core.utils import len_pure;
 from ..core.utils import pad_strings;
 from ..core.logger import Logger;
-from .arguments import Argument;
-from .arguments import Arguments;
-from .arguments import display_command;
-from .validity import Validity;
-from .validity import display_reason;
+from ..values.validity import Validity;
+from ..values.validity import display_reason;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Class: Info
@@ -100,15 +100,15 @@ class Info:
         return self.arguments;
 
     def console_help(self, part: str):
-        self.log.plain('');
+        self.log.info('');
         self.console_print_title(part);
-        self.log.plain('');
+        self.log.info('');
         self.console_print_command(part);
-        self.log.plain('');
+        self.log.info('');
         self.console_print_arguments();
-        self.log.plain('');
+        self.log.info('');
         self.console_print_examples();
-        self.log.plain('');
+        self.log.info('');
         return;
 
     def console_print_title(self, part: str):
@@ -127,59 +127,62 @@ class Info:
         n = len_pure(title[0]);
         bar = ' ' + '-'*(n - 1);
         title = [bar] + title + [bar];
-        self.log.plain(*title, sep='\n');
+        self.log.info(*title);
         return;
 
     def console_print_command(self, part: str):
         command = self.get_attributes('cli', part, 'command');
-        self.log.plain('  \033[1;4;92mBasic command\033[0m:', '', sep='\n');
-        self.log.plain('    \033[1;93m{}\033[0m \033[2m[+ arguments]\033[0m'.format(command));
+        self.log.info(
+            '  \033[1;4;92mBasic command\033[0m:',
+            '',
+            '    \033[1;93m{}\033[0m \033[2m[+ arguments]\033[0m'.format(command)
+        );
         return;
 
     def console_print_arguments(self):
-        self.log.plain('  \033[1;4;92mArguments\033[0m:');
+        self.log.info('  \033[1;4;92mArguments\033[0m:');
         for _, argument in self.arguments:
-            self.log.plain('');
+            self.log.info('');
 
             ## display command:
-            self.log.plain('    {}'.format(display_command(argument.cli_type, argument.key, argument.value_type, argument.required)));
+            self.log.info('    {}'.format(display_command(argument.cli_type, argument.key, argument.value_type, argument.required)));
 
             ## display information re. multiple argument, provided the 'multiple:' argument has been specified:
             if argument.multiple_specified:
                 [u, v] = argument.numberofarguments;
                 if u == 1 and v == INFINITY:
-                    self.log.plain('      \033[3;2mmultiple arguments\033[0m: allowed.'.format());
+                    self.log.info('      \033[3;2mmultiple arguments\033[0m: allowed.'.format());
                 elif u > 1 and v == INFINITY:
-                    self.log.plain('      \033[3;2mmultiple arguments\033[0m: at least {} arguments required.'.format(u));
+                    self.log.info('      \033[3;2mmultiple arguments\033[0m: at least {} arguments required.'.format(u));
                 elif u == 1 and v > 1:
-                    self.log.plain('      \033[3;2mmultiple arguments\033[0m: at most {} arguments allowed.'.format(v));
+                    self.log.info('      \033[3;2mmultiple arguments\033[0m: at most {} arguments allowed.'.format(v));
                 elif u == 1 and v == 1:
-                    self.log.plain('      \033[3;2mmultiple arguments\033[0m: not allowed.'.format());
+                    self.log.info('      \033[3;2mmultiple arguments\033[0m: not allowed.'.format());
                 else:
-                    self.log.plain('      \033[3;2mmultiple arguments\033[0m: between {} and {} arguments required.'.format(u, v));
+                    self.log.info('      \033[3;2mmultiple arguments\033[0m: between {} and {} arguments required.'.format(u, v));
 
             ## show default value, if provided:
             if argument.cli_type in ['key-value', 'key-space-value']:
                 if not argument.default is None:
-                    self.log.plain('      \033[3;2mdefault\033[0m\033[2m: {}\033[0m'.format(argument.default));
+                    self.log.info('      \033[3;2mdefault\033[0m\033[2m: {}\033[0m'.format(argument.default));
                 elif not argument.default_description is None:
-                    self.log.plain('      \033[3;2mdefault\033[0m\033[2m: {}\033[0m'.format(argument.default_description));
+                    self.log.info('      \033[3;2mdefault\033[0m\033[2m: {}\033[0m'.format(argument.default_description));
 
             ## show description:
-            self.log.plain('      \033[3mdescription\033[0m: {}'.format(argument.description));
+            self.log.info('      \033[3mdescription\033[0m: {}'.format(argument.description));
         return;
 
     def console_print_examples(self):
-        self.log.plain('  \033[1;4;92mExamples\033[0m:');
+        self.log.info('  \033[1;4;92mExamples\033[0m:');
         for label, argument in self.arguments:
             for command, result in argument.examples:
-                self.log.plain('');
-                self.log.plain('    \033[3mcommand\033[0m: \033[96m{}\033[0m'.format(command));
-                self.log.plain('    \033[3mresult\033[0m: {}'.format(result));
+                self.log.info('');
+                self.log.info('    \033[3mcommand\033[0m: \033[96m{}\033[0m'.format(command));
+                self.log.info('    \033[3mresult\033[0m: {}'.format(result));
         return;
 
     def console_print_bad_arguments(self, badstates: List[Tuple[str, List[Validity], Argument]]):
-        self.log.plain('');
+        self.log.info('');
         self.log.error('Invalid arguments!');
         for label, state, argument in badstates:
             self.log.error('');
@@ -191,5 +194,5 @@ class Info:
                 reason = display_reason(validity);
                 if not reason is None:
                     self.log.error('    \033[3;2mIssue\033[0m: {}'.format(reason));
-        self.log.plain('');
+        self.log.info('');
         return;

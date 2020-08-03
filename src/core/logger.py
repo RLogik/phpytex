@@ -16,52 +16,47 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 import os;
-import logging as standard_logging;
 from typing import Any;
 from typing import Union;
 
-from .config import transfer_config;
+from .utils import purify;
+from ..values.configurable import Configurable
+from ..values.configurable import transfer
+from ..values.valuetypes import ValueType
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Auxilary class: LoggerConfig
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-@transfer_config
-class LoggerConfig(dict):
-    stdout: bool = True;
-    name: str = 'root';
-    directory: str = '.';
-    file: str = 'basic.log';
-    mode: str = 'a';
-    format: str = '%(name)s | %(levelname)s | %(message)s';
-    dateformat: str = '%Y-%m-%d %H:%M:%S';
-    level: str = 'DEBUG';
+@transfer
+class LoggerConfig(Configurable):
+    _DEFAULT = dict(
+        stdout     = ValueType(bool, True),
+        name       = ValueType(str,  'root'),
+        directory  = ValueType(str,  None),
+        file       = ValueType(str,  None),
+        mode       = ValueType(str,  'a'),
+        format     = ValueType(str,  '%(name)s | %(levelname)s | %(message)s'),
+        dateformat = ValueType(str,  '%Y-%m-%d %H:%M:%S'),
+        level      = ValueType(str,  'DEBUG'),
+        colourmode = ValueType(bool, True),
+        verbose    = ValueType(bool, False),
+    );
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Class: Logger
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-class Logger():
+class Logger:
     __config: LoggerConfig;
-    __LOGGER = None;
-    __is_set = False;
 
     def __init__(self, config):
         self.__config = LoggerConfig(**config);
-        self.__initialise();
         return;
 
     ################################################################
     ################################
     ## START OF PROPERTIES
-    @property
-    def isSet(self):
-        return self.__is_set;
-
-    @isSet.setter
-    def isSet(self, x: bool):
-        self.__is_set = x;
-
     @property
     def datefmt(self) -> str:
         return self.__config.dateformat;
@@ -96,18 +91,29 @@ class Logger():
         return fmt.encode().decode('unicode-escape');
 
     @property
+    def verbose(self) -> bool:
+        return self.__config.verbose;
+
+    @verbose.setter
+    def verbose(self, x: bool):
+        self.__config.verbose = x;
+
+    @property
+    def colourmode(self) -> bool:
+        return self.to_stdout and self.__config.colourmode;
+
+    @colourmode.setter
+    def colourmode(self, x: bool):
+        self.__config.colourmode = x;
+
+    @property
     def dateformat(self) -> str:
         fmt = self.__config.dateformat;
         return fmt.encode().decode('unicode-escape');
 
     @property
     def level(self) -> Any:
-        key = self.__config.level;
-        return standard_logging.getLevelName(key);
-
-    @property
-    def getLogger(self) -> Any:
-        return self.__LOGGER;
+        return self.__config.level;
 
     @property
     def fileNameWithPath(self) -> Union[str, None]:
@@ -123,90 +129,44 @@ class Logger():
 
     ################################################################
     ################################
-    ## START OF CONFIGURATION
-    def __initialise(self):
-        try:
-            self.__close();
-            standard_logging.basicConfig(
-                format=self.format,
-                datefmt=self.dateformat,
-                filename=self.fileNameWithPath,
-                filemode=self.filemode,
-                level=self.level
-            );
-            self.__LOGGER = standard_logging.getLogger(self.entryname);
-            self.isSet = True;
-        except:
-            self.__close();
-        return self.isSet;
-
-    def __close(self):
-        if self.isSet and not self.__LOGGER is None:
-            del self.__LOGGER;
-        self.isSet = False;
-        self.__LOGGER = None;
-        return;
-    ## END OF CONFIGURATION
-    ################################
-    ################################################################
-
-    ################################################################
-    ################################
     ## START OF MAIN METHODS
-    def plain(self, *messages: str, sep='\n'):
-        print(*messages, sep=sep);
-        return True;
+    def plain(self, *messages: str):
+        print(*[ self.optional_purify(msg) for msg in messages ], sep='\n');
+
+    def __print(self, level: str, *messages: str):
+        _messages = messages;
+        if self.verbose:
+            _messages = [self.format % dict(asctime='', name=self.entryname, levelname=level, message=msg) for msg in messages];
+        self.plain(*_messages);
 
     def info(self, *messages: str):
-        if not self.isSet:
-            return False;
-        try:
-            for message in messages:
-                self.__LOGGER.info(message);
-            return True;
-        except:
-            return False;
+        self.__print('INFO', *messages);
 
     def debug(self, *messages: str):
-        if not self.isSet:
-            return False;
-        try:
-            for message in messages:
-                self.__LOGGER.debug(message);
-            return True;
-        except:
-            return False;
+        self.__print('DEBUG', *messages);
 
     def warning(self, *messages: str):
-        if not self.isSet:
-            return False;
-        try:
-            for message in messages:
-                self.__LOGGER.warning(message);
-            return True;
-        except:
-            return False;
+        self.__print('WARNING', *messages);
 
     def error(self, *messages: str):
-        if not self.isSet:
-            return False;
-        try:
-            for message in messages:
-                self.__LOGGER.error(message);
-            return True;
-        except:
-            return False;
+        self.__print('ERROR', *messages);
 
     def critical(self, *messages: str):
-        if not self.isSet:
-            return False;
-        try:
-            for message in messages:
-                self.__LOGGER.critical(message);
-            return True;
-        except:
-            return False;
+        self.__print('FATAL', *messages);
+
+    # avoid using outside the classe, except for debugging
+    def console(self, *messages: str, sep='\n'):
+        print(*[self.optional_purify(msg) for msg in messages], sep=sep);
+        return True;
     ## END OF MAIN METHODS
     ################################
     ################################################################
-    pass;
+
+    ################################################################
+    ################################
+    ## START OF AUXILIARY METHODS
+    def optional_purify(self, text: str) -> str:
+        return text if self.colourmode else purify(text);
+    ## END OF AUXILIARY METHODS
+    ################################
+    ################################################################

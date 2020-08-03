@@ -5,27 +5,25 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+import re;
 from typing import Any;
 from typing import Dict;
 from typing import List;
 from typing import Union;
 from typing import Tuple;
 
-from ..core.config import Struct;
 from ..core.utils import Inf;
 from ..core.utils import INFINITY;
-from ..core.utils import parse_cli_args;
-from ..core.utils import parse_type;
+from ..core.parse import FlatType;
+from ..core.parse import parse_type;
+from ..core.parse import string_to_type;
+from ..core.parse import type_to_string;
+from ..values.struct import Struct;
 from .examples import Examples;
-from .multivalues import MultiValue;
-from .keys import Key;
-from .validity import Validity;
+from ..values.valuetypes import MultiValueType;
+from ..values.keys import Key;
+from ..values.validity import Validity;
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# CONSTANTS
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-BASIC_TYPES = ['boolean', 'bool', 'numeric', 'int', 'float', 'string' 'url', 'email'];
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Class: Argument
@@ -37,8 +35,8 @@ class Argument:
     multiple_specified: bool = False;
     numberofarguments: List[Union[int, Inf]] = [1, 1];
     cli_type: str = '';
-    value_type: Union[None, str, List[str]] = None;
-    multivalue: MultiValue = MultiValue();
+    value_type: FlatType;
+    multivalue: MultiValueType = MultiValueType();
     default: Union[None, str, bool, int, float] = None;
     default_description: Union[None, str] = None;
     description: str = r'—';
@@ -63,8 +61,7 @@ class Argument:
             self.cli_type = cli_type;
 
         # value and default values
-        if not value_type is None:
-            self.value_type = value_type;
+        self.value_type = string_to_type(value_type);
         default_description = None;
         if isinstance(default, dict):
             default_description = Struct.get_value(default, 'description', default=None);
@@ -73,7 +70,7 @@ class Argument:
             self.default = default;
         if not default_description is None:
             self.default_description = default_description;
-        self.multivalue = MultiValue(values=[], default=self.default);
+        self.multivalue = MultiValueType(values=[], default=self.default, valuetype=self.value_type);
 
         # multiplicity of arguments
         if self.takes_value:
@@ -149,13 +146,13 @@ class Argument:
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 class ArgumentValues:
-    __multivalues: List[Tuple[str, MultiValue]];
+    __multivalues: List[Tuple[str, MultiValueType]];
 
     def __init__(self, **kwargs):
         self.__multivalues = [];
         for label in kwargs:
             item = kwargs[label];
-            if isinstance(item, MultiValue):
+            if isinstance(item, MultiValueType):
                 self.__multivalues.append((label, item));
         return;
 
@@ -166,14 +163,39 @@ class ArgumentValues:
     def __str__(self):
         return str({label: str(item) for label, item in self.__iter__()});
 
+    def getMultiValue(self, label: str) -> MultiValueType:
+        for _label, item in self.__iter__():
+            if _label == label:
+                return item;
+        raise ValueError('No key {} was found'.format(label));
+
+    def getValue(self, label: str) -> Any:
+        return self.getMultiValue(label).value;
+
+    def getValues(self, label: str) -> Any:
+        return self.getMultiValue(label).values;
+
+    def getValueAsBoolean(self, label: str) -> bool:
+        return bool(self.getValue(label));
+
+    def getValueAsInt(self, label: str) -> int:
+        return int(self.getValue(label));
+
+    def getValueAsFloat(self, label: str) -> float:
+        return float(self.getValue(label));
+
+    def getValueAsString(self, label: str) -> str:
+        return str(self.getValue(label));
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Class: Arguments
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 class Arguments:
-    __arguments: Dict[str, Argument] = dict();
+    __arguments: Dict[str, Argument];
 
     def __init__(self):
+        self.__arguments = dict();
         return;
 
     def __iter__(self):
@@ -208,14 +230,15 @@ class Arguments:
         self.__arguments[label] = argument;
 
     def parse(self, *args: str):
-        tokens, kwargs, ksargs = parse_cli_args(*args, strict=True, ignorecase=True);
-        for label, argument in self.__iter__():
+        tokens, kwargs, ksargs = parse_cli_args(*args, strict=True, ignorecase=False);
+        for _, argument in self.__iter__():
             if argument.takes_value:
                 valid, values = parse_one_kw(argument, kwargs, ksargs);
             else:
                 values = [parse_one_token(argument, tokens)];
                 valid = True;
-            argument.multivalue = MultiValue(items=values, valid=valid, default=argument.default);
+            argument.multivalue.items = values;
+            argument.multivalue.valid = valid
         return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -250,16 +273,16 @@ def parse_one_kw(argument: Argument, kwargs: Dict[str, List[str]], ksargs: Dict[
 def display_key(key: Key) -> str:
     return ' / '.join([ '\033[93m{}\033[0m'.format(x) for x in key]);
 
-def display_value_type(value_type: Union[None, str, List[str]]) -> str:
-    if value_type is None:
+def display_value_type(value_type: FlatType) -> str:
+    as_string = type_to_string(value_type);
+    if as_string is None:
         return '';
-    if isinstance(value_type, str):
-        if value_type in BASIC_TYPES:
-            return '<{}>'.format(value_type);
-        return value_type;
-    return ' | '.join([ display_value_type(x) for x in value_type]);
+    elif isinstance(as_string, str):
+        return as_string;
+    else:
+        return ' | '.join([ display_value_type(x) for x in as_string if not x is None ]);
 
-def display_command(typ: str, key: Key, value_type: Union[None, str, List[str]], required: bool) -> str:
+def display_command(typ: str, key: Key, value_type: FlatType, required: bool) -> str:
     key_ = display_key(key);
     if typ in ['key-value', 'key-space-value']:
         sep = ' ' if typ == 'key-space-value' else '=';
@@ -268,3 +291,47 @@ def display_command(typ: str, key: Key, value_type: Union[None, str, List[str]],
     else:
         command = key_;
     return command if required else '[ {} ]'.format(command);
+
+# separates cli arguments into tokens, key-value arguments, and key-space-value arguments,
+# whilst retaining the order and duplicate key-(space-)value arguments.
+# Use strict=False to remove leading -'s from keys.
+# Use ignorecase=True to place all keys in lower case.
+def parse_cli_args(*args: str, strict=True, ignorecase=True) -> Tuple[List[str], Dict[str, List[str]], Dict[str, List[str]]]:
+    tokens = [];
+    kwargs = dict();
+    ksargs = dict();
+
+    def clean_key(key: str) -> str:
+        if not strict:
+            key = re.sub(r'^\-*', '', key);
+        if ignorecase:
+            key = key.lower();
+        return key;
+
+    n = len(args);
+    first_run = [];
+    for k, arg in enumerate(args):
+        m = re.match(r'^(.*?)\=(.*)$', arg);
+        if not m:
+            first_run.append((k, False, arg, None));
+        else:
+            key = m.group(1);
+            value = m.group(2);
+            first_run.append((k, True, key, value));
+
+    for k, is_kwarg, key, value in first_run:
+        label = clean_key(key);
+        if is_kwarg:
+            if not label in kwargs:
+                kwargs[label] = [];
+            kwargs[label].append(value);
+        else:
+            tokens.append(label);
+            # get next value, provided next argument ist not a kwarg:
+            if k < n-1 and re.match(r'^(-+)', key):
+                _, is_kwarg_next, value, _ = first_run[k+1];
+                if not is_kwarg_next:
+                    if not key in kwargs:
+                        ksargs[label] = [];
+                    ksargs[label].append(value);
+    return tokens, kwargs, ksargs;

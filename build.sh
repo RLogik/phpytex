@@ -64,7 +64,6 @@ fi
     --add-data "dist/VERSION":"src" \
     --add-data "src/config.yml":"src" \
     --add-data "src/docs":"src/docs" \
-    --add-data "src/logs":"src/logs" \
     --specpath=".";
 
 if [ $(has_arg "$SCRIPTARGS" "-*release") ]; then

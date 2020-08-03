@@ -7,31 +7,14 @@
 
 from yaml import load;
 from yaml import FullLoader;
-from copy import deepcopy;
 from typing import Any;
 from typing import Dict;
 from typing import List;
 from typing import Tuple;
 from typing import Union;
 
-from .utils import static;
 from ..__path__ import project_path;
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Decorator: @transfer_config
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-def transfer_config(cls):
-    ### Transfers dictionary like attributes to a class
-
-    def __init__(self, *args, **kwargs):
-        for key in kwargs:
-            if hasattr(cls, key):
-                value = deepcopy(kwargs[key]);
-                setattr(cls, key, value);
-    cls.__init__ = __init__;
-
-    return cls;
+from ..core.utils import static;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Class Struct

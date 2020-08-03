@@ -2,6 +2,70 @@ author: RLogik
 site: github
 date: 2020
 cli:
+  main:
+    name: (PH(p)y)TeX
+    # not a module, so do not include 'module:' argument
+    command: phpytex
+    # not a subprogramme, so do not include 'key:' argument
+    arguments:
+      version:
+        key: ['-V', '--version']
+        required: false
+        cli_type: key
+        description: Shows the current version being used.
+        example:
+          eg1:
+            command: phpytex --version
+            result: "Displays '##.##.##'."
+      help:
+        key: ['--help', '--man']
+        required: false
+        cli_type: key
+        description: Shows usage guide.
+        example:
+          eg1:
+            command: phpytex --help
+            result: "Displays usage guide."
+      verbose:
+        key: ['-v', '--verbose']
+        required: false
+        cli_type: key-value
+        value_type: boolean
+        default: false
+        description: Turns verbose console output on with logging levels.
+        example:
+          eg1:
+            command: phpytex transpile --verbose=True -i root.tex -o main.tex [ > out.log ]
+            result: "Runs command and applies logging levels to console output (useful when piping to a log file)."
+          eg1:
+            command: phpytex transpile [ --verbose=False ] -i root.tex -o main.tex [ > out.log ]
+            result: "Runs command and supresses the logging date, levels, etc. (useful for console output)."
+      colour:
+        key: --colour
+        required: false
+        cli_type: key-value
+        value_type: boolean
+        default: true
+        description: Turns colour/formatted output on or off.
+        example:
+          eg1:
+            command: phpytex transpile [ --colour=true ] --help
+            result: "Runs command with all console output in colour."
+          eg2:
+            command: phpytex transpile --colour=false --help
+            result: "Runs command with no formatting in the console output."
+      subprogramme:
+        key: ['create', 'transpile']
+        required: false
+        cli_type: key
+        description: Runs one of the subprogrammes.
+        example:
+          eg1:
+            command: phpytex transpile
+            result: "Runs the phpytex-transpile subprogramme."
+          eg2:
+            command: phpytex create
+            result: "Runs the phpycreate subprogramme."
   create:
     name: (PH(p)y)create
     # python module name:
@@ -11,7 +75,7 @@ cli:
     key: create
     arguments:
       version:
-        key: ['-v', '--version']
+        key: ['-V', '--version']
         required: false
         cli_type: key
         description: Shows the current version being used.
@@ -37,7 +101,7 @@ cli:
     key: transpile
     arguments:
       version:
-        key: ['-v', '--version']
+        key: ['-V', '--version']
         required: false
         cli_type: key
         description: Shows the current version being used.
@@ -152,9 +216,9 @@ cli:
         key: --insert-bib
         required: false
         cli_type: key
-        description: Inserts the contents of .bbl-files in the transpiled files.
         default:
           description: "If not set, phpytex-bibliography commands are replaced by LaTeX's standard \\bibliography command."
+        description: Inserts the contents of .bbl-files in the transpiled files.
         example:
           eg1:
             command: phpytex transpile -i root.tex -o main.tex --insert-bib

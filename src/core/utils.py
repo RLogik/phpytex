@@ -7,9 +7,7 @@
 
 import re;
 from typing import Any;
-from typing import Dict;
 from typing import List;
-from typing import Tuple;
 from typing import Union;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -102,77 +100,3 @@ def pad_strings(*lines: str, sep=' ') -> List[str]:
     L = max(lengths);
     return [lines[k] + sep*(L-lengths[k]) for k in range(N)];
 
-# separates cli arguments into tokens, key-value arguments, and key-space-value arguments,
-# whilst retaining the order and duplicate key-(space-)value arguments.
-# Use strict=False to remove leading -'s from keys.
-# Use ignorecase=True to place all keys in lower case.
-def parse_cli_args(*args: str, strict=True, ignorecase=True) -> Tuple[List[str], Dict[str, List[str]], Dict[str, List[str]]]:
-    tokens = [];
-    kwargs = dict();
-    ksargs = dict();
-
-    def clean_key(key: str) -> str:
-        if not strict:
-            key = re.sub(r'^\-*', '', key);
-        if ignorecase:
-            key = key.lower();
-        return key;
-
-    n = len(args);
-    first_run = [];
-    for k, arg in enumerate(args):
-        m = re.match(r'^(.*?)\=(.*)$', arg);
-        if not m:
-            first_run.append((k, False, arg, None));
-        else:
-            key = m.group(1);
-            value = m.group(2);
-            first_run.append((k, True, key, value));
-
-    for k, is_kwarg, key, value in first_run:
-        label = clean_key(key);
-        if is_kwarg:
-            if not label in kwargs:
-                kwargs[label] = [];
-            kwargs[label].append(value);
-        else:
-            tokens.append(label);
-            # get next value, provided next argument ist not a kwarg:
-            if k < n-1 and re.match(r'^(-+)', key):
-                _, is_kwarg_next, value, _ = first_run[k+1];
-                if not is_kwarg_next:
-                    if not key in kwargs:
-                        ksargs[label] = [];
-                    ksargs[label].append(value);
-    return tokens, kwargs, ksargs;
-
-def parse_type(value: str, value_type: Union[str, List[str]]) -> Tuple[Any, bool]:
-    if isinstance(value_type, list):
-        if not value in value_type:
-            return None, False;
-        return value, True;
-    if value_type in ['int', 'integer']:
-        try:
-            value_ = int(value);
-        except:
-            return None, False;
-    elif value_type in ['float', 'number', 'numeric']:
-        try:
-            value_ = float(value);
-        except:
-            return None, False;
-    elif value_type in ['bool', 'boolean']:
-        if re.match(r'^(true|1|T|y|yes)$', value, re.IGNORECASE):
-            value_ = True;
-        elif re.match(r'^(false|0|F|n|no)$', value, re.IGNORECASE):
-            value_ = False;
-        else:
-            return None, False;
-    # elif value_type in ['str', 'email', 'url', 'path']:
-    else:
-        value_ = value;
-    return value_, True;
-
-def get_dict_value(obj: Any, key: str, *keys: str, default: Any = None):
-    obj_ = obj[key] if isinstance(obj, dict) and key in obj else default;
-    return obj_ if len(keys) == 0 else get_dict_value(obj_, *keys);
