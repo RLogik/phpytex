@@ -39,6 +39,7 @@ setup(
         'src/core',
         'src/info',
         'src/values',
+        'src/types',
         'src/programmes',
     ],
     include_package_data=True,

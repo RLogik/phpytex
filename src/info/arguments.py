@@ -30,6 +30,7 @@ from ..values.validity import Validity;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 class Argument:
+    label: str;
     key: Key = Key();
     required: bool = False;
     multiple_specified: bool = False;
@@ -44,6 +45,7 @@ class Argument:
 
     def __init__(
         self,
+        label = None,
         key = None,
         required = None,
         multiple = None,
@@ -54,7 +56,9 @@ class Argument:
         example: Dict[str, Dict[str, str]] = None,
         **kwargs
     ):
-        # key
+        # label & key
+        if isinstance(label, str):
+            self.label = label;
         if isinstance(key, (str, list)):
             self.key = Key(key);
         if not cli_type is None:
@@ -230,45 +234,91 @@ class Arguments:
         self.__arguments[label] = argument;
 
     def parse(self, *args: str):
-        tokens, kwargs, ksargs = parse_cli_args(*args, strict=True, ignorecase=False);
+        tokens, kwargs, ksargs = Arguments.__parse_cli_args(*args, strict=True, ignorecase=False);
         for _, argument in self.__iter__():
             if argument.takes_value:
-                valid, values = parse_one_kw(argument, kwargs, ksargs);
+                Arguments.__parse_kw(argument, kwargs, ksargs);
             else:
-                values = [parse_one_token(argument, tokens)];
-                valid = True;
-            argument.multivalue.items = values;
-            argument.multivalue.valid = valid
+                Arguments.__parse_token(argument, tokens);
         return;
+
+    # separates cli arguments into tokens, key-value arguments, and key-space-value arguments,
+    # whilst retaining the order and duplicate key-(space-)value arguments.
+    #   Use strict=False to remove leading -'s from keys.
+    #   Use ignorecase=True to place all keys in lower case.
+    @staticmethod
+    def __parse_cli_args(*args: str, strict=True, ignorecase=True) -> Tuple[List[str], Dict[str, List[str]], Dict[str, List[str]]]:
+        tokens = [];
+        kwargs = dict();
+        ksargs = dict();
+
+        def clean_key(key: str) -> str:
+            if not strict:
+                key = re.sub(r'^\-*', '', key);
+            if ignorecase:
+                key = key.lower();
+            return key;
+
+        n = len(args);
+        first_run = [];
+        for k, arg in enumerate(args):
+            m = re.match(r'^(.*?)\=(.*)$', arg);
+            if not m:
+                first_run.append((k, False, arg, None));
+            else:
+                key = m.group(1);
+                value = m.group(2);
+                first_run.append((k, True, key, value));
+
+        for k, is_kwarg, key, value in first_run:
+            label = clean_key(key);
+            if is_kwarg:
+                if not label in kwargs:
+                    kwargs[label] = [];
+                kwargs[label].append(value);
+            else:
+                tokens.append(label);
+                # get next value, provided next argument ist not a kwarg:
+                if k < n-1 and re.match(r'^(-+)', key):
+                    _, is_kwarg_next, value, _ = first_run[k+1];
+                    if not is_kwarg_next:
+                        if not key in kwargs:
+                            ksargs[label] = [];
+                        ksargs[label].append(value);
+        return tokens, kwargs, ksargs;
+
+    @staticmethod
+    def __parse_token(argument: Argument, tokens: List[str]):
+        value = False;
+        for key in argument.key:
+            if key in tokens:
+                value = True;
+                break;
+        # set values:
+        argument.multivalue.values = [value];
+
+    @staticmethod
+    def __parse_kw(argument: Argument, kwargs: Dict[str, List[str]], ksargs: Dict[str, List[str]]):
+        values = [];
+        if argument.cli_type == 'key-value':
+            for key in argument.key:
+                if key in kwargs:
+                    values += kwargs[key];
+        else:
+            for key in argument.key:
+                if key in ksargs:
+                    values += ksargs[key];
+        # parse values to type, and only retain acceptable values:
+        t = argument.value_type;
+        if not t is None:
+            values = [parse_type(val, t) for val in values];
+            values = [val for val, _ in values];
+        # set values:
+        argument.multivalue.values = values;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Methods
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-def parse_one_token(argument: Argument, tokens: List[str]) -> bool:
-    for key in argument.key:
-        if key in tokens:
-            return True;
-    return False;
-
-def parse_one_kw(argument: Argument, kwargs: Dict[str, List[str]], ksargs: Dict[str, List[str]]) -> Tuple[bool, list]:
-    values = [];
-    if argument.cli_type == 'key-value':
-        for key in argument.key:
-            if key in kwargs:
-                values += kwargs[key];
-    else:
-        for key in argument.key:
-            if key in ksargs:
-                values += ksargs[key];
-    # parse values to type, and only retain acceptable values:
-    if argument.value_type is None:
-        valid = True;
-    else:
-        values = [parse_type(val, argument.value_type) for val in values];
-        valid = not(False in [accept for _, accept in values]);
-        values = [val for val, accept in values if accept];
-    return valid, values
 
 def display_key(key: Key) -> str:
     return ' / '.join([ '\033[93m{}\033[0m'.format(x) for x in key]);
@@ -291,47 +341,3 @@ def display_command(typ: str, key: Key, value_type: FlatType, required: bool) ->
     else:
         command = key_;
     return command if required else '[ {} ]'.format(command);
-
-# separates cli arguments into tokens, key-value arguments, and key-space-value arguments,
-# whilst retaining the order and duplicate key-(space-)value arguments.
-# Use strict=False to remove leading -'s from keys.
-# Use ignorecase=True to place all keys in lower case.
-def parse_cli_args(*args: str, strict=True, ignorecase=True) -> Tuple[List[str], Dict[str, List[str]], Dict[str, List[str]]]:
-    tokens = [];
-    kwargs = dict();
-    ksargs = dict();
-
-    def clean_key(key: str) -> str:
-        if not strict:
-            key = re.sub(r'^\-*', '', key);
-        if ignorecase:
-            key = key.lower();
-        return key;
-
-    n = len(args);
-    first_run = [];
-    for k, arg in enumerate(args):
-        m = re.match(r'^(.*?)\=(.*)$', arg);
-        if not m:
-            first_run.append((k, False, arg, None));
-        else:
-            key = m.group(1);
-            value = m.group(2);
-            first_run.append((k, True, key, value));
-
-    for k, is_kwarg, key, value in first_run:
-        label = clean_key(key);
-        if is_kwarg:
-            if not label in kwargs:
-                kwargs[label] = [];
-            kwargs[label].append(value);
-        else:
-            tokens.append(label);
-            # get next value, provided next argument ist not a kwarg:
-            if k < n-1 and re.match(r'^(-+)', key):
-                _, is_kwarg_next, value, _ = first_run[k+1];
-                if not is_kwarg_next:
-                    if not key in kwargs:
-                        ksargs[label] = [];
-                    ksargs[label].append(value);
-    return tokens, kwargs, ksargs;

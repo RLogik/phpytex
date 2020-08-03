@@ -5,11 +5,14 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-import re;
+import re
 from typing import Any;
 from typing import List;
 from typing import Tuple;
 from typing import Union;
+
+from ..types.file import FileType;
+from ..types.path import PathType;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Type: FlattenedType
@@ -32,6 +35,10 @@ def string_to_type(s: Union[str, None, List[str]]) -> FlatType:
             return bool;
         if s in ['str', 'string']:
             return str;
+        if s in ['file']:
+            return FileType;
+        if s in ['path', 'dir', 'directory']:
+            return PathType;
         if re.match(r'^None$', s, re.IGNORECASE):
             return None;
         return s;
@@ -59,12 +66,14 @@ def type_to_string(t: FlatType):
     elif t is None:
         return None;
     elif isinstance(t, str):
-        return "'{}'".format(t);
+        return "{}".format(t);
     else:
         return [type_to_string(tt) for tt in t];
 
 def parse_type(value: str, value_type: FlatType) -> Tuple[Any, bool]:
-    if isinstance(value_type, type):
+    if value_type is None:
+        return value, True;
+    elif isinstance(value_type, type):
         if value_type == bool:
             if re.match('^(true|1|y|yes|j|ja)$', value, re.IGNORECASE):
                 return True, True;
@@ -76,8 +85,12 @@ def parse_type(value: str, value_type: FlatType) -> Tuple[Any, bool]:
                 return value_, True;
             except:
                 return None, False;
-    elif value_type is None:
-        return value, True;
+        elif value_type == FileType:
+            if isinstance(value, FileType):
+                return FileType(value), True;
+        elif value_type == PathType:
+            if isinstance(value, PathType):
+                return PathType(value), True;
     elif isinstance(value_type, str):
         value_ = value_type;
         if value == value_:

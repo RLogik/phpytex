@@ -48,7 +48,8 @@ class Configurable(ConfigurableAttributes):
         if not self.__contains__(key):
             raise KeyError('The attribute {} cannot be defined.'.format(key));
         ## NOTE: need super() to pevent infinite recursion:
-        super().__setattr__(key, value if self._DEFAULT[key].matchestype(value) else self._DEFAULT[key].value);
+        value_ = value if self._DEFAULT[key].matchestype(value) else self._DEFAULT[key].value;
+        super().__setattr__(key, value_);
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Decorator: @transfer

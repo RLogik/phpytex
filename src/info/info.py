@@ -94,9 +94,9 @@ class Info:
     def parse_arguments(self, part):
         self.arguments = Arguments();
         struct = self.get_attributes('cli', part, 'arguments', default={});
-        for key in struct:
-            argument = Argument(**(struct[key] or {}));
-            self.arguments.add(key, argument);
+        for label in struct:
+            argument = Argument(label=label, **(struct[label] or {}));
+            self.arguments.add(label, argument);
         return self.arguments;
 
     def console_help(self, part: str):

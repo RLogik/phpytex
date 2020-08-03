@@ -40,30 +40,24 @@ class ValueType:
 
 class MultiValueType:
     default: Any;
-    items: List[Any];
-    __valid_force_set: bool = False;
-    __valid: bool;
+    __items: List[Any];
     __valuetype: Union[type, list, None];
 
-    def __init__(self, valid=None, items=[], item=None, default=None, valuetype=None, **kwargs):
+    def __init__(self, items=[], item=None, default=None, valuetype=None, **kwargs):
         self.default = default;
         self.__valuetype = valuetype;
 
         if not item is None:
-            self.items = [item];
+            self.__items = [item];
         else:
-            self.items = items[:];
-
-        self.__valid_force_set = False;
-        if isinstance(valid, bool):
-            self.valid = valid;
+            self.__items = items[:];
 
     def __iter__(self):
-        for _ in self.items:
+        for _ in self.__items:
             yield _;
 
     def __len__(self) -> int:
-        return len(self.items);
+        return len(self.__items);
 
     def __str__(self):
         return str(self.value);
@@ -78,28 +72,25 @@ class MultiValueType:
 
     @property
     def value(self):
-        if len(self.items) > 0:
-            return self.items[0];
+        if len(self.__items) > 0:
+            return self.__items[0];
         return self.default;
 
     @property
     def values(self):
-        return self.items;
+        return self.__items;
+
+    @values.setter
+    def values(self, x: list):
+        self.__items = x;
 
     @property
     def valid(self) -> bool:
-        if self.__valid_force_set:
-            return self.__valid;
-        return self.matchestype(self.value);
-
-    @valid.setter
-    def valid(self, x: bool):
-        self.__valid = x;
-        self.__valid_force_set = True;
+        return not(False in self.all_valid);
 
     @property
     def all_valid(self) -> List[bool]:
-        return [self.matchestype(item) for item in self.__iter__()];
+        return [self.matchestype(_) for _ in self.__iter__()];
 
     def matchestype(self, o: Any) -> bool:
         t = self.__valuetype;
