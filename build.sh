@@ -62,8 +62,7 @@ fi
     app-name="$APPNAME" \
     setup-file=setup.py \
     --add-data "dist/VERSION":"src" \
-    --add-data "src/config.yml":"src" \
-    --add-data "src/docs":"src/docs" \
+    --add-data "src/setup":"src/setup" \
     --specpath=".";
 
 if [ $(has_arg "$SCRIPTARGS" "-*release") ]; then

@@ -1,8 +1,3 @@
-phpcreate:
-  struct:
-    name: phpycreate.yml
-  ignore:
-    name: phpycreate.ignore
 logging:
   name: phpytex
   dateformat: "%Y%m%d %H:%M"

@@ -49,7 +49,7 @@ def setup_log_and_help():
     global LOG;
     global INFO
 
-    config = Struct.get_from_file('config.yml', internal=True);
+    config = Struct.get_from_file(fname=os.path.join('setup', 'config.yml'), internal=True);
     config_logging = Struct.get_value(config, 'logging', default=dict());
     LOG = Logger(config_logging);
     INFO = Info(LOG);

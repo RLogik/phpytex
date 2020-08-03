@@ -12,7 +12,7 @@ from typing import Tuple;
 from typing import Union;
 
 from ..__path__ import project_path;
-from .arguments import Argument;
+from .arguments import Argument, ArgumentValues;
 from .arguments import Arguments;
 from .arguments import display_command;
 from ..values.struct import Struct;
@@ -39,7 +39,7 @@ class Info:
 
     def __initialise(self, log: Logger):
         self.__log = log;
-        self.__struct = Struct(fname=os.path.join('docs', 'help.yml'), internal=True);
+        self.__struct = Struct(fname=os.path.join('setup', 'help.yml'), internal=True);
         return;
 
     @property
@@ -182,7 +182,7 @@ class Info:
         return;
 
     def console_print_bad_arguments(self, badstates: List[Tuple[str, List[Validity], Argument]]):
-        self.log.info('');
+        self.log.error('');
         self.log.error('Invalid arguments!');
         for label, state, argument in badstates:
             self.log.error('');
@@ -194,5 +194,14 @@ class Info:
                 reason = display_reason(validity);
                 if not reason is None:
                     self.log.error('    \033[3;2mIssue\033[0m: {}'.format(reason));
+        self.log.error('');
+        return;
+
+    def console_print_used_arguments(self, arguments: ArgumentValues):
+        self.log.info('');
+        self.log.info('The following arguments have been used:');
+        for label, argument in arguments:
+            self.log.info('');
+
         self.log.info('');
         return;
