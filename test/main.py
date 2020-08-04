@@ -13,7 +13,7 @@ PROJECTDIRECTORY = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath
 
 sys.path.insert(0, PROJECTDIRECTORY);
 from src.values.struct import Struct;
-from src.core.logger import Logger;
+from src.core.logger import LoggerService;
 
 sys.path.insert(0, TESTDIRECTORY);
 # import methods from test/**
@@ -27,7 +27,7 @@ os.chdir(TESTDIRECTORY)
 def main():
     config = Struct.get_from_file('config.yml', internal=True);
     config_logging = Struct.get_value(config, 'logging', default=dict());
-    log = Logger(config_logging);
+    log = LoggerService(config_logging);
     log.info('Testing not yet implemented!');
     return;
 

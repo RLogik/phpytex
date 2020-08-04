@@ -21,13 +21,16 @@
 # SRC:
 !src
 !src/**
+src/setup/**
+!src/setup/*.yml
 src/**/__pycache__
-!src/logs
 src/*.spec
-src/logs/**/*
 # TEST:
 !test
-!test/**
+!test/main.py
+!test/setup
+test/setup/**
+!test/setup/*.yml
 test/**/__pycache__
 !test/logs
 test/logs/**/*

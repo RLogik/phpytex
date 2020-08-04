@@ -61,7 +61,7 @@ class Argument:
             self.label = label;
         if isinstance(key, (str, list)):
             self.key = Key(key);
-        if not cli_type is None:
+        if isinstance(cli_type, str):
             self.cli_type = cli_type;
 
         # value and default values
@@ -109,6 +109,10 @@ class Argument:
         return self.multivalue.values;
 
     @property
+    def defaultValue(self):
+        return self.multivalue.default;
+
+    @property
     def state(self) -> List[Validity]:
         validities = [];
         if self.takes_value:
@@ -124,6 +128,9 @@ class Argument:
             if not value_valid:
                 validities.append(Validity(kind='value'));
         return validities;
+
+    def matchestype(self, o) -> bool:
+        return self.multivalue.matchestype(o);
 
     @classmethod
     def set_range(cls, MIN: int, _interval: Union[bool, List[Union[int, float]]]) -> List[Union[int, Inf]]:
@@ -159,6 +166,9 @@ class ArgumentValues:
             if isinstance(item, MultiValueType):
                 self.__multivalues.append((label, item));
         return;
+
+    def __len__(self):
+        return len(self.__multivalues);
 
     def __iter__(self):
         for label, item in self.__multivalues:

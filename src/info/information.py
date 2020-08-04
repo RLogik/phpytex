@@ -5,51 +5,47 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-import os;
 import re;
 from typing import List;
 from typing import Tuple;
 from typing import Union;
 
 from ..__path__ import project_path;
-from .arguments import Argument;
+from .arguments import Argument, ArgumentValues;
 from .arguments import Arguments;
 from .arguments import display_command;
 from ..values.struct import Struct;
-from ..core.utils import INFINITY, static;
+from ..core.utils import static;
+from ..core.utils import INFINITY;
 from ..core.utils import len_pure;
 from ..core.utils import pad_strings;
-from ..core.logger import Logger;
+from ..core.logger import LoggerService;
 from ..values.validity import Validity;
 from ..values.validity import display_reason;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Class: Info
+# Class: InformationService
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-class Info:
-    __log: Logger;
+class InformationService:
+    __log: LoggerService;
     __struct: Struct;
     __version: Union[str, None] = None;
     arguments: Arguments = Arguments();
 
-    def __init__(self, log: Logger):
-        self.__initialise(log);
-        return;
-
-    def __initialise(self, log: Logger):
+    def __init__(self, spec: Struct, log: LoggerService):
         self.__log = log;
-        self.__struct = Struct(fname=os.path.join('docs', 'help.yml'), internal=True);
+        self.__struct = spec;
         return;
 
     @property
     def version(self) -> Union[str, None]:
         if self.__version is None:
-            self.__version = Info.version;
+            self.__version = InformationService.version;
         return self.__version;
 
     @property
-    def log(self) -> Logger:
+    def log(self) -> LoggerService:
         return self.__log;
 
     @property
@@ -91,19 +87,19 @@ class Info:
     def get_name(self, *keys: str):
         return self.struct.getName(*keys);
 
-    def parse_arguments(self, part):
+    def parse_arguments(self, prog: str):
         self.arguments = Arguments();
-        struct = self.get_attributes('cli', part, 'arguments', default={});
+        struct = self.get_attributes('programmes', prog, 'arguments', default={});
         for label in struct:
             argument = Argument(label=label, **(struct[label] or {}));
             self.arguments.add(label, argument);
         return self.arguments;
 
-    def console_help(self, part: str):
+    def console_help(self, prog: str):
         self.log.info('');
-        self.console_print_title(part);
+        self.console_print_title(prog);
         self.log.info('');
-        self.console_print_command(part);
+        self.console_print_command(prog);
         self.log.info('');
         self.console_print_arguments();
         self.log.info('');
@@ -111,11 +107,11 @@ class Info:
         self.log.info('');
         return;
 
-    def console_print_title(self, part: str):
+    def console_print_title(self, prog: str):
         author = self.get_attributes('author');
         date = self.get_attributes('date');
         site = self.get_attributes('site');
-        name = self.get_name('cli', part);
+        name = self.get_name('programmes', prog);
         version = self.version or '???';
         title = pad_strings(
             '',
@@ -130,8 +126,8 @@ class Info:
         self.log.info(*title);
         return;
 
-    def console_print_command(self, part: str):
-        command = self.get_attributes('cli', part, 'command');
+    def console_print_command(self, prog: str):
+        command = self.get_attributes('programmes', prog, 'command');
         self.log.info(
             '  \033[1;4;92mBasic command\033[0m:',
             '',
@@ -182,7 +178,7 @@ class Info:
         return;
 
     def console_print_bad_arguments(self, badstates: List[Tuple[str, List[Validity], Argument]]):
-        self.log.info('');
+        self.log.error('');
         self.log.error('Invalid arguments!');
         for label, state, argument in badstates:
             self.log.error('');
@@ -194,5 +190,17 @@ class Info:
                 reason = display_reason(validity);
                 if not reason is None:
                     self.log.error('    \033[3;2mIssue\033[0m: {}'.format(reason));
+        self.log.error('');
+        return;
+
+    def console_print_used_arguments(self, arguments: ArgumentValues):
         self.log.info('');
+        self.log.info('  The following arguments have been used:');
+        self.log.info('');
+        lines = pad_strings(*['    \033[93m{}\033[0m:'.format(label) for label, _ in arguments], sep=' ');
+        k = 0;
+        for _, argument in arguments:
+            line = lines[k];
+            self.log.info('{label}  \033[1m{value}\033[0m'.format(label=line, value=argument.value));
+            k += 1;
         return;

@@ -6,6 +6,7 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 import os;
+import re;
 from typing import List;
 from typing import Tuple;
 from gitignore_parser import parse_gitignore;
@@ -19,13 +20,15 @@ from ...values.struct import Struct;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def extract_specs(recursive: bool, config: Struct, path: str) -> List[Tuple[str, Struct]]:
-    ext_create = config.getValue('file-extension-create');
-    ext_ignore = config.getValue('file-extension-create-ignore');
+    pattern_create = config.getValue('file-pattern-create', default=None);
+    regex_create = re.compile(pattern_create);
+    pattern_ignore = config.getValue('file-pattern-create-ignore', default=None);
+    regex_ignore = re.compile(pattern_ignore);
 
     match_ignore = None;
     # extract ignore file (if one exists)
     for fname in os.listdir(path):
-        if fname.endswith(ext_ignore):
+        if regex_ignore.match(fname):
             match_ignore = parse_gitignore(fname, base_dir=path);
             break;
 
@@ -40,10 +43,10 @@ def extract_specs(recursive: bool, config: Struct, path: str) -> List[Tuple[str,
             continue;
         if not match_ignore is None and match_ignore(subpath):
             continue;
-        files = [fname for fname in files if fname.endswith(ext_create)];
+        files = [fname for fname in files if regex_create.match(fname)];
         if len(files) == 0:
             if subpath == path:
-                raise FileNotFoundError('No file with extension \'{}\' could be found in the project directory!'.format(ext_create));
+                raise FileNotFoundError('No file matching the pattern \'{}\' could be found in the project directory!'.format(pattern_create));
         else:
             fname = files[0];
             # extract instruction for structure from yml file:
@@ -70,7 +73,7 @@ def extract_specs(recursive: bool, config: Struct, path: str) -> List[Tuple[str,
 
     return [(subpath, config) for subpath, config, accept in specifications if accept];
 
-def process_specs(make: Make, path: str, config: Struct, is_root: bool):
+def process_specs(make: Make, basiccommand: str, compilerConfig: CompilerConfig, path: str, config: Struct, is_root: bool):
     # create files:
     files = config.getValue('files', default=dict());
     for _, fname, _ in Struct.get_parts(files):
@@ -96,51 +99,20 @@ def process_specs(make: Make, path: str, config: Struct, is_root: bool):
     if not is_root:
         return;
 
-    # ONLY if at root level: create root and output files, compile script:
-    # create root file
-    file_root = config.getValue('compile', 'options', 'root', default='root.tex');
-    make.file_if_not_exists(file_root, path);
-
-    # create output file
-    file_output = config.getValue('compile', 'options', 'output', default=None);
-    if isinstance(file_output, str):
-        make.file_if_not_exists(file_output, path);
-
-    # if provided, create and fill start script:
-    options = config.getValue('compile', 'options', default={});
+    # ONLY if at root level: create and fill compile script:
     file_runscript = config.getValue('compile', 'file');
-    file_output = Struct.get_value(options, 'output');
     overwrite = config.getValue('compile', 'overwrite', default=False);
-    if isinstance(file_runscript, str) and isinstance(file_output, str):
+    options = config.getValue('compile', 'options', default={});
+    if isinstance(file_runscript, str):
         fexists = make.file_if_not_exists(file_runscript, path);
         if not fexists or overwrite:
-            compiler_config = CompilerConfig(
-                root          = file_root,
-                stamp         = file_stamp,
-                output        = file_output,
-                debug         = Struct.get_value(options, 'debug'),
-                compile_latex = Struct.get_value(options, 'compile-latex'),
-                insert_bib    = Struct.get_value(options, 'insert-bib'),
-                comments      = Struct.get_value(options, 'latex-comments'),
-                show_tree     = Struct.get_value(options, 'show-tree'),
-                tabs          = Struct.get_value(options, 'tabs'),
-                spaces        = Struct.get_value(options, 'spaces'),
-                max_length    = Struct.get_value(options, 'max-length'),
-                seed          = Struct.get_value(options, 'seed')
+            cmd = compilerConfig.create_command(
+                basiccommand,
+                # need to do this to allow e.g. labels like 'show_tree' to be treated as 'show-tree':
+                **{to_cli_key(label): options[label] for label in options}
             );
-            lines = make.start_script(
-                root          = compiler_config.root,
-                stamp         = compiler_config.stamp,
-                output        = compiler_config.output,
-                debug         = compiler_config.debug,
-                compile_latex = compiler_config.compile_latex,
-                insert_bib    = compiler_config.insert_bib,
-                comments      = compiler_config.comments,
-                show_tree     = compiler_config.show_tree,
-                tabs          = compiler_config.tabs,
-                spaces        = compiler_config.spaces,
-                max_length    = compiler_config.max_length,
-                seed          = compiler_config.seed
-            );
-            make.write_to_file(*lines, fname=file_runscript, path=path);
+            make.write_to_file(*[r'#! /bin/bash', '', cmd], fname=file_runscript, path=path);
     return;
+
+def to_cli_key(label):
+    return re.sub(r'_', '-', label);
