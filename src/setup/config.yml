@@ -2,13 +2,13 @@ author: RLogik
 site: github
 date: 2020
 configuration:
-  file-extension-create-ignore: .phpycreate.ignore
-  file-extension-create: .phpycreate.yaml
+  file-pattern-create-ignore: '.*\.phpycreate\.ignore$'
+  file-pattern-create: '.*\.phpycreate\.(yml|yaml)$'
   logging:
     name: phpytex
-    dateformat: "%Y%m%d %H:%M"
+    dateformat: '%Y%m%d %H:%M'
     stdout: true
-    format: "\\033[1;32m%(name)s\\033[0m | \\033[1;33m%(levelname)s\\033[0m | %(message)s"
+    format: '\\033[1;32m%(name)s\\033[0m | \\033[1;33m%(levelname)s\\033[0m | %(message)s'
 programmes:
   main:
     name: (PH(p)y)TeX

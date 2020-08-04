@@ -195,9 +195,12 @@ class InformationService:
 
     def console_print_used_arguments(self, arguments: ArgumentValues):
         self.log.info('');
-        self.log.info('The following arguments have been used:');
-        for label, argument in arguments:
-            self.log.info('');
-
+        self.log.info('  The following arguments have been used:');
         self.log.info('');
+        lines = pad_strings(*['    \033[93m{}\033[0m:'.format(label) for label, _ in arguments], sep=' ');
+        k = 0;
+        for _, argument in arguments:
+            line = lines[k];
+            self.log.info('{label}  \033[1m{value}\033[0m'.format(label=line, value=argument.value));
+            k += 1;
         return;

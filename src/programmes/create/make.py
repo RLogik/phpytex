@@ -5,36 +5,84 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-import os
-from subprocess import Popen
-from typing import List, Union;
+import os;
+from subprocess import Popen;
+from typing import Any;
+from typing import List;
+from typing import Tuple;
 
 from ...core.logger import LoggerService;
-from ...values.configurable import Configurable;
-from ...values.configurable import transfer;
+from ...info.arguments import Arguments;
+from ...values.keys import Key;
 from ...values.struct import Struct;
-from ...values.valuetypes import ValueType
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Auxilary class: CompilerConfig
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-@transfer
-class CompilerConfig(Configurable):
-    _DEFAULT = dict(
-        root          = ValueType(str, None),
-        stamp         = ValueType(str, None),
-        output        = ValueType(str, None),
-        debug         = ValueType(bool, False),
-        compile_latex = ValueType(bool, True),
-        insert_bib    = ValueType(bool, False),
-        comments      = ValueType(['partial', 'on', 'off', bool], 'partial'),
-        show_tree     = ValueType(bool, True),
-        tabs          = ValueType(bool, False),
-        spaces        = ValueType(int, 4),
-        max_length    = ValueType(int, 10000),
-        seed          = ValueType(int, None),
-    );
+class CompilerConfig:
+    arguments: Arguments;
+    def __init__(self, arguments: Arguments):
+        self.arguments = arguments;
+        return;
+
+    def parse(self, **spec) -> List[Tuple[str, Key, Any]]:
+        results = [];
+        # compare arguments obtained from .phpycreate.yml (spec)
+        # with argument structure obtained from the configuration (self.arguments)
+        for label, argument in self.arguments:
+            # if a key has been set, then add it, even if the argument is invalid.
+            if label in spec:
+                value = spec[label];
+            # if a key has not been set, then add the default value, provided the argument is required.
+            else:
+                value = argument.defaultValue;
+                if not argument.required:
+                    continue;
+
+            # under no circumstances add a None/null value.
+            if value is None:
+                continue;
+
+            key = argument.key;
+            cli_type = argument.cli_type;
+            # if the cli-type is key, and the value is not true, then there is no argument to add.
+            if cli_type == 'key' and not (value is True):
+                continue;
+
+            # otherwise we add the cli-type, key, and value:
+            results.append((cli_type, key, value));
+
+        return results;
+
+    def create_command(self, basiccommand: str, **spec) -> str:
+        results = self.parse(**spec);
+        parts = [];
+        for cli_type, key, value in results:
+            if cli_type == 'key':
+                parts += ['{key}'.format(key=key)];
+            elif cli_type == 'key-value':
+                parts += ['{key}={value}'.format(key=key, value=value)];
+            elif cli_type == 'key-space-value':
+                parts += ['{key} {value}'.format(key=key, value=value)];
+        return '{basic} {parts}'.format(basic=basiccommand, parts=' '.join(parts));
+
+    # @transfer
+    # class CompilerConfig(Configurable):
+    #     _DEFAULT = dict(
+    #         input         = ValueType(str, None),
+    #         stamp         = ValueType(str, None),
+    #         output        = ValueType(str, None),
+    #         debug         = ValueType(bool, False),
+    #         compile_latex = ValueType(bool, True),
+    #         insert_bib    = ValueType(bool, False),
+    #         comments      = ValueType(['partial', 'on', 'off', bool], 'partial'),
+    #         show_tree     = ValueType(bool, True),
+    #         tabs          = ValueType(bool, False),
+    #         spaces        = ValueType(int, 4),
+    #         max_length    = ValueType(int, 10000),
+    #         seed          = ValueType(int, None),
+    #     );
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Class: Make
@@ -96,90 +144,6 @@ class Make:
             lines.append(line);
         if len(lines) > 0:
             lines = [border] + lines + [border];
-
-        return lines;
-
-    def start_script(self,
-        root,
-        stamp,
-        output,
-        debug,
-        compile_latex,
-        insert_bib,
-        comments,
-        show_tree,
-        tabs,
-        spaces,
-        max_length,
-        seed
-    ) -> List[str]:
-
-        lines = [];
-        lines.append(r'#! /bin/bash');
-        lines.append('');
-
-        # CREATE PHPYTEX COMMAND:
-        command = ['phpytex'];
-
-        ################################################################
-        ## FILES
-        command += ['-i', root];
-        # add stamp file?
-        if isinstance(stamp, str):
-            command += ['--stamp', stamp];
-        command += ['-o', output];
-        ################################################################
-
-        ################################################################
-        ## DEBUGGING, COMPILATION
-        # debug? compile latex?
-        if debug:
-            command += ['--debug'];
-        else:
-            if compile_latex:
-                command += ['--compile-latex=false'];
-            else:
-                command += ['--compile-latex=true'];
-        ################################################################
-
-        ################################################################
-        # insert .bib contents into output file?
-        if insert_bib:
-            command += ['--insert-bib'];
-        ################################################################
-
-        ################################################################
-        ## COMMENTS
-        # handling of LaTeX comments:
-        if comments in [True, 'on']:
-            command += ['--comments=true'];
-        elif comments in [False, 'off']:
-            command += ['--comments=false'];
-        else: # if latex_comment == 'partial'
-            command += ['--comments=partial'];
-        # show tree structure in output?
-        command += ['--show-tree={}'.format(show_tree)];
-        ################################################################
-
-        ################################################################
-        ## SPACING, LENGTH
-        # add max length?
-        if max_length > 0:
-            command += ['--max-length', str(max_length)];
-        # tabs or spaces
-        if tabs:
-            command += ['--tabs'];
-        else:
-            command += ['--spaces={}'.format(spaces)];
-        lines.append(' '.join(command) + ';');
-        ################################################################
-
-        ################################################################
-        ## RANDOM SEED
-        # add seed?
-        if isinstance(seed, int):
-            command += ['--seed=', str(seed)];
-        ################################################################
 
         return lines;
 

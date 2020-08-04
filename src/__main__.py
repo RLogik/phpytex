@@ -138,10 +138,10 @@ def run_sub_programme(prog: str, logname: str, module: str, *args: str):
         # else, command is valid. Attempt to open module:
         config = Struct(struct=INFO.struct.getValue('configuration'), internal=True);
         if module == 'transpile':
-            subprogramme_transpile(LOG, config, argumentValues);
+            subprogramme_transpile(INFO, LOG, config, argumentValues);
             return;
         elif module == 'create':
-            subprogramme_create(LOG, config, argumentValues);
+            subprogramme_create(INFO, LOG, config, argumentValues);
             return;
         else:
             LOG.error('The subprogramme \033[1;32m{module}\033[0m has not been implemented.'.format(module=module));

@@ -80,6 +80,10 @@ class MultiValueType:
             return self.__items[0];
         return self.default;
 
+    @value.setter
+    def value(self, item):
+        self.__items[0] = item;
+
     @property
     def values(self):
         return self.__items;

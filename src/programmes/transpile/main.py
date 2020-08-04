@@ -9,12 +9,14 @@ import os;
 
 from ...core.logger import LoggerService;
 from ...info.arguments import ArgumentValues;
+from ...info.information import InformationService;
 from ...values.struct import Struct;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+INFO: InformationService;
 LOG: LoggerService;
 MODULENAME: str = 'transpile';
 CONFIG: Struct;
@@ -24,16 +26,28 @@ WORKINGDIRECTORY: str;
 # MAIN METHOD
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def main(log: LoggerService, config: Struct, argumentValues: ArgumentValues):
+def main(info: InformationService, log: LoggerService, config: Struct, argumentValues: ArgumentValues):
+    global INFO;
     global LOG;
     global CONFIG;
     global WORKINGDIRECTORY;
+    global MODULENAME;
 
+    INFO = info;
     LOG = log;
     CONFIG = config;
     WORKINGDIRECTORY = os.getcwd();
 
-    LOG.info('The \033[1;32m{module}\033[0m subprogramme has been called with the arguments {values}.'.format(module=MODULENAME, values=argumentValues));
+    LOG.info(
+        '',
+        'Starting the \033[1;32m{module}\033[0m subprogramme.'.format(module=MODULENAME),
+    );
+    INFO.console_print_used_arguments(argumentValues);
+    LOG.info(
+        '',
+        'The \033[1;32m{module}\033[0m subprogramme has ended.'.format(module=MODULENAME),
+        ''
+    );
     return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
