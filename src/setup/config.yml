@@ -387,12 +387,46 @@ programmes:
               example-value: false
               value-type: bool
               comment: tells phpycreate to ignore instructions (bar ignore commands) in current file
-            subproperties:
           ignore-forwards:
             properties:
               example-value: true
               value-type: bool
               comment: tells phpycreate to prevent calls from processing this + any file strictly below current folder
+          stamp:
+            properties:
+              comment: Information to generate a 'stamp' file, that will be used to prepend the latex outputfile.
+            subproperties:
+              file:
+                properties:
+                  comment: name of file, in which the 'stamp' is to be stored.
+                  example-value: stamp.tex
+              overwrite:
+                properties:
+                  comment: whether existing 'stamp' files can be overwritten
+                  value-type: bool
+                  example-value: stamp.tex
+              options:
+                properties:
+                  comment: "a (flat!) list of (any arbitrary!) keys and values, e.g.:"
+                subproperties:
+                  author:
+                    properties:
+                      example-value: Maxim Mustermann
+                  created:
+                    properties:
+                      example-value: 27.07.2020
+                  type:
+                    properties:
+                      example-value: Paper
+                  title:
+                    properties:
+                      example-value: "Anwendung von Gravitationswellen in Raumfahrttechnologie"
+                  department:
+                    properties:
+                      example-value: "Fakultät for Weltraumforschung"
+                  institute:
+                    properties:
+                      example-value: "Universität der Marsianer"
           transpile:
             properties:
               labels: [compile, transpile]
@@ -419,7 +453,7 @@ programmes:
           folders:
             properties:
               labels: [folders, components]
-              comment: instructions about folders to be built in current directory.
+              comment: (recursive) instructions about folders to be built in current directory.
             subproperties:
                 src:
                   properties:
@@ -466,4 +500,7 @@ programmes:
                 back:
                   properties:
                   subproperties:
-                    files: [references.tex, sources.bib]
+                    files:
+                      properties:
+                        example-value: [references.tex, sources.bib]
+
