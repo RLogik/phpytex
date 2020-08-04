@@ -11,3 +11,6 @@
 03.08.2020 13:30 | 0.0.10 | Refactoring: simplified logging. Added options for colour and verbosity. Cleaned up logic for typed arguments, and cleaned up parsing.
 03.08.2020 20:30 | 0.1.0 | Corrected type checking of union types. Corrected basic cli-argument parser, which was ignoring multiple key-space-values due to a semantic error. Removed path argument.
                  |       | Added prelimenary functionality of phpycreate.
+04.08.2020 03:15 | 0.1.1 | Moved all configs to one yml file.
+                 |       | Changed 'extension' configuration to a regex pattern, e. g. to allow .yml and .yaml to be treated equally.
+                 |       | Unified .phpycreate.yml command parsing in create script, so that less is defined in code, and most the commands are interpretted based on config.yml.
