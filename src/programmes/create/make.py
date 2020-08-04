@@ -28,29 +28,34 @@ class CompilerConfig:
 
     def parse(self, **spec) -> List[Tuple[str, Key, Any]]:
         results = [];
-        # compare arguments obtained from .phpycreate.yml (spec)
+        # compare cli-arguments obtained from .phpycreate.yml (spec)
         # with argument structure obtained from the configuration (self.arguments)
-        for label, argument in self.arguments:
-            # if a key has been set, then add it, even if the argument is invalid.
-            if label in spec:
-                value = spec[label];
-            # if a key has not been set, then add the default value, provided the argument is required.
-            else:
-                value = argument.defaultValue;
-                if not argument.required:
+        for _, argument in self.arguments:
+            found_label = False;
+            value = argument.defaultValue;
+            # loop through acceptable .phpycreate.yml labels.
+            for label in argument.labels:
+                # if a key has been set, then add it, even if the cli-argument is invalid.
+                if label in spec:
+                    found_label = True;
+                    value = spec[label];
+                    break;
+
+            # do not add if a key has not been set, and cli-argument is not required.
+            if (not found_label and not argument.required) or value is None:
                     continue;
 
-            # under no circumstances add a None/null value.
+            # do not add if value is None/null.
             if value is None:
                 continue;
 
             key = argument.key;
             cli_type = argument.cli_type;
-            # if the cli-type is key, and the value is not true, then there is no argument to add.
+            # cannot add, if the cli-type is key and the value is not true.
             if cli_type == 'key' and not (value is True):
                 continue;
 
-            # otherwise we add the cli-type, key, and value:
+            # otherwise add the cli-argument.
             results.append((cli_type, key, value));
 
         return results;
@@ -66,23 +71,6 @@ class CompilerConfig:
             elif cli_type == 'key-space-value':
                 parts += ['{key} {value}'.format(key=key, value=value)];
         return '{basic} {parts}'.format(basic=basiccommand, parts=' '.join(parts));
-
-    # @transfer
-    # class CompilerConfig(Configurable):
-    #     _DEFAULT = dict(
-    #         input         = ValueType(str, None),
-    #         stamp         = ValueType(str, None),
-    #         output        = ValueType(str, None),
-    #         debug         = ValueType(bool, False),
-    #         compile_latex = ValueType(bool, True),
-    #         insert_bib    = ValueType(bool, False),
-    #         comments      = ValueType(['partial', 'on', 'off', bool], 'partial'),
-    #         show_tree     = ValueType(bool, True),
-    #         tabs          = ValueType(bool, False),
-    #         spaces        = ValueType(int, 4),
-    #         max_length    = ValueType(int, 10000),
-    #         seed          = ValueType(int, None),
-    #     );
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Class: Make
@@ -149,12 +137,6 @@ class Make:
 
     def create_folders(self, dir_name: str, spec: dict, path: str):
         subpath = os.path.join(path, dir_name);
-
-        # potentially add an index file:
-        add_index = Struct.get_value(spec, 'add-index', default=True);
-        if add_index:
-            fname = 'index.tex';
-            self.file_if_not_exists(fname, subpath);
 
         # add any files demanded:
         files = Struct.get_value(spec, 'files', default={});

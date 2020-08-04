@@ -6,13 +6,14 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 import os;
-import re;
+import re
 from typing import List;
 from typing import Tuple;
 from gitignore_parser import parse_gitignore;
 
 from .make import Make;
 from .make import CompilerConfig;
+from ...core.utils import to_cli_key;
 from ...values.struct import Struct;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -51,16 +52,13 @@ def extract_specs(recursive: bool, config: Struct, path: str) -> List[Tuple[str,
             fname = files[0];
             # extract instruction for structure from yml file:
             config = Struct(fname=os.path.join(subpath, fname));
-            # process ignore instruction, except if in root:
-            force_ignore = not(subpath == path) and config.getValue('ignore', default=False);
-            if force_ignore is False:
+            # process ignore-forwards instruction:
+            _ignore_forwards = config.getValue('ignore-forwards', default=False);
+            # process ignore instruction:
+            _ignore = config.getValue('ignore', default=not(subpath == path) and _ignore_forwards);
+            if not _ignore:
                 specifications.append([subpath, config, True]);
-            elif force_ignore is True:
-                pass;
-            elif force_ignore in ['backwards', 'backward']:
-                ignore.append(subpath);
-            elif force_ignore in ['backwards-strict', 'backward-strict', 'strict']:
-                specifications.append([subpath, config, True]);
+            if _ignore_forwards:
                 ignore.append(subpath);
         if not recursive and (subpath == path):
             break;
@@ -81,7 +79,7 @@ def process_specs(make: Make, basiccommand: str, compilerConfig: CompilerConfig,
         pass;
 
     # create folders recursively:
-    folders = config.getValue('components', default=dict());
+    folders = config.getValue('folders', default=dict());
     for _, dir_name, struct_ in Struct.get_parts(folders):
         make.dir_if_not_exists(dir_name, path);
         make.create_folders(dir_name, struct_ or {}, path=path);
@@ -100,9 +98,9 @@ def process_specs(make: Make, basiccommand: str, compilerConfig: CompilerConfig,
         return;
 
     # ONLY if at root level: create and fill compile script:
-    file_runscript = config.getValue('compile', 'file');
-    overwrite = config.getValue('compile', 'overwrite', default=False);
-    options = config.getValue('compile', 'options', default={});
+    file_runscript = config.getValue('transpile', 'file');
+    overwrite = config.getValue('transpile', 'overwrite', default=False);
+    options = config.getValue('transpile', 'options', default={});
     if isinstance(file_runscript, str):
         fexists = make.file_if_not_exists(file_runscript, path);
         if not fexists or overwrite:
@@ -113,6 +111,3 @@ def process_specs(make: Make, basiccommand: str, compilerConfig: CompilerConfig,
             );
             make.write_to_file(*[r'#! /bin/bash', '', cmd], fname=file_runscript, path=path);
     return;
-
-def to_cli_key(label):
-    return re.sub(r'_', '-', label);

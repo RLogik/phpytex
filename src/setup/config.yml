@@ -10,6 +10,36 @@ configuration:
     stdout: true
     format: '\\033[1;32m%(name)s\\033[0m | \\033[1;33m%(levelname)s\\033[0m | %(message)s'
 programmes:
+  ################################################################
+  # scheme for arguments:
+  # ~~~~~~~~~~~~~~~~~~~~~
+  # <label>:
+  #   labels: <optional: str[], array of acceptable labels for .phpycreate.yml; defaults to standard value of label>
+  #   key: <str | str[], acceptable key(s) for cli-argument>
+  #   required: <bool>
+  #   cli-type: <'key' | 'key-value' | 'key-space-value'>
+  #   value-type: <'bool' | 'int' | 'float' | 'file' | 'path' | array of these>
+  #
+  #   default: <value as default if cli-argument missing/invalid>
+  #   OR
+  #   default:
+  #     description: <str, description of default behaviour>
+  #
+  #   description: <str, a description of the effects of this cli-argument>
+  #   create-example: <bool, whether or not this argument should be added to the examples>
+  #   example-value: <value to be provided in example, use boolean values for the 'key' type cli-arguments>
+  #   comment: <str, use this, if you want to use an alternative description in the examples>
+  #   example:
+  #     eg1:
+  #       command: <str, full-ish example of command>
+  #       result: <str, description of effect of example>
+  #     eg2: ...
+  #     ...
+  ################################################################
+
+  ################################################################
+  # MAIN PROGRAMME                                               #
+  ################################################################
   main:
     name: (PH(p)y)TeX
     logname: phpytex
@@ -20,7 +50,7 @@ programmes:
       version:
         key: ['-V', '--version']
         required: false
-        cli_type: key
+        cli-type: key
         description: Shows the current version being used.
         example:
           eg1:
@@ -29,17 +59,17 @@ programmes:
       help:
         key: ['--help', '--man']
         required: false
-        cli_type: key
+        cli-type: key
         description: Shows usage guide.
         example:
           eg1:
             command: phpytex --help
-            result: "Displays usage guide."
+            result: Displays usage guide.
       verbose:
         key: ['-v', '--verbose']
         required: false
-        cli_type: key-value
-        value_type: boolean
+        cli-type: key-value
+        value-type: boolean
         default: false
         description: Turns verbose console output on with logging levels.
         example:
@@ -52,8 +82,8 @@ programmes:
       colour:
         key: --colour
         required: false
-        cli_type: key-value
-        value_type: boolean
+        cli-type: key-value
+        value-type: boolean
         default: true
         description: Turns colour/formatted output on or off.
         example:
@@ -64,9 +94,9 @@ programmes:
             command: phpytex transpile --colour=false --help
             result: "Runs command with no formatting in the console output."
       subprogramme:
-        key: ['create', 'transpile']
+        key: ['create', 'transpile', 'examples']
         required: false
-        cli_type: key
+        cli-type: key
         description: Runs one of the subprogrammes.
         example:
           eg1:
@@ -75,6 +105,9 @@ programmes:
           eg2:
             command: phpytex create
             result: "Runs the phpycreate subprogramme."
+  ################################################################
+  # SUBPROGRAMME: create                                         #
+  ################################################################
   create:
     name: (PH(p)y)create
     logname: phpycreate
@@ -87,7 +120,7 @@ programmes:
       version:
         key: ['-V', '--version']
         required: false
-        cli_type: key
+        cli-type: key
         description: Shows the current version being used.
         example:
           eg1:
@@ -96,21 +129,24 @@ programmes:
       help:
         key: ['--help', '--man']
         required: false
-        cli_type: key
+        cli-type: key
         description: Shows usage guide.
         example:
           eg1:
             command: phpytex create --help
-            result: "Displays usage guide."
+            result: Displays usage guide.
       recursive:
         key: ['-r', '--recursive']
         required: false
-        cli_type: key
+        cli-type: key
         description: If used, will recursively process all .phpycreate.yml files in project directory.
         example:
           eg1:
             command: phpytex create --recursive
             result: "Finds and proccesses all .phpycreate.yml files. Only treats ./*.phpycreate.yml as root instruction."
+  ################################################################
+  # SUBPROGRAMME: transpile                                      #
+  ################################################################
   transpile:
     name: (PH(p)y)TeX
     logname: phpytex
@@ -123,8 +159,9 @@ programmes:
       version:
         key: ['-V', '--version']
         required: false
-        cli_type: key
+        cli-type: key
         description: Shows the current version being used.
+        create-example: false
         example:
           eg1:
             command: phpytex transpile --version
@@ -132,18 +169,22 @@ programmes:
       help:
         key: ['--help', '--man']
         required: false
-        cli_type: key
+        cli-type: key
         description: Shows usage guide.
+        create-example: false
         example:
           eg1:
             command: phpytex transpile --help
-            result: "Displays usage guide."
+            result: Displays usage guide.
       input:
+        labels: [input, root]
         key: ['-i', '--input']
         required: true
-        cli_type: key-space-value
-        value_type: file
+        cli-type: key-space-value
+        value-type: file
         description: Path to input file
+        create-example: true
+        example-value: root.tex
         example:
           eg1:
             command: phpytex transpile -i root.tex -o main.tex
@@ -151,57 +192,50 @@ programmes:
       output:
         key: ['-o', '--output']
         required: true
-        cli_type: key-space-value
-        value_type: file
+        cli-type: key-space-value
+        value-type: file
         description: Path to output file
+        create-example: true
+        example-value: main.tex
         example:
           eg1:
             command: phpytex transpile -i root.tex -o main.tex
             result: "The result of the transpilation (phpytex -> latex) will be stored in main.tex."
-      # path:
-      #   key: ['-p', '--path']
-      #   required: false
-      #   cli_type: key-space-value
-      #   value_type: path
-      #   default:
-      #     description: "If not provided, is taken to be directory, in which the command is called."
-      #   description: Path to project.
-      #   example:
-      #     eg1:
-      #       command: "phpytex transpile -i root.tex --path 'group/slides' -o main.tex"
-      #       result: "Treats the relative path './group/slides' as the root of the project"
-      #     eg2:
-      #       command: "phpytex transpile -i root.tex --path './group/slides' -o main.tex"
-      #       result: "Treats the relative path './group/slides' as the root of the project"
-      #     eg3:
-      #       command: "phpytex transpile -i root.tex --path '/Users/me/Documents/project/slides' -o main.tex"
-      #       result: "Treats the absolute path '/Users/me/Documents/project/slides' as the root of the project"
       stamp:
+        labels: [stamp, header]
         key: ['-h', '--stamp']
         required: false
-        cli_type: key-space-value
-        value_type: file
+        cli-type: key-space-value
+        value-type: file
         description: "Path to a 'stamp' file. This (should) consist entirely of comments (e.g. name, institution, etc.), which are to be placed at the top of the output of transpilation."
+        create-example: true
+        example-value: front/stamp.tex
         example:
           eg1:
             command: phpytex transpile -i root.tex -stamp front/stamp.tex -o main.tex
             result: "The contents of front/stamp.tex will be placed at the beginning of the transpilation result in main.tex."
       debug:
+        labels: [debug, debug-python]
         key: --debug
         required: false
-        cli_type: key
+        cli-type: key
         description: "Use in order to see the python file computed before the transpilation."
+        create-example: true
+        example-value: true
         example:
           eg1:
             command: phpytex transpile -i root.tex -o main.tex --debug
             result: "Transpilation will not take place. The result before the transpilation will be stored in main.tex."
       latex:
+        labels: [latex, compile-latex]
         key: --compile-latex
         required: false
-        cli_type: key-value
-        value_type: boolean
+        cli-type: key-value
+        value-type: boolean
         default: true
         description: "Use in order to stop after transpilation. Otherwise the pdflatex compiler will be called. Cannot be used in combination with --debug."
+        create-example: true
+        example-value: false
         example:
           eg1:
             command: phpytex transpile -i root.tex -o main.tex --compile-latex=false
@@ -210,35 +244,44 @@ programmes:
             command: phpytex transpile -i root.tex -o main.tex [ --compile-latex=true ]
             result: "After transpilation, result is stored in main.tex, and pdflatex will be called."
       seed:
+        labels: [seed, random-seed]
         key: --seed
-        cli_type: key-value
+        cli-type: key-value
         required: false
-        value_type: int
+        value-type: int
         default:
           description: If not used, no random seed will be set.
         description: Set a random seed. Useful for reproducability.
+        create-example: true
+        example-value: 2392781100
         example:
           eg1:
             command: phpytex transpile -i root.tex -o main.tex --seed=598273
             result: "At the start of the transpilation, the random seed in python is initialised to 598273."
       max-lines:
+        labels: [max-lines, max-length]
         key: --max-lines
-        cli_type: key-value
+        cli-type: key-value
         required: false
-        value_type: int
+        value-type: int
         default: 10000
         description: Prevents infinite output by limiting the number of lines.
+        create-example: true
+        example-value: 8000
         example:
           eg1:
             command: phpytex transpile -i root.tex -o main.tex --max-lines=8000
             result: "Limits the number of lines produced in main.tex to 8000."
       insert-bibliography:
+        labels: [insert-bibliography, insert-bib, bibliography, bib]
         key: --insert-bib
         required: false
-        cli_type: key
+        cli-type: key
         default:
           description: "If not set, phpytex-bibliography commands are replaced by LaTeX's standard \\bibliography command."
         description: Inserts the contents of .bbl-files in the transpiled files.
+        create-example: true
+        example-value: true
         example:
           eg1:
             command: phpytex transpile -i root.tex -o main.tex --insert-bib
@@ -246,10 +289,12 @@ programmes:
       show-tree:
         key: --show-tree
         required: false
-        cli_type: key-value
-        value_type: boolean
+        cli-type: key-value
+        value-type: boolean
         default: true
         description: Whether or not to show the project tree at the top of the transpiled file.
+        create-example: true
+        example-value: true
         example:
           eg1:
             command: phpytex transpile -i root.tex -o main.tex --show-tree=false
@@ -257,13 +302,16 @@ programmes:
           eg2:
             command: phpytex transpile -i root.tex -o main.tex [ --show-tree=true ]
             result: In main.tex the project tree will be shown.
-      commenting:
+      comments:
+        labels: [comments, commenting, latex-comments, latex-commenting]
         key: --comments
         required: false
-        cli_type: key-value
-        value_type: ['on', 'partial', 'off']
+        cli-type: key-value
+        value-type: ['on', 'partial', 'off']
         default: partial
         description: Handling of LaTeX comments.
+        create-example: true
+        example-value: partial
         example:
           eg1:
             command: phpytex transpile -i root.tex -o main.tex --comments=on
@@ -274,25 +322,148 @@ programmes:
           eg3:
             command: phpytex transpile -i root.tex -o main.tex [ --comments=partial ]
             result: "In the transpiled file (main.tex) all trailing comments will be removed, bar comments beginning with '%%'."
-      tabbing:
+      tabs:
+        labels: [tabs, tabbing]
         key: --tabs
         required: false
-        cli_type: key
+        cli-type: key
         default:
           description: If not set, will use spacing.
         description: "Use tab-stops (\\t) as the unit for indentation."
+        create-example: true
+        example-value: false
         example:
           eg1:
             command: phpytex transpile -i root.tex -o main.tex --tabs
             result: Python blocks will be read with tab-stops as the unit of indentation.
-      spacing:
+      spaces:
+        labels: [spaces, spacing, white-spaces]
         key: --spaces
         required: false
-        cli_type: key-value
-        value_type: int
+        cli-type: key-value
+        value-type: int
         default: 4
         description: "Use n spaces as the unit for indentation."
+        create-example: true
+        example-value: 4
         example:
           eg1:
             command: phpytex transpile -i root.tex -o main.tex --spaces=2
             result: Python blocks will be read with 2 spaces as the unit of indentation.
+  ################################################################
+  # SUBPROGRAMME: examples                                       #
+  ################################################################
+  examples:
+    name: (PH(p)y)TeX
+    logname: phpytex
+    module: examples
+    command: phpytex examples
+    key: examples
+    arguments:
+      help:
+        key: ['--help', '--man']
+        required: false
+        cli-type: key
+        description: Shows usage guide.
+        example:
+          eg1:
+            command: phpytex --help
+            result: Displays usage guide.
+      subprogramme:
+        key: --subprogramme
+        required: true
+        cli-type: key-value
+        value-type: [create, transpile]
+        description: Creates example files for one of the subprogrammes.
+        example:
+          eg1:
+            command: phpytex examples --subprogramme=create
+            result: Generates an example of a *.phpycreate.yml file.
+    parts:
+      create:
+        eg1:
+          ignore:
+            properties:
+              example-value: false
+              value-type: bool
+              comment: tells phpycreate to ignore instructions (bar ignore commands) in current file
+            subproperties:
+          ignore-forwards:
+            properties:
+              example-value: true
+              value-type: bool
+              comment: tells phpycreate to prevent calls from processing this + any file strictly below current folder
+          transpile:
+            properties:
+              labels: [compile, transpile]
+              comment: (optional) instructions about transpile command.
+            subproperties:
+              file:
+                properties:
+                  value-type: file
+                  example-value: run.sh
+                  comment: (optional) script file name in which the transpile command is to be stored.
+              overwrite:
+                properties:
+                  value-type: bool
+                  example-value: true
+                  comment: (optional) whether or not script file can be overwritten.
+              options:
+                properties:
+                  labels: [options, arguments]
+                  comment: desired settings for the transpilation
+          files:
+            properties:
+              example-value: [root.tex, thanks.tex, epilogue.tex, README.md]
+              comment: an array of files to be built in current directory.
+          folders:
+            properties:
+              labels: [folders, components]
+              comment: instructions about folders to be built in current directory.
+            subproperties:
+                src:
+                  properties:
+                  subproperties:
+                    files:
+                      properties:
+                        example-value: [local_methods.py, my_macros.tex]
+                      subproperties:
+                img:
+                front:
+                  properties:
+                  subproperties:
+                    files:
+                      example-value: [title.tex, contents.tex]
+                body:
+                  properties:
+                  subproperties:
+                    files:
+                      properties:
+                        example-value: [introduction.tex, notes.txt]
+                      subproperties:
+                    folders:
+                      properties:
+                      subproperties:
+                        part1:
+                          properties:
+                          subproperties:
+                            files:
+                              properties:
+                                example-value: [chapter1.tex, chapter2.tex]
+                        part2:
+                          properties:
+                          subproperties:
+                            files:
+                              properties:
+                                example-value: [chapter3.tex, chapter4.tex, chapter5.tex]
+                        final:
+                          properties:
+                          subproperties:
+                            files:
+                              properties:
+                                example-value: [results.tex, conclusion.tex]
+                              subproperties:
+                back:
+                  properties:
+                  subproperties:
+                    files: [references.tex, sources.bib]

@@ -9,7 +9,7 @@ from typing import Any;
 from typing import List;
 from typing import Union;
 
-from ..types.parse import FlatType;
+from ..types.parse import FlattenableType;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Class ValueType
@@ -45,7 +45,7 @@ class ValueType:
 class MultiValueType:
     default: Any;
     __items: List[Any];
-    __valuetype: FlatType;
+    __valuetype: FlattenableType;
 
     def __init__(self, items=[], item=None, default=None, valuetype=None, **kwargs):
         self.default = default;

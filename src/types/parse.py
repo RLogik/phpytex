@@ -18,13 +18,13 @@ from .path import PathType;
 # Type: FlattenedType
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-FlatType = Union[type, None, str, List[Union[type, None, str]]];
+FlattenableType = Union[type, None, str, List[Union[type, None, str]]];
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Methods
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def string_to_type(s: Union[str, None, List[str]]) -> FlatType:
+def string_to_type(s: Union[str, None, List[str]]) -> FlattenableType:
     if isinstance(s, str):
         s = s.lower();
         if s in ['int', 'integer']:
@@ -60,7 +60,7 @@ def string_to_type(s: Union[str, None, List[str]]) -> FlatType:
 # Externally, however, other commands correctly recognise the type as
 #   Union[None, str, List[Union[None, str]]].
 ########
-def type_to_string(t: FlatType):
+def type_to_string(t: FlattenableType):
     if isinstance(t, type):
         return "<{}>".format(t.__name__);
     elif t is None:
@@ -70,7 +70,7 @@ def type_to_string(t: FlatType):
     else:
         return [type_to_string(tt) for tt in t];
 
-def parse_type(value: str, value_type: FlatType) -> Tuple[Any, bool]:
+def parse_type(value: str, value_type: FlattenableType) -> Tuple[Any, bool]:
     if value_type is None:
         return value, True;
     elif isinstance(value_type, type):

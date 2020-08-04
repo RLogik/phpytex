@@ -11,11 +11,12 @@ from typing import Tuple;
 from typing import Union;
 
 from ..__path__ import project_path;
-from .arguments import Argument, ArgumentValues;
+from .arguments import Argument;
 from .arguments import Arguments;
+from .arguments import ArgumentValues;
 from .arguments import display_command;
 from ..values.struct import Struct;
-from ..core.utils import static;
+from ..core.utils import static, to_python_key;
 from ..core.utils import INFINITY;
 from ..core.utils import len_pure;
 from ..core.utils import pad_strings;
@@ -91,7 +92,8 @@ class InformationService:
         self.arguments = Arguments();
         struct = self.get_attributes('programmes', prog, 'arguments', default={});
         for label in struct:
-            argument = Argument(label=label, **(struct[label] or {}));
+            spec = struct[label] or {};
+            argument = Argument(label=label, **{to_python_key(key): spec[key] for key in spec});
             self.arguments.add(label, argument);
         return self.arguments;
 
@@ -113,12 +115,14 @@ class InformationService:
         site = self.get_attributes('site');
         name = self.get_name('programmes', prog);
         version = self.version or '???';
+
         title = pad_strings(
             '',
             'Usage of \033[92m{name}\033[0m v\033[1m{version}\033[0m'.format(name=name, version=version),
             '   ~~~~ {site}/\033[1;91m{author}\033[0m, {date}'.format(site=site, author=author, date=date),
             '',
         sep=' ');
+
         title = [ ' |    ' + line + '    |' for line in title];
         n = len_pure(title[0]);
         bar = ' ' + '-'*(n - 1);
