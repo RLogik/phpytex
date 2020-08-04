@@ -42,6 +42,7 @@ setup(
         'src/types',
         'src/programmes',
         'src/programmes/create',
+        'src/programmes/examples',
         'src/programmes/transpile',
     ],
     include_package_data=True,

@@ -100,3 +100,8 @@ def pad_strings(*lines: str, sep=' ') -> List[str]:
     L = max(lengths);
     return [lines[k] + sep*(L-lengths[k]) for k in range(N)];
 
+def to_cli_key(label):
+    return re.sub(r'_', '-', label);
+
+def to_python_key(label):
+    return re.sub(r'-', '_', label);

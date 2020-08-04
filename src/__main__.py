@@ -7,7 +7,7 @@
 
 import os;
 import sys;
-sys.tracebacklimit = 0; ## disables traceback.
+# sys.tracebacklimit = 0; ## disables traceback.
 from typing import List;
 from typing import Tuple;
 from typing import Union;
@@ -15,6 +15,7 @@ from typing import Union;
 from .values.struct import Struct;
 from .core.logger import LoggerService;
 from .info.information import InformationService;
+from .programmes.examples.main import main as subprogramme_examples;
 from .programmes.transpile.main import main as subprogramme_transpile;
 from .programmes.create.main import main as subprogramme_create;
 
@@ -79,6 +80,7 @@ def determine_subprogrammes():
         logname = INFO.get_attributes('programmes', prog, 'logname');
         if isinstance(arg, str) and isinstance(cmd, str) and isinstance(module, str):
             SUBPROGRAMMES.append((prog, cmd, arg, logname, module));
+
     return;
 
 def run_cli_arguments(*args: str):
@@ -89,6 +91,7 @@ def run_cli_arguments(*args: str):
     arguments = INFO.parse_arguments('main');
     arguments.parse(*args);
     argumentValues = INFO.arguments.values;
+
     if INFO.check_validity(quiet=True):
         LOG.colourmode = argumentValues.getValueAsBoolean('colour');
         LOG.verbose = argumentValues.getValueAsBoolean('verbose');
@@ -102,9 +105,9 @@ def run_cli_arguments(*args: str):
                 return;
 
     # display main options
-    if argumentValues.getValueAsBoolean('version'):
+    if argumentValues.getValueAsBoolean('version', default=False):
         LOG.plain(VERSION or '???');
-    elif argumentValues.getValueAsBoolean('help'):
+    elif argumentValues.getValueAsBoolean('help', default=False):
         INFO.console_help('main');
     else:
         # display argument errors, if any
@@ -126,9 +129,9 @@ def run_sub_programme(prog: str, logname: str, module: str, *args: str):
     argumentValues = INFO.arguments.values
 
     # otherwise display argument errors, if any
-    if argumentValues.getValueAsBoolean('version'):
+    if argumentValues.getValueAsBoolean('version', default=False):
         LOG.plain('\033[1;32m{name}\033[0m version \033[1;92m{v}\033[0m'.format(name=name, v=VERSION or '???'));
-    elif argumentValues.getValueAsBoolean('help'):
+    elif argumentValues.getValueAsBoolean('help', default=False):
         INFO.console_help(prog);
     else:
         # display argument errors, if any
@@ -137,7 +140,10 @@ def run_sub_programme(prog: str, logname: str, module: str, *args: str):
 
         # else, command is valid. Attempt to open module:
         config = Struct(struct=INFO.struct.getValue('configuration'), internal=True);
-        if module == 'transpile':
+        if module == 'examples':
+            subprogramme_examples(INFO, LOG, config, argumentValues);
+            return;
+        elif module == 'transpile':
             subprogramme_transpile(INFO, LOG, config, argumentValues);
             return;
         elif module == 'create':

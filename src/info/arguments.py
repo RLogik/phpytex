@@ -15,7 +15,7 @@ from typing import Tuple;
 from .examples import Examples;
 from ..core.utils import Inf;
 from ..core.utils import INFINITY;
-from ..types.parse import FlatType;
+from ..types.parse import FlattenableType;
 from ..types.parse import parse_type;
 from ..types.parse import string_to_type;
 from ..types.parse import type_to_string;
@@ -31,21 +31,31 @@ from ..values.validity import Validity;
 
 class Argument:
     label: str;
+    labels: List[str];
     key: Key = Key();
     required: bool = False;
+
     multiple_specified: bool = False;
     numberofarguments: List[Union[int, Inf]] = [1, 1];
+
     cli_type: str = '';
-    value_type: FlatType;
+
+    value_type: FlattenableType;
     multivalue: MultiValueType = MultiValueType();
     default: Union[None, str, bool, int, float] = None;
     default_description: Union[None, str] = None;
+
     description: str = r'—';
     examples: Examples = Examples();
 
+    create_example: bool;
+    example_value: Any;
+    comment: Any;
+
     def __init__(
         self,
-        label = None,
+        label: str,
+        labels = None,
         key = None,
         required = None,
         multiple = None,
@@ -53,12 +63,17 @@ class Argument:
         value_type = None,
         default = None,
         description = None,
-        example: Dict[str, Dict[str, str]] = None,
+        example = None,
+        create_example: bool = False,
+        example_value = None,
+        comment = None,
         **kwargs
     ):
         # label & key
-        if isinstance(label, str):
-            self.label = label;
+        self.label = label;
+        self.labels = [label];
+        if isinstance(labels, list):
+            self.labels = labels;
         if isinstance(key, (str, list)):
             self.key = Key(key);
         if isinstance(cli_type, str):
@@ -90,10 +105,15 @@ class Argument:
             self.numberofarguments = [0, 0];
 
         # descriptions and examples
-        if not description is None:
+        if isinstance(description, str):
             self.description = description;
-        if not example is None:
+        if isinstance(example, dict):
             self.examples = Examples(*[example[_] for _ in example]);
+
+        # attributes for the example subprogramme
+        self.create_example = isinstance(create_example, bool) and create_example;
+        self.example_value = example_value;
+        self.comment = comment or description;
         return;
 
     @property
@@ -181,25 +201,35 @@ class ArgumentValues:
         for _label, item in self.__iter__():
             if _label == label:
                 return item;
-        raise ValueError('No key {} was found'.format(label));
+        raise KeyError('No key-value `{}` was found'.format(label));
 
-    def getValue(self, label: str) -> Any:
+    def getValue(self, label: str, default=None) -> Any:
+        if not (default is None):
+            try:
+                return self.getMultiValue(label).value;
+            except:
+                return default;
         return self.getMultiValue(label).value;
 
-    def getValues(self, label: str) -> Any:
+    def getValues(self, label: str, default=None) -> Any:
+        if isinstance(default, list):
+            try:
+                return self.getMultiValue(label).values;
+            except:
+                return default;
         return self.getMultiValue(label).values;
 
-    def getValueAsBoolean(self, label: str) -> bool:
-        return bool(self.getValue(label));
+    def getValueAsBoolean(self, label: str, default=None) -> bool:
+        return bool(self.getValue(label, default=default));
 
-    def getValueAsInt(self, label: str) -> int:
-        return int(self.getValue(label));
+    def getValueAsInt(self, label: str, default=None) -> int:
+        return int(self.getValue(label, default=default));
 
-    def getValueAsFloat(self, label: str) -> float:
-        return float(self.getValue(label));
+    def getValueAsFloat(self, label: str, default=None) -> float:
+        return float(self.getValue(label, default=default));
 
-    def getValueAsString(self, label: str) -> str:
-        return str(self.getValue(label));
+    def getValueAsString(self, label: str, default=None) -> str:
+        return str(self.getValue(label, default=default));
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Class: Arguments
@@ -334,7 +364,7 @@ class Arguments:
 def display_key(key: Key) -> str:
     return ' / '.join([ '\033[93m{}\033[0m'.format(x) for x in key]);
 
-def display_value_type(value_type: FlatType) -> str:
+def display_value_type(value_type: FlattenableType) -> str:
     as_string = type_to_string(value_type);
     if as_string is None:
         return '';
@@ -343,7 +373,7 @@ def display_value_type(value_type: FlatType) -> str:
     else:
         return ' | '.join([ display_value_type(x) for x in as_string if not x is None ]);
 
-def display_command(typ: str, key: Key, value_type: FlatType, required: bool) -> str:
+def display_command(typ: str, key: Key, value_type: FlattenableType, required: bool) -> str:
     key_ = display_key(key);
     if typ in ['key-value', 'key-space-value']:
         sep = ' ' if typ == 'key-space-value' else '=';

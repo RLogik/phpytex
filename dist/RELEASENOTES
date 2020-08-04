@@ -14,3 +14,8 @@
 04.08.2020 03:15 | 0.1.1 | Moved all configs to one yml file.
                  |       | Changed 'extension' configuration to a regex pattern, e. g. to allow .yml and .yaml to be treated equally.
                  |       | Unified .phpycreate.yml command parsing in create script, so that less is defined in code, and most the commands are interpretted based on config.yml.
+04.08.2020 19:00 | 0.1.2 | Added subprogramme examples, to generate .phpycreate.yml example.
+                 |       | Removed auto add-index.
+                 |       | TODO: need to process .phpycreate.yml files more flexibly --> use argument-classes o. Ä.
+                 |       | TODO: need to create an examples folder.
+                 |       | TODO: need testing.
