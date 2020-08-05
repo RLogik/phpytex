@@ -26,21 +26,25 @@
 #    ~~~~~~~~~~~~~
 #
 #    ./compile.sh
-#        [required] python-path=<path to suitable python distribution>
-#        [required] app-name=<desired name of programme>
-#        [required] setup-file=<name of python setup file>
-#        [optional] --icon=<relative location of a .ico file>
-#        [optional] --specpath=<path where .spec will be placed>
+#        [optional] --setup-venv            (build process) whether to set up python venv
+#        [optional] --install-requirements  (build process) whether to install pip, pyinstaller requirements
+#        [required] --python-path=<path>    path to suitable python distribution
+#        [required] --app-name=<str>        desired name of programme
+#        [required] --setup-file=<file>     name of python setup file
+#        [optional] --icon=<file>           relative location of a .ico file
+#        [optional] --specpath=<path>       path where .spec will be placed
 #            DEFAULT = .
 #        [optional, multiple]
 #                   --add-data <path1:path2>
 #                   --add-data <path1:path2>
 #                   ...
 #                   --add-data <path1:path2>
-#            path1 relative to specpath
-#            path2 relative to build folder
+#                   ...
+#            where in each case
+#                path1 is relative to specpath
+#                path2 is relative to build folder
 #
-#    - you can/should use "$(python_for_pyinstaller --which)" for the pytho-path argument.
+#    - you can/should use "$(python_for_pyinstaller --which)" for the python-path argument.
 #    - In your setup file use pyinstaller_setuptools.
 #    Consult https://pypi.org/project/pyinstaller-setuptools/
 #
@@ -97,12 +101,14 @@ function has_arg() {
 }
 ################################################################
 
-PYTHONPATH="$(get_kwarg "$SCRIPTARGS" "python-path" "")";
-NAMEOFAPP="$(get_kwarg "$SCRIPTARGS" "app-name" "")";
-SETUPFILE="$(get_kwarg "$SCRIPTARGS" "setup-file" "")";
-ICONIMAGE="$(get_kwarg "$SCRIPTARGS" "--icon" "")";
-SPECPATH="$(get_kwarg "$SCRIPTARGS" "--specpath" ".")";
-ADDDATA="$(get_all_kwargs "$SCRIPTARGS" "--add-data " "--add-data " false)";
+PYTHONPATH="$(get_kwarg "$SCRIPTARGS" "-*python-path" "")";
+NAMEOFAPP="$(get_kwarg "$SCRIPTARGS" "-*app-name" "")";
+SETUPFILE="$(get_kwarg "$SCRIPTARGS" "-*setup-file" "")";
+ICONIMAGE="$(get_kwarg "$SCRIPTARGS" "-+icon" "")";
+SPECPATH="$(get_kwarg "$SCRIPTARGS" "-+specpath" ".")";
+ADDDATA="$(get_all_kwargs "$SCRIPTARGS" "-+add-data " "--add-data " false)";
+SETUPVENV="$(has_arg "$SCRIPTARGS" "-+setup-venv")";
+INSTALLREQUIREMENTS="$(has_arg "$SCRIPTARGS" "-+install-requirements")";
 
 if [[ "$PYTHONPATH" == "" ]]; then
     echo -e "\033[1;91mERROR\033[0m! Need \033[1mpython-path\033[0m argument.";
@@ -126,7 +132,12 @@ echo -e "";
 echo -e "\033[1;4;32mPrelimenaries:\033[0m";
 echo -e "";
 echo -e "  \033[4;34m1. Create Virtual Python Environment:\033[0m";
-$($PYTHONPATH -m venv env);
+if [ $SETUPVENV ]; then
+    $($PYTHONPATH -m venv env);
+else
+    echo -e "";
+    echo -e "  \033[2;3mSkipping...\033[0m"
+fi
 echo -e "";
 echo -e "  \033[4;34m2. Switch To Virtual Python Environment:\033[0m";
 source env/bin/activate;
@@ -139,9 +150,14 @@ echo -e "";
 # INSTALL REQUIREMENTS:
 ################################################################
 echo -e "\033[1;4;32mInstalling any missing python dependencies:\033[0m";
-python3 -m pip install --upgrade pip;
-python3 -m pip install PyInstaller==3.6;
-python3 -m pip install pyinstaller_setuptools==2019.3;
+if [ $INSTALLREQUIREMENTS ]; then
+    python3 -m pip install --upgrade pip;
+    python3 -m pip install PyInstaller==3.6;
+    python3 -m pip install pyinstaller_setuptools==2019.3;
+else
+    echo -e "";
+    echo -e "  \033[2;3mSkipping...\033[0m"
+fi
 echo -e "";
 
 ################################################################

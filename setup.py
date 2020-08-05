@@ -54,6 +54,7 @@ setup(
         'subprocess',
         'traceback',
         'json',
+        'time',
     ],
     install_requires=[
         # 'oas==0.1.13', # installs package 'pyyaml', 'yaml', usw.

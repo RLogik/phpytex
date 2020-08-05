@@ -54,13 +54,16 @@ PATHTOPYTHON="$(python_for_pyinstaller --which)";
 
 if [ $(has_arg "$SCRIPTARGS" "-+(clean|release)") ]; then
     ./clean.sh --force;
+    steps="--setup-venv --install-requirements";
+else
+    steps="";
 fi
 
 # NOTE for each --add-data argument the first parts (in 1:2) are relative to spec_path.
-./compile \
-    python-path="$PATHTOPYTHON" \
-    app-name="$APPNAME" \
-    setup-file=setup.py \
+./compile $steps\
+    --python-path="$PATHTOPYTHON" \
+    --app-name="$APPNAME" \
+    --setup-file=setup.py \
     --add-data "dist/VERSION":"src" \
     --add-data "src/setup":"src/setup" \
     --specpath=".";
