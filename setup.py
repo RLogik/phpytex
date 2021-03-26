@@ -58,7 +58,7 @@ setup(
     ],
     install_requires=[
         # 'oas==0.1.13', # installs package 'pyyaml', 'yaml', usw.
-        'pyyaml==5.3.1', # installs package 'yaml'
+        'pyyaml==5.4', # installs package 'yaml'
         'typing>=3.7.4.3',
         # 'logging>=0.4.9.6', # no longer use this.
         'gitignore_parser==0.0.6',
