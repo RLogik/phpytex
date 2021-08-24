@@ -1,0 +1,7 @@
+## PIP + wheel for package installation
+pip==21.2.2
+wheel==0.36.1
+
+## utility
+pyyaml==5.3.1
+typing==3.7.4.3
