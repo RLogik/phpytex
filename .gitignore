@@ -12,10 +12,8 @@
 !/LICENSE
 
 !/scripts
-!/scripts/.lib.sh
-!/scripts/build.sh
-!/scripts/test.sh
-!/scripts/clean.sh
+!/scripts/*.sh
+!/scripts/REQUIREMENTS_*
 
 ################################################################
 # WHALES
@@ -42,7 +40,6 @@
 
 !/dist
 !/dist/VERSION
-# !/dist/*.zip
 
 ################################################################
 # AUXLIARY
