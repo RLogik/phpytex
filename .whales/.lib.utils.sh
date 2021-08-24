@@ -437,12 +437,25 @@ function remove_file() {
 
 function remove_dir() {
     local path="$1";
-    [ -f "$path" ] && rm -r "$path" && _log_info "Removed directory \033[1m$path.\033[0m" || _log_info "Nothing to remove: the directory \033[1m$path\033[0m does not exist.";
+    [ -d "$path" ] && rm -r "$path" && _log_info "Removed directory \033[1m$path.\033[0m" || _log_info "Nothing to remove: the directory \033[1m$path\033[0m does not exist.";
 }
 
 function remove_dir_force() {
     local path="$1";
-    [ -f "$path" ] && rm -rf "$path" && _log_info "Removed directory \033[1m$path.\033[0m" || _log_info "Nothing to remove: the directory \033[1m$path\033[0m does not exist.";
+    [ -d "$path" ] && rm -rf "$path" && _log_info "Removed directory \033[1m$path.\033[0m" || _log_info "Nothing to remove: the directory \033[1m$path\033[0m does not exist.";
+}
+
+function create_temporary_dir() {
+    local current_dir="$1";
+    local name="tmp";
+    local path;
+    local k=0;
+    pushd "$current_dir" >> $VERBOSE;
+        while [[ -d "${name}_${k}" ]] || [[ -f "${name}_${k}" ]]; do k=$(( $k + 1 )); done;
+        path="${name}_${k}";
+        mkdir "${path}";
+    popd >> $VERBOSE;
+    echo "${current_dir}/${path}";
 }
 
 ##############################################################################
