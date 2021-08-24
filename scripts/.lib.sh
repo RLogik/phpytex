@@ -188,10 +188,10 @@ function run_test_unit() {
     local verboseoption="";
     ( $asverbose ) && verboseoption="-v";
     _log_info "UNITTESTS";
-    local output="$(call_v_utest              \
+    local output="$(call_v_utest            \
         $verboseoption                      \
         --top-level-directory "."           \
-        --start-directory "${PATH_TEST}"   \
+        --start-directory "${PATH_TEST}"    \
         --pattern "${UNITTEST_SCHEMA}" 2>&1 \
     )";
     _cli_message "$output";
