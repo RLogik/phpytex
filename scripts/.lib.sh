@@ -12,6 +12,7 @@ source .whales/.lib.sh;
 ##############################################################################
 
 env_from ".env" import REQUIREMENTS_PY     as PATH_REQ_PY;
+env_from ".env" import NAME_OF_APP;
 env_from ".env" import IP                  as DOCKER_IP;
 env_from ".env" import PORT_HOST           as DOCKER_PORT_HOST;
 env_from ".env" import PORT_CONTAINER      as DOCKER_PORT_CONTAINER;
@@ -20,6 +21,14 @@ env_from ".env" import PORTS               as DOCKER_PORTS;
 whales_set_ports "$DOCKER_PORTS";
 
 export CONFIGENV="data/.env";
+
+##############################################################################
+# AUXILIARY METHODS: Zip
+##############################################################################
+
+function create_zip_archive() {
+    zip -r $@;
+}
 
 ##############################################################################
 # AUXILIARY METHODS: Python
@@ -123,8 +132,15 @@ function garbage_collection_build() {
 }
 
 function garbage_collection_python() {
-    # clean_all_files_of_pattern "*\.pyo";
-    clean_all_folders_of_pattern "__pycache__";
+    clean_all_folders_of_pattern ".DS_Store";
+    pushd src >> $VERBOSE;
+        # clean_all_files_of_pattern "*\.pyo";
+        clean_all_folders_of_pattern "__pycache__";
+    popd >> $VERBOSE;
+    pushd test >> $VERBOSE;
+        # clean_all_files_of_pattern "*\.pyo";
+        clean_all_folders_of_pattern "__pycache__";
+    popd >> $VERBOSE;
 }
 
 ##############################################################################
@@ -133,7 +149,6 @@ function garbage_collection_python() {
 
 function run_setup() {
     _log_info "SETUP";
-    ## install requirements:
     _log_info "Create VENV";
     create_python_venv;
     _log_info "Check and install missing requirements";
@@ -141,8 +156,21 @@ function run_setup() {
 }
 
 function run_create_artefact() {
-    _log_warn "Unit tests not yet implemented!";
-    # < your code here > #
+    local current_dir="$PWD";
+    ## create temp artefacts:
+    local _temp="$( create_temporary_dir "dist" )";
+    copy_dir dir="src" from="." to="$_temp";
+    copy_file file="VERSION" from="dist" to="${_temp}/src/setup";
+    mv "$_temp/src/__main__.py" "$_temp";
+    ## zip source files to single file and make executable:
+    pushd "$_temp" >> $VERBOSE;
+        create_zip_archive -o "$current_dir/dist/app.zip" * -x '*__pycache__/*' -x '*.DS_Store';
+    popd >> $VERBOSE;
+    echo '#!/usr/bin/env python3' | cat - dist/app.zip > dist/$NAME_OF_APP;
+    chmod +x "dist/$NAME_OF_APP";
+    ## remove temp artefacts:
+    remove_dir "$_temp";
+    remove_file "dist/app.zip";
 }
 
 function run_main() {
