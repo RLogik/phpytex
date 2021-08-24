@@ -161,7 +161,7 @@ function run_create_artefact() {
     local _temp="$( create_temporary_dir "dist" )";
     copy_dir dir="src" from="." to="$_temp";
     copy_file file="VERSION" from="dist" to="${_temp}/src/setup";
-    mv "$_temp/src/__main__.py" "$_temp";
+    mv "${_temp}/src/__main__.py" "$_temp";
     ## zip source files to single file and make executable:
     pushd "$_temp" >> $VERBOSE;
         create_zip_archive -o "$current_dir/dist/app.zip" * -x '*__pycache__/*' -x '*.DS_Store';
@@ -175,7 +175,7 @@ function run_create_artefact() {
 
 function run_main() {
     args="$@";
-    call_v_python src/__main__.py $args;
+    call_v_python src/main.py $args;
 }
 
 function run_explore_console() {
