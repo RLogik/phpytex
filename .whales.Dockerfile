@@ -38,6 +38,5 @@ RUN apt-get -y update
 RUN apt-get -y upgrade
 RUN apt-get install -y dos2unix
 RUN apt-get install -y apt-utils
-RUN apt-get install -y zip unzip git curl
-RUN apt-get install -y xz-utils
+RUN apt-get install -y zip unzip xz-utils
 RUN apt-get clean
