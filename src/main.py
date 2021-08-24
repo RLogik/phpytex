@@ -11,6 +11,7 @@ import os;
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)));
 
 from src.core.log import logDebug;
+from src.setup.methods import getVersion;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES
@@ -24,6 +25,7 @@ from src.core.log import logDebug;
 
 def main(*tokens: str, **kwargs: str):
     logDebug('Hello world!');
+    logDebug(getVersion());
     return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
