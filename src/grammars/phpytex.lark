@@ -1,0 +1,38 @@
+%import common.WS
+%import common.NUMBER
+%import common.WORD
+%import common.NEWLINE
+
+// symbols
+?space: /\s+/                    -> noncapture
+?newline: /\s*[\n\r]/            -> noncapture
+?newlinescapture: /(\s*[\n\r])+/ -> newlines
+?endcode: /;/                    -> noncapture
+?lcode: /\<{3}/                  -> noncapture
+?rcode: /\>{3}/                  -> noncapture
+?comma: /,/                      -> noncapture
+?indent: /\s+/                   -> indent
+?textnobreaks: /[^\n\r]+/        -> text
+
+?blocks: newlinescapture? block ( newlinescapture block )* newlinescapture? -> blocks
+?block: blockcode -> block
+    | blockquick -> block
+    | blockinline -> block
+?blockcode: lcode space? instructions newline+ insidecode newline+ rcode         -> blockcode
+    | indent lcode space? instructions newline+ insidecode newline+ indent rcode -> blockcode
+?blockinline: contentnobreaks ( codeinline contentnobreaks? )*     -> blockinline
+    | codeinline ( contentnobreaks? codeinline )* contentnobreaks? -> blockinline
+?blockquick: space? lcode space? quickinstruction space? endcode? space? rcode -> blockquick
+
+?codeinline: lcode space? contentnobreaks space? rcode  -> codeinline
+    | lcode space? newline content newline space? rcode -> codeinline
+
+?instructions: "python" -> python
+?contentnobreaks: /((?!(\<{3}|\>{3})).)+/                     -> content
+?content: contentnobreaks ( newlinescapture contentnobreaks )* -> content
+?insidecode: contentnobreaks ( newline+ contentnobreaks )*    -> insidecode
+
+?quickinstruction: "set" textnobreaks "=" textnobreaks -> quickset
+    | "escape" -> quickescape
+    | "escape_once" -> quickescapeonce
+    | "input" textnobreaks -> quickinput
