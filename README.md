@@ -1,6 +1,6 @@
 # (PH(p)y)TeX and (PH(p)y)create #
 
-This project contains versioned releases of the programme.
+This project contains versioned releases of the programme, which combines both original programmes.
 
 The old project files (unversioned) will be kept (for now) in the repository [RLogik/phpytex-old](https://github.com/RLogik/phpytex-old).
 
