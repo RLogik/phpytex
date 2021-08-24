@@ -1,0 +1,49 @@
+version: "3"
+networks:
+  default:
+    driver: bridge
+services:
+  #---------------------------------------------------------#
+  # SERVICE: Template (only serves as template for yml)
+  #---------------------------------------------------------#
+  template: &ref_template
+    image: template
+    build:
+      context: .
+      dockerfile: .whales.Dockerfile
+      args:
+        WD: "$WD"
+    ports:
+      - $PORTS
+    command:
+      [ "/bin/bash", "-c", "echo -e \"Service built.\"" ]
+  #---------------------------------------------------------#
+  # SERVICE: Production
+  #---------------------------------------------------------#
+  prod-service:
+    <<: *ref_template
+    image: prod:build
+    volumes:
+      - ./data:$WD/data:rw
+      - ./dist:$WD/dist:rw
+      - ./src:$WD/src:rw
+      # ## for debugging purposes only:
+      # - ./scripts:$WD/scripts:ro
+      # - ./logs:$WD/logs:rw
+      # - ./build:$WD/build:rw
+  #---------------------------------------------------------#
+  # SERVICE: Test
+  #---------------------------------------------------------#
+  test-service:
+    <<: *ref_template
+    image: test:build
+    volumes:
+      - ./data:$WD/data:rw
+      - ./test/config.yml:$WD/data/config.yml:ro
+      - ./dist:$WD/dist:rw
+      - ./src:$WD/src:rw
+      - ./test:$WD/test:rw
+      # ## for debugging purposes only:
+      # - ./scripts:$WD/scripts:ro
+      # - ./logs:$WD/logs:rw
+      # - ./build:$WD/build:rw
