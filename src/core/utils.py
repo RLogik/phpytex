@@ -55,9 +55,9 @@ def pipeCall(*_args, cwd = None, errormsg: str):
         return;
     raise Exception(errormsg);
 
-def callPython(fnameScript: str, *args: str, fnameOut: Union[None, str] = None):
+def callPython(fname: str, *args: str, fnameOut: Union[None, str] = None):
     cmd = ['py', '-3'] if platformSystem().lower() == 'windows' else ['python3'];
-    cmd = [*cmd, fnameScript, *args];
+    cmd = [*cmd, fname, *args];
     if fnameOut is None:
         result = subprocessRun(cmd);
     else:
@@ -107,28 +107,23 @@ def readTextFile(path: str, internal: bool = False) -> str:
     with open(path, 'r') as fp:
         return ''.join(fp.readlines());
 
-def writeTextFile(path: str, lines: str):
-    with open(path, 'w') as fp:
-        fp.write(lines);
-
-def write_lines(path: str, lines: List[str]):
-    with open(path, 'w') as fp:
-        for line in lines:
-            fp.write(line + '\n');
-    return;
-
-def write_file(fname: str, lines: List[str], force_create_path: bool = False, force_create_empty_line: bool = True):
+def writeTextFile(
+    path: str,
+    lines: Union[str, List[str]],
+    force_create_path: bool = False,
+    force_create_empty_line: bool = True
+):
     if force_create_path:
-        create_path(os.path.dirname(fname));
-    while len(lines) > 0:
-        if not re.match(r'^\s*$', lines[-1]):
+        create_path(os.path.dirname(path));
+    _lines = [lines] if isinstance(lines, str) else lines
+    while len(_lines) > 0:
+        if not re.match(r'^\s*$', _lines[-1]):
             break;
         lines = lines[:-1];
     if force_create_empty_line:
-        lines = lines + [''];
-    with open(fname, 'w+') as fp:
-        fp.writelines('\n'.join(lines));
-    return;
+        _lines = _lines + [''];
+    with open(path, 'w') as fp:
+        fp.write('\n'.join(_lines));
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # METHODS: cli
