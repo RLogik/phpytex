@@ -16,6 +16,7 @@ SERVICE="prod-service";
 source scripts/.lib.sh;
 
 mode="$( get_one_kwarg_space "$SCRIPTARGS" "-+mode" "" )";
+options="$( get_kwarg "$SCRIPTARGS" "-+options" "" )";
 
 if [ "$mode" == "setup" ]; then
     # whale_call <service>  <tag-sequence>    <save, it, ports> <type, command>
@@ -28,7 +29,7 @@ elif [ "$mode" == "dist" ]; then
 elif [ "$mode" == "run" ]; then
     # whale_call <service>  <tag-sequence>    <save, it, ports> <type, command>
     whale_call   "$SERVICE" "setup,run"       false false true  SCRIPT $ME $SCRIPTARGS;
-    run_main;
+    run_main $options;
 elif [ "$mode" == "explore" ]; then
     # whale_call <service>  <tag-sequence>    <save, it, ports> <type, command>
     whale_call   "$SERVICE" "setup,(explore)" false true true   SCRIPT $ME $SCRIPTARGS;
