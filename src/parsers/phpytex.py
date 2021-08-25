@@ -5,7 +5,6 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from __future__ import annotations;
 import re;
 from lark import Lark;
 from lark import Tree;
@@ -13,9 +12,9 @@ from typing import List;
 from typing import Union;
 from textwrap import dedent;
 
-from src.core.utils import readTextFile;
-from src.core.utils import escapeForPython;
 from src.core.utils import formatBlockIndent;
+from src.setup.methods import getGrammar;
+from src.parsers.methods import escapeForPython;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL CONSTANTS
@@ -24,10 +23,13 @@ from src.core.utils import formatBlockIndent;
 INDENTCHAR: str = '    ';
 INDENTCHAR_RE: str = '    ';
 INDENTLEVEL: int = 0;
+_lexer = None;
 
-# generate lexer via LARK:
-PATH_GRAMMAR: str = 'src/grammars/phpytex.lark';
-LEXER = Lark(readTextFile(PATH_GRAMMAR, internal=True), start='blocks', regex=True);
+def getLexer() -> Lark:
+    global _lexer;
+    if not isinstance(_lexer, Lark):
+        _lexer = Lark(getGrammar('phpytex.lark'), start='blocks', regex=True);
+    return _lexer;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MAIN METHODS string -> Expression
@@ -37,7 +39,7 @@ def parseText(u: str) -> str:
     try:
         if u.strip() == '':
             return '';
-        lines = lexedToBlocks(LEXER.parse(u));
+        lines = lexedToBlocks(getLexer().parse(u));
     except:
         raise Exception('Could not parse input!');
     return lines;
@@ -187,41 +189,16 @@ def getIndentationLevel(u: str, tab: str) -> int:
     return n;
 
 # --------------------------------------------------------------------------------
-# CLASS: indentation tracker
+# METHOD: set indentation
 # --------------------------------------------------------------------------------
 
-class IndentationTracker(object):
-    pattern: str = r'    ';
-    reference: int = 0;
-    start: int = 1;
-    last: int = 1;
-
-    def __init__(self, pattern = None):
-        if isinstance(pattern, str):
-            self.pattern = pattern;
-        return;
-
-    def reset(self):
-        self.reference = 0;
-        self.start     = 1;
-        self.last      = 1;
-
-    def computeIndentations(self, s: str, pattern = None) -> int:
-        pattern = pattern if isinstance(pattern, str) else self.pattern;
-        return len(re.findall(pattern, s));
-
-    def initOffset(self, s: str):
-        self.reset();
-        self.reference = self.computeIndentations(s);
-
-    def computeOffset(self, s: str):
-        return max(self.computeIndentations(s) - self.reference, 1);
-
-    def setOffset(self, s: str):
-        self.last = self.computeOffset(s);
-
-    def decrOffset(self):
-        self.last = max(self.last - 1, 1);
-
-    def incrOffset(self):
-        self.last = self.last + 1;
+def setIndentation(tabs: bool = False, spaces: int = 4, **_):
+    global INDENTCHARACTER;
+    global INDENTCHARACTER_re;
+    if tabs:
+        INDENTCHARACTER = '\t';
+        INDENTCHARACTER_re = r'\t';
+    else:
+        INDENTCHARACTER = ' '*spaces;
+        INDENTCHARACTER_re = INDENTCHARACTER;
+    return;

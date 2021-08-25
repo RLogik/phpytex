@@ -9,7 +9,9 @@ import os;
 import re;
 
 from pathlib import Path;
+from platform import system as platformSystem;
 from subprocess import Popen;
+from subprocess import run as subprocessRun;
 from textwrap import dedent;
 from typing import Any;
 from typing import Dict;
@@ -18,7 +20,7 @@ from typing import Tuple;
 from typing import Type;
 from typing import Union;
 
-from src.__path__ import PATH_APP_INTERNAL;
+from src.core.path import getAppPath;
 from src.core.log import logInfo;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -28,6 +30,16 @@ from src.core.log import logInfo;
 ENCODING_ASCII:   str = 'ascii';
 ENCODING_UTF8:    str = 'utf-8';
 ENCODING_UNICODE: str = 'unicode_escape';
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# METHOD os sensitive commands
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def isLinux() -> bool:
+    return not ( os.name == 'nt' );
+
+def PythonCommand() -> str:
+    return 'python3' if isLinux() else 'py -3';
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # METHODS: io
@@ -42,6 +54,17 @@ def pipeCall(*_args, cwd = None, errormsg: str):
     if pipe.returncode == 0:
         return;
     raise Exception(errormsg);
+
+def callPython(fnameScript: str, *args: str, fnameOut: Union[None, str] = None):
+    cmd = ['py', '-3'] if platformSystem().lower() == 'windows' else ['python3'];
+    cmd = [*cmd, fnameScript, *args];
+    if fnameOut is None:
+        result = subprocessRun(cmd);
+    else:
+        with open(fnameOut, 'w') as fp:
+            result = subprocessRun(cmd, stdout=fp);
+    if not result.returncode == 0:
+        raise Exception('The process did not run successfully.');
 
 def getFiles(path: str) -> List[Tuple[str, str]]:
     items = [(_, os.path.join(path, _)) for _ in os.listdir(path)];
@@ -80,7 +103,7 @@ def create_path(path: str):
     return;
 
 def readTextFile(path: str, internal: bool = False) -> str:
-    path = os.path.join(PATH_APP_INTERNAL, path) if internal else path;
+    path = os.path.join(getAppPath(), path) if internal else path;
     with open(path, 'r') as fp:
         return ''.join(fp.readlines());
 
@@ -108,19 +131,37 @@ def write_file(fname: str, lines: List[str], force_create_path: bool = False, fo
     return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# METHODS: string
+# METHODS: cli
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def escapeForPython(s: str) -> str:
-    s = re.sub(r'(\\+)', r'\1\1', s);
-    s = re.sub(r'\n', r'\\n', s);
-    s = re.sub(r'\t', r'\\t', s);
-    s = re.sub(r'\"', r'\\u0022', s);
-    s = re.sub(r'\'', r'\\u0027', s);
-    # s = re.sub(r'\%', slash+'u0025', s);
-    s = re.sub(r'(\{+)', r'\1\1', s);
-    s = re.sub(r'(\}+)', r'\1\1', s);
-    return s;
+def getCliArgs(*args: str) -> Tuple[List[str], Dict[str, Any]]:
+    tokens = [];
+    kwargs = {};
+    N = len(args);
+    indexes = [ i for i, arg in enumerate(args) if re.match(r'^\-+', arg) ];
+    notindexes = [ i for i, _ in enumerate(args) if not (i in indexes) ];
+    i = 0;
+    while i < N:
+        if i in indexes and i+1 in notindexes:
+            key = re.sub(r'^\-*', '', args[i]).lower();
+            value = args[i+1];
+            kwargs[key] = value;
+            i += 2;
+            continue;
+        m = re.match(r'^-*(.*?)\=(.*)$', args[i]);
+        if m:
+            key = re.sub(r'^\-*', '', m.group(1)).lower();
+            value = m.group(2);
+            kwargs[key] = value;
+        else:
+            arg = re.sub(r'^\-*', '', args[i]).lower();
+            tokens.append(arg);
+        i += 1;
+    return tokens, kwargs;
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# METHODS: string
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def formatBlockIndent(u: str, indent: str) -> str:
     u = dedent(u);
@@ -129,6 +170,16 @@ def formatBlockIndent(u: str, indent: str) -> str:
     for line in lines:
         linesNew.append(indent + line);
     return '\n'.join(linesNew);
+
+def DedentIgnoreFirstAndLast(s: str) -> str:
+    s = re.sub(r'(^[\n\r])|([\n\r]$)', '', s);
+    return dedent(s);
+
+def formatTextBlock(s: str) -> str:
+    return DedentIgnoreFirstAndLast(s);
+
+def formatTextBlockAsList(s: str) -> List[str]:
+    return re.split(r'\n', DedentIgnoreFirstAndLast(s));
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # METHODS: yaml and config

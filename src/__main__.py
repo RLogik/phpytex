@@ -16,19 +16,19 @@ import os;
 
 sys.path.insert(0, os.path.dirname(__file__));
 
-from src.main import main;
+from src.core.path import setAppPath;
+from src.core.utils import getCliArgs;
 from src.setup.methods import setOpenSource;
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# GLOBAL VARIABLES
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-#
+from src.main import enter;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # EXECUTION
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 if __name__ == '__main__':
+    sys.tracebacklimit = 4;
     setOpenSource(False);
-    main(*sys.argv[1:]);
+    path = os.path.dirname(__file__);
+    setAppPath(path);
+    tokens, kwargs = getCliArgs(*sys.argv[1:]);
+    enter(*tokens, **kwargs);

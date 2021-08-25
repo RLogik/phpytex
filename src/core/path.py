@@ -5,18 +5,22 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-import os;
+#
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-PATH_APP_INTERNAL: str = '';
+_path: str = '';
 
-def setAppPath():
-    global PATH_APP_INTERNAL;
-    if not ( PATH_APP_INTERNAL == '' ):
-        return;
-    PATH_APP_INTERNAL = os.path.abspath(os.path.dirname(os.path.dirname(__file__)));
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# METHOD: get/set app path
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-setAppPath();
+def getAppPath() -> str:
+    return _path;
+
+def setAppPath(path: str):
+    global _path;
+    _path = path;
+    return;

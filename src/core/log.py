@@ -16,21 +16,29 @@ from typing import Union;
 # GLOBAL VARIABLES
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-LOGGING_DEPTH: int = 0;
-LOGGING_PREFIX: str = '';
-QUIET_MODE: bool = False;
+_logging_depth:  int  = 0;
+_logging_prefix: str  = '';
+_quietmode:      bool = False;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# METHOD set logging depth
+# METHOD get/set quiet mode, logging depth
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def SetLoggingState(state: str = 'out'):
-    global LOGGING_DEPTH;
-    global LOGGING_PREFIX;
-    LOGGING_DEPTH = 1 if (state == 'in') else 0;
-    LOGGING_PREFIX = '';
-    if LOGGING_DEPTH > 0:
-        LOGGING_PREFIX = '>'*LOGGING_DEPTH + ' ';
+def getQuietMode() -> bool:
+    return _quietmode;
+
+def setQuietMode(mode: bool):
+    global _quietmode;
+    _quietmode = mode;
+    return;
+
+def setLoggingState(state: str = 'out'):
+    global _logging_depth;
+    global _logging_prefix;
+    _logging_depth = 1 if (state == 'in') else 0;
+    _logging_prefix = '';
+    if _logging_depth > 0:
+        _logging_prefix = '>'*_logging_depth + ' ';
     return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -38,11 +46,11 @@ def SetLoggingState(state: str = 'out'):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def logGeneric(tag: str, *lines: Any, force: bool = False, file = sys.stdout):
-    if not force and QUIET_MODE:
+    if not force and _quietmode:
         return;
     tag = '' if tag == '' else tag + ' ';
     for line in lines:
-        print('{}{}{}'.format(LOGGING_PREFIX, tag, line), file=file);
+        print('{}{}{}'.format(_logging_prefix, tag, line), file=file);
     return;
 
 def logPlain(*lines: Any, force: bool = False, file=sys.stdout):
@@ -72,7 +80,7 @@ def askUserInput(message: str, expectedformat: Callable) -> Union[str, None]:
     answer = None;
     while True:
         try:
-            answer = input('{}{}'.format(LOGGING_PREFIX, message));
+            answer = input('{}{}'.format(_logging_prefix, message));
         ## Capture Meta+C:
         except KeyboardInterrupt:
             logPlain('');
@@ -92,7 +100,7 @@ def askSecureUserInput(message: str, expectedformat: Callable) -> Union[str, Non
     while True:
         try:
             ## TODO: zeige **** ohne Zeilenumbruch an.
-            answer = getpass.getpass('{}{}'.format(LOGGING_PREFIX, message), stream=None);
+            answer = getpass.getpass('{}{}'.format(_logging_prefix, message), stream=None);
         ## Capture Meta+C:
         except KeyboardInterrupt:
             logPlain('');

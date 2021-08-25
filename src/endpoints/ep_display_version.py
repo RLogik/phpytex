@@ -5,10 +5,12 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#
+from src.setup.methods import getVersion;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# GLOBAL VARIABLES/CONSTANTS
+# ENDPOINT display version
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-PHPYTEX_TO_PYTHON_LINES = ('', '');
+def endpoint(**_):
+    print(getVersion());
+    return;

@@ -5,15 +5,13 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from __future__ import annotations;
-
 from yaml import add_constructor;
 from yaml import load;
 from yaml import Loader;
 from yaml import FullLoader;
 
 from src.core.utils import getAttribute;
-from src.config.customtypes import EvalType;
+from src.customtypes.exports import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # METHODS
@@ -40,16 +38,8 @@ def setupYamlReader():
     def join_constructor(loader: Loader, node):
         values = loader.construct_sequence(node, deep=True);
         try:
-            sep   = str(values[0]);
-            parts = [str(_) for _ in values[1]];
-            # value = sep.join(parts);
-            value = None;
-            for part in parts:
-                if value is None:
-                    value = part;
-                else:
-                    value += sep + part;
-            return value or '';
+            sep, parts = str(values[0]), [str(_) for _ in values[1]];
+            return sep.join(parts);
         except:
             return '';
 
@@ -61,13 +51,13 @@ def setupYamlReader():
             expr = None;
         return EvalType(expr);
 
-    add_constructor(u'!eval', eval_constructor);
-    add_constructor(u'!not', not_constructor);
-    add_constructor(u'!join', join_constructor);
-    add_constructor(u'!key', key_constructor);
+    add_constructor(tag=u'!eval', constructor=eval_constructor, Loader=Loader);
+    add_constructor(tag=u'!not',  constructor=not_constructor,  Loader=Loader);
+    add_constructor(tag=u'!join', constructor=join_constructor, Loader=Loader);
+    add_constructor(tag=u'!key',  constructor=key_constructor,  Loader=Loader);
     return;
 
-def readConfigFile(path: str) -> dict:
+def readYamlFile(path: str) -> dict:
     with open(path, 'r') as fp:
         spec = load(fp, Loader=FullLoader);
         if not isinstance(spec, dict):

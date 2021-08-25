@@ -1,0 +1,153 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# IMPORTS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+import sys;
+import os;
+import re;
+import random;
+from typing import Any;
+from typing import Dict;
+from typing import Tuple;
+from typing import List;
+
+from src.core.log import logInfo;
+from src.core.log import getQuietMode;
+from src.setup import appconfig;
+from src.setup.methods import extractfilename;
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# GLOBAL VARIABLES
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# METHOD: step transpile phpytex to python
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def step(
+    root:           str,
+    seed:           int,
+    output:         str  = 'main.tex',
+    export_params:  str  = '',
+    insert_bib:     bool = False,
+    comments:       str  = 'auto',
+    show_structure: bool = True,
+    max_length:     int  = 10000,
+    **_
+) -> List[str]:
+    appconfig.setSeed(seed);
+    appconfig.setMaxLength(max_length);
+    appconfig.setInsertBib(insert_bib);
+    appconfig.setIncludes([]);
+    appconfig.setDocumentStructure([]);
+
+    # must initialise arrays!
+    appconfig.initIndentation(pattern=appconfig.getIndentCharacterRe());
+    _main_file = root;
+    _output_file = output;
+    if isinstance(export_params, str) and not (export_params == ''):
+        assert re.match(r'^(\S+\.)*\S+$', export_params), '\033[1mexport-params\033[0m option must by a python-like import path (relative to the root of the project).';
+        _param_file = re.sub(r'\.', '/', export_params)
+        _param_file, _, _  = extractfilename(path=_param_file, relative=True);
+        appconfig.setExportParams(True);
+        appconfig.setParamPyImport(export_params);
+        appconfig.setParamFile(_param_file);
+
+    _main_file, _, _  = extractfilename(path=_main_file, relative=True);
+    _output_file, _, _ = extractfilename(path=_output_file, relative=True, ext='');
+    assert not (_main_file == _output_file), 'The output and root files must be different!';
+    _stamp_file = appconfig.getStampFile();
+    _stamp_file, _, _ = extractfilename(path=_stamp_file, relative=True);
+    appconfig.setStampFile(_stamp_file);
+
+    random.seed(seed); # <-- only do this once!
+    lines = [];
+    _precompile_lines = [];
+    _list_of_imports = [];
+
+    params = {
+        'comments': comments,
+        'no-comm': (comments is False),
+        'no-comm-auto': (comments == 'auto'),
+        'show-structure': show_structure,
+    };
+    Knit(
+        filecontents = lines,
+        imports      = _list_of_imports,
+        verbatim     = _precompile_lines,
+        mute         = False,
+        silent       = getQuietMode(),
+        filename     = dict(
+            src      = _main_file,
+            main     = '{}.tex'.format(_output_file),
+        ),
+        params       = params,
+    );
+    addpreamble(lines=lines, params=params, silent=getQuietMode());
+
+
+    appconfig.setPrecompileLines(_precompile_lines);
+    appconfig.setListOfImports(_list_of_imports);
+
+    logInfo('Transpilation (phpytex -> python) complete.');
+    return lines;
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# SECONDARY METHODS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def addpreamble(lines: List[str], params: Dict[str, Any], silent: bool):
+    preamble = [];
+    verbatim = [];
+    struct = appconfig.getDocumentStructure()[:]
+    if isinstance(appconfig.getStampFile(), str) and not(appconfig.getStampFile() == ''):
+        appconfig.setDocumentStructure([]);
+        Knit(
+            filecontents = preamble,
+            verbatim     = verbatim,
+            mute         = True,
+            filename     = dict(
+                src      =  appconfig.getStampFile(),
+                main     =  'main',
+            ),
+            params       = params | { 'no-comm': False, 'no-comm-auto': True },
+            dateityp     = 'head'
+        );
+        appconfig.setDocumentStructure(struct[:]);
+
+    # if not silent:
+    #     addpytexline(lines=preamble, verbatim=verbatim, expr=[
+    #         '%% ********************************************************************************',
+    #         '%% DOCUMENT STRUCTURE:',
+    #         '%% ~~~~~~~~~~~~~~~~~~~',
+    #         '%%',
+    #     ] + struct + [
+    #         '%%',
+    #         '%% DOCUMENT-RANDOM-SEED: '+str(appconfig.getSeed()),
+    #         '%% ********************************************************************************',
+    #     ], anon=False, mode='meta');
+
+    lines[:] = preamble + lines;
+    appconfig.setPrecompileLines(verbatim + appconfig.getPrecompileLines());
+    return;
+
+def Knit(
+    filecontents: List[str],
+    imports:      List[str]                  = [],
+    verbatim:     List[Tuple[int, Any, str]] = [],
+    filename:     Dict[str, str]             = dict(),
+    anon:         bool                       = False,
+    mute:         bool                       = False,
+    silent:       bool                       = False,
+    indent:       Dict[str, int]             = dict(tex=0, struct=0),
+    params:       Dict[str, Any]             = {},
+    dateityp:     str                        = 'tex',
+    chain:        List[str]                  = []
+):
+    # TODO
+    return;
