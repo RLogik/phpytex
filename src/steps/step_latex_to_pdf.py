@@ -20,6 +20,6 @@ from src.setup import appconfig;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def step():
-    # pipeCall('pdflatex', appconfig.getMainFile(), errormsg='Pdflatex encountered a problem.');
+    # pipeCall('pdflatex', appconfig.getLatexFile(), errormsg='Pdflatex encountered a problem.');
     logInfo('Compilation (latex -> pdf) complete.');
     return;

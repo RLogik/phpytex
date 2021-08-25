@@ -28,8 +28,9 @@ _insert_bib:          bool = False;
 _error:               bool = False;
 _py_error:            bool = False;
 _stamp_file:          str;
-_haupt_file:          str;
-_output_file:         str;
+_phpytex_file:           str;
+_script_file:         str;
+_latex_file:         str;
 _export_params:       bool = False;
 _param_file:          str;
 _param_py_import:     str;
@@ -175,20 +176,28 @@ def setStampFile(value: str):
     _stamp_file = value;
     return;
 
-def getMainFile() -> str:
-    return _haupt_file;
+def getPhpytexFile() -> str:
+    return _phpytex_file;
 
-def setMainFile(value: str):
-    global _haupt_file;
-    _haupt_file = value;
+def setPhpytexFile(value: str):
+    global _phpytex_file;
+    _phpytex_file = value;
     return;
 
-def getOutputFile() -> str:
-    return _output_file;
+def getScriptFile() -> str:
+    return _script_file;
 
-def setOutputFile(value: str):
-    global _output_file;
-    _output_file = value;
+def setScriptFile(value: str):
+    global _script_file;
+    _script_file = value;
+    return;
+
+def getLatexFile() -> str:
+    return _latex_file;
+
+def setLatexFile(value: str):
+    global _latex_file;
+    _latex_file = value;
     return;
 
 def getExportParams() -> bool:

@@ -16,7 +16,7 @@ from typing import List;
 from src.core.utils import getAttribute;
 from src.core.utils import make_file_if_not_exists;
 from src.core.utils import make_dir_if_not_exists;
-from src.core.utils import write_lines;
+from src.core.utils import writeTextFile;
 from src.setup import appconfig;
 from src.parsers.methods import convertToPythonString;
 
@@ -100,7 +100,7 @@ def createFileStamp(
         lines.append(line);
     if len(lines) > 0:
         lines = [border] + lines + [border];
-    write_lines(path=path, lines=lines);
+    writeTextFile(path=path, lines=lines);
     return;
 
 def createFileParameters(
@@ -124,5 +124,5 @@ def createFileParameters(
             ));
         except:
             continue;
-    write_lines(path=path, lines=lines);
+    writeTextFile(path=path, lines=lines);
     return;
