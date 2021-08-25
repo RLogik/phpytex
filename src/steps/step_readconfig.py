@@ -10,8 +10,8 @@ from typing import Dict;
 
 from src.core.utils import getFilesByPattern;
 from src.setup import appconfig;
-from src.setup.yaml.methods import setupYamlReader;
-from src.setup.yaml.methods import readYamlFile;
+from src.setup.userconfig import setupYamlReader;
+from src.setup.userconfig import readYamlFile;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES
