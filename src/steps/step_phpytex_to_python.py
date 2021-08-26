@@ -147,23 +147,6 @@ def addpreamble(lines: List[str], params: Dict[str, Any], silent: bool):
     appconfig.setPrecompileLines(verbatim + appconfig.getPrecompileLines());
     return;
 
-def Knit(
-    filecontents: List[str],
-    imports:      List[str]                  = [],
-    verbatim:     List[Tuple[int, Any, str]] = [],
-    filename:     Dict[str, str]             = dict(),
-    anon:         bool                       = False,
-    mute:         bool                       = False,
-    silent:       bool                       = False,
-    indent:       Dict[str, int]             = dict(tex=0, struct=0),
-    params:       Dict[str, Any]             = {},
-    dateityp:     str                        = 'tex',
-    chain:        List[str]                  = []
-):
-    # TODO
-    return;
-
-
 def exportParameters(fname: str, globalvars: List[str]):
     lines = [];
     for key, value in appconfig.getExportVars().items():
@@ -187,6 +170,22 @@ def exportParameters(fname: str, globalvars: List[str]):
     writeTextFile(path=fname, lines=lines, force_create_path=True);
     return;
 
+def Knit(
+    filecontents: List[str],
+    imports:      List[str]                  = [],
+    verbatim:     List[Tuple[int, Any, str]] = [],
+    filename:     Dict[str, str]             = dict(),
+    anon:         bool                       = False,
+    mute:         bool                       = False,
+    silent:       bool                       = False,
+    indent:       Dict[str, int]             = dict(tex=0, struct=0),
+    params:       Dict[str, Any]             = {},
+    dateityp:     str                        = 'tex',
+    chain:        List[str]                  = []
+):
+    # TODO
+    return;
+
 def createmetacode(
     fname: str,
     lines: List[str],
@@ -205,7 +204,7 @@ def createmetacode(
             maxlength     = appconfig.getMaxLength(),
             insertbib     = appconfig.getInsertBib(),
             compilelatex  = compile_latex,
-            rootdir       = appconfig.getRootDir(),
+            rootdir       = appconfig.getRootDirectory(),
             seed          = appconfig.getSeed(),
             imports       = (imports if len(imports) > 0 else ['# no imports']),
             globalvars    = (globalvars if len(globalvars) > 0 else ['    # no global vars']),

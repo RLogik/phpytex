@@ -25,7 +25,7 @@ from src.setup.userconfig import readYamlFile;
 
 def step(fname: str) -> Dict[str, Any]:
     if fname == '':
-        path = appconfig.getWorkingDirectory();
+        path = appconfig.getRootDirectory();
         filepattern = appconfig.getFilePattern();
         fname = (getFilesByPattern(path=path, filepattern=filepattern) + [''])[0];
     setupYamlReader();

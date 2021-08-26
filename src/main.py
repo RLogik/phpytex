@@ -10,16 +10,18 @@ import os;
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)));
 
-from src.core.path import setAppPath;
 from src.core.log import setQuietMode;
 from src.core.utils import getCliArgs;
+from src.setup import appconfig;
 from src.endpoints.exports import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MAIN PROCESS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def enter(*tokens: str, file: str = '', **kwargs: str):
+def enter(*tokens: str, file: str, pathApp: str, pathRoot: str, **kwargs: str):
+    appconfig.setAppDirectory(pathApp);
+    appconfig.setRootDirectory(pathRoot);
     setQuietMode(('q' in tokens));
     if ('version' in tokens) or ('v' in tokens):
         endpoint_display_version()
@@ -35,7 +37,10 @@ def enter(*tokens: str, file: str = '', **kwargs: str):
 
 if __name__ == '__main__':
     sys.tracebacklimit = 4;
-    path = os.path.dirname(os.path.dirname(__file__));
-    setAppPath(path);
     tokens, kwargs = getCliArgs(*sys.argv[1:]);
+    kwargs = dict(
+        file     = '',
+        pathApp  = os.path.dirname(os.path.dirname(__file__)),
+        pathRoot = os.getcwd(),
+    ) | kwargs;
     enter(*tokens, **kwargs);

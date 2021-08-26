@@ -20,9 +20,6 @@ from typing import Tuple;
 from typing import Type;
 from typing import Union;
 
-from src.core.path import getAppPath;
-from src.core.log import logInfo;
-
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -74,36 +71,21 @@ def getFilesByPattern(path: str, filepattern: str) -> List[str]:
     regex = re.compile(filepattern);
     return [ __ for _, __ in getFiles(path) if regex.match(_) ];
 
-def make_file_if_not_exists(path: str, fname: str) -> bool:
-    fname_full = os.path.join(path, fname);
-    try:
-        if not os.path.isfile(fname_full):
-            logInfo('  File \033[96;1m{}\033[0m will be created.'.format(fname));
-            Popen(['touch', fname], cwd=path).wait();
-            Path(fname_full).touch(exist_ok=True);
-    except:
-        pass;
-    return os.path.isfile(fname_full);
-
-def make_dir_if_not_exists(path: str, fname: str) -> bool:
-    fname_full = os.path.join(path, fname);
-    try:
-        if not os.path.isdir(fname_full):
-            logInfo('  Folder \033[96;1m{}\033[0m will be created.'.format(fname));
-            Path(fname_full).mkdir(parents=True, exist_ok=True);
-    except:
-        pass;
-    return os.path.isdir(fname_full);
-
-def create_path(path: str):
+def createPath(path: str):
     if not os.path.exists(path):
         Path(path).mkdir(parents=True, exist_ok=True);
     if not os.path.exists(path):
         raise FileExistsError('Could not create or find path \033[93;1m{}\033[0m!'.format(path));
     return;
 
-def readTextFile(path: str, internal: bool = False) -> str:
-    path = os.path.join(getAppPath(), path) if internal else path;
+def createFile(path: str):
+    if not os.path.exists(path):
+        Path(path).touch(exist_ok=True);
+    if not os.path.exists(path):
+        raise FileExistsError('Could not create or find path \033[93;1m{}\033[0m!'.format(path));
+    return;
+
+def readTextFile(path: str) -> str:
     with open(path, 'r') as fp:
         return ''.join(fp.readlines());
 
@@ -114,7 +96,7 @@ def writeTextFile(
     force_create_empty_line: bool = True
 ):
     if force_create_path:
-        create_path(os.path.dirname(path));
+        createPath(os.path.dirname(path));
     _lines = [lines] if isinstance(lines, str) else lines
     while len(_lines) > 0:
         if not re.match(r'^\s*$', _lines[-1]):

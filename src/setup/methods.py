@@ -11,7 +11,6 @@ from zipfile import ZipFile;
 from typing import Any;
 from typing import Tuple;
 
-from src.core.path import getAppPath;
 from src.core.utils import readTextFile;
 from src.core.utils import ENCODING_UTF8;
 from src.setup import appconfig;
@@ -42,9 +41,9 @@ def setOpenSource(value: bool = True):
 
 def readFile(path: str, encoding: str = ENCODING_UTF8) -> str:
     if _opensource:
-        text = readTextFile(path, internal=True);
+        text = readTextFile(os.path.join(appconfig.getAppDirectory(), path));
     else:
-        with ZipFile(getAppPath(), 'r') as archive:
+        with ZipFile(appconfig.getAppDirectory(), 'r') as archive:
             text = archive.read(path).decode(encoding);
     return text;
 
@@ -79,20 +78,17 @@ def extractfilename(
     relative_to: Any  = None,
     ext:         Any  = None
 ) -> Tuple[str, str, str]:
-    root = root if isinstance(root, str) else appconfig.getRootDir();
+    root = root if isinstance(root, str) else appconfig.getRootDirectory();
     root = os.path.abspath(os.path.normpath(root));
     if re.match(r'\:|^[\/\\]', path):
         relative = relative if isinstance(relative, bool) else False;
-        path = os.path.abspath(os.path.normpath(path));
     else:
         relative = relative if isinstance(relative, bool) else True;
         path = os.path.join(root, path);
-        path = os.path.abspath(os.path.normpath(path));
+    path = os.path.abspath(os.path.normpath(path));
 
     if relative:
-        root = relative_to;
-        if not isinstance(root, str):
-            root = appconfig.getRootDir();
+        root = relative_to if isinstance(relative_to, str) else appconfig.getRootDirectory();
         root = os.path.abspath(os.path.normpath(root));
         root_parts = re.split(r'/+', re.sub('^/+', '', root));
         path_parts = re.split(r'/+', re.sub('^/+', '', path));
@@ -110,11 +106,9 @@ def extractfilename(
         path, _ = os.path.splitext(path);
         path = path if ext == '' else '{}.{}'.format(path, ext);
 
+    root = fname = '';
     if split:
         root, fname = os.path.split(path);
         path = os.path.normpath('/'.join([root, fname]));
-    else:
-        root = '';
-        fname = '';
 
     return path, root, fname;

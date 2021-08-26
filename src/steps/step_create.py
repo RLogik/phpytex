@@ -13,9 +13,9 @@ from typing import Any;
 from typing import Dict;
 from typing import List;
 
+from src.core.utils import createFile;
+from src.core.utils import createPath;
 from src.core.utils import getAttribute;
-from src.core.utils import make_file_if_not_exists;
-from src.core.utils import make_dir_if_not_exists;
 from src.core.utils import writeTextFile;
 from src.setup import appconfig;
 from src.parsers.methods import convertToPythonString;
@@ -37,7 +37,7 @@ def step(
     folders:    Dict[str, Any] = dict(),
     **_
 ):
-    createFilesAndFolders(path=appconfig.getWorkingDirectory(), files=files, folders=folders);
+    createFilesAndFolders(path=appconfig.getRootDirectory(), files=files, folders=folders);
     createFileStamp(**stamp);
     createFileParameters(**parameters);
     logInfo('Creation stage complete.');
@@ -74,7 +74,7 @@ def createFileStamp(
     **_
 ):
     appconfig.setStampFile(file);
-    path = os.path.join(appconfig.getWorkingDirectory(), file);
+    path = os.path.join(appconfig.getRootDirectory(), file);
     if os.path.isfile(path) and not overwrite:
         return;
     lines = [];
@@ -111,7 +111,7 @@ def createFileParameters(
 ):
     global PARAMDATEI;
     PARAMDATEI = file;
-    path = os.path.join(appconfig.getWorkingDirectory(), file);
+    path = os.path.join(appconfig.getRootDirectory(), file);
     if os.path.isfile(path) and not overwrite:
         return;
     lines = [];
@@ -126,3 +126,27 @@ def createFileParameters(
             continue;
     writeTextFile(path=path, lines=lines);
     return;
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# TERTIARY METHODS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def make_file_if_not_exists(path: str, fname: str) -> bool:
+    fname_full = os.path.join(path, fname);
+    try:
+        if not os.path.isfile(fname_full):
+            logInfo('  File \033[96;1m{}\033[0m will be created.'.format(fname));
+            createFile(fname_full);
+    except:
+        pass;
+    return os.path.isfile(fname_full);
+
+def make_dir_if_not_exists(path: str, fname: str) -> bool:
+    fname_full = os.path.join(path, fname);
+    try:
+        if not os.path.isdir(fname_full):
+            logInfo('  Folder \033[96;1m{}\033[0m will be created.'.format(fname));
+            createPath(path=fname_full);
+    except:
+        pass;
+    return os.path.isdir(fname_full);

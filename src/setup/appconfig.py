@@ -19,8 +19,8 @@ from typing import Tuple;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 _file_pattern:        str = r'^.*\.phpycreate\.(yml|yaml)$';
-_root_dir:            str;
-_working_directory:   str;
+_app_directory:       str;
+_root_directory:      str;
 _global_vars:         Dict[str, Any] = dict(__ROOT__='.', __DIR__='.');
 _export_vars:         Dict[str, Any] = dict();
 _includes:            List[str] = [];
@@ -28,9 +28,9 @@ _insert_bib:          bool = False;
 _error:               bool = False;
 _py_error:            bool = False;
 _stamp_file:          str;
-_phpytex_file:           str;
+_phpytex_file:        str;
 _script_file:         str;
-_latex_file:         str;
+_latex_file:          str;
 _export_params:       bool = False;
 _param_file:          str;
 _param_py_import:     str;
@@ -104,20 +104,20 @@ def setFilePattern(value: str):
     _file_pattern = value;
     return;
 
-def getRootDir() -> str:
-    return _root_dir;
+def getAppDirectory() -> str:
+    return _app_directory;
 
-def setRootDir(value: str):
-    global _root_dir;
-    _root_dir = value;
+def setAppDirectory(value: str):
+    global _app_directory;
+    _app_directory = value;
     return;
 
-def getWorkingDirectory() -> str:
-    return _working_directory;
+def getRootDirectory() -> str:
+    return _root_directory;
 
-def setWorkingDirectory(value: str):
-    global _working_directory;
-    _working_directory = value;
+def setRootDirectory(value: str):
+    global _root_directory;
+    _root_directory = value;
     return;
 
 def getGlobalVars() -> Dict[str, Any]:
