@@ -7,7 +7,11 @@ import random;
 import subprocess;
 from typing import Any;{import_params}
 
-____lines____            = {{'post-compile':[ ], 'anon':[ ], 'bib':{{}}}};
+____lines____            = {{
+    'post-compile': [ ],
+    'anon':         [ ],
+    'bib':          dict(),
+}};
 ____len_empty_block____  = 0;
 ____indent____           = '{indentchar}';
 ____indentation____      = '';
@@ -194,25 +198,26 @@ def ____insertbib(fname='', src='', indent='', anon=False):
         ____lines____['bib'][src].append(n-1);
     pass;
 
-def pipeCall(*_args, cwd = None):
-    args = [_ for _ in _args];
-    cmd = ' '.join(args);
-    if not isinstance(cwd, str):
-        cwd = ____rootdir____;
-    pipe = subprocess.Popen(args, cwd=cwd);
-    pipe.wait();
-    if pipe.returncode == 0:
+## NOTE: subprocess.run is like subprocess.Popen but waits for result
+def pipeCall(*args: str, cwd = None, errormsg: str = '', fnameOut: Union[None, str] = None):
+    cwd = cwd if isinstance(cwd, str) else ____rootdir____;
+    if fnameOut is None:
+        result = subprocess.run(list(args), cwd=cwd)
+    else:
+        with open(fnameOut, 'w') as fp:
+            result = subprocess.run(list(args), cwd=cwd, stdout=fp);
+    if result.returncode == 0:
         return;
-    raise Exception('Shell command < \033[94;1m{{}}\033[0m > failed.'.format(cmd));
+    raise Exception(errormsg or 'Shell command < \033[94;1m{{}}\033[0m > failed.'.format(' '.join(args)));
 
 ## PDFLATEX:
 def ____compilelatex():
     print('\n\nPDFLATEX WIRD AUSGEFÜHRT:');
     outfile, _ = os.path.splitext(____filetex_name____);
-    # pipeCall('pdflatex', '-interaction=scrollmode', outfile);
-    # pipeCall('pdflatex', '-interaction=batchmode', outfile);
-    pipeCall('pdflatex', '-interaction=errorstopmode', outfile);
-    # pipeCall('pdflatex', '-interaction=nonstopmode', outfile);
+    # pipeCall('pdflatex', '-interaction=scrollmode', fnameOut=outfile);
+    # pipeCall('pdflatex', '-interaction=batchmode', fnameOut=outfile);
+    pipeCall('pdflatex', '-interaction=errorstopmode', fnameOut=outfile);
+    # pipeCall('pdflatex', '-interaction=nonstopmode', fnameOut=outfile);
     print('\n\nBIBTEX WIRD AUSGEFÜHRT:');
     for src in ____lines____['bib']:
         src, _ = os.path.splitext(src);

@@ -15,7 +15,7 @@ from src.core.log import logError;
 from src.core.log import logFatal;
 from src.core.log import logInfo;
 from src.core.log import logPlain;
-from src.core.utils import callPython;
+from src.core.utils import pipeCall;
 from src.core.utils import formatTextBlock;
 from src.setup import appconfig;
 
@@ -45,7 +45,8 @@ def step(
 
 def execmetacode(lines: List[str], fnamePy: str, fname: str):
     try:
-        callPython(fname=fnamePy);
+        cmd = re.split(r'\s+', appconfig.getPythonPath());
+        pipeCall(*cmd, fnameOut=fnamePy);
     except:
         appconfig.setError(True);
         appconfig.setPyError(True);

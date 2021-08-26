@@ -14,6 +14,8 @@ from typing import Dict;
 from typing import List;
 from typing import Tuple;
 
+from src.core.utils import PythonCommand;
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -21,30 +23,33 @@ from typing import Tuple;
 _file_pattern:        str = r'^.*\.phpycreate\.(yml|yaml)$';
 _app_directory:       str;
 _root_directory:      str;
-_global_vars:         Dict[str, Any] = dict(__ROOT__='.', __DIR__='.');
-_export_vars:         Dict[str, Any] = dict();
-_includes:            List[str] = [];
-_insert_bib:          bool = False;
-_error:               bool = False;
-_py_error:            bool = False;
-_stamp_file:          str;
-_phpytex_file:        str;
+_param_module_name:   str = 'MODULE_GLOBAL_PARAMS';
 _script_file:         str;
 _latex_file:          str;
+_python_path:         str = PythonCommand();
+
+_insert_bib:          bool = False;
+_stamp_file:          str;
+_phpytex_file:        str;
 _export_params:       bool = False;
 _param_file:          str;
 _param_py_import:     str;
-_param_module_name:   str = 'MODULE_GLOBAL_PARAMS';
 _len_precode:         int = 0;
 _length_of_output:    int = 0;
 _max_length:          int = 10000; # <-- prevents transpiler from creating overlarge files
-_too_long:            bool = False;
 # _seed:                int = random.getstate()[1][0];
 _seed:                int = random.randint(0,10**8 - 1);
-_precompile_lines:    List[Tuple[int, Any, str]] = [];
-_censor_length:       int = 8;
 _indent_character:    str;
 _indent_character_re: str;
+
+_error:               bool = False;
+_py_error:            bool = False;
+_too_long:            bool = False;
+_global_vars:         Dict[str, Any] = dict(__ROOT__='.', __DIR__='.');
+_export_vars:         Dict[str, Any] = dict();
+_includes:            List[str] = [];
+_precompile_lines:    List[Tuple[int, Any, str]] = [];
+_censor_length:       int = 8;
 _document_structure:  List[str];
 _list_of_imports:     List[str];
 _indentation:         IndentationTracker;
@@ -120,28 +125,12 @@ def setRootDirectory(value: str):
     _root_directory = value;
     return;
 
-def getGlobalVars() -> Dict[str, Any]:
-    return _global_vars;
+def getPythonPath() -> str:
+    return _python_path;
 
-def setGlobalVars(value: Dict[str, Any]):
-    global _global_vars;
-    _global_vars = value;
-    return;
-
-def getExportVars() -> Dict[str, Any]:
-    return _export_vars;
-
-def setExportVars(value: Dict[str, Any]):
-    global _export_vars;
-    _export_vars = value;
-    return;
-
-def getIncludes() -> List[str]:
-    return _includes;
-
-def setIncludes(value: List[str]):
-    global _includes;
-    _includes = value;
+def setPythonPath(value: str):
+    global _python_path;
+    _python_path = value;
     return;
 
 def getInsertBib() -> bool:
@@ -150,22 +139,6 @@ def getInsertBib() -> bool:
 def setInsertBib(value: bool):
     global _insert_bib;
     _insert_bib = value;
-    return;
-
-def getError() -> bool:
-    return _error;
-
-def setError(value: bool):
-    global _error;
-    _error = value;
-    return;
-
-def getPyError() -> bool:
-    return _py_error;
-
-def setPyError(value: bool):
-    global _py_error;
-    _py_error = value;
     return;
 
 def getStampFile() -> str:
@@ -256,36 +229,12 @@ def setMaxLength(value: int):
     _max_length = value;
     return;
 
-def getTooLong() -> bool:
-    return _too_long;
-
-def setTooLong(value: bool):
-    global _too_long;
-    _too_long = value;
-    return;
-
 def getSeed() -> int:
     return _seed;
 
 def setSeed(value: int):
     global _seed;
     _seed = value;
-    return;
-
-def getPrecompileLines() -> List[Tuple[int, Any, str]]:
-    return _precompile_lines;
-
-def setPrecompileLines(value: List[Tuple[int, Any, str]]):
-    global _precompile_lines;
-    _precompile_lines = value;
-    return;
-
-def getCensorLength() -> int:
-    return _censor_length;
-
-def setCensorLength(value: int):
-    global _censor_length;
-    _censor_length = value;
     return;
 
 def getIndentCharacter() -> str:
@@ -302,6 +251,70 @@ def getIndentCharacterRe() -> str:
 def setIndentCharacterRe(value: str):
     global _indent_character_re;
     _indent_character_re = value;
+    return;
+
+def getError() -> bool:
+    return _error;
+
+def setError(value: bool):
+    global _error;
+    _error = value;
+    return;
+
+def getPyError() -> bool:
+    return _py_error;
+
+def setPyError(value: bool):
+    global _py_error;
+    _py_error = value;
+    return;
+
+def getTooLong() -> bool:
+    return _too_long;
+
+def setTooLong(value: bool):
+    global _too_long;
+    _too_long = value;
+    return;
+
+def getGlobalVars() -> Dict[str, Any]:
+    return _global_vars;
+
+def setGlobalVars(value: Dict[str, Any]):
+    global _global_vars;
+    _global_vars = value;
+    return;
+
+def getExportVars() -> Dict[str, Any]:
+    return _export_vars;
+
+def setExportVars(value: Dict[str, Any]):
+    global _export_vars;
+    _export_vars = value;
+    return;
+
+def getIncludes() -> List[str]:
+    return _includes;
+
+def setIncludes(value: List[str]):
+    global _includes;
+    _includes = value;
+    return;
+
+def getPrecompileLines() -> List[Tuple[int, Any, str]]:
+    return _precompile_lines;
+
+def setPrecompileLines(value: List[Tuple[int, Any, str]]):
+    global _precompile_lines;
+    _precompile_lines = value;
+    return;
+
+def getCensorLength() -> int:
+    return _censor_length;
+
+def setCensorLength(value: int):
+    global _censor_length;
+    _censor_length = value;
     return;
 
 def getDocumentStructure() -> List[str]:

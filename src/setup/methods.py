@@ -39,7 +39,7 @@ def setOpenSource(value: bool = True):
 # METHOD: read file
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def readFile(path: str, encoding: str = ENCODING_UTF8) -> str:
+def readFileContents(path: str, encoding: str = ENCODING_UTF8) -> str:
     if _opensource:
         text = readTextFile(os.path.join(appconfig.getAppDirectory(), path));
     else:
@@ -52,19 +52,19 @@ def readFile(path: str, encoding: str = ENCODING_UTF8) -> str:
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def getVersion() -> str:
-    return readFile(PATH_TO_VERSION).strip();
+    return readFileContents(PATH_TO_VERSION).strip();
 
 def getTemplateHelp() -> str:
-    return readFile(PATH_TO_TEMPLATE_HELP);
+    return readFileContents(PATH_TO_TEMPLATE_HELP);
 
 def getTemplatePhpytexLines() -> Tuple[str, str]:
     return (
-        readFile(PATH_TO_TEMPLATE_PHPYTEXLINES_PRE),
-        readFile(PATH_TO_TEMPLATE_PHPYTEXLINES_POST),
+        readFileContents(PATH_TO_TEMPLATE_PHPYTEXLINES_PRE),
+        readFileContents(PATH_TO_TEMPLATE_PHPYTEXLINES_POST),
     );
 
 def getGrammar(fname: str) -> str:
-    return readFile(os.path.join(PATH_TO_GRAMMARS, fname));
+    return readFileContents(os.path.join(PATH_TO_GRAMMARS, fname));
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # METHODS: extract file name

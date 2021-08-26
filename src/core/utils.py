@@ -5,13 +5,13 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+import sys;
 import os;
 import re;
 
 from pathlib import Path;
 from platform import system as platformSystem;
-from subprocess import Popen;
-from subprocess import run as subprocessRun;
+import subprocess;
 from textwrap import dedent;
 from typing import Any;
 from typing import Dict;
@@ -33,7 +33,8 @@ ENCODING_UNICODE: str = 'unicode_escape';
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def isLinux() -> bool:
-    return not ( os.name == 'nt' );
+    # return not ( os.name == 'nt' );
+    return not ( platformSystem().lower() == 'windows' );
 
 def PythonCommand() -> str:
     return 'python3' if isLinux() else 'py -3';
@@ -42,26 +43,17 @@ def PythonCommand() -> str:
 # METHODS: io
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def pipeCall(*_args, cwd = None, errormsg: str):
-    args = [_ for _ in _args];
-    if not isinstance(cwd, str):
-        cwd = os.getcwd();
-    pipe = Popen(args, cwd=cwd);
-    pipe.wait();
-    if pipe.returncode == 0:
-        return;
-    raise Exception(errormsg);
-
-def callPython(fname: str, *args: str, fnameOut: Union[None, str] = None):
-    cmd = ['py', '-3'] if platformSystem().lower() == 'windows' else ['python3'];
-    cmd = [*cmd, fname, *args];
+## NOTE: subprocess.run is like subprocess.Popen but waits for result
+def pipeCall(*args: str, cwd = None, errormsg: str = '', fnameOut: Union[None, str] = None):
+    cwd = cwd if isinstance(cwd, str) else os.getcwd();
     if fnameOut is None:
-        result = subprocessRun(cmd);
+        result = subprocess.run(list(args), cwd=cwd)
     else:
         with open(fnameOut, 'w') as fp:
-            result = subprocessRun(cmd, stdout=fp);
-    if not result.returncode == 0:
-        raise Exception('The process did not run successfully.');
+            result = subprocess.run(list(args), cwd=cwd, stdout=fp);
+    if result.returncode == 0:
+        return;
+    raise Exception(errormsg or 'Shell command < \033[94;1m{{}}\033[0m > failed.'.format(' '.join(args)));
 
 def getFiles(path: str) -> List[Tuple[str, str]]:
     items = [(_, os.path.join(path, _)) for _ in os.listdir(path)];
