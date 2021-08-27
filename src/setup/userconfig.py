@@ -51,10 +51,10 @@ def setupYamlReader():
             expr = None;
         return EvalType(expr);
 
-    add_constructor(tag=u'!eval', constructor=eval_constructor, Loader=Loader);
-    add_constructor(tag=u'!not',  constructor=not_constructor,  Loader=Loader);
-    add_constructor(tag=u'!join', constructor=join_constructor, Loader=Loader);
-    add_constructor(tag=u'!key',  constructor=key_constructor,  Loader=Loader);
+    add_constructor(tag=u'!eval', constructor=eval_constructor);
+    add_constructor(tag=u'!not',  constructor=not_constructor);
+    add_constructor(tag=u'!join', constructor=join_constructor);
+    add_constructor(tag=u'!key',  constructor=key_constructor);
     return;
 
 def readYamlFile(path: str) -> dict:

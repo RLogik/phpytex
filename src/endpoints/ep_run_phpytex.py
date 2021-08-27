@@ -37,6 +37,7 @@ def endpoint(
     option_debug = getAttribute(config_compile, 'debug', expectedtype=bool, default=False);
     setIndentation(**config_compile);
     step_create(**config);
+    return; ## DEV NOTE: subsequent stages under development
     lines = step_phpytex_to_python(**toPythonKeysDict(config_compile));
     if option_debug:
         logInfo('See output file: \033[1m{fnamePy}\033[0m'.format(fnamePy=appconfig.getScriptFile()));

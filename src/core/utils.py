@@ -5,7 +5,6 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-import sys;
 import os;
 import re;
 
@@ -62,6 +61,22 @@ def getFiles(path: str) -> List[Tuple[str, str]]:
 def getFilesByPattern(path: str, filepattern: str) -> List[str]:
     regex = re.compile(filepattern);
     return [ __ for _, __ in getFiles(path) if regex.match(_) ];
+
+def createNewPathName(dir: str, nameinit: str = 'tmp', namescheme: str = 'tmp_{}') -> str:
+    path = os.path.join(dir, nameinit);
+    i = 0;
+    while os.path.isdir(path):
+        path = os.path.join(dir, namescheme.format(i));
+        i += 1;
+    return path;
+
+def createNewFileName(dir: str, nameinit: str = 'tmp', namescheme: str = 'tmp_{}') -> str:
+    path = os.path.join(dir, nameinit);
+    i = 0;
+    while os.path.isfile(path):
+        path = os.path.join(dir, namescheme.format(i));
+        i += 1;
+    return path;
 
 def createPath(path: str):
     if not os.path.exists(path):

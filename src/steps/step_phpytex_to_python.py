@@ -5,11 +5,8 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-import sys;
-import os;
 import re;
 import random;
-from tempfile import NamedTemporaryFile;
 from typing import Any;
 from typing import Dict;
 from typing import Tuple;
@@ -17,6 +14,7 @@ from typing import List;
 
 from src.core.log import logInfo;
 from src.core.log import getQuietMode;
+from src.core.utils import createNewFileName;
 from src.core.utils import formatTextBlockAsList;
 from src.core.utils import writeTextFile;
 from src.setup import appconfig;
@@ -99,7 +97,8 @@ def step(
         exportParameters(fname=fname_params, globalvars=_global_vars);
 
     fnameLatex, _, _ = extractfilename(path=appconfig.getLatexFile(), relative=False, ext='tex');
-    fnamePy = createmetacode(lines=lines, imports=appconfig.getListOfImports(), globalvars=_global_vars, fname=fnameLatex, compile_latex=compile_latex);
+    fnamePy = createNewFileName(dir=appconfig.getRootDirectory(), nameinit='phpytex_main.py', namescheme='phpytex_main_{}.py');
+    createmetacode(lines=lines, imports=appconfig.getListOfImports(), globalvars=_global_vars, fname=fnameLatex, fnameOut=fnamePy, compile_latex=compile_latex);
 
     appconfig.setScriptFile(fnamePy);
     appconfig.setPrecompileLines(_precompile_lines);
@@ -188,11 +187,12 @@ def Knit(
 
 def createmetacode(
     fname: str,
+    fnameOut: str,
     lines: List[str],
     imports: List[str],
     globalvars: List[str],
     compile_latex: bool
-) -> str:
+):
     fname_rel, _, _ = extractfilename(path=fname, relative=True, ext='');
     _phpytex_lines = getTemplatePhpytexLines()
     lines_pre = formatTextBlockAsList(
@@ -206,15 +206,12 @@ def createmetacode(
             compilelatex  = compile_latex,
             rootdir       = appconfig.getRootDirectory(),
             seed          = appconfig.getSeed(),
-            imports       = (imports if len(imports) > 0 else ['# no imports']),
-            globalvars    = (globalvars if len(globalvars) > 0 else ['    # no global vars']),
+            imports       = '\n    '.join(imports if len(imports) > 0 else [ '# no imports' ]),
+            globalvars    = '\n    '.join(globalvars if len(globalvars) > 0 else [ '    # no global vars' ]),
         )
     );
     appconfig.setLenPrecode(len(lines_pre));
     lines[:] = lines_pre + lines + formatTextBlockAsList(_phpytex_lines[1].format());
     ## create temp file and write to this:
-    fp = NamedTemporaryFile(dir=os.getcwd(), prefix='tmp_', suffix='.py', delete=False);
-    fnamePy = fp.name;
-    fp.close();
-    writeTextFile(fnamePy, lines);
-    return fnamePy;
+    writeTextFile(fnameOut, lines);
+    return;
