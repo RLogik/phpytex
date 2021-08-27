@@ -203,6 +203,11 @@ function run_test_unit() {
     _log_info "Unit tests erfolgreich!";
 }
 
+function run_test_cases() {
+    _log_info "TEST CASES";
+    call_v_python test/cases/main.py;
+}
+
 function run_clean_artefacts() {
     _log_info "CLEAN ARTEFACTS";
     garbage_collection_build;

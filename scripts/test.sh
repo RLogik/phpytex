@@ -16,15 +16,20 @@ SERVICE="test-service";
 source scripts/.lib.sh;
 
 mode="$( get_one_kwarg_space "$SCRIPTARGS" "-+mode" "")";
+options="$( get_kwarg "$SCRIPTARGS" "-+options" "" )";
 
 if [ "$mode" == "setup" ]; then
-    # whale_call <service>  <tag-sequence>    <save, it, ports> <type, command>
-    whale_call   "$SERVICE" ".,setup"         true false true   SCRIPT $ME $SCRIPTARGS;
+    # whale_call <service>  <tag-sequence> <save, it, ports> <type, command>
+    whale_call   "$SERVICE" ".,setup"      true false true   SCRIPT $ME $SCRIPTARGS;
     run_setup;
 elif [ "$mode" == "unit" ]; then
-    # whale_call <service>  <tag-sequence>    <save, it, ports> <type, command>
-    whale_call   "$SERVICE" "setup,unit"      false false true  SCRIPT $ME $SCRIPTARGS;
-    run_test_unit;
+    # whale_call <service>  <tag-sequence> <save, it, ports> <type, command>
+    whale_call   "$SERVICE" "setup,unit"   false false true  SCRIPT $ME $SCRIPTARGS;
+    run_test_unit $options;
+elif [ "$mode" == "cases" ]; then
+    # whale_call <service>  <tag-sequence> <save, it, ports> <type, command>
+    whale_call   "$SERVICE" "setup,cases"  false false true  SCRIPT $ME $SCRIPTARGS;
+    run_test_cases;
 elif [ "$mode" == "explore" ]; then
     # whale_call <service>  <tag-sequence>    <save, it, ports> <type, command>
     whale_call   "$SERVICE" "setup,(explore)" true true true    SCRIPT $ME $SCRIPTARGS;
@@ -33,9 +38,10 @@ else
     _log_error   "Invalid cli argument.";
     _cli_message "";
     _cli_message "  Call \033[1m./test.sh\033[0m with one of the commands";
-    _cli_message "    $( _help_cli_key_values      "--mode" "         " "setup" "unit" "explore" )";
+    _cli_message "    $( _help_cli_key_values      "--mode" "         " "setup" "unit" "cases" "explore" )";
     _cli_message "    $( _help_cli_key_description "--mode setup" "   " "compiles programme with test configuration" )";
     _cli_message "    $( _help_cli_key_description "--mode unit" "    " "runs unit test" )";
+    _cli_message "    $( _help_cli_key_description "--mode cases" "   " "runs through test cases" )";
     _cli_message "    $( _help_cli_key_description "--mode explore" " " "opens the console (potentially in docker)" )";
     _cli_message "";
     exit 1;
