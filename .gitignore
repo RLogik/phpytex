@@ -34,9 +34,11 @@
 !/test
 !/test/cases
 !/test/cases/case*
-!/test/cases/case*/**
-!/test/cases/*.py
+!/test/cases/case*/*.yml
+!/test/cases/case*/**/
 !/test/unit
+!/test/**/*.py
+!/test/**/*.tex
 
 !/data
 /data/**
