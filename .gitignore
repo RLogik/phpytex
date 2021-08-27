@@ -32,6 +32,11 @@
 !/src/**
 
 !/test
+!/test/cases
+!/test/cases/case*
+!/test/cases/case*/**
+!/test/cases/*.py
+!/test/unit
 
 !/data
 /data/**
