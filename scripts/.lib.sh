@@ -21,6 +21,9 @@ env_from ".env" import PORTS               as DOCKER_PORTS;
 whales_set_ports "$DOCKER_PORTS";
 
 export CONFIGENV="data/.env";
+export PYTHON_APP_PREFIX=\
+'''#!/usr/bin/env python3
+# -*- coding: utf-8 -*-'''
 
 ##############################################################################
 # AUXILIARY METHODS: Zip
@@ -42,6 +45,7 @@ function create_python_venv() {
 }
 
 function activate_python_venv() {
+    return;
     if ( is_linux ); then
         source build/env/bin/activate;
     else
@@ -133,14 +137,13 @@ function garbage_collection_build() {
 
 function garbage_collection_python() {
     clean_all_folders_of_pattern ".DS_Store";
-    pushd src >> $VERBOSE;
-        # clean_all_files_of_pattern "*\.pyo";
-        clean_all_folders_of_pattern "__pycache__";
-    popd >> $VERBOSE;
-    pushd test >> $VERBOSE;
-        # clean_all_files_of_pattern "*\.pyo";
-        clean_all_folders_of_pattern "__pycache__";
-    popd >> $VERBOSE;
+    local path;
+    for path in "src" "test"; do
+        pushd "$path" >> $VERBOSE;
+            # clean_all_files_of_pattern "*\.pyo";
+            clean_all_folders_of_pattern "__pycache__";
+        popd >> $VERBOSE;
+    done
 }
 
 ##############################################################################
@@ -166,7 +169,7 @@ function run_create_artefact() {
     pushd "$_temp" >> $VERBOSE;
         create_zip_archive -o "$current_dir/dist/app.zip" * -x '*__pycache__/*' -x '*.DS_Store';
     popd >> $VERBOSE;
-    echo '#!/usr/bin/env python3' | cat - dist/app.zip > dist/$NAME_OF_APP;
+    echo  "$PYTHON_APP_PREFIX" | cat - dist/app.zip > dist/$NAME_OF_APP;
     chmod +x "dist/$NAME_OF_APP";
     ## remove temp artefacts:
     remove_dir "$_temp";
