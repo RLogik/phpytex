@@ -20,19 +20,29 @@ os.chdir(_test_path);
 sys.path.insert(0, _project_path);
 
 from src.core.log import *;
+from src.core.utils import getAttribute;
+from src.core.utils import getCliArgs;
 from src.core.utils import createNewPathName;
 from src.core.utils import pipeCall;
 from src.core.utils import PythonCommand;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# GLOBAL VARIABLES
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MAIN PROCESS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def main():
+def main(*tokens, **kwargs):
+    inspect = ( 'inspect' in tokens );
     phpytex_script = os.path.join(_project_path, 'src', 'main.py');
     cases = StepGetTestCases();
     for path, sandboxpath in cases:
-        StepRunTestCase(path, sandboxpath, phpytex_script);
+        logPlain('');
+        StepRunTestCase(path=path, sandboxpath=sandboxpath, phpytex_script=phpytex_script, inspect=inspect);
     return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -49,19 +59,35 @@ def StepGetTestCases() -> List[Tuple[str, str]]:
             continue;
         path_full = os.path.join(_test_path, path);
         cases.append((path_full, sandboxpath));
+    cases = sorted(cases, key=lambda x: x[0]);
     return cases;
 
-def StepRunTestCase(path: str, sandboxpath: str, phpytex_script: str):
-    logInfo('TEST CASE - {}'.format(path));
-    shutil.copytree(src=path, dst=sandboxpath);
+def StepRunTestCase(
+    path:           str,
+    sandboxpath:    str,
+    phpytex_script: str,
+    inspect:        bool
+):
+    logInfo('START TEST CASE');
+    logInfo('path = \033[1m{}\033[0m'.format(getRelPath(path)));
 
+    shutil.copytree(src=path, dst=sandboxpath);
     cmd = re.split(r'\s+', PythonCommand());
     pipeCall(*cmd, phpytex_script, cwd=sandboxpath);
 
-    logInfo('TEST CASE - {} - complete'.format(path));
-    input('Press any key to continue...');
+    if inspect:
+        logDebug('Output can be temporarily inspected in \033[1m{}\033[0m'.format(getRelPath(sandboxpath)))
+        input('Press any key to continue...');
+    logInfo('END TEST CASE');
     subprocess.run(['rm', '-rf', sandboxpath]);
     return;
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# TERTIARY PROCESSES
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def getRelPath(path: str) -> str:
+    return os.path.relpath(path, start=_project_path);
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # EXECUTION
@@ -69,4 +95,5 @@ def StepRunTestCase(path: str, sandboxpath: str, phpytex_script: str):
 
 if __name__ == '__main__':
     sys.tracebacklimit = 4;
-    main();
+    tokens, kwargs = getCliArgs(*sys.argv[1:]);
+    main(*tokens, **kwargs);
