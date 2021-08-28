@@ -151,7 +151,7 @@ function garbage_collection_python() {
 ##############################################################################
 
 function run_setup() {
-    _log_info "SETUP";
+    _log_info "RUN SETUP";
     _log_info "Create VENV";
     create_python_venv;
     _log_info "Check and install missing requirements";
@@ -190,7 +190,7 @@ function run_test_unit() {
     local asverbose=$1;
     local verboseoption="";
     ( $asverbose ) && verboseoption="-v";
-    _log_info "UNITTESTS";
+    _log_info "RUN UNITTESTS";
     local output="$(call_v_utest            \
         $verboseoption                      \
         --top-level-directory "."           \
@@ -204,8 +204,9 @@ function run_test_unit() {
 }
 
 function run_test_cases() {
-    _log_info "TEST CASES";
-    call_v_python test/cases/main.py;
+    local args="$@";
+    _log_info "RUN TEST CASES";
+    call_v_python test/cases/main.py $args;
 }
 
 function run_clean_artefacts() {

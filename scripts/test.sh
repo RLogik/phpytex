@@ -29,7 +29,7 @@ elif [ "$mode" == "unit" ]; then
 elif [ "$mode" == "cases" ]; then
     # whale_call <service>  <tag-sequence> <save, it, ports> <type, command>
     whale_call   "$SERVICE" "setup,cases"  false false true  SCRIPT $ME $SCRIPTARGS;
-    run_test_cases;
+    run_test_cases $options;
 elif [ "$mode" == "explore" ]; then
     # whale_call <service>  <tag-sequence>    <save, it, ports> <type, command>
     whale_call   "$SERVICE" "setup,(explore)" true true true    SCRIPT $ME $SCRIPTARGS;
