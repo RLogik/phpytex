@@ -22,23 +22,24 @@ def endpoint(
     fname: str,
     **_
 ):
+    config = step_readconfig(fname=fname);
+    option_ignore = getAttribute(config, 'ignore', expectedtype=bool, default=False);
+    if option_ignore:
+        logInfo('\033[32;1m(PH(p)y)tex\033[0m transpilation will be skipped.');
+        return;
     logPlain(formatTextBlock('''
         ----------------------
         |     \033[32;1m(PH(p)y)tex\033[0m    |
         ----------------------
     '''));
-    config = step_readconfig(fname=fname);
-    option_ignore = getAttribute(config, 'ignore', expectedtype=bool, default=False);
-    if option_ignore:
-        logInfo('(PH(p)y)tex Transpilation will be skipped.');
-        return;
     config_compile = getAttribute(config, 'compile', 'options', expectedtype=dict, default=None) \
                         or getAttribute(config, 'compile', expectedtype=dict, default={});
     option_debug = getAttribute(config_compile, 'debug', expectedtype=bool, default=False);
     setIndentation(**config_compile);
     step_create(**config);
     return; ## DEV NOTE: subsequent stages under development
-    lines = step_phpytex_to_python(**toPythonKeysDict(config_compile));
+    lines = [];
+    step_phpytex_to_python(lines=lines, **toPythonKeysDict(config_compile));
     if option_debug:
         logInfo('See output file: \033[1m{fnamePy}\033[0m'.format(fnamePy=appconfig.getScriptFile()));
     else:

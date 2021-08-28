@@ -33,6 +33,7 @@ from src.setup.methods import extractfilename, getTemplatePhpytexLines;
 def step(
     root:           str,
     seed:           int,
+    lines:          List[str],
     output:         str  = 'main.tex',
     export_params:  str  = '',
     insert_bib:     bool = False,
@@ -41,7 +42,7 @@ def step(
     max_length:     int  = 10000,
     compile_latex:  bool = False,
     **_
-) -> List[str]:
+):
     appconfig.setSeed(seed);
     appconfig.setMaxLength(max_length);
     appconfig.setInsertBib(insert_bib);
@@ -68,7 +69,7 @@ def step(
     appconfig.setStampFile(_stamp_file);
 
     random.seed(seed); # <-- only do this once!
-    lines = [];
+    lines[:] = [];
     _precompile_lines = [];
     _list_of_imports = [];
     _global_vars = [];
@@ -79,6 +80,7 @@ def step(
         'no-comm-auto': (comments == 'auto'),
         'show-structure': show_structure,
     };
+
     Knit(
         filecontents = lines,
         imports      = _list_of_imports,
@@ -91,7 +93,9 @@ def step(
         ),
         params       = params,
     );
+
     addpreamble(lines=lines, params=params, silent=getQuietMode());
+
     if appconfig.getExportParams():
         fname_params, _, _ = extractfilename(path=appconfig.getParamFile(), relative=True, ext='py');
         exportParameters(fname=fname_params, globalvars=_global_vars);
@@ -105,7 +109,7 @@ def step(
     appconfig.setListOfImports(_list_of_imports);
 
     logInfo('Transpilation (phpytex -> python) complete.');
-    return lines;
+    return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # SECONDARY METHODS
