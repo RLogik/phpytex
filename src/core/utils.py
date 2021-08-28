@@ -156,7 +156,7 @@ def formatBlockIndent(u: str, indent: str) -> str:
     return '\n'.join(linesNew);
 
 def DedentIgnoreFirstAndLast(s: str) -> str:
-    s = re.sub(r'(^[\n\r])|([\n\r]$)', '', s);
+    s = re.sub(r'^\s*[\n\r]|[\n\r]\s*$', '', s);
     return dedent(s);
 
 def formatTextBlock(s: str) -> str:
