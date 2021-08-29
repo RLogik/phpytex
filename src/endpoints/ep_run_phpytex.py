@@ -12,7 +12,6 @@ from src.core.utils import formatTextBlock;
 from src.core.utils import getAttribute;
 from src.core.utils import toPythonKeysDict;
 from src.steps.exports import *;
-from src.parsers.phpytex import setIndentation;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ENDPOINT run phpytex
@@ -35,14 +34,14 @@ def endpoint(
     config_compile = getAttribute(config, 'compile', 'options', expectedtype=dict, default=None) \
                         or getAttribute(config, 'compile', expectedtype=dict, default={});
     option_debug = getAttribute(config_compile, 'debug', expectedtype=bool, default=False);
-    setIndentation(**config_compile);
+    step_code_style(**config_compile);
     step_create(**config);
-    return; ## DEV NOTE: subsequent stages under development
     lines = [];
     step_phpytex_to_python(lines=lines, **toPythonKeysDict(config_compile));
     if option_debug:
         logInfo('See output file: \033[1m{fnamePy}\033[0m'.format(fnamePy=appconfig.getScriptFile()));
     else:
+        return; ## DEV NOTE: subsequent stages under development
         step_python_to_latex(lines=lines, **toPythonKeysDict(config_compile));
         step_latex_to_pdf();
     return;
