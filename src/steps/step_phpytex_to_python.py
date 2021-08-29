@@ -51,7 +51,7 @@ def step(
 
     # must initialise arrays!
     appconfig.initIndentation(pattern=appconfig.getIndentCharacterRe());
-    _main_file = root;
+    _input_file = root;
     _output_file = output;
     if isinstance(export_params, str) and not (export_params == ''):
         assert re.match(r'^(\S+\.)*\S+$', export_params), '\033[1mexport-params\033[0m option must by a python-like import path (relative to the root of the project).';
@@ -61,11 +61,14 @@ def step(
         appconfig.setParamPyImport(export_params);
         appconfig.setParamFile(_param_file);
 
-    _main_file, _, _  = extractfilename(path=_main_file, relative=True);
-    _output_file, _, _ = extractfilename(path=_output_file, relative=True, ext='');
-    assert not (_main_file == _output_file), 'The output and root files must be different!';
+    _input_file, _, _  = extractfilename(path=_input_file, relative=True);
+    _output_file, _, _ = extractfilename(path=_output_file, relative=True);
+    assert not (_input_file == _output_file), 'The output and root files must be different!';
     _stamp_file = appconfig.getStampFile();
     _stamp_file, _, _ = extractfilename(path=_stamp_file, relative=True);
+
+    appconfig.setPhpytexFile(_input_file);
+    appconfig.setLatexFile(_output_file);
     appconfig.setStampFile(_stamp_file);
 
     random.seed(seed); # <-- only do this once!
@@ -88,8 +91,8 @@ def step(
         mute         = False,
         silent       = getQuietMode(),
         filename     = dict(
-            src      = _main_file,
-            main     = '{}.tex'.format(_output_file),
+            src      = appconfig.getPhpytexFile(),
+            main     = appconfig.getLatexFile(),
         ),
         params       = params,
     );
@@ -102,7 +105,7 @@ def step(
 
     fnameLatex, _, _ = extractfilename(path=appconfig.getLatexFile(), relative=False, ext='tex');
     fnamePy = createNewFileName(dir=appconfig.getRootDirectory(), nameinit='phpytex_main.py', namescheme='phpytex_main_{}.py');
-    createmetacode(lines=lines, imports=appconfig.getListOfImports(), globalvars=_global_vars, fname=fnameLatex, fnameOut=fnamePy, compile_latex=compile_latex);
+    createmetacode(lines=lines, imports=_list_of_imports, globalvars=_global_vars, fname=fnameLatex, fnameOut=fnamePy, compile_latex=compile_latex);
 
     appconfig.setScriptFile(fnamePy);
     appconfig.setPrecompileLines(_precompile_lines);
@@ -211,7 +214,7 @@ def createmetacode(
             rootdir       = appconfig.getRootDirectory(),
             seed          = appconfig.getSeed(),
             imports       = '\n    '.join(imports if len(imports) > 0 else [ '# no imports' ]),
-            globalvars    = '\n    '.join(globalvars if len(globalvars) > 0 else [ '    # no global vars' ]),
+            globalvars    = '\n    '.join(globalvars if len(globalvars) > 0 else [ '# no global vars' ]),
         )
     );
     appconfig.setLenPrecode(len(lines_pre));

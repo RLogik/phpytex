@@ -20,9 +20,9 @@ from src.parsers.methods import escapeForPython;
 # GLOBAL CONSTANTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-INDENTCHAR: str = '    ';
-INDENTCHAR_RE: str = '    ';
-INDENTLEVEL: int = 0;
+_indent_char: str = '    ';
+_indent_char_re: str = '    ';
+_indent_level: int = 0;
 _lexer = None;
 
 def getLexer() -> Lark:
@@ -49,17 +49,17 @@ def parseText(u: str) -> str:
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def lexedToBlocks(u: Tree) -> str:
-    global INDENTLEVEL;
+    global _indent_level;
     typ = u.data;
     children = filterSubexpr(u);
     if typ == 'blocks':
-        INDENTLEVEL = 0;
+        _indent_level = 0;
         return ''.join([ lexedToBlock(child) for child in children ]);
     raise Exception('Could not parse expression!');
 
 def lexedToBlock(u: Tree, indentoffset: str = '') -> str:
-    global INDENTLEVEL;
-    indentlevel = INDENTLEVEL;
+    global _indent_level;
+    indentlevel0 = _indent_level;
 
     typ = u.data;
     children = filterSubexpr(u);
@@ -70,7 +70,7 @@ def lexedToBlock(u: Tree, indentoffset: str = '') -> str:
         if n == 0:
             return '';
         return '{tab}print(\'{newlines}\');\n'.format(
-            tab = INDENTCHAR*INDENTLEVEL,
+            tab = _indent_char*_indent_level,
             newlines = '\\n'*n,
         );
     elif typ == 'block':
@@ -83,11 +83,11 @@ def lexedToBlock(u: Tree, indentoffset: str = '') -> str:
         value = lexedToStr(children[1]);
         return '{x} = {val};\n'.format(x=varname, val=value);
     elif typ == 'quickescape':
-        INDENTLEVEL = 0;
+        _indent_level = 0;
         return 'pass;\n';
     elif typ == 'quickescapeonce':
-        INDENTLEVEL = max(indentlevel-1, 0);
-        return '{tab}pass;\n'.format(tab=INDENTCHAR*INDENTLEVEL);
+        _indent_level = max(indentlevel0-1, 0);
+        return '{tab}pass;\n'.format(tab=_indent_char*_indent_level);
     ## INLINE SUBST
     elif typ == 'blockinline':
         expr = '';
@@ -95,11 +95,11 @@ def lexedToBlock(u: Tree, indentoffset: str = '') -> str:
         i = 0;
         for child in children:
             if child.data == 'content':
-                INDENTLEVEL = indentlevel;
+                _indent_level = indentlevel0;
                 subexpr = lexedToBlock(child);
                 expr += subexpr;
             elif child.data == 'codeinline':
-                INDENTLEVEL = indentlevel + 1
+                _indent_level = indentlevel0 + 1
                 subexpr = lexedToBlock(child);
                 subsubexpr = subexpr.split('\n');
                 subexprs = [];
@@ -115,28 +115,28 @@ def lexedToBlock(u: Tree, indentoffset: str = '') -> str:
                 expr += '{{{}}}'.format(i);
                 subst.append(subexpr);
                 i += 1;
-        INDENTLEVEL = indentlevel;
+        _indent_level = indentlevel0;
         lines = [];
         if len(subst) == 0:
             lines.append('{tab}print(\'\'\'{expr}\'\'\'.format());'.format(
-                tab  = INDENTCHAR*INDENTLEVEL,
+                tab  = _indent_char*_indent_level,
                 expr = expr,
             ))
         else:
             lines.append('{tab}print(\'\'\'{expr}\'\'\'.format('.format(
-                tab  = INDENTCHAR*INDENTLEVEL,
+                tab  = _indent_char*_indent_level,
                 expr = expr,
             ));
             for s in subst:
                 lines.append('{},'.format(s));
-            lines.append('{tab}));'.format(tab = INDENTCHAR*INDENTLEVEL));
+            lines.append('{tab}));'.format(tab = _indent_char*_indent_level));
         line = '\n'.join(lines);
         return '{line}\n'.format(line=line);
     elif typ == 'content':
         expr = escapeForPython(lexedToStr(u));
         return expr;
     elif typ == 'codeinline':
-        expr = formatBlockIndent(lexedToStr(children[0]), indent=INDENTCHAR*INDENTLEVEL);
+        expr = formatBlockIndent(lexedToStr(children[0]), indent=_indent_char*_indent_level);
         return expr;
     ## CODE BLOCK
     elif typ == 'blockcode':
@@ -156,12 +156,12 @@ def lexedToBlock(u: Tree, indentoffset: str = '') -> str:
         line = lexedToBlock(insidecode, indentoffset=indentoffset);
         return '{line}\n'.format(line=line);
     elif typ == 'insidecode':
-        lines = '\n'.join([ indentoffset + INDENTCHAR + '.' ] + [ lexedToStr(child) for child in children ]);
+        lines = '\n'.join([ indentoffset + _indent_char + '.' ] + [ lexedToStr(child) for child in children ]);
         lines = dedent(lines).split('\n')[1:];
         for line in lines:
-            INDENTLEVEL = getIndentationLevel(line, INDENTCHAR);
+            _indent_level = getIndentationLevel(line, _indent_char);
             if re.match(r'^.*:\s*$', line):
-                INDENTLEVEL += 1;
+                _indent_level += 1;
         return '\n'.join(lines);
     raise Exception('Could not parse expression!');
 
@@ -193,12 +193,12 @@ def getIndentationLevel(u: str, tab: str) -> int:
 # --------------------------------------------------------------------------------
 
 def setIndentation(tabs: bool = False, spaces: int = 4, **_):
-    global INDENTCHARACTER;
-    global INDENTCHARACTER_re;
+    global _indent_char;
+    global _indent_char_re;
     if tabs:
-        INDENTCHARACTER = '\t';
-        INDENTCHARACTER_re = r'\t';
+        _indent_char = '\t';
+        _indent_char_re = r'\t';
     else:
-        INDENTCHARACTER = ' '*spaces;
-        INDENTCHARACTER_re = INDENTCHARACTER;
+        _indent_char_re = _indent_char = ' '*spaces;
+        _indent_char_re = _indent_char;
     return;
