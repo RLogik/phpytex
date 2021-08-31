@@ -20,7 +20,6 @@ os.chdir(_test_path);
 sys.path.insert(0, _project_path);
 
 from src.core.log import *;
-from src.core.utils import getAttribute;
 from src.core.utils import getCliArgs;
 from src.core.utils import createNewPathName;
 from src.core.utils import pipeCall;
