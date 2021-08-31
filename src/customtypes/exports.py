@@ -5,4 +5,6 @@
 # EXPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from src.customtypes.evaltype import EvalType;
+from src.customtypes.type_configparameter import ConfigParameter;
+from src.customtypes.type_evaltype import EvalType;
+from src.customtypes.type_projecttree import ProjectTree;

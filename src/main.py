@@ -20,8 +20,8 @@ from src.endpoints.exports import *;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def enter(*tokens: str, file: str, pathApp: str, pathRoot: str, **kwargs: str):
-    appconfig.setAppDirectory(pathApp);
-    appconfig.setRootDirectory(pathRoot);
+    appconfig.setPathApp(pathApp);
+    appconfig.setPathRoot(pathRoot);
     setQuietMode(('q' in tokens));
     if ('version' in tokens) or ('v' in tokens):
         endpoint_display_version()

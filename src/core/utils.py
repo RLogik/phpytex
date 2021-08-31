@@ -169,6 +169,9 @@ def formatTextBlockAsList(s: str) -> List[str]:
 # METHODS: yaml and config
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+def restrictDictionary(x: Dict[str, Any], keys: List[str]) -> dict:
+    return { key: value for key, value in x.items() if key in keys };
+
 def toPythonKeys(key: str) -> str:
     return re.sub(r'-', r'_', key);
 

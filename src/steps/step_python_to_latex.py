@@ -29,12 +29,9 @@ from src.setup import appconfig;
 # METHOD: step transpile python to latex
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def step(
-    lines: List[str],
-    **_
-) -> List[str]:
-    fnamePy = appconfig.getScriptFile();
-    fnameLatex = appconfig.getLatexFile();
+def step(lines: List[str]) -> List[str]:
+    fnamePy = appconfig.getFileScript();
+    fnameLatex = appconfig.getFileLatex();
     execmetacode(lines=lines, fnamePy=fnamePy, fname=fnameLatex);
     logInfo('Transpilation (python -> latex) complete.');
     return lines;
@@ -48,8 +45,8 @@ def execmetacode(lines: List[str], fnamePy: str, fname: str):
         cmd = re.split(r'\s+', appconfig.getPythonPath());
         pipeCall(*cmd, fnameOut=fnamePy);
     except:
-        appconfig.setError(True);
-        appconfig.setPyError(True);
+        appconfig.setHasError(True);
+        appconfig.setHasPyError(True);
         _, err, tb = sys.exc_info();
 
         try:

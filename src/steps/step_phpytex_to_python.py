@@ -18,7 +18,8 @@ from src.core.utils import createNewFileName;
 from src.core.utils import formatTextBlockAsList;
 from src.core.utils import writeTextFile;
 from src.setup import appconfig;
-from src.setup.methods import extractfilename, getTemplatePhpytexLines;
+from src.setup.methods import extractPath;
+from src.setup.methods import getTemplatePhpytexLines;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES
@@ -30,58 +31,24 @@ from src.setup.methods import extractfilename, getTemplatePhpytexLines;
 # METHOD: step transpile phpytex to python
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def step(
-    root:           str,
-    seed:           int,
-    lines:          List[str],
-    output:         str  = 'main.tex',
-    export_params:  str  = '',
-    insert_bib:     bool = False,
-    comments:       str  = 'auto',
-    show_structure: bool = True,
-    max_length:     int  = 10000,
-    compile_latex:  bool = False,
-    **_
-):
-    appconfig.setSeed(seed);
-    appconfig.setMaxLength(max_length);
-    appconfig.setInsertBib(insert_bib);
+def step(lines: List[str]):
     appconfig.setIncludes([]);
     appconfig.setDocumentStructure([]);
 
     # must initialise arrays!
     appconfig.initIndentation(pattern=appconfig.getIndentCharacterRe());
-    _input_file = root;
-    _output_file = output;
-    if isinstance(export_params, str) and not (export_params == ''):
-        assert re.match(r'^(\S+\.)*\S+$', export_params), '\033[1mexport-params\033[0m option must by a python-like import path (relative to the root of the project).';
-        _param_file = re.sub(r'\.', '/', export_params)
-        _param_file, _, _  = extractfilename(path=_param_file, relative=True);
-        appconfig.setExportParams(True);
-        appconfig.setParamPyImport(export_params);
-        appconfig.setParamFile(_param_file);
 
-    _input_file, _, _  = extractfilename(path=_input_file, relative=True);
-    _output_file, _, _ = extractfilename(path=_output_file, relative=True);
-    assert not (_input_file == _output_file), 'The output and root files must be different!';
-    _stamp_file = appconfig.getStampFile();
-    _stamp_file, _, _ = extractfilename(path=_stamp_file, relative=True);
-
-    appconfig.setPhpytexFile(_input_file);
-    appconfig.setLatexFile(_output_file);
-    appconfig.setStampFile(_stamp_file);
-
-    random.seed(seed); # <-- only do this once!
+    random.seed(appconfig.getSeed()); # <-- only do this once!
     lines[:] = [];
     _precompile_lines = [];
     _list_of_imports = [];
     _global_vars = [];
 
     params = {
-        'comments': comments,
-        'no-comm': (comments is False),
-        'no-comm-auto': (comments == 'auto'),
-        'show-structure': show_structure,
+        'comments': appconfig.getOptionComments(),
+        'no-comm': (appconfig.getOptionComments() is False),
+        'no-comm-auto': (appconfig.getOptionComments() == 'auto'),
+        'show-structure': appconfig.getOptionShowStructure(),
     };
 
     Knit(
@@ -91,8 +58,8 @@ def step(
         mute         = False,
         silent       = getQuietMode(),
         filename     = dict(
-            src      = appconfig.getPhpytexFile(),
-            main     = appconfig.getLatexFile(),
+            src      = appconfig.getFilePhpytex(),
+            main     = appconfig.getFileLatex(),
         ),
         params       = params,
     );
@@ -100,14 +67,14 @@ def step(
     addpreamble(lines=lines, params=params, silent=getQuietMode());
 
     if appconfig.getExportParams():
-        fname_params, _, _ = extractfilename(path=appconfig.getParamFile(), relative=True, ext='py');
+        fname_params, _, _ = extractPath(path=appconfig.getFileParamsPy(), relative=True, ext='py');
         exportParameters(fname=fname_params, globalvars=_global_vars);
 
-    fnameLatex, _, _ = extractfilename(path=appconfig.getLatexFile(), relative=False, ext='tex');
-    fnamePy = createNewFileName(dir=appconfig.getRootDirectory(), nameinit='phpytex_main.py', namescheme='phpytex_main_{}.py');
-    createmetacode(lines=lines, imports=_list_of_imports, globalvars=_global_vars, fname=fnameLatex, fnameOut=fnamePy, compile_latex=compile_latex);
+    fnameLatex, _, _ = extractPath(path=appconfig.getFileLatex(), relative=False, ext='tex');
+    fnamePy = createNewFileName(dir=appconfig.getPathRoot(), nameinit='phpytex_main.py', namescheme='phpytex_main_{}.py');
+    createmetacode(lines=lines, imports=_list_of_imports, globalvars=_global_vars, fname=fnameLatex, fnameOut=fnamePy);
 
-    appconfig.setScriptFile(fnamePy);
+    appconfig.setFileScript(fnamePy);
     appconfig.setPrecompileLines(_precompile_lines);
     appconfig.setListOfImports(_list_of_imports);
 
@@ -122,14 +89,14 @@ def addpreamble(lines: List[str], params: Dict[str, Any], silent: bool):
     preamble = [];
     verbatim = [];
     struct = appconfig.getDocumentStructure()[:]
-    if isinstance(appconfig.getStampFile(), str) and not(appconfig.getStampFile() == ''):
+    if isinstance(appconfig.getFileStamp(), str) and not(appconfig.getFileStamp() == ''):
         appconfig.setDocumentStructure([]);
         Knit(
             filecontents = preamble,
             verbatim     = verbatim,
             mute         = True,
             filename     = dict(
-                src      =  appconfig.getStampFile(),
+                src      =  appconfig.getFileStamp(),
                 main     =  'main',
             ),
             params       = params | { 'no-comm': False, 'no-comm-auto': True },
@@ -197,28 +164,26 @@ def createmetacode(
     fnameOut: str,
     lines: List[str],
     imports: List[str],
-    globalvars: List[str],
-    compile_latex: bool
+    globalvars: List[str]
 ):
-    fname_rel, _, _ = extractfilename(path=fname, relative=True, ext='');
+    fname_rel, _, _ = extractPath(path=fname, relative=True, ext='');
     _phpytex_lines = getTemplatePhpytexLines()
     lines_pre = formatTextBlockAsList(
-        _phpytex_lines[0].format(
-            import_params = '\nimport {} as {};\n'.format(appconfig.getParamPyImport(), appconfig.getParamModuleName()) if appconfig.getExportParams() else '',
+        _phpytex_lines.format(
+            import_params = '\nimport {} as {};\n'.format(appconfig.getImportParamsPy(), appconfig.getParamModuleName()) if appconfig.getExportParams() else '',
             indentchar    = appconfig.getIndentCharacterRe(),
             fname         = fname,
             fname_rel     = fname_rel,
-            maxlength     = appconfig.getMaxLength(),
-            insertbib     = appconfig.getInsertBib(),
-            compilelatex  = compile_latex,
-            rootdir       = appconfig.getRootDirectory(),
+            maxlength     = appconfig.getMaxLengthOuput(),
+            insertbib     = appconfig.getOptionInsertBib(),
+            rootdir       = appconfig.getPathRoot(),
             seed          = appconfig.getSeed(),
             imports       = '\n    '.join(imports if len(imports) > 0 else [ '# no imports' ]),
             globalvars    = '\n    '.join(globalvars if len(globalvars) > 0 else [ '# no global vars' ]),
         )
     );
     appconfig.setLenPrecode(len(lines_pre));
-    lines[:] = lines_pre + lines + formatTextBlockAsList(_phpytex_lines[1].format());
+    lines[:] = lines_pre + lines;
     ## create temp file and write to this:
     writeTextFile(fnameOut, lines);
     return;

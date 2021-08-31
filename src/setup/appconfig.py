@@ -15,41 +15,57 @@ from typing import List;
 from typing import Tuple;
 
 from src.core.utils import PythonCommand;
+from src.customtypes.exports import ConfigParameter;
+from src.customtypes.exports import ProjectTree;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-_file_pattern:        str = r'^.*\.phpycreate\.(yml|yaml)$';
-_app_directory:       str;
-_root_directory:      str;
-_param_module_name:   str = 'MODULE_GLOBAL_PARAMS';
-_script_file:         str;
-_latex_file:          str;
-_python_path:         str = PythonCommand();
+_config_parameters: Dict[str, ConfigParameter] = {
+    'pattern_config':          ConfigParameter[str]().setValue(r'^(|.*\.)(phpytex|phpycreate)\.(yml|yaml)$'),
+    'path_app':                ConfigParameter[str](),
+    'path_root':               ConfigParameter[str](),
+    'file_phpytex':            ConfigParameter[str](),
+    'file_script':             ConfigParameter[str](),
+    'file_latex':              ConfigParameter[str](),
+    'file_stamp':              ConfigParameter[str](),
+    'file_params_latex':       ConfigParameter[str](),
+    'file_params_py':          ConfigParameter[str](),
+    'import_param_py':         ConfigParameter[str](),
+    'param_module_name':       ConfigParameter[str]().setValue('MODULE_GLOBAL_PARAMS'),
+    'python_path':             ConfigParameter[str]().setValue(PythonCommand()),
+    ####
+    'option_ignore':           ConfigParameter[bool]().setValue(False),
+    'option_debug':            ConfigParameter[bool]().setValue(False),
+    'option_compile_latex':    ConfigParameter[bool]().setValue(False),
+    'option_show_structure':   ConfigParameter[bool]().setValue(True),
+    'option_comments':         ConfigParameter[str]().setValue('auto'),
+    'option_insert_bib':       ConfigParameter[bool]().setValue(False),
+    'option_overwrite_stamp':  ConfigParameter[bool]().setValue(True),
+    'option_overwrite_params': ConfigParameter[bool]().setValue(True),
+    'export_params':           ConfigParameter[bool]().setValue(False),
+    'len_precode':             ConfigParameter[int]().setValue(0),
+    'length_output':           ConfigParameter[int]().setValue(0),
+    'max_length':              ConfigParameter[int]().setValue(10000),
+        # <-- prevents transpiler from creating overlarge files
+    'seed':                    ConfigParameter[int]().setValue(random.randint(0,10**8 - 1)),
+    'indent_character':        ConfigParameter[str](),
+    'indent_character_re':     ConfigParameter[str](),
+    ####
+    'has_error':               ConfigParameter[bool]().setValue(False),
+    'has_py_error':            ConfigParameter[bool]().setValue(False),
+    'is_too_long':             ConfigParameter[bool]().setValue(False),
+    'censor_length':           ConfigParameter[int]().setValue(8),
+};
 
-_insert_bib:          bool = False;
-_stamp_file:          str;
-_phpytex_file:        str;
-_export_params:       bool = False;
-_param_file:          str;
-_param_py_import:     str;
-_len_precode:         int = 0;
-_length_of_output:    int = 0;
-_max_length:          int = 10000; # <-- prevents transpiler from creating overlarge files
-# _seed:                int = random.getstate()[1][0];
-_seed:                int = random.randint(0,10**8 - 1);
-_indent_character:    str;
-_indent_character_re: str;
-
-_error:               bool = False;
-_py_error:            bool = False;
-_too_long:            bool = False;
+_dictionary_stamp: Dict[str, Any] = dict();
+_dictionary_params: Dict[str, Any] = dict();
+_project_tree: ProjectTree = ProjectTree();
 _global_vars:         Dict[str, Any] = dict(__ROOT__='.', __DIR__='.');
 _export_vars:         Dict[str, Any] = dict();
 _includes:            List[str] = [];
 _precompile_lines:    List[Tuple[int, Any, str]] = [];
-_censor_length:       int = 8;
 _document_structure:  List[str];
 _list_of_imports:     List[str];
 _indentation:         IndentationTracker;
@@ -85,7 +101,7 @@ class IndentationTracker(object):
     def computeOffset(self, s: str):
         return max(self.computeIndentations(s) - self.reference, 1);
 
-    def setOffset(self, s: str):
+    def seetOffset(self, s: str):
         self.last = self.computeOffset(s);
 
     def decrOffset(self):
@@ -101,196 +117,304 @@ INDENTATION = IndentationTracker();
 # METHODS: get/set
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def getFilePattern() -> str:
-    return _file_pattern;
+def getPatternConfig() -> str:
+    return _config_parameters['pattern_config'].value;
 
-def setFilePattern(value: str):
-    global _file_pattern;
-    _file_pattern = value;
+def setPatternConfig(value: str):
+    global _config_parameters;
+    _config_parameters['pattern_config'].value = value;
     return;
 
-def getAppDirectory() -> str:
-    return _app_directory;
+def getPathApp() -> str:
+    return _config_parameters['path_app'].value;
 
-def setAppDirectory(value: str):
-    global _app_directory;
-    _app_directory = value;
+def setPathApp(value: str):
+    global _config_parameters;
+    if value == '':
+        return;
+    _config_parameters['path_app'].value = value;
     return;
 
-def getRootDirectory() -> str:
-    return _root_directory;
+def getPathRoot() -> str:
+    return _config_parameters['path_root'].value;
 
-def setRootDirectory(value: str):
-    global _root_directory;
-    _root_directory = value;
+def setPathRoot(value: str):
+    global _config_parameters;
+    if value == '':
+        return;
+    _config_parameters['path_root'].value = value;
     return;
 
 def getPythonPath() -> str:
-    return _python_path;
+    return _config_parameters['python_path'].value;
 
 def setPythonPath(value: str):
-    global _python_path;
-    _python_path = value;
+    global _config_parameters;
+    _config_parameters['python_path'].value = value;
     return;
 
-def getInsertBib() -> bool:
-    return _insert_bib;
+def getOptionInsertBib() -> bool:
+    return _config_parameters['option_insert_bib'].value;
 
-def setInsertBib(value: bool):
-    global _insert_bib;
-    _insert_bib = value;
+def setOptionInsertBib(value: bool):
+    global _config_parameters;
+    _config_parameters['option_insert_bib'].value = value;
     return;
 
-def getStampFile() -> str:
-    return _stamp_file;
+def getOptionOverwriteStamp() -> bool:
+    return _config_parameters['option_overwrite_stamp'].value;
 
-def setStampFile(value: str):
-    global _stamp_file;
-    _stamp_file = value;
+def setOptionOverwriteStamp(value: bool):
+    global _config_parameters;
+    _config_parameters['option_overwrite_stamp'].value = value;
     return;
 
-def getPhpytexFile() -> str:
-    return _phpytex_file;
+def getOptionOverwriteParams() -> bool:
+    return _config_parameters['option_overwrite_params'].value;
 
-def setPhpytexFile(value: str):
-    global _phpytex_file;
-    _phpytex_file = value;
+def setOptionOverwriteParams(value: bool):
+    global _config_parameters;
+    _config_parameters['option_overwrite_params'].value = value;
     return;
 
-def getScriptFile() -> str:
-    return _script_file;
+def getFileStamp() -> str:
+    return _config_parameters['file_stamp'].value;
 
-def setScriptFile(value: str):
-    global _script_file;
-    _script_file = value;
+def setFileStamp(value: str):
+    global _config_parameters;
+    if value == '':
+        return;
+    _config_parameters['file_stamp'].value = value;
     return;
 
-def getLatexFile() -> str:
-    return _latex_file;
+def getFilePhpytex() -> str:
+    return _config_parameters['file_phpytex'].value;
 
-def setLatexFile(value: str):
-    global _latex_file;
-    _latex_file = value;
+def setFilePhpytex(value: str):
+    global _config_parameters;
+    if value == '':
+        return;
+    _config_parameters['file_phpytex'].value = value;
+    return;
+
+def getFileScript() -> str:
+    return _config_parameters['file_script'].value;
+
+def setFileScript(value: str):
+    global _config_parameters;
+    if value == '':
+        return;
+    _config_parameters['file_script'].value = value;
+    return;
+
+def getFileLatex() -> str:
+    return _config_parameters['file_latex'].value;
+
+def setFileLatex(value: str):
+    global _config_parameters;
+    if value == '':
+        return;
+    _config_parameters['file_latex'].value = value;
+    return;
+
+def getOptionIgnore() -> bool:
+    return _config_parameters['option_ignore'].value;
+
+def setOptionIgnore(value: bool):
+    global _config_parameters;
+    _config_parameters['option_ignore'].value = value;
+    return;
+
+def getOptionDebug() -> bool:
+    return _config_parameters['option_debug'].value;
+
+def setOptionDebug(value: bool):
+    global _config_parameters;
+    _config_parameters['option_debug'].value = value;
+    return;
+
+def getOptionCompileLatex() -> bool:
+    return _config_parameters['option_compile_latex'].value;
+
+def setOptionCompileLatex(value: bool):
+    global _config_parameters;
+    _config_parameters['option_compile_latex'].value = value;
+    return;
+
+def getOptionShowStructure() -> bool:
+    return _config_parameters['option_show_structure'].value;
+
+def setOptionShowStructure(value: bool):
+    global _config_parameters;
+    _config_parameters['option_show_structure'].value = value;
+    return;
+
+def getOptionComments() -> str:
+    return _config_parameters['option_comments'].value;
+
+def setOptionComments(value: str):
+    global _config_parameters;
+    _config_parameters['option_comments'].value = value;
     return;
 
 def getExportParams() -> bool:
-    return _export_params;
+    return _config_parameters['export_params'].value;
 
 def setExportParams(value: bool):
-    global _export_params;
-    _export_params = value;
+    global _config_parameters;
+    _config_parameters['export_params'].value = value;
     return;
 
-def getParamFile() -> str:
-    return _param_file;
+def getFileParamsLatex() -> str:
+    return _config_parameters['file_params_latex'].value;
 
-def setParamFile(value: str):
-    global _param_file;
-    _param_file = value;
+def setFileParamsLatex(value: str):
+    global _config_parameters;
+    _config_parameters['file_params_latex'].value = value;
     return;
 
-def getParamPyImport() -> str:
-    return _param_py_import;
+def getFileParamsPy() -> str:
+    return _config_parameters['file_params_py'].value;
 
-def setParamPyImport(value: str):
-    global _param_py_import;
-    _param_py_import = value;
+def setFileParamsPy(value: str):
+    global _config_parameters;
+    _config_parameters['file_params_py'].value = value;
+    return;
+
+def getImportParamsPy() -> str:
+    return _config_parameters['import_param_py'].value;
+
+def setImportParamsPy(value: str):
+    global _config_parameters;
+    _config_parameters['import_param_py'].value = value;
     return;
 
 def getParamModuleName() -> str:
-    return _param_module_name;
+    return _config_parameters['param_module_name'].value;
 
 def setParamModuleName(value: str):
-    global _param_module_name;
-    _param_module_name = value;
+    global _config_parameters;
+    _config_parameters['param_module_name'].value = value;
     return;
 
 def getLenPrecode() -> int:
-    return _len_precode;
+    return _config_parameters['len_precode'].value;
 
 def setLenPrecode(value: int):
-    global _len_precode;
-    _len_precode = value;
+    global _config_parameters;
+    _config_parameters['len_precode'].value = value;
     return;
 
-def getLengthOfOutput() -> int:
-    return _length_of_output;
+def getLengthOutput() -> int:
+    return _config_parameters['length_output'].value;
 
-def setLengthOfOutput(value: int):
-    global _length_of_output;
-    _length_of_output = value;
+def setLengthOutput(value: int):
+    global _config_parameters;
+    _config_parameters['length_output'].value = value;
     return;
 
-def getMaxLength() -> int:
-    return _max_length;
+def getMaxLengthOuput() -> int:
+    return _config_parameters['max_length'].value;
 
-def setMaxLength(value: int):
-    global _max_length;
-    _max_length = value;
+def setMaxLengthOutput(value: int):
+    global _config_parameters;
+    _config_parameters['max_length'].value = value;
     return;
 
 def getSeed() -> int:
-    return _seed;
+    return _config_parameters['seed'].value;
 
 def setSeed(value: int):
-    global _seed;
-    _seed = value;
+    global _config_parameters;
+    _config_parameters['seed'].value = value;
     return;
 
 def getIndentCharacter() -> str:
-    return _indent_character;
+    return _config_parameters['indent_character'].value;
 
 def setIndentCharacter(value: str):
-    global _indent_character;
-    _indent_character = value;
+    global _config_parameters;
+    _config_parameters['indent_character'].value = value;
     return;
 
 def getIndentCharacterRe() -> str:
-    return _indent_character_re;
+    return _config_parameters['indent_character_re'].value;
 
 def setIndentCharacterRe(value: str):
-    global _indent_character_re;
-    _indent_character_re = value;
+    global _config_parameters;
+    _config_parameters['indent_character_re'].value = value;
     return;
 
-def getError() -> bool:
-    return _error;
+def getHasError() -> bool:
+    return _config_parameters['has_error'].value;
 
-def setError(value: bool):
-    global _error;
-    _error = value;
+def setHasError(value: bool):
+    global _config_parameters;
+    _config_parameters['has_error'].value = value;
     return;
 
-def getPyError() -> bool:
-    return _py_error;
+def getHasPyError() -> bool:
+    return _config_parameters['has_py_error'].value;
 
-def setPyError(value: bool):
-    global _py_error;
-    _py_error = value;
+def setHasPyError(value: bool):
+    global _config_parameters;
+    _config_parameters['has_py_error'].value = value;
     return;
 
-def getTooLong() -> bool:
-    return _too_long;
+def getIsTooLong() -> bool:
+    return _config_parameters['is_too_long'].value;
 
-def setTooLong(value: bool):
-    global _too_long;
-    _too_long = value;
+def setIsTooLong(value: bool):
+    global _config_parameters;
+    _config_parameters['is_too_long'].value = value;
+    return;
+
+def getCensorLength() -> int:
+    return _config_parameters['censor_length'].value;
+
+def setCensorLength(value: int):
+    global _config_parameters;
+    _config_parameters['censor_length'].value = value;
+    return;
+
+def getDictionaryStamp() -> Dict[str, Any]:
+    return _dictionary_stamp;
+
+def setDictionaryStamp(value: Dict[str, Any]):
+    global _dictionary_stamp;
+    _dictionary_stamp = value;
+    return;
+
+def getDictionaryParms() -> Dict[str, Any]:
+    return _dictionary_params;
+
+def setDictionaryParams(value: Dict[str, Any]):
+    global _dictionary_params;
+    _dictionary_params = value;
+    return;
+
+def getProjectTree() -> ProjectTree:
+    return _project_tree;
+
+def setProjectTree(value: ProjectTree):
+    global _project_tree;
+    _project_tree = value;
     return;
 
 def getGlobalVars() -> Dict[str, Any]:
     return _global_vars;
 
-def setGlobalVars(value: Dict[str, Any]):
+def setGlobalVars(key: str, value: Any):
     global _global_vars;
-    _global_vars = value;
+    _global_vars[key] = value;
     return;
 
 def getExportVars() -> Dict[str, Any]:
     return _export_vars;
 
-def setExportVars(value: Dict[str, Any]):
+def setExportVars(key: str, value: Any):
     global _export_vars;
-    _export_vars = value;
+    _export_vars[key] = value;
     return;
 
 def getIncludes() -> List[str]:
@@ -307,14 +431,6 @@ def getPrecompileLines() -> List[Tuple[int, Any, str]]:
 def setPrecompileLines(value: List[Tuple[int, Any, str]]):
     global _precompile_lines;
     _precompile_lines = value;
-    return;
-
-def getCensorLength() -> int:
-    return _censor_length;
-
-def setCensorLength(value: int):
-    global _censor_length;
-    _censor_length = value;
     return;
 
 def getDocumentStructure() -> List[str]:

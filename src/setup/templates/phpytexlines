@@ -22,7 +22,6 @@ ____error_toolong____    = False;
 ____outputlength____     = 0;
 ____maxlength____        = {maxlength};
 ____insertbib____        = {insertbib};
-____compilelatex____     = {compilelatex};
 ____last_latex____       = None;
 ____rootdir____          = '{rootdir}';
 ____seed____             = {seed};

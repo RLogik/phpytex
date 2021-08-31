@@ -6,7 +6,7 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 import os;
-import re
+import re;
 from src.core.log import logInfo;
 from src.setup import appconfig;
 from typing import Any;
@@ -17,6 +17,7 @@ from src.core.utils import createFile;
 from src.core.utils import createPath;
 from src.core.utils import getAttribute;
 from src.core.utils import writeTextFile;
+from src.customtypes.exports import ProjectTree;
 from src.setup import appconfig;
 from src.parsers.methods import convertToPythonString;
 
@@ -30,16 +31,19 @@ from src.parsers.methods import convertToPythonString;
 # METHOD: step create
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def step(
-    stamp:      Dict[str, Any] = dict(),
-    parameters: Dict[str, Any] = dict(),
-    files:      List[str]      = [],
-    folders:    Dict[str, Any] = dict(),
-    **_
-):
-    createFilesAndFolders(path=appconfig.getRootDirectory(), files=files, folders=folders);
-    createFileStamp(**stamp);
-    createFileParameters(**parameters);
+def step():
+    root = appconfig.getPathRoot();
+    createFilesAndFolders(path=root, projectTree=appconfig.getProjectTree());
+    createFileStamp(
+        path=os.path.join(root, appconfig.getFileStamp()),
+        overwrite=appconfig.getOptionOverwriteStamp(),
+        options=appconfig.getDictionaryStamp()
+    );
+    createFileParameters(
+        path=os.path.join(root, appconfig.getFileParamsLatex()),
+        overwrite=appconfig.getOptionOverwriteParams(),
+        options=appconfig.getDictionaryParms()
+    );
     logInfo('Creation stage complete.');
     return;
 
@@ -47,34 +51,20 @@ def step(
 # SECONDARY METHODS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def createFilesAndFolders(
-    path: str,
-    files: List[str],
-    folders: Dict[str, Any],
-    **_
-):
-    for fname in files:
-        if not make_file_if_not_exists(path=path, fname=fname):
-            raise FileExistsError('Could not create file \033[1m{}\033[0m'.format(os.path.join(path, fname)));
-    for subfolder in folders:
-        _path = os.path.join(path, subfolder);
-        if not make_dir_if_not_exists(path=path, fname=subfolder):
-            raise FileExistsError('Could not create (sub)folder \033[1m{}\033[0m'.format(_path));
-    for subfolder in folders:
-        _path = os.path.join(path, subfolder);
-        _files = getAttribute(folders[subfolder], 'files', expectedtype=list, default=[]);
-        _folders = getAttribute(folders[subfolder], 'folders', expectedtype=dict, default=dict());
-        createFilesAndFolders(path=_path, files=_files, folders=_folders);
+def createFilesAndFolders(path: str, projectTree: ProjectTree):
+    for relpath in projectTree.directories():
+        if not make_dir_if_not_exists(path=path, fname=relpath):
+            raise FileExistsError('Could not create (sub)folder \033[1m{}\033[0m'.format(relpath));
+    for relfname in projectTree.files():
+        if not make_file_if_not_exists(path=path, fname=relfname):
+            raise FileExistsError('Could not create file \033[1m{}\033[0m'.format(relfname));
     return;
 
 def createFileStamp(
-    file: str,
-    overwrite: bool = False,
-    options: Dict[str, Any] = dict(),
-    **_
+    path: str,
+    overwrite: bool,
+    options: Dict[str, Any]
 ):
-    appconfig.setStampFile(file);
-    path = os.path.join(appconfig.getRootDirectory(), file);
     if os.path.isfile(path) and not overwrite:
         return;
     lines = [];
@@ -104,14 +94,10 @@ def createFileStamp(
     return;
 
 def createFileParameters(
-    file: str = '',
-    overwrite: bool = True,
-    options: Dict[str, Any] = dict(),
-    **_
+    path: str,
+    overwrite: bool,
+    options: Dict[str, Any]
 ):
-    global PARAMDATEI;
-    PARAMDATEI = file;
-    path = os.path.join(appconfig.getRootDirectory(), file);
     if os.path.isfile(path) and not overwrite:
         return;
     lines = [];

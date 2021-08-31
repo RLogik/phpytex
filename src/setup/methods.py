@@ -21,8 +21,7 @@ from src.setup import appconfig;
 
 PATH_TO_VERSION: str = 'src/setup/VERSION';
 PATH_TO_TEMPLATE_HELP: str = 'src/setup/templates/help';
-PATH_TO_TEMPLATE_PHPYTEXLINES_PRE: str = 'src/setup/templates/phpytexlines_pre';
-PATH_TO_TEMPLATE_PHPYTEXLINES_POST: str = 'src/setup/templates/phpytexlines_post';
+PATH_TO_TEMPLATE_PHPYTEXLINES: str = 'src/setup/templates/phpytexlines';
 PATH_TO_GRAMMARS: str = 'src/grammars';
 _opensource: bool = True;
 
@@ -41,9 +40,9 @@ def setOpenSource(value: bool = True):
 
 def readFileContents(path: str, encoding: str = ENCODING_UTF8) -> str:
     if _opensource:
-        text = readTextFile(os.path.join(appconfig.getAppDirectory(), path));
+        text = readTextFile(os.path.join(appconfig.getPathApp(), path));
     else:
-        with ZipFile(appconfig.getAppDirectory(), 'r') as archive:
+        with ZipFile(appconfig.getPathApp(), 'r') as archive:
             text = archive.read(path).decode(encoding);
     return text;
 
@@ -57,20 +56,17 @@ def getVersion() -> str:
 def getTemplateHelp() -> str:
     return readFileContents(PATH_TO_TEMPLATE_HELP);
 
-def getTemplatePhpytexLines() -> Tuple[str, str]:
-    return (
-        readFileContents(PATH_TO_TEMPLATE_PHPYTEXLINES_PRE),
-        readFileContents(PATH_TO_TEMPLATE_PHPYTEXLINES_POST),
-    );
+def getTemplatePhpytexLines() -> str:
+    return readFileContents(PATH_TO_TEMPLATE_PHPYTEXLINES);
 
 def getGrammar(fname: str) -> str:
     return readFileContents(os.path.join(PATH_TO_GRAMMARS, fname));
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# METHODS: extract file name
+# METHODS: extract path
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def extractfilename(
+def extractPath(
     path:        str,
     root:        Any  = None,
     split:       bool = False,
@@ -78,7 +74,7 @@ def extractfilename(
     relative_to: Any  = None,
     ext:         Any  = None
 ) -> Tuple[str, str, str]:
-    root = root if isinstance(root, str) else appconfig.getRootDirectory();
+    root = root if isinstance(root, str) else appconfig.getPathRoot();
     root = os.path.abspath(os.path.normpath(root));
     if re.match(r'\:|^[\/\\]', path):
         relative = relative if isinstance(relative, bool) else False;
@@ -88,19 +84,9 @@ def extractfilename(
     path = os.path.abspath(os.path.normpath(path));
 
     if relative:
-        root = relative_to if isinstance(relative_to, str) else appconfig.getRootDirectory();
+        root = relative_to if isinstance(relative_to, str) else appconfig.getPathRoot();
         root = os.path.abspath(os.path.normpath(root));
-        root_parts = re.split(r'/+', re.sub('^/+', '', root));
-        path_parts = re.split(r'/+', re.sub('^/+', '', path));
-        back = len(root_parts);
-        while len(root_parts) > 0 and len(path_parts) > 0:
-            if root_parts[0] == path_parts[0]:
-                back -= 1;
-                root_parts = root_parts[1:];
-                path_parts = path_parts[1:];
-                continue;
-            break;
-        path = os.path.join(*(['.'] + ['..']*back + path_parts));
+        path = os.path.relpath(path=path, start=root);
 
     if isinstance(ext, str):
         path, _ = os.path.splitext(path);
