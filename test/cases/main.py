@@ -29,7 +29,7 @@ from src.core.utils import PythonCommand;
 # GLOBAL VARIABLES
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#
+PATTERN_CASE: str = r'^case.*';
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MAIN PROCESS
@@ -54,7 +54,7 @@ def StepGetTestCases() -> List[Tuple[str, str]]:
     for path in os.listdir(os.getcwd()):
         if not os.path.isdir(path):
             continue;
-        if not re.match(r'^case.*', path):
+        if not re.match(PATTERN_CASE, path):
             continue;
         path_full = os.path.join(_test_path, path);
         cases.append((path_full, sandboxpath));
