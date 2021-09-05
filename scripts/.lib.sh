@@ -200,7 +200,7 @@ function run_test_unit() {
     _cli_message "$output";
     ( echo "$output" | grep -Eq "^[[:space:]]*(FAIL:|FAILED)" ) \
         && _log_fail "Unit tests failed!";
-    _log_info "Unit tests erfolgreich!";
+    _log_info "Unit tests successful!";
 }
 
 function run_test_cases() {
