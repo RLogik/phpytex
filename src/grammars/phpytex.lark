@@ -15,24 +15,32 @@
 ?textnobreaks: /[^\n\r]+/        -> text
 
 ?blocks: newlinescapture? block ( newlinescapture block )* newlinescapture? -> blocks
-?block: blockcode -> block
-    | blockquick -> block
-    | blockinline -> block
+?block: blockcode  -> block
+    | blockcontent -> block
+    | blockquick   -> block
+
 ?blockcode: lcode space? instructions newline+ insidecode newline+ rcode         -> blockcode
     | indent lcode space? instructions newline+ insidecode newline+ indent rcode -> blockcode
-?blockinline: contentnobreaks ( codeinline contentnobreaks? )*     -> blockinline
-    | codeinline ( contentnobreaks? codeinline )* contentnobreaks? -> blockinline
+
+?blockcontent: textcontent ( codeinline textcontent? )*    -> blockcontent
+    | codeinline textcontent? ( codeinline textcontent? )* -> blockcontent
+
 ?blockquick: space? lcode space? quickinstruction space? endcode? space? rcode -> blockquick
 
-?codeinline: lcode space? contentnobreaks space? rcode  -> codeinline
-    | lcode space? newline content newline space? rcode -> codeinline
+?codeinline: lcode space? codenobreaks space? rcode         -> codeinline
+    | lcode space? newline codecontent newline space? rcode -> codeinline
 
-?instructions: "python" -> python
-?contentnobreaks: /((?!(\<{3}|\>{3})).)+/                     -> content
-?content: contentnobreaks ( newlinescapture contentnobreaks )* -> content
-?insidecode: contentnobreaks ( newline+ contentnobreaks )*    -> insidecode
+?insidecode: codenobreaks ( newline+ codenobreaks )*  -> insidecode
+?textcontent: /((?!(\<{3}|\>{3})).)+/                 -> textcontent
+?codecontent: codenobreaks ( newline+ codenobreaks )* -> codecontent
+?codenobreaks: /((?!(\<{3}|\>{3})).)+/                -> codenobreaks
 
+?instructions: "python"       -> python
+    | /python,\s*print=true/i -> python_print
 ?quickinstruction: "set" textnobreaks "=" textnobreaks -> quickset
-    | "escape" -> quickescape
-    | "escape_once" -> quickescapeonce
-    | "input" textnobreaks -> quickinput
+    | "input" textnobreaks                             -> quickinput
+    | "input_anon" textnobreaks                        -> quickinput_anon
+    | "bibliography" textnobreaks                      -> quickbib
+    | "bibliography_anon" textnobreaks                 -> quickbib_anon
+    | "escape"                                         -> quickescape
+    | "escape_once"                                    -> quickescapeonce

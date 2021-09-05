@@ -11,10 +11,7 @@ import re;
 from types import TracebackType;
 from typing import List;
 
-from src.core.log import logError;
-from src.core.log import logFatal;
-from src.core.log import logInfo;
-from src.core.log import logPlain;
+from src.core.log import *;
 from src.core.utils import pipeCall;
 from src.core.utils import formatTextBlock;
 from src.setup import appconfig;
@@ -32,7 +29,7 @@ from src.setup import appconfig;
 def step(lines: List[str]) -> List[str]:
     fnamePy = appconfig.getFileScript();
     fnameLatex = appconfig.getFileLatex();
-    execmetacode(lines=lines, fnamePy=fnamePy, fname=fnameLatex);
+    # execmetacode(lines=lines, fnamePy=fnamePy, fname=fnameLatex);
     logInfo('Transpilation (python -> latex) complete.');
     return lines;
 

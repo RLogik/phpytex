@@ -7,7 +7,6 @@
 
 from __future__ import annotations;
 
-import re;
 import random;
 from typing import Any;
 from typing import Dict;
@@ -15,8 +14,7 @@ from typing import List;
 from typing import Tuple;
 
 from src.core.utils import PythonCommand;
-from src.customtypes.exports import ConfigParameter;
-from src.customtypes.exports import ProjectTree;
+from src.customtypes.exports import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES
@@ -63,55 +61,11 @@ _dictionary_stamp: Dict[str, Any] = dict();
 _dictionary_params: Dict[str, Any] = dict();
 _project_tree: ProjectTree = ProjectTree();
 _global_vars:         Dict[str, Any] = dict(__ROOT__='.', __DIR__='.');
-_export_vars:         Dict[str, Any] = dict();
+_export_vars:         Dict[str, Tuple[Any, str]] = dict();
 _includes:            List[str] = [];
 _precompile_lines:    List[Tuple[int, Any, str]] = [];
 _document_structure:  List[str];
 _list_of_imports:     List[str];
-_indentation:         IndentationTracker;
-
-# --------------------------------------------------------------------------------
-# CLASS: indentation tracker
-# --------------------------------------------------------------------------------
-
-class IndentationTracker(object):
-    pattern:   str;
-    reference: int;
-    start:     int;
-    last:      int;
-
-    def __init__(self, pattern: Any = None):
-        self.pattern   = pattern if isinstance(pattern, str) else r'    ';
-        self.reset();
-        return;
-
-    def reset(self):
-        self.reference = 0;
-        self.start     = 1;
-        self.last      = 1;
-
-    def computeIndentations(self, s: str, pattern = None) -> int:
-        pattern = pattern if isinstance(pattern, str) else self.pattern;
-        return len(re.findall(pattern, s));
-
-    def initOffset(self, s: str):
-        self.reset();
-        self.reference = self.computeIndentations(s);
-
-    def computeOffset(self, s: str):
-        return max(self.computeIndentations(s) - self.reference, 1);
-
-    def seetOffset(self, s: str):
-        self.last = self.computeOffset(s);
-
-    def decrOffset(self):
-        self.last = max(self.last - 1, 1);
-
-    def incrOffset(self):
-        self.last = self.last + 1;
-
-## initialise
-INDENTATION = IndentationTracker();
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # METHODS: get/set
@@ -404,17 +358,27 @@ def setProjectTree(value: ProjectTree):
 def getGlobalVars() -> Dict[str, Any]:
     return _global_vars;
 
-def setGlobalVars(key: str, value: Any):
+def setGlobalVars(value: Dict[str, Any]):
+    global _global_vars;
+    _global_vars = value;
+    return;
+
+def setGlobalVarsKeyValue(key: str, value: Any):
     global _global_vars;
     _global_vars[key] = value;
     return;
 
-def getExportVars() -> Dict[str, Any]:
+def getExportVars() -> Dict[str, Tuple[Any, str]]:
     return _export_vars;
 
-def setExportVars(key: str, value: Any):
+def setExportVars(value: Dict[str, Tuple[Any, str]]):
     global _export_vars;
-    _export_vars[key] = value;
+    _export_vars = value;
+    return;
+
+def setExportVarsKeyValue(key: str, value: Any, codedvalue: str):
+    global _export_vars;
+    _export_vars[key] = (value, codedvalue);
     return;
 
 def getIncludes() -> List[str]:
@@ -447,17 +411,4 @@ def getListOfImports() -> List[str]:
 def setListOfImports(value: List[str]):
     global _list_of_imports;
     _list_of_imports = value;
-    return;
-
-def getIndentation() -> IndentationTracker:
-    return _indentation;
-
-def initIndentation(pattern: Any = None):
-    global _indentation;
-    _indentation = IndentationTracker(pattern=pattern);
-    return;
-
-def setIndentation(value: IndentationTracker):
-    global _indentation;
-    _indentation = value;
     return;

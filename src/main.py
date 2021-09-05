@@ -10,7 +10,7 @@ import os;
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)));
 
-from src.core.log import setQuietMode;
+from src.core.log import *;
 from src.core.utils import getCliArgs;
 from src.setup import appconfig;
 from src.endpoints.exports import *;

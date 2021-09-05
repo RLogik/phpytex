@@ -5,24 +5,20 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-import re;
 from lark import Lark;
 from lark import Tree;
+from typing import Dict;
 from typing import List;
 from typing import Union;
-from textwrap import dedent;
 
-from src.core.utils import formatBlockIndent;
 from src.setup.methods import getGrammar;
 from src.parsers.methods import escapeForPython;
+from src.customtypes.exports import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL CONSTANTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-_indent_char: str = '    ';
-_indent_char_re: str = '    ';
-_indent_level: int = 0;
 _lexer = None;
 
 def getLexer() -> Lark:
@@ -35,134 +31,135 @@ def getLexer() -> Lark:
 # MAIN METHODS string -> Expression
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def parseText(u: str) -> str:
+def parseText(u: str, indentation: IndentationTracker) -> List[TranspileBlock]:
+    blocks = [];
     try:
-        if u.strip() == '':
-            return '';
-        lines = lexedToBlocks(getLexer().parse(u));
+        if not ( u.strip() == '' ):
+            blocks = lexedToBlocks(getLexer().parse(u), indentation=indentation);
     except:
         raise Exception('Could not parse input!');
-    return lines;
+    return blocks;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # PRIVATE METHODS: recursive lex -> Expression
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def lexedToBlocks(u: Tree) -> str:
-    global _indent_level;
+def lexedToBlocks(u: Tree, indentation: IndentationTracker) -> List[TranspileBlock]:
     typ = u.data;
     children = filterSubexpr(u);
     if typ == 'blocks':
         _indent_level = 0;
-        return ''.join([ lexedToBlock(child) for child in children ]);
+        return [ lexedToBlock(child, indentation=indentation) for child in children ];
     raise Exception('Could not parse expression!');
 
-def lexedToBlock(u: Tree, indentoffset: str = '') -> str:
-    global _indent_level;
-    indentlevel0 = _indent_level;
-
+def lexedToBlock(u: Tree, indentation: IndentationTracker) -> TranspileBlock:
     typ = u.data;
     children = filterSubexpr(u);
     if typ == 'newlines':
-        lines = lexedToStr(u.children[0]);
-        n = len(re.findall(r'\n', lines));
-        n = max(n-1, 0);
-        if n == 0:
-            return '';
-        return '{tab}print(\'{newlines}\');\n'.format(
-            tab = _indent_char*_indent_level,
-            newlines = '\\n'*n,
-        );
+        return TranspileBlock(kind='text:linebreak', indentlevel=indentation.last, indentchar=indentation.symb);
     elif typ == 'block':
-        return lexedToBlock(children[0]);
-    ## QUICK COMMAND
-    elif typ == 'blockquick':
-        return lexedToBlock(children[0]);
-    elif typ == 'quickset':
-        varname = lexedToStr(children[0]);
-        value = lexedToStr(children[1]);
-        return '{x} = {val};\n'.format(x=varname, val=value);
-    elif typ == 'quickescape':
-        _indent_level = 0;
-        return 'pass;\n';
-    elif typ == 'quickescapeonce':
-        _indent_level = max(indentlevel0-1, 0);
-        return '{tab}pass;\n'.format(tab=_indent_char*_indent_level);
-    ## INLINE SUBST
-    elif typ == 'blockinline':
+        return lexedToBlock(children[0], indentation=indentation);
+    ## TEXT CONTENT
+    elif type == 'blockcontent':
         expr = '';
-        subst = [];
+        exprs = [];
+        subst: Dict[str, TranspileBlock] = dict();
         i = 0;
         for child in children:
-            if child.data == 'content':
-                _indent_level = indentlevel0;
-                subexpr = lexedToBlock(child);
-                expr += subexpr;
+            if child.data == 'text':
+                text = escapeForPython(lexedToStr(child));
+                exprs.append(text);
             elif child.data == 'codeinline':
-                _indent_level = indentlevel0 + 1
-                subexpr = lexedToBlock(child);
-                subsubexpr = subexpr.split('\n');
-                subexprs = [];
-                for subexpr in subsubexpr:
-                    if re.match(r'^\s*\#', subexpr):
-                        continue;
-                    subexpr = re.sub(r'^(.*);\s*$',  r'\1', subexpr);
-                    subexpr = re.sub(r'^(.*\S)\s+$', r'\1', subexpr);
-                    subexprs.append(subexpr);
-                if len(subexprs) == 0:
-                    continue;
-                subexpr = '\n'.join(subexprs);
-                expr += '{{{}}}'.format(i);
-                subst.append(subexpr);
+                key = 'subst' +  str(i);
+                subblock = lexedToCodeInline(child, indentation=indentation);
+                subst[key] = subblock;
+                exprs.append('{{{}}}'.format(key));
                 i += 1;
-        _indent_level = indentlevel0;
-        lines = [];
-        if len(subst) == 0:
-            lines.append('{tab}print(\'\'\'{expr}\'\'\'.format());'.format(
-                tab  = _indent_char*_indent_level,
-                expr = expr,
-            ))
-        else:
-            lines.append('{tab}print(\'\'\'{expr}\'\'\'.format('.format(
-                tab  = _indent_char*_indent_level,
-                expr = expr,
-            ));
-            for s in subst:
-                lines.append('{},'.format(s));
-            lines.append('{tab}));'.format(tab = _indent_char*_indent_level));
-        line = '\n'.join(lines);
-        return '{line}\n'.format(line=line);
-    elif typ == 'content':
-        expr = escapeForPython(lexedToStr(u));
-        return expr;
-    elif typ == 'codeinline':
-        expr = formatBlockIndent(lexedToStr(children[0]), indent=_indent_char*_indent_level);
-        return expr;
+        block = TranspileBlock(kind='text:subst', content=expr, indentlevel=indentation.last, indentchar=indentation.symb);
+        block.subst = subst;
+        return block;
     ## CODE BLOCK
-    elif typ == 'blockcode':
-        assert len(children) in [2, 4];
+    elif type == 'blockcode':
+        return lexedToBlockCode(children[0], indentation=indentation);
+    ## QUICK COMMAND
+    elif type == 'blockquick':
+        return lexedToBlockQuickCommand(children[0], indentation=indentation);
+    raise Exception('Could not parse expression!');
+
+def lexedToBlockQuickCommand(u: Tree, indentation: IndentationTracker) -> TranspileBlock:
+    typ = u.data;
+    children = filterSubexpr(u);
+    if typ == 'quickset':
+        varname = lexedToStr(children[0]);
+        value = lexedToStr(children[1]);
+        return TranspileBlock(kind='code:set', content='{x} = {val};'.format(x=varname, val=value), indentlevel=indentation.last, indentchar=indentation.symb);
+    elif typ == 'quickinput':
+        path = lexedToStr(children[0]);
+        return TranspileBlock(kind='code:input', content=path, indentlevel=indentation.last, indentchar=indentation.symb);
+    elif typ == 'quickinput_anon':
+        path = lexedToStr(children[0]);
+        return TranspileBlock(kind='code:input:anon', content=path, indentlevel=indentation.last, indentchar=indentation.symb);
+    elif typ == 'quickbib':
+        path = lexedToStr(children[0]);
+        return TranspileBlock(kind='code:bib', content=path, indentlevel=indentation.last, indentchar=indentation.symb);
+    elif typ == 'quickbib_anon':
+        path = lexedToStr(children[0]);
+        return TranspileBlock(kind='code:bib:anon', content=path, indentlevel=indentation.last, indentchar=indentation.symb);
+    elif typ == 'quickescape':
+        indentation.last = 1;
+        return TranspileBlock(kind='code:escape', indentlevel=indentation.last, indentchar=indentation.symb);
+    elif typ == 'quickescapeonce':
+        indentation.decrOffset;
+        return TranspileBlock(kind='code:escape:1', indentlevel=indentation.last, indentchar=indentation.symb);
+    raise Exception('Could not parse expression!');
+
+def lexedToCodeInline(u: Tree, indentation: IndentationTracker) -> TranspileBlock:
+    typ = u.data;
+    children = filterSubexpr(u);
+    if typ == 'codeinline':
+        return lexedToCodeInline(children[0], indentation=indentation);
+    elif typ == 'codenobreaks':
+        return TranspileBlock(kind='code:inline', content=lexedToStr(u), indentlevel=indentation.last, indentchar=indentation.symb);
+    elif typ == 'codecontent':
+        exprs = [ lexedToStr(child) for child in children ];
+        return TranspileBlock(kind='code:inline', content='\n'.join(exprs), indentlevel=indentation.last, indentchar=indentation.symb);
+    raise Exception('Could not parse expression!');
+
+def lexedToBlockCode(u: Tree, indentation: IndentationTracker) -> TranspileBlock:
+    typ = u.data;
+    children = filterSubexpr(u);
+    if typ == 'blockcode':
         if len(children) == 2:
-            indentoffset = '';
-            indentoffset_close = '';
-            instructions = children[0];
-            insidecode = children[1];
-        else:
-            indentoffset = lexedToStr(children[0]);
-            indentoffset_close = lexedToStr(children[3]);
-            instructions = children[1];
-            insidecode = children[2];
-        assert indentoffset == indentoffset_close, 'Inconsistent indentation for code block.';
-        assert instructions.data == 'python', 'Currently only accepts code blocks of python type.';
-        line = lexedToBlock(insidecode, indentoffset=indentoffset);
-        return '{line}\n'.format(line=line);
+            instructions = lexedToStr(children[0]);
+            indentation.initOffset('');
+            block = lexedToBlockCode(children[1], indentation=indentation);
+            block.parameters = dict(instructions=instructions);
+            return block;
+        elif len(children) == 4:
+            indentOffset = lexedToStr(children[0]);
+            indentOffsetEnd = lexedToStr(children[3]);
+            assert indentOffset == indentOffsetEnd, 'Inconsistent indentation of code block!';
+            indentation.initOffset(indentOffset);
+            instructions = lexedToStr(children[1]);
+            block = lexedToBlockCode(children[2], indentation=indentation);
+            block.parameters = dict(instructions=instructions);
     elif typ == 'insidecode':
-        lines = '\n'.join([ indentoffset + _indent_char + '.' ] + [ lexedToStr(child) for child in children ]);
-        lines = dedent(lines).split('\n')[1:];
-        for line in lines:
-            _indent_level = getIndentationLevel(line, _indent_char);
-            if re.match(r'^.*:\s*$', line):
-                _indent_level += 1;
-        return '\n'.join(lines);
+        ## TODO
+        pass;
+        # def getIndentationLevel(u: str, tab: str) -> int:
+        #     n = 0;
+        #     while True:
+        #         if not u.startswith(tab*(n+1)):
+        #             break;
+        #         n += 1;
+        #     return n;
+        # lines = '\n'.join([ indentoffset + _indent_char + '.' ] + [ lexedToStr(child) for child in children ]);
+        # lines = dedent(lines).split('\n')[1:];
+        # for line in lines:
+        #     _indent_level = getIndentationLevel(line, _indent_char);
+        #     if re.match(r'^.*:\s*$', line):
+        #         _indent_level += 1;
+        # return '\n'.join(lines);
     raise Exception('Could not parse expression!');
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -179,26 +176,3 @@ def filterSubexpr(u: Tree) -> List[Tree]:
 
 def filterOutNoncapture(u: Tree) -> List[Union[str, Tree]]:
     return [uu for uu in u.children if not isinstance(uu, Tree) or ( hasattr(uu, 'data') and not uu.data == 'noncapture' ) ];
-
-def getIndentationLevel(u: str, tab: str) -> int:
-    n = 0;
-    while True:
-        if not u.startswith(tab*(n+1)):
-            break;
-        n += 1;
-    return n;
-
-# --------------------------------------------------------------------------------
-# METHOD: set indentation
-# --------------------------------------------------------------------------------
-
-def setIndentation(tabs: bool = False, spaces: int = 4, **_):
-    global _indent_char;
-    global _indent_char_re;
-    if tabs:
-        _indent_char = '\t';
-        _indent_char_re = r'\t';
-    else:
-        _indent_char_re = _indent_char = ' '*spaces;
-        _indent_char_re = _indent_char;
-    return;

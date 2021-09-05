@@ -55,7 +55,7 @@ def convertToPythonString(
         return typ, str(value);
     elif isinstance(value, tuple):
         typ = 'tuple';
-        values = [convertToPythonString(_, indent+1, multiline)[1] for _ in value];
+        values = [convertToPythonString(value=_, indent=indent+1, multiline=multiline)[1] for _ in value];
         if multiline and len(values) > 1:
             sep0 = "\n{}".format(indentchar*indent);
             sep1 = "\n{}".format(indentchar*(indent+1));
@@ -65,22 +65,31 @@ def convertToPythonString(
         return typ, '({})'.format(', '.join(values));
     elif isinstance(value, list):
         typ = 'list';
-        values = [convertToPythonString(_, indent+1, multiline)[1] for _ in value];
-        if multiline and len(values) > 1:
-            sep0 = "\n{}".format(indentchar*indent);
-            sep1 = "\n{}".format(indentchar*(indent+1));
-            return typ, '[' +  sep1 \
-                + (',' + sep1).join(values) + ',' \
-                + sep0 + ']';
-        return typ, '[{}]'.format(', '.join(values));
+        sepFirst = sepComma = sepFinal = '';
+        if multiline and len(value) > 1:
+            sepFirst = '\n{}'.format(indentchar*(indent+1));
+            sepComma = '\n{}'.format(indentchar*(indent+1));
+            sepFinal = ',\n{}'.format(indentchar*indent);
+        return typ, '[{sepFirst}{contents}{sepFinal}]'.format(
+            sepFirst = sepFirst,
+            contents = (',' + sepComma).join([ convertToPythonString(x, indent=indent+1, multiline=multiline)[1] for x in value ]),
+            sepFinal = sepFinal,
+        );
     elif isinstance(value, dict):
         typ = 'dict';
-        values = [(_, convertToPythonString(value[_], indent+1, multiline)[1]) for _ in value];
-        if multiline and len(values) > 1:
-            sep0 = "\n{}".format(indentchar*indent);
-            sep1 = "\n{}".format(indentchar*(indent+1));
-            return typ, '{' +  sep1 \
-                + (',' + sep1).join(["'{}': {}".format(_, __) for _, __ in values]) + ',' \
-                + sep0 + '}';
-        return typ, '{' + ', '.join(["'{}': {}".format(_, __) for _, __ in values]) + '}';
+        sepFirst = sepComma = sepFinal = '';
+        if multiline and len(value) > 1:
+            sepFirst = '\n{}'.format(indentchar*(indent+1));
+            sepComma = '\n{}'.format(indentchar*(indent+1));
+            sepFinal = ',\n{}'.format(indentchar*indent);
+        return typ, '{{{sepFirst}{contents}{sepFinal}}}'.format(
+            sepFirst = sepFirst,
+            contents = (',' + sepComma).join([
+                "'{key}': {value}".format(
+                    key   = key,
+                    value = convertToPythonString(x, indent=indent+1, multiline=multiline)[1],
+                ) for key, x in value.items()
+            ]),
+            sepFinal = sepFinal,
+        );
     raise Exception('Could not evaluated value as string');

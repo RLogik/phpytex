@@ -5,9 +5,8 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from src.setup import appconfig
-from src.core.log import logInfo;
-from src.core.log import logPlain;
+from src.setup import appconfig;
+from src.core.log import *;
 from src.core.utils import formatTextBlock;
 from src.core.utils import getAttribute;
 from src.core.utils import toPythonKeysDict;
@@ -33,7 +32,6 @@ def endpoint(fname: str, **_):
     if appconfig.getOptionDebug():
         logInfo('See output file: \033[1m{fnamePy}\033[0m'.format(fnamePy=appconfig.getFileScript()));
         return;
-    return; ## DEV NOTE: subsequent stages under development
     step_python_to_latex(lines=lines);
     if appconfig.getOptionCompileLatex():
         step_latex_to_pdf();

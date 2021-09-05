@@ -5,21 +5,22 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-import re;
-import random;
+import random
 from typing import Any;
 from typing import Dict;
 from typing import Tuple;
 from typing import List;
 
-from src.core.log import logInfo;
-from src.core.log import getQuietMode;
+from src.core.log import *;
 from src.core.utils import createNewFileName;
 from src.core.utils import formatTextBlockAsList;
+from src.core.utils import readTextFile;
 from src.core.utils import writeTextFile;
+from src.customtypes.exports import *;
 from src.setup import appconfig;
 from src.setup.methods import extractPath;
 from src.setup.methods import getTemplatePhpytexLines;
+from src.parsers.phpytex import parseText;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES
@@ -34,10 +35,6 @@ from src.setup.methods import getTemplatePhpytexLines;
 def step(lines: List[str]):
     appconfig.setIncludes([]);
     appconfig.setDocumentStructure([]);
-
-    # must initialise arrays!
-    appconfig.initIndentation(pattern=appconfig.getIndentCharacterRe());
-
     random.seed(appconfig.getSeed()); # <-- only do this once!
     lines[:] = [];
     _precompile_lines = [];
@@ -52,16 +49,13 @@ def step(lines: List[str]):
     };
 
     Knit(
+        path         = appconfig.getFilePhpytex(),
         filecontents = lines,
         imports      = _list_of_imports,
         verbatim     = _precompile_lines,
         mute         = False,
         silent       = getQuietMode(),
-        filename     = dict(
-            src      = appconfig.getFilePhpytex(),
-            main     = appconfig.getFileLatex(),
-        ),
-        params       = params,
+        params       = params
     );
 
     addpreamble(lines=lines, params=params, silent=getQuietMode());
@@ -92,15 +86,11 @@ def addpreamble(lines: List[str], params: Dict[str, Any], silent: bool):
     if isinstance(appconfig.getFileStamp(), str) and not(appconfig.getFileStamp() == ''):
         appconfig.setDocumentStructure([]);
         Knit(
+            path         = appconfig.getFileStamp(),
             filecontents = preamble,
             verbatim     = verbatim,
             mute         = True,
-            filename     = dict(
-                src      =  appconfig.getFileStamp(),
-                main     =  'main',
-            ),
-            params       = params | { 'no-comm': False, 'no-comm-auto': True },
-            dateityp     = 'head'
+            params       = params | { 'no-comm': False, 'no-comm-auto': True }
         );
         appconfig.setDocumentStructure(struct[:]);
 
@@ -122,10 +112,8 @@ def addpreamble(lines: List[str], params: Dict[str, Any], silent: bool):
 
 def exportParameters(fname: str, globalvars: List[str]):
     lines = [];
-    for key, value in appconfig.getExportVars().items():
-        value = "r'" + value + "'" if isinstance(value, str) else str(value);
-        # value = "r'" + value + "'" if isinstance(value, str) else json.dumps(value);
-        lines.append('{name} = {val};'.format(name=key, val=value));
+    for key, (value, codedvalue) in appconfig.getExportVars().items():
+        lines.append('{name} = {val};'.format(name=key, val=codedvalue));
         # globalvars.append('{indent}from {importpath} import {name};'.format(
         #     indent     = appconfig.getIndentCharacter()*1,
         #     importpath = appconfig.getParamPyImport(),
@@ -144,19 +132,22 @@ def exportParameters(fname: str, globalvars: List[str]):
     return;
 
 def Knit(
+    path:         str,
     filecontents: List[str],
     imports:      List[str]                  = [],
     verbatim:     List[Tuple[int, Any, str]] = [],
-    filename:     Dict[str, str]             = dict(),
     anon:         bool                       = False,
     mute:         bool                       = False,
     silent:       bool                       = False,
-    indent:       Dict[str, int]             = dict(tex=0, struct=0),
     params:       Dict[str, Any]             = {},
-    dateityp:     str                        = 'tex',
-    chain:        List[str]                  = []
+    chain:        List[str]                  = [],
+    ishead:       bool                       = True
 ):
-    # TODO
+    lines = readTextFile(path);
+    indentation = IndentationTracker(symb=appconfig.getIndentCharacter(), pattern=appconfig.getIndentCharacterRe());
+    blocks = parseText(lines, indentation);
+    for block in blocks:
+        print(block.kind);
     return;
 
 def createmetacode(

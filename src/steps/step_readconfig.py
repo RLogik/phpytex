@@ -5,7 +5,7 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-import re
+import re;
 from typing import Any;
 from typing import Dict;
 
@@ -36,7 +36,7 @@ def step(fname: str):
     config_compile = getAttribute(config, 'compile', 'options', expectedtype=dict, default=None) \
                      or getAttribute(config, 'compile', expectedtype=dict, default={});
     config_stamp = getAttribute(config, 'stamp', expectedtype=dict, default={});
-    config_parameters = getAttribute(config, 'stamp', expectedtype=dict, default={});
+    config_parameters = getAttribute(config, 'parameters', expectedtype=dict, default={});
 
     ## set app config
     setCompileConfig(**toPythonKeysDict(restrictDictionary(config, ['ignore']) | config_compile));

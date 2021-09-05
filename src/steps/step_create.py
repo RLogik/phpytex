@@ -7,15 +7,12 @@
 
 import os;
 import re;
-from src.core.log import logInfo;
-from src.setup import appconfig;
 from typing import Any;
 from typing import Dict;
-from typing import List;
 
+from src.core.log import *;
 from src.core.utils import createFile;
 from src.core.utils import createPath;
-from src.core.utils import getAttribute;
 from src.core.utils import writeTextFile;
 from src.customtypes.exports import ProjectTree;
 from src.setup import appconfig;
@@ -98,18 +95,17 @@ def createFileParameters(
     overwrite: bool,
     options: Dict[str, Any]
 ):
-    if os.path.isfile(path) and not overwrite:
-        return;
+    appconfig.setExportVars({});
     lines = [];
-    for key in options:
+    for key, value in options.items():
         try:
-            typ, value = convertToPythonString(options[key], indent=0, multiline=False);
-            lines.append('<<< set global {key} = {value}; >>>'.format(
-                key   = key,
-                value = value,
-            ));
+            typ, codedvalue = convertToPythonString(value, indent=0, multiline=False);
+            appconfig.setExportVarsKeyValue(key=key, value=value, codedvalue=codedvalue);
+            lines.append('<<< set global {key} = {value}; >>>'.format(key = key, value = codedvalue));
         except:
             continue;
+    if os.path.isfile(path) and not overwrite:
+        return;
     writeTextFile(path=path, lines=lines);
     return;
 
