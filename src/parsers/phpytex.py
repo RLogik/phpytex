@@ -48,7 +48,6 @@ def parseText(u: str, indentation: IndentationTracker) -> List[TranspileBlock]:
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def lexedToBlocks(u: Tree, indentation: IndentationTracker) -> List[TranspileBlock]:
-    print(u.pretty())
     typ = u.data;
     children = filterSubexpr(u);
     if typ == 'blocks':
@@ -119,9 +118,9 @@ def lexedToCodeInline(u: Tree, indentation: IndentationTracker) -> TranspileBloc
     children = filterSubexpr(u);
     if typ == 'codeinline':
         return lexedToCodeInline(children[0], indentation=indentation);
-    elif typ == 'codenobreaks':
+    elif typ == 'codeoneline':
         return TranspileBlock(kind='code:inline', content=lexedToStr(u), indentlevel=indentation.last, indentchar=indentation.symb);
-    elif typ == 'codecontent':
+    elif typ == 'codemultiline':
         exprs = [ lexedToStr(child) for child in children ];
         return TranspileBlock(kind='code:inline', content='\n'.join(exprs), indentlevel=indentation.last, indentchar=indentation.symb);
     raise Exception('Could not parse expression!');

@@ -4,46 +4,50 @@
 %import common.NEWLINE
 
 // symbols - noncapture
-?whitespaces: /\s+/              -> noncapture
-?space: / /                      -> noncapture
-?tab: /\t/                       -> noncapture
-?newline: /\s*[\n\r]/            -> noncapture
-?endcode: /;/                    -> noncapture
-?lcode: /\<{3}/                  -> noncapture
-?rcode: /\>{3}/                  -> noncapture
-?comma: /,/                      -> noncapture
+?whitespaces: /( |\t)+/         -> noncapture
+?space: / /                     -> noncapture
+?tab: /\t/                      -> noncapture
+?newline: /\s*[\n\r]/           -> noncapture
+?endcode: /;/                   -> noncapture
+?lmeta: /\<{3}/                 -> noncapture
+?rmeta: /\>{3}/                 -> noncapture
+?nmeta: /((?!(\<{3}|\>{3})).)+/ -> noncapture
+?comma: /,/                     -> noncapture
 // symbols - capture
-?newlinescapture: /(\s*[\n\r])+/ -> newlines
-?indent: /\s+/                   -> indent
-?textnobreaks: /[^\n\r]+/        -> text
+?newlinescapture: /(\s*[\n\r])+/        -> newlines
+?indent: /\s+/                          -> text
+?text: nospaces (whitespaces nospaces)* -> text
+?nospaces: /\S+/                        -> text
+?textnobreaks: /[^\n\r]+/               -> text
 
 ?blocks: newlinescapture? block ( newlinescapture block )* newlinescapture? -> blocks
+// ?block: blockquick
 ?block: blockquick | blockcode | blockcontent
 
-?blockcode: blockcode_plain rcode | blockcode_indent_spaces rcode | blockcode_indent_tabs rcode
-?blockcode_plain: lcode whitespaces? instructions newline+ blockcode_inside newline+
+// BLOCK CODE
+?blockcode: blockcode_plain rmeta | blockcode_indent_spaces rmeta | blockcode_indent_tabs rmeta
+?blockcode_plain: lmeta whitespaces? instructions newline+ blockcode_inside newline+
 ?blockcode_indent_spaces: space blockcode_plain space | space blockcode_indent_spaces space
 ?blockcode_indent_tabs: tab blockcode_plain tab | tab blockcode_indent_tabs tab
-
-?blockcontent: textcontent ( codeinline textcontent? )*    -> blockcontent
-    | codeinline textcontent? ( codeinline textcontent? )* -> blockcontent
-
-?blockquick: whitespaces? lcode whitespaces? quickinstruction whitespaces? endcode? whitespaces? rcode
-
-?codeinline: lcode whitespaces? codenobreaks whitespaces? rcode         -> codeinline
-    | lcode whitespaces? newline codecontent newline whitespaces? rcode -> codeinline
-
-?blockcode_inside: codenobreaks ( newline+ codenobreaks )* -> blockcode_inside
-?textcontent: /((?!(\<{3}|\>{3})).)+/                      -> textcontent
-?codecontent: codenobreaks ( newline+ codenobreaks )*      -> codecontent
-?codenobreaks: /((?!(\<{3}|\>{3})).)+/                     -> codenobreaks
-
+?blockcode_inside: textnobreaks ( newline+ textnobreaks )*
 ?instructions: "python"       -> python
     | /python,\s*print=true/i -> python_print
-?quickinstruction: "set" textnobreaks "=" textnobreaks -> quickset
-    | "input" textnobreaks                             -> quickinput
-    | "input_anon" textnobreaks                        -> quickinput_anon
-    | "bibliography" textnobreaks                      -> quickbib
-    | "bibliography_anon" textnobreaks                 -> quickbib_anon
-    | "escape"                                         -> quickescape
-    | "escape_once"                                    -> quickescapeonce
+
+// BLOCK CONTENT
+?blockcontent: textcontent ( codeinline textcontent? )*    -> blockcontent
+    | codeinline textcontent? ( codeinline textcontent? )* -> blockcontent
+?textcontent: nmeta                                                       -> textcontent
+?codeinline: lmeta whitespaces? codeoneline whitespaces? rmeta            -> codeinline
+    | lmeta whitespaces? newline codemultiline newline whitespaces? rmeta -> codeinline
+?codemultiline: codeoneline ( newline+ codeoneline )*                     -> codemultiline
+?codeoneline: nmeta                                                       -> codeoneline
+
+// BLOCK QUICK
+?blockquick: whitespaces? lmeta whitespaces? quickinstruction whitespaces? endcode? whitespaces? rmeta
+?quickinstruction: "set"i whitespaces nospaces whitespaces? "=" whitespaces? text -> quickset
+    | "input"i whitespaces text                                                   -> quickinput
+    | "input_anon"i whitespaces text                                              -> quickinput_anon
+    | ( "bibliography"i | "bib"i ) whitespaces text                               -> quickbib
+    | ( "bibliography_anon"i | "bib_anon"i ) whitespaces text                     -> quickbib_anon
+    | ( "escape"i | "esc"i )                                                      -> quickescape
+    | ( "escape_once"i | "esc_once"i )                                            -> quickescapeonce
