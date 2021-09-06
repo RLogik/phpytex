@@ -3,37 +3,40 @@
 %import common.WORD
 %import common.NEWLINE
 
-// symbols
-?space: /\s+/                    -> noncapture
+// symbols - noncapture
+?whitespaces: /\s+/              -> noncapture
+?space: / /                      -> noncapture
+?tab: /\t/                       -> noncapture
 ?newline: /\s*[\n\r]/            -> noncapture
-?newlinescapture: /(\s*[\n\r])+/ -> newlines
 ?endcode: /;/                    -> noncapture
 ?lcode: /\<{3}/                  -> noncapture
 ?rcode: /\>{3}/                  -> noncapture
 ?comma: /,/                      -> noncapture
+// symbols - capture
+?newlinescapture: /(\s*[\n\r])+/ -> newlines
 ?indent: /\s+/                   -> indent
 ?textnobreaks: /[^\n\r]+/        -> text
 
 ?blocks: newlinescapture? block ( newlinescapture block )* newlinescapture? -> blocks
-?block: blockcode  -> block
-    | blockcontent -> block
-    | blockquick   -> block
+?block: blockquick | blockcode | blockcontent
 
-?blockcode: lcode space? instructions newline+ insidecode newline+ rcode         -> blockcode
-    | indent lcode space? instructions newline+ insidecode newline+ indent rcode -> blockcode
+?blockcode: blockcode_plain rcode | blockcode_indent_spaces rcode | blockcode_indent_tabs rcode
+?blockcode_plain: lcode whitespaces? instructions newline+ blockcode_inside newline+
+?blockcode_indent_spaces: space blockcode_plain space | space blockcode_indent_spaces space
+?blockcode_indent_tabs: tab blockcode_plain tab | tab blockcode_indent_tabs tab
 
 ?blockcontent: textcontent ( codeinline textcontent? )*    -> blockcontent
     | codeinline textcontent? ( codeinline textcontent? )* -> blockcontent
 
-?blockquick: space? lcode space? quickinstruction space? endcode? space? rcode -> blockquick
+?blockquick: whitespaces? lcode whitespaces? quickinstruction whitespaces? endcode? whitespaces? rcode
 
-?codeinline: lcode space? codenobreaks space? rcode         -> codeinline
-    | lcode space? newline codecontent newline space? rcode -> codeinline
+?codeinline: lcode whitespaces? codenobreaks whitespaces? rcode         -> codeinline
+    | lcode whitespaces? newline codecontent newline whitespaces? rcode -> codeinline
 
-?insidecode: codenobreaks ( newline+ codenobreaks )*  -> insidecode
-?textcontent: /((?!(\<{3}|\>{3})).)+/                 -> textcontent
-?codecontent: codenobreaks ( newline+ codenobreaks )* -> codecontent
-?codenobreaks: /((?!(\<{3}|\>{3})).)+/                -> codenobreaks
+?blockcode_inside: codenobreaks ( newline+ codenobreaks )* -> blockcode_inside
+?textcontent: /((?!(\<{3}|\>{3})).)+/                      -> textcontent
+?codecontent: codenobreaks ( newline+ codenobreaks )*      -> codecontent
+?codenobreaks: /((?!(\<{3}|\>{3})).)+/                     -> codenobreaks
 
 ?instructions: "python"       -> python
     | /python,\s*print=true/i -> python_print

@@ -147,6 +147,10 @@ def getCliArgs(*args: str) -> Tuple[List[str], Dict[str, Any]]:
 # METHODS: string
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+def formatBlockUnindent(lines: List[str], reference: str) -> List[str]:
+    s = dedent('\n'.join([ reference + '.' ] + lines));
+    return s.split('\n')[1:];
+
 def formatBlockIndent(u: str, indent: str) -> str:
     u = dedent(u);
     lines = u.split('\n');
@@ -155,15 +159,29 @@ def formatBlockIndent(u: str, indent: str) -> str:
         linesNew.append(indent + line);
     return '\n'.join(linesNew);
 
-def DedentIgnoreFirstAndLast(s: str) -> str:
+def formatTextBlock(s: str) -> str:
+    return dedentIgnoreFirstAndLast(s);
+
+def formatTextBlockAsList(s: str) -> List[str]:
+    return re.split(r'\n', dedentIgnoreFirstAndLast(s));
+
+def dedentRelativeTo(s: str, reference: str) -> str:
+    lines = formatBlockUnindent(lines=s.split('\n'), reference=reference);
+    return '\n'.join(lines);
+
+def dedentIgnoreFirstAndLast(s: str) -> str:
     s = re.sub(r'^\s*[\n\r]|[\n\r]\s*$', '', s);
     return dedent(s);
 
-def formatTextBlock(s: str) -> str:
-    return DedentIgnoreFirstAndLast(s);
-
-def formatTextBlockAsList(s: str) -> List[str]:
-    return re.split(r'\n', DedentIgnoreFirstAndLast(s));
+def lengthOfWhiteSpace(s: str) -> int:
+    chars = [ _ for _ in re.split(r'', s) if not (_ == '') ];
+    n = 0;
+    for char in chars:
+        if char == ' ':
+            n += 1;
+        elif char == '\t':
+            n = (n - n % 8) + 8; # next tab stop
+    return n;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # METHODS: yaml and config

@@ -41,6 +41,8 @@ class TranspileBlock(object):
         self.indentlevel = indentlevel;
         self.indentchar = indentchar;
         self.content = content;
+        self.parameters = dict();
+        self.subst = dict();
         return;
 
     def __str__(self) -> str:
