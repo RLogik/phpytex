@@ -6,10 +6,13 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 import re;
+import json;
 from lark import Lark;
 from lark import Tree;
+from typing import Any;
 from typing import Dict;
 from typing import List;
+from typing import Tuple;
 from typing import Union;
 
 from src.core.utils import lengthOfWhiteSpace;
@@ -61,32 +64,37 @@ def lexedToBlock(u: Tree, indentation: IndentationTracker) -> TranspileBlock:
         return TranspileBlock(kind='text:linebreak', indentlevel=indentation.last, indentchar=indentation.symb);
     ## TEXT CONTENT
     elif typ == 'blockcontent':
-        exprs = [];
-        subst: Dict[str, TranspileBlock] = dict();
-        i = 0;
-        for child in children:
-            if child.data == 'textcontent':
-                text = escapeForPython(lexedToStr(child));
-                exprs.append(text);
-            elif child.data == 'codeinline':
-                key = 'subst' +  str(i);
-                subblock = lexedToCodeInline(child, indentation=indentation);
-                subst[key] = subblock;
-                exprs.append('{{{}}}'.format(key));
-                i += 1;
-        expr = ''.join(exprs);
-        block = TranspileBlock(kind='text:subst', content=expr, indentlevel=indentation.last, indentchar=indentation.symb);
-        block.subst = subst;
-        return block;
+        return parseBlockContent(children, indentation=indentation);
     ## CODE BLOCK
     elif typ == 'blockcode':
-        return lexedToBlockCode(children[0], indentation=indentation);
+        return parseBlockCode(children[0], indentation=indentation);
     ## QUICK COMMAND
     elif typ == 'blockquick':
-        return lexedToBlockQuickCommand(children[0], indentation=indentation);
+        return parteBlockQuickCommand(children[0], indentation=indentation);
     raise Exception('Could not parse expression!');
 
-def lexedToBlockQuickCommand(u: Tree, indentation: IndentationTracker) -> TranspileBlock:
+## BLOCK PARSERS
+
+def parseBlockContent(children: List[Tree], indentation: IndentationTracker) -> TranspileBlock:
+    exprs = [];
+    subst: Dict[str, TranspileBlock] = dict();
+    i = 0;
+    for child in children:
+        if child.data == 'textcontent':
+            text = escapeForPython(lexedToStr(child));
+            exprs.append(text);
+        elif child.data == 'codeinline':
+            key = 'subst' +  str(i);
+            subblock = parseCodeInline(child, indentation=indentation);
+            subst[key] = subblock;
+            exprs.append('{{{}}}'.format(key));
+            i += 1;
+    expr = ''.join(exprs);
+    block = TranspileBlock(kind='text:subst', content=expr, indentlevel=indentation.last, indentchar=indentation.symb);
+    block.subst = subst;
+    return block;
+
+def parteBlockQuickCommand(u: Tree, indentation: IndentationTracker) -> TranspileBlock:
     typ = u.data;
     children = filterSubexpr(u);
     if typ == 'quickset':
@@ -113,30 +121,18 @@ def lexedToBlockQuickCommand(u: Tree, indentation: IndentationTracker) -> Transp
         return TranspileBlock(kind='code:escape:1', indentlevel=indentation.last, indentchar=indentation.symb);
     raise Exception('Could not parse expression!');
 
-def lexedToCodeInline(u: Tree, indentation: IndentationTracker) -> TranspileBlock:
-    typ = u.data;
-    children = filterSubexpr(u);
-    if typ == 'codeinline':
-        return lexedToCodeInline(children[0], indentation=indentation);
-    elif typ == 'codeoneline':
-        return TranspileBlock(kind='code:inline', content=lexedToStr(u), indentlevel=indentation.last, indentchar=indentation.symb);
-    elif typ == 'codemultiline':
-        exprs = [ lexedToStr(child) for child in children ];
-        return TranspileBlock(kind='code:inline', content='\n'.join(exprs), indentlevel=indentation.last, indentchar=indentation.symb);
-    raise Exception('Could not parse expression!');
-
-def lexedToBlockCode(u: Tree, indentation: IndentationTracker, offset: str = '') -> TranspileBlock:
+def parseBlockCode(u: Tree, indentation: IndentationTracker, offset: str = '') -> TranspileBlock:
     typ = u.data;
     children = filterSubexpr(u);
     if typ == 'blockcode':
-        return lexedToBlockCode(children[0], indentation=indentation, offset=offset);
+        return parseBlockCode(children[0], indentation=indentation, offset=offset);
     if typ == 'blockcode_indent_spaces':
-        return lexedToBlockCode(children[0], indentation=indentation, offset=offset + ' ');
+        return parseBlockCode(children[0], indentation=indentation, offset=offset + ' ');
     if typ == 'blockcode_indent_tabs':
-        return lexedToBlockCode(children[0], indentation=indentation, offset=offset + '\t');
+        return parseBlockCode(children[0], indentation=indentation, offset=offset + '\t');
     if typ == 'blockcode_plain':
-        instructions = lexedToStr(children[0]);
-        block = lexedToBlockCode(children[1], indentation=indentation, offset=offset);
+        instructions = parseInstructions(children[0]);
+        block = parseBlockCode(children[1], indentation=indentation, offset=offset);
         block.parameters = dict(instructions=instructions);
         return block;
     elif typ == 'blockcode_inside':
@@ -155,6 +151,49 @@ def lexedToBlockCode(u: Tree, indentation: IndentationTracker, offset: str = '')
             if re.match(r'^.*:\s*$', line):
                 indentation.incrOffset();
         return TranspileBlock(kind='code', content='\n'.join(lines), indentlevel=0, indentchar=indentation.symb);
+    raise Exception('Could not parse expression!');
+
+## MISCELLANEOUS PARSERS
+
+def parseCodeInline(u: Tree, indentation: IndentationTracker) -> TranspileBlock:
+    typ = u.data;
+    children = filterSubexpr(u);
+    if typ == 'codeinline':
+        return parseCodeInline(children[0], indentation=indentation);
+    elif typ == 'codeoneline':
+        return TranspileBlock(kind='code:inline', content=lexedToStr(u), indentlevel=indentation.last, indentchar=indentation.symb);
+    elif typ == 'codemultiline':
+        exprs = [ lexedToStr(child) for child in children ];
+        return TranspileBlock(kind='code:inline', content='\n'.join(exprs), indentlevel=indentation.last, indentchar=indentation.symb);
+    raise Exception('Could not parse expression!');
+
+def parseInstructions(u: Tree) -> Tuple[List[str], Dict[str, Any]]:
+    typ = u.data;
+    children = filterSubexpr(u);
+    if typ == 'instructions':
+        return parseArgList(children[0]);
+    raise Exception('Could not parse expression!');
+
+def parseArgList(u: Tree) -> Tuple[List[str], Dict[str, Any]]:
+    typ = u.data;
+    children = filterSubexpr(u);
+    if typ == 'arglist':
+        tokens = [];
+        kwargs = dict();
+        for child in children:
+            grandchildren = filterSubexpr(child);
+            if child.data == 'argoption_token':
+                value = lexedToStr(grandchildren[0]);
+                tokens.append(value);
+            elif child.data == 'argoption_kwarg':
+                key = lexedToStr(grandchildren[0]);
+                value = lexedToStr(grandchildren[1]);
+                try:
+                    value = json.loads(value);
+                except:
+                    pass;
+                kwargs[key] = value;
+        return tokens, kwargs;
     raise Exception('Could not parse expression!');
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

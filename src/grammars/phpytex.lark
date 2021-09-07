@@ -3,6 +3,8 @@
 %import common.WORD
 %import common.NEWLINE
 
+// ---------------- SYMBOLS ---------------- //
+
 // symbols - noncapture
 ?whitespaces: /( |\t)+/         -> noncapture
 ?space: / /                     -> noncapture
@@ -20,6 +22,25 @@
 ?nospaces: /\S+/                        -> text
 ?textnobreaks: /[^\n\r]+/               -> text
 
+// ---------------- BASIC ---------------- //
+
+// text with nested but balanced quotation marks
+?textquotesoneline: textdblquotes | textsgquotes
+?textdblquotes: /"/ textbalanceddblquotes /"/        -> textdblquotes
+?textsgquotes: /'/ textbalancedsgquotes /'/          -> textsgquotes
+?textbalanceddblquotes: ( textdblquotes | /[^"]+/ )+ -> textbalanceddblquotes
+?textbalancedsgquotes: ( textsgquotes | /[^']+/ )+   -> textbalancedsgquotes
+
+// mixed value/kwvalue dictionaries
+?arglist: argoption ( whitespaces? comma whitespaces? argoption )* -> arglist
+?argoption: argoption_key whitespaces? "=" whitespaces? argoption_value -> argoption_kwarg
+    | argoption_key                                                     -> argoption_token
+?argoption_key: /[^,\s=]+/   -> argoption_key
+?argoption_value: /[^,\s=]+/ -> argoption_value
+    | textquotesoneline      -> argoption_value
+
+// ---------------- BLOCKS ---------------- //
+
 ?blocks: newlinescapture? block ( newlinescapture block )* newlinescapture? -> blocks
 // ?block: blockquick
 ?block: blockquick | blockcode | blockcontent
@@ -29,18 +50,18 @@
 ?blockcode_plain: lmeta whitespaces? instructions newline+ blockcode_inside newline+
 ?blockcode_indent_spaces: space blockcode_plain space | space blockcode_indent_spaces space
 ?blockcode_indent_tabs: tab blockcode_plain tab | tab blockcode_indent_tabs tab
-?blockcode_inside: textnobreaks ( newline+ textnobreaks )*
-?instructions: "python"       -> python
-    | /python,\s*print=true/i -> python_print
+?blockcode_inside: textnobreaks ( newline+ textnobreaks )* -> blockcode_inside
+?instructions: "{" whitespaces? arglist whitespaces? "}" -> instructions
+    | arglist                                            -> instructions
 
 // BLOCK CONTENT
 ?blockcontent: textcontent ( codeinline textcontent? )*    -> blockcontent
     | codeinline textcontent? ( codeinline textcontent? )* -> blockcontent
-?textcontent: nmeta                                                       -> textcontent
+?textcontent: ( /((?!(\<{3}|\>{3}|"|')).)+/ | textquotesoneline )+        -> textcontent
 ?codeinline: lmeta whitespaces? codeoneline whitespaces? rmeta            -> codeinline
     | lmeta whitespaces? newline codemultiline newline whitespaces? rmeta -> codeinline
 ?codemultiline: codeoneline ( newline+ codeoneline )*                     -> codemultiline
-?codeoneline: nmeta                                                       -> codeoneline
+?codeoneline: ( /((?!(\<{3}|\>{3}|"|')).)+/ | textquotesoneline )+        -> codeoneline
 
 // BLOCK QUICK
 ?blockquick: whitespaces? lmeta whitespaces? quickinstruction whitespaces? endcode? whitespaces? rmeta
