@@ -5,19 +5,9 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-import os;
-import re;
-
-from pathlib import Path;
-from platform import system as platformSystem;
-import subprocess;
-from textwrap import dedent;
-from typing import Any;
-from typing import Dict;
-from typing import List;
-from typing import Tuple;
-from typing import Type;
-from typing import Union;
+from src.local.system import *;
+from src.local.typing import *;
+from src.local.misc import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES
@@ -33,7 +23,7 @@ ENCODING_UNICODE: str = 'unicode_escape';
 
 def isLinux() -> bool:
     # return not ( os.name == 'nt' );
-    return not ( platformSystem().lower() == 'windows' );
+    return not ( platform.system().lower() == 'windows' );
 
 def PythonCommand() -> str:
     return 'python3' if isLinux() else 'py -3';
@@ -80,14 +70,14 @@ def createNewFileName(dir: str, nameinit: str = 'tmp', namescheme: str = 'tmp_{}
 
 def createPath(path: str):
     if not os.path.exists(path):
-        Path(path).mkdir(parents=True, exist_ok=True);
+        pathlib.Path(path).mkdir(parents=True, exist_ok=True);
     if not os.path.exists(path):
         raise FileExistsError('Could not create or find path \033[93;1m{}\033[0m!'.format(path));
     return;
 
 def createFile(path: str):
     if not os.path.exists(path):
-        Path(path).touch(exist_ok=True);
+        pathlib.Path(path).touch(exist_ok=True);
     if not os.path.exists(path):
         raise FileExistsError('Could not create or find path \033[93;1m{}\033[0m!'.format(path));
     return;
@@ -151,13 +141,9 @@ def formatBlockUnindent(lines: List[str], reference: str) -> List[str]:
     s = dedent('\n'.join([ reference + '.' ] + lines));
     return s.split('\n')[1:];
 
-def formatBlockIndent(u: str, indent: str) -> str:
-    u = dedent(u);
-    lines = u.split('\n');
-    linesNew = [];
-    for line in lines:
-        linesNew.append(indent + line);
-    return '\n'.join(linesNew);
+def formatBlockIndent(lines: List[str], indent: str) -> List[str]:
+    s = dedent('\n'.join(lines));
+    return [ indent + line for line in s.split('\n') ];
 
 def formatTextBlock(s: str) -> str:
     return dedentIgnoreFirstAndLast(s);
@@ -172,6 +158,9 @@ def dedentRelativeTo(s: str, reference: str) -> str:
 def dedentIgnoreFirstAndLast(s: str) -> str:
     s = re.sub(r'^\s*[\n\r]|[\n\r]\s*$', '', s);
     return dedent(s);
+
+def extractIndent(s: str) -> str:
+    return re.sub(r'^(\s*).*$', r'\1', s);
 
 def lengthOfWhiteSpace(s: str) -> int:
     chars = [ _ for _ in re.split(r'', s) if not (_ == '') ];
