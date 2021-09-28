@@ -1,3 +1,5 @@
+// ---------------- IMPORTS + SPECIALS ---------------- //
+
 %import common.WS
 %import common.NUMBER
 %import common.WORD
@@ -9,14 +11,14 @@
 ?whitespaces: /( |\t)+/         -> noncapture
 ?space: / /                     -> noncapture
 ?tab: /\t/                      -> noncapture
-?newline: /\s*[\n\r]/           -> noncapture
+?newline: /\s*\r?\n/            -> noncapture
 ?endcode: /;/                   -> noncapture
 ?lmeta: /\<{3}/                 -> noncapture
 ?rmeta: /\>{3}/                 -> noncapture
 ?nmeta: /((?!(\<{3}|\>{3})).)+/ -> noncapture
 ?comma: /,/                     -> noncapture
 // symbols - capture
-?newlinescapture: /(\s*[\n\r])+/        -> newlines
+?newlinescapture: /(\s*\r?\n)+/         -> newlines
 ?indent: /\s+/                          -> text
 ?text: nospaces (whitespaces nospaces)* -> text
 ?nospaces: /\S+/                        -> text
@@ -43,20 +45,19 @@
 
 ?blocks: newlinescapture? block ( newlinescapture block )* newlinescapture? -> blocks
 // ?block: blockquick
-?block: blockquick | blockcode | blockcontent
+?block: blockquick | blockcode_regex | blockcontent
+
+// BLOCK CODE AS REGEX
+?blockcode_regex: /^(\s*)\<{3}(\s*\S+.*)\r?\n((?:\1\s+.*\r?\n)+)\1\>{3}$/m -> blockcode_regex
 
 // BLOCK CODE
-?blockcode: blockcode_plain rmeta | blockcode_indent_spaces rmeta | blockcode_indent_tabs rmeta
-?blockcode_plain: lmeta whitespaces? instructions newline+ blockcode_inside newline+
-?blockcode_indent_spaces: space blockcode_plain space | space blockcode_indent_spaces space
-?blockcode_indent_tabs: tab blockcode_plain tab | tab blockcode_indent_tabs tab
-?blockcode_inside: textnobreaks ( newline+ textnobreaks )* -> blockcode_inside
-?instructions: "{" whitespaces? arglist whitespaces? "}" -> instructions
-    | arglist                                            -> instructions
+?blockcode: lmeta whitespaces? blockcode_instructions newline+ blockcode_inside newline+ rmeta -> blockcode
+?blockcode_inside: textnobreaks ( newline+ textnobreaks )*         -> blockcode_inside
+?blockcode_instructions: "{" whitespaces? arglist whitespaces? "}" -> blockcode_instructions
+    | arglist                                                      -> blockcode_instructions
 
 // BLOCK CONTENT
-?blockcontent: textcontent ( codeinline textcontent? )*    -> blockcontent
-    | codeinline textcontent? ( codeinline textcontent? )* -> blockcontent
+?blockcontent: ( textcontent | codeinline )+ -> blockcontent
 ?textcontent: ( /((?!(\<{3}|\>{3}|"|')).)+/ | textquotesoneline )+        -> textcontent
 ?codeinline: lmeta whitespaces? codeoneline whitespaces? rmeta            -> codeinline
     | lmeta whitespaces? newline codemultiline newline whitespaces? rmeta -> codeinline
