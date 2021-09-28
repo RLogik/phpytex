@@ -1,7 +1,23 @@
 \documentclass[a4paper,<<< FONT_SIZE; >>>]{article}
 
+<<< set draft = True; >>>
+
+    <<< python
+        if draft:
+    >>>
+
+\newcommand{\description}[0]{a draft document}
+
+        <<< python
+            else:
+        >>>
+
+\newcommand{\description}[0]{the final version}
+
+    <<< escape_once; >>>
+
 \begin{document}
     \section{<<< TITLE; >>>}
 
-    This is a test document.
+    This is \description.
 \end{document}
