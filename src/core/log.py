@@ -5,12 +5,11 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-import sys;
-import re;
 import getpass;
-from typing import Any;
-from typing import Callable;
-from typing import Union;
+
+from src.local.misc import *;
+from src.local.system import *;
+from src.local.typing import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES

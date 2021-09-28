@@ -10,4 +10,5 @@ import sys;
 
 import pathlib;
 import platform;
+import shutil;
 import subprocess;

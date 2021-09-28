@@ -5,9 +5,9 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+from src.local.misc import *;
 from src.local.system import *;
 from src.local.typing import *;
-from src.local.misc import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES

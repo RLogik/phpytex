@@ -7,11 +7,8 @@
 
 from __future__ import annotations;
 
-import random;
-from typing import Any;
-from typing import Dict;
-from typing import List;
-from typing import Tuple;
+from src.local.maths import *;
+from src.local.typing import *;
 
 from src.core.utils import PythonCommand;
 from src.customtypes.exports import *;

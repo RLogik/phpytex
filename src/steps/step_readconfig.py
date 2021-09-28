@@ -5,9 +5,8 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-import re;
-from typing import Any;
-from typing import Dict;
+from src.local.misc import *;
+from src.local.typing import *;
 
 from src.core.utils import getAttribute;
 from src.core.utils import getFilesByPattern;

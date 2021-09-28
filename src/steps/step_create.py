@@ -5,10 +5,9 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-import os;
-import re;
-from typing import Any;
-from typing import Dict;
+from src.local.misc import *;
+from src.local.system import *;
+from src.local.typing import *;
 
 from src.core.log import *;
 from src.core.utils import createFile;

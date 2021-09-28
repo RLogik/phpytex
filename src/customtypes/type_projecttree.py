@@ -7,11 +7,8 @@
 
 from __future__ import annotations;
 
-import os;
-from typing import Any;
-from typing import Dict;
-from typing import Generator;
-from typing import List;
+from src.local.system import *;
+from src.local.typing import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES

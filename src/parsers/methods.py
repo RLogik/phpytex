@@ -5,10 +5,8 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-import re;
-from typing import Any;
-from typing import Union;
-from typing import Tuple;
+from src.local.misc import *;
+from src.local.typing import *;
 
 from src.customtypes.exports import *;
 
