@@ -3,6 +3,7 @@ ignore:      false
 # COMPILE OPTIONS
 ################################################################################
 compile:
+  legacy:         true
   root:           root.tex
   output:         main.tex
   export-params:  src.parameters
