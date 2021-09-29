@@ -31,6 +31,7 @@ _config_parameters: Dict[str, ConfigParameter] = {
     'param_module_name':       ConfigParameter[str]().setValue('MODULE_GLOBAL_PARAMS'),
     'python_path':             ConfigParameter[str]().setValue(PythonCommand()),
     ####
+    'option_legacy':           ConfigParameter[bool]().setValue(False),
     'option_ignore':           ConfigParameter[bool]().setValue(False),
     'option_debug':            ConfigParameter[bool]().setValue(False),
     'option_compile_latex':    ConfigParameter[bool]().setValue(False),
@@ -166,6 +167,14 @@ def setFileLatex(value: str):
     if value == '':
         return;
     _config_parameters['file_latex'].value = value;
+    return;
+
+def getOptionLegacy() -> bool:
+    return _config_parameters['option_legacy'].value;
+
+def setOptionLegacy(value: bool) -> bool:
+    global _config_parameters;
+    _config_parameters['option_legacy'].value = value;
     return;
 
 def getOptionIgnore() -> bool:

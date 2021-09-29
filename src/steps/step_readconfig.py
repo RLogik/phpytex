@@ -65,6 +65,7 @@ def setCompileConfig(
     debug:          bool,
     compile_latex:  bool,
     insert_bib:     bool,
+    legacy:         bool = False,
     export_params:  str  = '',
     comments:       str  = 'auto',
     show_structure: bool = True,
@@ -74,6 +75,7 @@ def setCompileConfig(
     output:         str  = 'main.tex',
     **_
 ):
+    appconfig.setOptionLegacy(legacy);
     appconfig.setOptionIgnore(ignore);
     appconfig.setOptionDebug(debug);
     appconfig.setOptionCompileLatex(compile_latex);

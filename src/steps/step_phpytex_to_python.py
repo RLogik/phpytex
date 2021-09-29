@@ -45,9 +45,11 @@ def step(lines: List[str]):
         'show-structure': appconfig.getOptionShowStructure(),
     };
 
+    _documents = dict();
+
     Knit(
         path         = appconfig.getFilePhpytex(),
-        filecontents = lines,
+        documents    = _documents,
         imports      = _list_of_imports,
         verbatim     = _precompile_lines,
         mute         = False,
@@ -130,7 +132,7 @@ def exportParameters(fname: str, globalvars: List[str]):
 
 def Knit(
     path:         str,
-    filecontents: List[str],
+    documents:    Dict[str, List[TranspileBlock]],
     imports:      List[str]                  = [],
     verbatim:     List[Tuple[int, Any, str]] = [],
     anon:         bool                       = False,
@@ -141,10 +143,16 @@ def Knit(
     ishead:       bool                       = True
 ):
     lines = readTextFile(path);
-    indentation = IndentationTracker(symb=appconfig.getIndentCharacter(), pattern=appconfig.getIndentCharacterRe());
+    indentation = IndentationTracker(
+        symb       = appconfig.getIndentCharacter(),
+        pattern    = appconfig.getIndentCharacterRe(),
+        is_legacy  = appconfig.getOptionLegacy(),
+    );
     blocks = parseText(lines, indentation);
     for block in blocks:
-        print(block.kind);
+        # print(block.kind);
+        for line in block.generateCode():
+            logDebug(line);
     return;
 
 def createmetacode(
