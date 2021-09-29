@@ -5,7 +5,7 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from __future__ import annotations
+from __future__ import annotations;
 
 from src.local.misc import *;
 from src.local.typing import *;
@@ -56,52 +56,52 @@ class TranspileBlock(object):
         lines = formatBlockIndent(self.lines, indent=indent);
         return '\n'.join(lines);
 
-    def __str__(self) -> str:
+    def generateCode(self) -> Generator[str, None, None]:
         indent = self.indentsymb*self.indentlevel;
         if self.kind == 'text':
-            return self.content;
+            yield self.content;
         elif self.kind == 'text:linebreak':
-            return '{tab}print(\'\'\'\\n\'\'\');'.format(tab=indent);
+            yield '{tab}print(\'\'\'\\n\'\'\');'.format(tab=indent);
         elif self.kind == 'text:subst':
-            lines = [];
-            lines.append('{tab}print(\'\'\'{expr}\'\'\'.format('.format(
+            line = '{tab}print(\'\'\'{expr}\'\'\'.format('.format(
                 tab  = indent,
                 expr = self.content,
-            ));
+            )
+            yield line + ('));' if len(self.subst) == 0 else '');
             for key, value in self.subst.items():
                 indentlevel = value.indentlevel;
                 value_lines = formatBlockIndent(value.lines, indent=indent + self.indentsymb*2);
-                value_lines[0] = re.sub(r'\s*(.*)', r'\1', value_lines[0]);
-                lines.append('{tab}\'{key}\': {value},'.format(
+                value_lines[0] = re.sub(r'^\s*(.*)$', r'\1', value_lines[0]);
+                yield '{tab}\'{key}\': {value},'.format(
                     tab = indent + self.indentsymb,
                     key = key,
                     value = '\n'.join(value_lines),
-                ));
+                );
                 value.indentlevel = indentlevel;
             if len(self.subst) > 0:
-                lines.append('{tab});'.format(tab=indent));
-            else:
-                lines[0] += '));';
-            return '\n'.join(lines);
+                yield '{tab});'.format(tab=indent);
+            return;
         elif self.kind == 'code':
-            return self.content;
+            yield self.content;
         elif self.kind == 'code:value':
-            return self.content;
+            yield self.content;
         elif self.kind == 'code:set':
-            return '{tab}{varname} = {value};'.format(
+            yield '{tab}{varname} = {value};'.format(
                 tab = indent,
                 **self.parameters
             );
-        elif self.kind == 'code:input':
-            return '';
-        elif self.kind == 'code:input:anon':
-            return '';
-        elif self.kind == 'code:bib':
-            return '';
-        elif self.kind == 'code:bib:anon':
-            return '';
         elif self.kind == 'code:escape':
-            return '';
+            yield '{tab}pass;'.format(tab=indent);
+            return;
         elif self.kind == 'code:escape:1':
-            return '';
-        raise Exception('Unrecognised kind.');
+            yield '{tab}pass;'.format(tab=indent);
+            return;
+        elif self.kind == 'code:input':
+            return;
+        elif self.kind == 'code:input:anon':
+            return;
+        elif self.kind == 'code:bib':
+            return;
+        elif self.kind == 'code:bib:anon':
+            return;
+        return;
