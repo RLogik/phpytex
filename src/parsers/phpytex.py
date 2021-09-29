@@ -24,7 +24,7 @@ from src.customtypes.exports import *;
 
 _lexer: Dict[str, Lark] = dict();
 
-def getLexer(mode: str = 'phpytex') -> Lark:
+def getLexer(mode: str = 'blocks') -> Lark:
     global _lexer;
     if not (mode in _lexer):
         _lexer[mode] = Lark(
@@ -113,27 +113,27 @@ def processBlockQuickCommand(u: Tree, indentation: IndentationTracker) -> Transp
     children = filterSubexpr(u);
     if typ == 'quickset':
         varname = lexedToStr(children[0]);
-        value = lexedToStr(children[1]);
+        value = stripEndOfCode(lexedToStr(children[1]));
         block = TranspileBlock(kind='code:set', indentlevel=indentation.last, indentsymb=indentation.symb);
         block.parameters = dict(varname=varname, value=value);
         return block;
     elif typ == 'quickinput':
-        path = lexedToStr(children[0]);
+        path = stripEndOfCode(lexedToStr(children[0]));
         block = TranspileBlock(kind='code:input', content=path, indentlevel=indentation.last, indentsymb=indentation.symb);
         block.parameters = dict(path=path);
         return block;
     elif typ == 'quickinput_anon':
-        path = lexedToStr(children[0]);
+        path = stripEndOfCode(lexedToStr(children[0]));
         block = TranspileBlock(kind='code:input:anon', content=path, indentlevel=indentation.last, indentsymb=indentation.symb);
         block.parameters = dict(path=path);
         return block;
     elif typ == 'quickbib':
-        path = lexedToStr(children[0]);
+        path = stripEndOfCode(lexedToStr(children[0]));
         block = TranspileBlock(kind='code:bib', content=path, indentlevel=indentation.last, indentsymb=indentation.symb);
         block.parameters = dict(path=path);
         return block;
     elif typ == 'quickbib_anon':
-        path = lexedToStr(children[0]);
+        path = stripEndOfCode(lexedToStr(children[0]));
         block = TranspileBlock(kind='code:bib:anon', content=path, indentlevel=indentation.last, indentsymb=indentation.symb);
         block.parameters = dict(path=path);
         return block;
@@ -142,7 +142,7 @@ def processBlockQuickCommand(u: Tree, indentation: IndentationTracker) -> Transp
         block = TranspileBlock(kind='code:escape', indentlevel=indentation.last, indentsymb=indentation.symb);
         return block;
     elif typ == 'quickescapeonce':
-        indentation.decrOffset;
+        indentation.decrOffset();
         block = TranspileBlock(kind='code:escape:1', indentlevel=indentation.last, indentsymb=indentation.symb);
         return block;
     raise Exception('Could not parse expression!');
@@ -241,7 +241,11 @@ def filterOutNoncapture(u: Tree) -> List[Union[str, Tree]]:
     return [uu for uu in u.children if not isinstance(uu, Tree) or ( hasattr(uu, 'data') and not uu.data == 'noncapture' ) ];
 
 def formatValue(lines: List[str], indent: str) -> List[str]:
+    if len(lines) == 0:
+        return [];
     lines = formatBlockUnindent(lines, reference = indent);
-    if len(lines) > 0:
-        lines[-1] = re.sub(r'^(.*);\s*$', r'\1', lines[-1]);
+    lines[-1] = stripEndOfCode(lines[-1]);
     return lines;
+
+def stripEndOfCode(u: str) -> str:
+    return re.sub(r'^(.*\S|)\s*;\s*$', r'\1', u);

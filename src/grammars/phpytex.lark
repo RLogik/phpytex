@@ -65,7 +65,7 @@
 ?codeoneline: ( /((?!(\<{3}|\>{3}|"|')).)+/ | textquotesoneline )+        -> codeoneline
 
 // BLOCK QUICK
-?blockquick: whitespaces? lmeta whitespaces? quickinstruction whitespaces? endcode? whitespaces? rmeta
+?blockquick: whitespaces? lmeta whitespaces? quickinstruction whitespaces? rmeta -> blockquick
 ?quickinstruction: "set"i whitespaces nospaces whitespaces? "=" whitespaces? text -> quickset
     | "input"i whitespaces text                                                   -> quickinput
     | "input_anon"i whitespaces text                                              -> quickinput_anon
