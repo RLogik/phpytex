@@ -49,59 +49,54 @@ class TranspileBlock(object):
         return;
 
     @property
-    def content(self) -> str:
-        if hasattr(self, '_content'):
-            return self._content;
-        indent = self.indentsymb*self.indentlevel;
-        lines = formatBlockIndent(self.lines, indent=indent);
-        return '\n'.join(lines);
+    def content(self) -> Generator[str, None, None]:
+        yield from [ self._content ] if hasattr(self, '_content') else formatBlockIndent(self.lines, indent=self.indentsymb*self.indentlevel);
 
-    def generateCode(self) -> Generator[str, None, None]:
-        indent = self.indentsymb*self.indentlevel;
+    def generateCode(self, offset: int = 0) -> Generator[str, None, None]:
+        indentlevel_orig = self.indentlevel;
+        self.indentlevel += offset;
         if self.kind == 'text':
-            yield self.content;
+            yield from self.content;
         elif self.kind == 'text:linebreak':
-            yield '{tab}print(\'\'\'\\n\'\'\');'.format(tab=indent);
+            yield '{tab}print(\'\'\'\\n\'\'\');'.format(tab=self.indentsymb*self.indentlevel);
         elif self.kind == 'text:subst':
             line = '{tab}print(\'\'\'{expr}\'\'\'.format('.format(
-                tab  = indent,
-                expr = self.content,
+                tab  = self.indentsymb*offset,
+                expr = '\n'.join(list(self.content)),
             )
             yield line + ('));' if len(self.subst) == 0 else '');
             for key, value in self.subst.items():
                 indentlevel = value.indentlevel;
-                value_lines = formatBlockIndent(value.lines, indent=indent + self.indentsymb*2);
+                value_lines = formatBlockIndent(value.lines, indent=self.indentsymb*(self.indentlevel + 2));
                 value_lines[0] = re.sub(r'^\s*(.*)$', r'\1', value_lines[0]);
                 yield '{tab}\'{key}\': {value},'.format(
-                    tab = indent + self.indentsymb,
+                    tab = self.indentsymb*(self.indentlevel + 1),
                     key = key,
                     value = '\n'.join(value_lines),
                 );
                 value.indentlevel = indentlevel;
             if len(self.subst) > 0:
-                yield '{tab});'.format(tab=indent);
-            return;
+                yield '{tab});'.format(tab=self.indentsymb*self.indentlevel);
         elif self.kind == 'code':
-            yield self.content;
+            yield from self.content;
         elif self.kind == 'code:value':
-            yield self.content;
+            yield from self.content;
         elif self.kind == 'code:set':
             yield '{tab}{varname} = {value};'.format(
-                tab = indent,
+                tab = self.indentsymb*self.indentlevel,
                 **self.parameters
             );
         elif self.kind == 'code:escape':
-            yield '{tab}pass;'.format(tab=indent);
-            return;
+            yield '{tab}pass;'.format(tab=self.indentsymb*self.indentlevel);
         elif self.kind == 'code:escape:1':
-            yield '{tab}pass;'.format(tab=indent);
-            return;
+            yield '{tab}pass;'.format(tab=self.indentsymb*self.indentlevel);
         elif self.kind == 'code:input':
-            return;
+            pass;
         elif self.kind == 'code:input:anon':
-            return;
+            pass;
         elif self.kind == 'code:bib':
-            return;
+            pass;
         elif self.kind == 'code:bib:anon':
-            return;
+            pass;
+        self.indentlevel = indentlevel_orig;
         return;

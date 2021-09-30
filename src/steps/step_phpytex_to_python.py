@@ -45,19 +45,24 @@ def step(lines: List[str]):
         'show-structure': appconfig.getOptionShowStructure(),
     };
 
-    _documents = dict();
+    _documents = TranspileDocuments(root=appconfig.getPathRoot(), indentsymb=appconfig.getIndentCharacter());
 
     Knit(
-        path         = appconfig.getFilePhpytex(),
-        documents    = _documents,
-        imports      = _list_of_imports,
-        verbatim     = _precompile_lines,
-        mute         = False,
-        silent       = getQuietMode(),
-        params       = params
+        path      = appconfig.getFilePhpytex(),
+        documents = _documents,
+        imports   = _list_of_imports,
+        verbatim  = _precompile_lines,
+        mute      = False,
+        silent    = getQuietMode(),
+        params    = params
     );
 
-    addpreamble(lines=lines, params=params, silent=getQuietMode());
+    addPreamble(
+        path      = appconfig.getFileStamp(),
+        documents = _documents,
+        silent    = getQuietMode(),
+        params    = params
+    );
 
     if appconfig.getExportParams():
         fname_params, _, _ = extractPath(path=appconfig.getFileParamsPy(), relative=True, ext='py');
@@ -78,18 +83,24 @@ def step(lines: List[str]):
 # SECONDARY METHODS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def addpreamble(lines: List[str], params: Dict[str, Any], silent: bool):
+def addPreamble(
+    path: str,
+    documents: TranspileDocuments,
+    params: Dict[str, Any],
+    silent: bool
+):
     preamble = [];
     verbatim = [];
     struct = appconfig.getDocumentStructure()[:]
-    if isinstance(appconfig.getFileStamp(), str) and not(appconfig.getFileStamp() == ''):
+    if isinstance(path, str) and not(path == ''):
         appconfig.setDocumentStructure([]);
         Knit(
-            path         = appconfig.getFileStamp(),
-            filecontents = preamble,
-            verbatim     = verbatim,
-            mute         = True,
-            params       = params | { 'no-comm': False, 'no-comm-auto': True }
+            # filecontents = preamble,
+            path      = path,
+            documents = documents,
+            verbatim  = verbatim,
+            mute      = True,
+            params    = params | { 'no-comm': False, 'no-comm-auto': True }
         );
         appconfig.setDocumentStructure(struct[:]);
 
@@ -105,7 +116,7 @@ def addpreamble(lines: List[str], params: Dict[str, Any], silent: bool):
     #         '%% ********************************************************************************',
     #     ], anon=False, mode='meta');
 
-    lines[:] = preamble + lines;
+    # lines[:] = preamble + lines;
     appconfig.setPrecompileLines(verbatim + appconfig.getPrecompileLines());
     return;
 
@@ -132,7 +143,7 @@ def exportParameters(fname: str, globalvars: List[str]):
 
 def Knit(
     path:         str,
-    documents:    Dict[str, List[TranspileBlock]],
+    documents:    TranspileDocuments,
     imports:      List[str]                  = [],
     verbatim:     List[Tuple[int, Any, str]] = [],
     anon:         bool                       = False,
@@ -149,10 +160,10 @@ def Knit(
         is_legacy  = appconfig.getOptionLegacy(),
     );
     blocks = parseText(lines, indentation);
-    for block in blocks:
-        # print(block.kind);
-        for line in block.generateCode():
-            logDebug(line);
+    documents.addDocument(path=path);
+    documents.addBlocks(path=path, blocks=blocks);
+    for line in documents.generateCode():
+        logDebug(line);
     return;
 
 def createmetacode(
