@@ -5,6 +5,7 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+from src.local.config import *;
 from src.local.misc import *;
 from src.local.system import *;
 from src.local.typing import *;
@@ -175,6 +176,13 @@ def lengthOfWhiteSpace(s: str) -> int:
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # METHODS: yaml and config
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def readYamlFile(path: str) -> dict:
+    with open(path, 'r') as fp:
+        spec = load(fp, Loader=FullLoader);
+        if not isinstance(spec, dict):
+            raise ValueError('Config is not a dictionary object!');
+    return spec;
 
 def restrictDictionary(x: Dict[str, Any], keys: List[str]) -> dict:
     return { key: value for key, value in x.items() if key in keys };

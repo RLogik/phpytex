@@ -56,10 +56,3 @@ def setupYamlReader():
     add_constructor(tag=u'!join', constructor=join_constructor);
     add_constructor(tag=u'!key',  constructor=key_constructor);
     return;
-
-def readYamlFile(path: str) -> dict:
-    with open(path, 'r') as fp:
-        spec = load(fp, Loader=FullLoader);
-        if not isinstance(spec, dict):
-            raise ValueError('Config is not a dictionary object!');
-    return spec;
