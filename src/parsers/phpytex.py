@@ -35,28 +35,26 @@ def getLexer(mode: str = 'blocks') -> Lark:
         );
     return _lexer[mode];
 
+def tokeniseInput(mode: str, text: str):
+    try:
+        return getLexer(mode).parse(text);
+    except:
+        raise Exception('Could not tokenise input!');
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MAIN METHODS string -> Expression
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def parseText(text: str, indentation: IndentationTracker) -> List[TranspileBlock]:
     blocks = [];
-    try:
-        if not ( text.strip() == '' ):
-            u = getLexer('blocks').parse(text);
-            blocks = lexedToBlocks(u, indentation=indentation);
-    except:
-        raise Exception('Could not parse input!');
+    if not ( text.strip() == '' ):
+        u = tokeniseInput('blocks', text);
+        blocks = lexedToBlocks(u, indentation=indentation);
     return blocks;
 
 def parseCodeBlock(text: str, indentation: IndentationTracker) -> TranspileBlock:
-    try:
-        if not ( text.strip() == '' ):
-            u = getLexer('blockcode').parse(text);
-            return processBlockCode(u, indentation=indentation);
-    except:
-        pass;
-    raise Exception('Could not parse input!');
+    u = tokeniseInput('blockcode', text);
+    return processBlockCode(u, indentation=indentation);
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # PRIVATE METHODS: recursive lex -> Expression
@@ -164,7 +162,7 @@ def processBlockCode(u: Tree, indentation: IndentationTracker, offset: str = '')
         lenOffset = lengthOfWhiteSpace(offset);
         lines = [ lexedToStr(child) for child in children ];
         lenIndentation = [ lengthOfWhiteSpace(extractIndent(line)) for line in lines ];
-        assert all( n >= lenOffset + 1 for n in lenIndentation ), 'Invalid indentation inside code block!';
+        assert all( n >= lenOffset for n in lenIndentation ), 'Invalid indentation inside code block!';
         lines = formatBlockUnindent(lines=lines, reference=offset + indentation.symb);
         indentation.initOffset(''); # <- NOTE: have dedented, thus offsett now empty.
         is_under_splitline = False;

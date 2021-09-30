@@ -48,7 +48,7 @@
 ?block: blockquick | blockcode_regex | blockcontent
 
 // BLOCK CODE AS REGEX
-?blockcode_regex: /^(\s*)\<{3}(\s*\S+.*)\r?\n((?:\1\s+.*\r?\n)+)\1\>{3}$/m -> blockcode_regex
+?blockcode_regex: /^(\s*)\<{3}(\s*\S+.*)\r?\n((\1.*\r?\n)?)\1\>{3}$/m -> blockcode_regex
 
 // BLOCK CODE
 ?blockcode: lmeta whitespaces? blockcode_instructions newline+ blockcode_inside newline+ rmeta -> blockcode
