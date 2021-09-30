@@ -1,0 +1,6 @@
+info:
+  title: Case tests
+  description: Config file to select which test cases will be carried out.
+cases:
+  - test/cases/case0
+  - test/cases/case1

@@ -8,26 +8,31 @@
 import os;
 import sys;
 
-_project_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)));
-_test_path = os.path.dirname(__file__);
-os.chdir(_test_path);
-sys.path.insert(0, _project_path);
+PATH_PROJECT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)));
+os.chdir(PATH_PROJECT);
+sys.path.insert(0, PATH_PROJECT);
 
 from src.local.misc import *;
 from src.local.system import *;
 from src.local.typing import *;
 
 from src.core.log import *;
+from src.core.utils import getAttribute;
 from src.core.utils import getCliArgs;
 from src.core.utils import createNewPathName;
 from src.core.utils import pipeCall;
 from src.core.utils import PythonCommand;
+from src.core.utils import readYamlFile;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+PATH_CASES:   str = 'test/cases';
 PATTERN_CASE: str = r'^case.*';
+PATH_CONFIG:  str = 'test/cases/setup/config.yml';
+PATH_SCRIPT:  str = os.path.join(PATH_PROJECT, 'src', 'main.py');
+PATH_SANDBOX: str = os.path.join(PATH_CASES, 'sandbox');
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MAIN PROCESS
@@ -35,28 +40,41 @@ PATTERN_CASE: str = r'^case.*';
 
 def main(*tokens, **kwargs):
     inspect = ( 'inspect' in tokens );
-    phpytex_script = os.path.join(_project_path, 'src', 'main.py');
-    cases = StepGetTestCases();
-    for path, sandboxpath in cases:
+
+    config = StepGetConfig(PATH_CONFIG);
+    paths = getAttribute(config, 'cases', expectedtype=list, default=[]);
+    cases = StepGetTestCases(PATH_CASES, PATTERN_CASE);
+    ClearSandbox(PATH_SANDBOX);
+    for path in cases:
+        if not (path in paths):
+            continue;
         logPlain('');
-        StepRunTestCase(path=path, sandboxpath=sandboxpath, phpytex_script=phpytex_script, inspect=inspect);
+        StepRunTestCase(path=path, sandboxpath=PATH_SANDBOX, phpytex_script=PATH_SCRIPT, inspect=inspect);
+        ClearSandbox(PATH_SANDBOX);
     return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # SECONDARY PROCESSES
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def StepGetTestCases() -> List[Tuple[str, str]]:
+def StepGetConfig(path_config: str) -> Dict[str, Any]:
+    return readYamlFile(path_config);
+
+def ClearSandbox(sandboxpath: str):
+    if os.path.isdir(sandboxpath):
+        subprocess.run(['rm', '-rf', sandboxpath]);
+    return;
+
+def StepGetTestCases(path_cases: str, pattern: str) -> List[str]:
     cases = [];
-    sandboxpath = createNewPathName(dir=os.getcwd(), nameinit='sandbox', namescheme='sandbox_{}');
-    for path in os.listdir(os.getcwd()):
-        if not os.path.isdir(path):
+    for path in os.listdir(path_cases):
+        path_full = os.path.join(path_cases, path);
+        if not os.path.isdir(path_full):
             continue;
-        if not re.match(PATTERN_CASE, path):
+        if not re.match(pattern, path):
             continue;
-        path_full = os.path.join(_test_path, path);
-        cases.append((path_full, sandboxpath));
-    cases = sorted(cases, key=lambda x: x[0]);
+        cases.append(path_full);
+    cases = sorted(cases);
     return cases;
 
 def StepRunTestCase(
@@ -76,7 +94,6 @@ def StepRunTestCase(
         logDebug('Output can be temporarily inspected in \033[1m{}\033[0m'.format(getRelPath(sandboxpath)))
         input('Press any key to continue...');
     logInfo('END TEST CASE');
-    subprocess.run(['rm', '-rf', sandboxpath]);
     return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -84,7 +101,7 @@ def StepRunTestCase(
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def getRelPath(path: str) -> str:
-    return os.path.relpath(path, start=_project_path);
+    return os.path.relpath(path, start=PATH_PROJECT);
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # EXECUTION
