@@ -17,6 +17,7 @@ from src.customtypes.type_transpileblock import TranspileBlock;
 # GLOBAL VARIABLES
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+_FUNCTION_NAME_MAIN: str = '_phpytex_generate_main';
 _FUNCTION_NAME_FILE: str = '_phpytex_generate_file';
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -27,6 +28,7 @@ class TranspileDocument(list):
     label: str;
     root: str;
     path: str;
+    fname: str;
     blocks: List[TranspileBlock];
     indentsymb: str;
 
@@ -34,32 +36,42 @@ class TranspileDocument(list):
         self,
         root: str,
         path: str,
+        fname: str,
         label: str,
         indentsymb: str
     ):
         self.root = root;
         self.path = path;
+        self.fname = fname;
         self.label = label;
         self.indentsymb = indentsymb;
         self.blocks = [];
         return;
 
-    @property
-    def pathRelativeToRoot(self) -> str:
-        return os.path.dirname(os.path.relpath(self.path, self.root));
+    def pathRelativeToRoot(self, path: str) -> str:
+        return os.path.relpath(path, self.root);
 
-    @property
-    def rootRelativeToPath(self) -> str:
-        return os.path.relpath(self.root, os.path.dirname(self.path));
+    def rootRelativeToDocumentDir(self, path: str) -> str:
+        return os.path.relpath(path, self.path);
 
-    def addBlock(self, block: TranspileBlock):
+    def append(self, block: TranspileBlock):
         self.blocks.append(block);
+        return;
+
+    def addInitialBlock(self, globalvars: Dict[str, Any]):
+        self.blocks.insert(0, TranspileBlock(
+            kind = 'code',
+            lines = [
+                "__ROOT__ = '.';".format(),
+                "__DIR__ = '{}';".format(self.path),
+            ] + [ 'global {var};'.format(key) for key in globalvars.keys() ]
+        ));
         return;
 
     def generateCode(self, offset: int = 0) -> Generator[str, None, None]:
         yield '{tab}# generate content from file `{path}`'.format(
             tab  = self.indentsymb * offset,
-            path = self.path
+            path = os.path.join(self.path, self.fname),
         );
         yield '{tab}def {label}():'.format(
             tab  = self.indentsymb * offset,
@@ -77,8 +89,13 @@ class TranspileDocuments(object):
     root:       str;
     indentsymb: str;
     documents:  Dict[str, TranspileDocument];
+
     paths:      List[str];
     edges:      List[Tuple[str, str]];
+    degreeIn:   Dict[str, int];
+    degreeOut:  Dict[str, int];
+
+    globalvars: List[str];
 
     def __init__(self, root: str, indentsymb: str):
         self.root = root;
@@ -86,48 +103,62 @@ class TranspileDocuments(object):
         self.paths = [];
         self.documents = dict();
         self.edges = [];
+        self.degreeIn = dict();
+        self.degreeOut = dict();
+        self.globalvars = [];
         return;
 
     def __len__(self) -> int:
         return len(self.paths);
 
+    def getFunctionName(self, path: str) -> str:
+        index = self.paths.index(path);
+        return '{fname}_{index}'.format(fname=_FUNCTION_NAME_FILE, index=index);
+
+    def getHeadPaths(self) -> List[str]:
+        return [ path for path in self.paths if self.degreeIn[path] == 0 ];
+
+    def getSubPaths(self, path: str) -> List[str]:
+        return [ __ for _, __ in self.edges if _ == path ];
+
     def addDocument(self, path: str):
         if path in self.paths:
             return;
         self.paths.append(path);
-        index = self.paths.index(path);
         document = TranspileDocument(
             root       = self.root,
-            path       = path,
+            path       = os.path.dirname(path),
+            fname      = os.path.basename(path),
             indentsymb = self.indentsymb,
-            label      = '{fname}_{index}'.format(fname=_FUNCTION_NAME_FILE, index=index)
+            label      = self.getFunctionName(path)
         );
+        self.degreeIn[path] = 0;
+        self.degreeOut[path] = 0;
         self.documents[path] = document;
         return;
 
     def addBlocks(self, path: str, blocks: List[TranspileBlock]):
         assert path in self.documents, 'Must add document first, before adding blocks.';
         document = self.documents[path];
-        document.addBlock(TranspileBlock(
-            kind = 'code',
-            lines = [
-                "__ROOT__ = '{}';".format(document.rootRelativeToPath),
-                "__DIR__ = '{}';".format(document.pathRelativeToRoot),
-            ]
-        ))
         for block in blocks:
             if re.match(r'^text($|:)', block.kind):
                 document.append(block);
-            elif re.match(r'^code:(set|escape)', block.kind):
+            elif re.match(r'^code($|:escape)', block.kind):
+                document.append(block);
+            elif re.match(r'^code:set', block.kind):
+                self.globalvars.append(block.parameters['varname']);
                 document.append(block);
             elif re.match(r'^code:input', block.kind):
                 _path = block.parameters['path'];
                 self.addDocument(_path);
                 self.edges.append((path, _path));
-                _index = self.paths.index(_path);
+                self.degreeOut[path] += 1;
+                self.degreeIn[_path] += 1;
                 document.append(TranspileBlock(
                     kind        = 'code',
-                    content     = '{fname}_{index}'.format(fname=_FUNCTION_NAME_FILE, index=_index),
+                    content     = '{label}();'.format(
+                        label = self.getFunctionName(_path),
+                    ),
                     indentlevel = block.indentlevel,
                     indentsymb  = block.indentsymb
                 ));
@@ -141,4 +172,17 @@ class TranspileDocuments(object):
         for document in self.documents.values():
             yield '';
             yield from document.generateCode(offset=offset);
+        yield '';
+        yield '{tab}# generate content from all files'.format(
+            tab  = self.indentsymb * offset,
+        );
+        yield '{tab}def {label}():'.format(
+            tab  = self.indentsymb * offset,
+            label = _FUNCTION_NAME_MAIN,
+        );
+        for path in self.getHeadPaths():
+            yield '{tab}{label}();'.format(
+                tab  = self.indentsymb * (offset + 1),
+                label = self.getFunctionName(path),
+            );
         return;

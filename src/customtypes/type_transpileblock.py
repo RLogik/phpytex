@@ -5,7 +5,7 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from __future__ import annotations;
+from __future__ import annotations
 
 from src.local.misc import *;
 from src.local.typing import *;
@@ -61,7 +61,7 @@ class TranspileBlock(object):
             yield '{tab}print(\'\'\'\\n\'\'\');'.format(tab=self.indentsymb*self.indentlevel);
         elif self.kind == 'text:subst':
             line = '{tab}print(\'\'\'{expr}\'\'\'.format('.format(
-                tab  = self.indentsymb*offset,
+                tab  = self.indentsymb*self.indentlevel,
                 expr = '\n'.join(list(self.content)),
             )
             yield line + ('));' if len(self.subst) == 0 else '');
