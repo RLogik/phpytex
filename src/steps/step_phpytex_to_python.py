@@ -45,21 +45,20 @@ def step(lines: List[str]):
         'show-structure': appconfig.getOptionShowStructure(),
     };
 
-    _documents = TranspileDocuments(root=appconfig.getPathRoot(), indentsymb=appconfig.getIndentCharacter());
+    documents = TranspileDocuments(root=appconfig.getPathRoot(), indentsymb=appconfig.getIndentCharacter());
 
-    Knit(
-        path      = appconfig.getFilePhpytex(),
-        documents = _documents,
-        imports   = _list_of_imports,
-        verbatim  = _precompile_lines,
-        mute      = False,
+    addPreamble(
+        path      = appconfig.getFileStamp(),
+        documents = documents,
         silent    = getQuietMode(),
         params    = params
     );
 
-    addPreamble(
-        path      = appconfig.getFileStamp(),
-        documents = _documents,
+    Knit(
+        path      = appconfig.getFilePhpytex(),
+        documents = documents,
+        imports   = _list_of_imports,
+        mute      = False,
         silent    = getQuietMode(),
         params    = params
     );
@@ -89,8 +88,7 @@ def addPreamble(
     params: Dict[str, Any],
     silent: bool
 ):
-    preamble = [];
-    verbatim = [];
+    # preamble = [];
     struct = appconfig.getDocumentStructure()[:]
     if isinstance(path, str) and not(path == ''):
         appconfig.setDocumentStructure([]);
@@ -98,7 +96,6 @@ def addPreamble(
             # filecontents = preamble,
             path      = path,
             documents = documents,
-            verbatim  = verbatim,
             mute      = True,
             params    = params | { 'no-comm': False, 'no-comm-auto': True }
         );
@@ -117,7 +114,7 @@ def addPreamble(
     #     ], anon=False, mode='meta');
 
     # lines[:] = preamble + lines;
-    appconfig.setPrecompileLines(verbatim + appconfig.getPrecompileLines());
+    # appconfig.setPrecompileLines(verbatim + appconfig.getPrecompileLines());
     return;
 
 def exportParameters(fname: str, globalvars: List[str]):
@@ -145,14 +142,14 @@ def Knit(
     path:         str,
     documents:    TranspileDocuments,
     imports:      List[str]                  = [],
-    verbatim:     List[Tuple[int, Any, str]] = [],
     anon:         bool                       = False,
     mute:         bool                       = False,
     silent:       bool                       = False,
-    params:       Dict[str, Any]             = {},
-    chain:        List[str]                  = [],
-    ishead:       bool                       = True
+    params:       Dict[str, Any]             = {}
 ):
+    if path in documents.paths:
+        logWarn('The document contains a cycle!');
+        return;
     lines = readTextFile(path);
     indentation = IndentationTracker(
         symb       = appconfig.getIndentCharacter(),
@@ -162,8 +159,16 @@ def Knit(
     blocks = parseText(lines, indentation);
     documents.addDocument(path=path);
     documents.addBlocks(path=path, blocks=blocks);
-    for line in documents.generateCode():
-        logDebug(line);
+    for subpath in documents.getSubPaths(path):
+        Knit(
+            path      = subpath,
+            documents = documents,
+            imports   = imports + [path],
+            anon      = anon,
+            mute      = mute,
+            silent    = silent,
+            params    = params
+        );
     return;
 
 def createmetacode(
