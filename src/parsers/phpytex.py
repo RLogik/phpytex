@@ -65,12 +65,33 @@ def lexedToBlocks(u: Tree, indentation: IndentationTracker) -> List[TranspileBlo
     children = filterSubexpr(u);
     if typ == 'blocks':
         return [ lexedToBlock(child, indentation=indentation) for child in children ];
+        # ## FIXME: currently need to use this, because lexer does not reliably parse `blockcontent`.
+        # blocks = [];
+        # children = [ filterSubexpr(child)[0] if child.data == 'block' else child for child in children ];
+        # i = 0;
+        # while i < len(children):
+        #     if children[i].data == 'blockcontent':
+        #         ## NOTE: cf. logic in `lexedToBlock` method
+        #         subchildren = [];
+        #         while i < len(children):
+        #             if not (children[i].data == 'blockcontent'):
+        #                 break;
+        #             subchildren += filterSubexpr(children[i])
+        #             i += 1;
+        #         block = processBlockContent(subchildren, indentation=indentation);
+        #     else:
+        #         block = lexedToBlock(children[i], indentation=indentation);
+        #         i += 1;
+        #     blocks.append(block);
+        # return blocks;
     raise Exception('Could not parse expression!');
 
 def lexedToBlock(u: Tree, indentation: IndentationTracker) -> TranspileBlock:
     typ = u.data;
     children = filterSubexpr(u);
-    if typ == 'newlines':
+    if typ == 'block':
+        return lexedToBlock(children[0], indentation=indentation);
+    if typ == 'emptyline':
         return TranspileBlock(kind='text:linebreak', indentlevel=indentation.last, indentsymb=indentation.symb);
     ## TEXT CONTENT
     elif typ == 'blockcontent':
