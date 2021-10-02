@@ -88,7 +88,7 @@ class TranspileBlock(object):
         elif self.kind == 'code:value':
             yield from self.content;
         elif re.match(r'^code:set', self.kind):
-            yield '{tab}{varname} = {value};'.format(
+            yield '{tab}{varname} = {codevalue};'.format(
                 tab = self.indentsymb*self.indentlevel,
                 **self.parameters
             );

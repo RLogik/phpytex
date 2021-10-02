@@ -29,7 +29,7 @@ class TranspileDocument(list):
     label: str;
     root: str;
     path: str;
-    fname: str;
+    pathfolder: str;
     blocks: List[TranspileBlock];
     variables: Dict[str, Any];
     indentsymb: str;
@@ -38,14 +38,13 @@ class TranspileDocument(list):
         self,
         root: str,
         path: str,
-        fname: str,
         label: str,
         indentsymb: str,
         variables: Dict[str, Any] = dict()
     ):
         self.root = root;
+        self.pathfolder = os.path.dirname(path) or '.';
         self.path = path;
-        self.fname = fname;
         self.label = label;
         self.indentsymb = indentsymb;
         self.variables = variables;
@@ -59,35 +58,40 @@ class TranspileDocument(list):
         for block in self.blocks:
             yield block;
 
-    def pathRelativeToRoot(self, path: str) -> str:
-        return os.path.relpath(path, self.root);
-
-    def rootRelativeToDocumentDir(self, path: str) -> str:
-        return os.path.relpath(path, self.path);
+    # relativises a path relative to directory to a path relative to root
+    def relativisePath(self, path: str):
+        if not os.path.isabs(path):
+            path = os.path.join(self.pathfolder, path);
+            path = os.path.relpath(path=path, start=self.root);
+        return path;
 
     def append(self, block: TranspileBlock):
         self.blocks.append(block);
         return;
 
-    def addInitialBlock(self):
-        self.blocks.insert(0, TranspileBlock(
-            kind = 'code',
-            lines = [
-                "__ROOT__ = '.';".format(),
-                "__DIR__ = '{}';".format(self.path),
-            ] + [ 'global {var};'.format(key) for key in self.variables.keys() ]
-        ));
-        return;
-
-    def generateCode(self, offset: int = 0) -> Generator[str, None, None]:
+    def generateCode(
+        self,
+        offset:     int       = 0,
+        parameters: List[str] = []
+    ) -> Generator[str, None, None]:
         yield '{tab}# generate content from file `{path}`'.format(
             tab  = self.indentsymb * offset,
-            path = os.path.join(self.path, self.fname),
+            path = self.path,
         );
         yield '{tab}def {label}():'.format(
             tab  = self.indentsymb * offset,
             label = self.label,
         );
+        yield from TranspileBlock(
+            kind = 'code',
+            lines = [
+                'global {name};'.format(name=name)
+                for name in parameters if not name in [ '__ROOT__', '__DIR__']
+            ] + [
+                '__ROOT__ = \'.\';'.format(),
+                '__DIR__ = \'{path}\';'.format(path = self.pathfolder),
+            ]
+        ).generateCode(offset + 1);
         for block in self.blocks:
             yield from block.generateCode(offset + 1);
         yield '{tab}return;'.format(tab = self.indentsymb * (offset + 1));
@@ -101,6 +105,7 @@ class TranspileDocuments(object):
     root:       str;
     indentsymb: str;
     documents:  Dict[str, TranspileDocument];
+    parameters: Dict[str, Any];
     variables:  Dict[str, Any];
 
     paths:      List[str];
@@ -111,6 +116,7 @@ class TranspileDocuments(object):
     def __init__(
         self, root: str,
         indentsymb: str,
+        parameters: Dict[str, Any] = dict(),
         variables: Dict[str, Any] = dict()
     ):
         self.root = root;
@@ -118,11 +124,19 @@ class TranspileDocuments(object):
         self.paths = [];
         self.documents = dict();
         self.edges = [];
+        self.parameters = parameters;
         self.variables = variables;
         return;
 
     def __len__(self) -> int:
         return len(self.documents);
+
+    def evaluate(self, codevalue: str, document: TranspileDocument):
+        localvariables = self.variables | document.variables | {
+            '__ROOT__': os.path.abspath(document.root),
+            '__DIR__': os.path.abspath(document.pathfolder),
+        };
+        return eval(codevalue, None, localvariables);
 
     def __iter__(self) -> Generator[TranspileDocument, None, None]:
         for _, document in self.documents.items():
@@ -135,8 +149,8 @@ class TranspileDocuments(object):
     def getHeadPaths(self) -> List[str]:
         degreeIn = { path: 0 for path in self.paths };
         for u, v in self.edges:
-            degreeIn[v] += 1;
-        return [ path for path in self.paths if self.degreeIn[path] == 0 ];
+            degreeIn[v] = degreeIn[v] + 1 if v in degreeIn else 0;
+        return [ path for path in self.paths if degreeIn[path] == 0 ];
 
     def getSubPaths(self, path: str) -> List[str]:
         return [ __ for _, __ in self.edges if _ == path ];
@@ -147,14 +161,9 @@ class TranspileDocuments(object):
         self.paths.append(path);
         document = TranspileDocument(
             root       = self.root,
-            path       = os.path.dirname(path),
-            fname      = os.path.basename(path),
+            path       = os.path.relpath(path=os.path.abspath(path), start=self.root),
             indentsymb = self.indentsymb,
-            label      = self.getFunctionName(path),
-            variables  = {
-                '__DIR__': os.path.dirname(os.path.abspath(path)),
-                '__ROOT__': os.path.abspath('.'),
-            }
+            label      = self.getFunctionName(path)
         );
         self.documents[path] = document;
         return;
@@ -167,28 +176,28 @@ class TranspileDocuments(object):
                 document.append(block);
             elif re.match(r'^code($|:escape)', block.kind):
                 document.append(block);
-            elif re.match(r'^code:set$', block.kind):
+            elif re.match(r'^code:set', block.kind):
                 key = block.parameters['varname'];
-                value = block.parameters['value'];
+                codevalue = block.parameters['codevalue'];
                 try:
-                    value = eval(value, None, self.variables | document.variables);
+                    value = self.evaluate(codevalue, document=document);
                 except:
                     ## TODO: deal with error
                     logError('Could not evaluate <<< set \033[1m{}\033[0m >>>.'.format(value));
                     continue;
-                if re.match(r':local$', block.kind):
-                    self.variables[key] = value;
-                elif re.match(r':global$', block.kind):
+                if re.match(r'^.*:local$', block.kind):
                     document.variables[key] = value;
+                elif re.match(r'^.*:global$', block.kind):
+                    self.variables[key] = value;
                 document.append(block);
             elif re.match(r'^code:input', block.kind):
                 _path = block.parameters['path'];
                 try:
-                    _path = eval(_path, None, self.variables | document.variables);
+                    _path = self.evaluate(_path, document=document);
                 except:
                     logError('Could not evaluate <<< input \033[1m{}\033[0m >>>.'.format(_path));
                     continue;
-                _path = os.path.relpath(_path, self.root);
+                _path = document.relativisePath(_path);
                 self.edges.append((path, _path));
                 document.append(TranspileBlock(
                     kind        = 'code',
@@ -204,7 +213,11 @@ class TranspileDocuments(object):
                 pass;
         return;
 
-    def generateCode(self, offset: int = 0) -> Generator[str, None, None]:
+    def generateCode(
+        self,
+        offset:     int       = 0,
+        parameters: List[str] = []
+    ) -> Generator[str, None, None]:
         ## generate universal reference function
         yield '';
         yield '{tab}# universal reference function for files'.format(tab = self.indentsymb * offset);
@@ -230,7 +243,7 @@ class TranspileDocuments(object):
         ## generate universal individual functions for documents
         for document in self.documents.values():
             yield '';
-            yield from document.generateCode(offset=offset);
+            yield from document.generateCode(offset=offset, parameters=parameters);
 
         ## generate main function, which calls head functions first
         yield '';
@@ -240,6 +253,10 @@ class TranspileDocuments(object):
             label = _FUNCTION_NAME_MAIN,
         );
         for path in self.getHeadPaths():
+            yield '{tab}# {path}'.format(
+                tab  = self.indentsymb * (offset + 1),
+                path = path,
+            );
             yield '{tab}{label}();'.format(
                 tab  = self.indentsymb * (offset + 1),
                 label = self.getFunctionName(path),

@@ -113,15 +113,15 @@ def processBlockQuickCommand(u: Tree, indentation: IndentationTracker) -> Transp
     children = filterSubexpr(u);
     if typ == 'quickglobalset':
         varname = lexedToStr(children[0]);
-        value = stripEndOfCode(lexedToStr(children[1]));
+        codevalue = stripEndOfCode(lexedToStr(children[1]));
         block = TranspileBlock(kind='code:set:global', indentlevel=indentation.last, indentsymb=indentation.symb);
-        block.parameters = dict(varname=varname, value=value);
+        block.parameters = dict(varname=varname, codevalue=codevalue);
         return block;
     if typ == 'quicklocalset':
         varname = lexedToStr(children[0]);
-        value = stripEndOfCode(lexedToStr(children[1]));
+        codevalue = stripEndOfCode(lexedToStr(children[1]));
         block = TranspileBlock(kind='code:set:local', indentlevel=indentation.last, indentsymb=indentation.symb);
-        block.parameters = dict(varname=varname, value=value);
+        block.parameters = dict(varname=varname, codevalue=codevalue);
         return block;
     elif typ == 'quickinput':
         path = stripEndOfCode(lexedToStr(children[0]));
