@@ -40,7 +40,6 @@ _config_parameters: Dict[str, ConfigParameter] = {
     'option_insert_bib':       ConfigParameter[bool]().setValue(False),
     'option_overwrite_stamp':  ConfigParameter[bool]().setValue(True),
     'option_overwrite_params': ConfigParameter[bool]().setValue(True),
-    'export_params':           ConfigParameter[bool]().setValue(False),
     'len_precode':             ConfigParameter[int]().setValue(0),
     'length_output':           ConfigParameter[int]().setValue(0),
     'max_length':              ConfigParameter[int]().setValue(10000),
@@ -214,14 +213,6 @@ def getOptionComments() -> str:
 def setOptionComments(value: str):
     global _config_parameters;
     _config_parameters['option_comments'].value = value;
-    return;
-
-def getExportParams() -> bool:
-    return _config_parameters['export_params'].value;
-
-def setExportParams(value: bool):
-    global _config_parameters;
-    _config_parameters['export_params'].value = value;
     return;
 
 def getFileParamsLatex() -> str:
