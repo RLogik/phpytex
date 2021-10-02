@@ -61,10 +61,10 @@ class TranspileBlock(object):
     def generateCode(self, offset: int = 0) -> Generator[str, None, None]:
         indentlevel_orig = self.indentlevel;
         self.indentlevel += offset;
-        if self.kind == 'text':
-            yield from self.content;
-        elif self.kind == 'text:linebreak':
+        if self.kind == 'text:linebreak':
             yield '{tab}print(\'\'\'\\n\'\'\');'.format(tab=self.indentsymb*self.indentlevel);
+        elif re.match(r'^text:comment', self.kind):
+            yield from self.content;
         elif self.kind == 'text:subst':
             line = '{tab}print(\'\'\'{expr}\'\'\'.format('.format(
                 tab  = self.indentsymb*self.indentlevel,

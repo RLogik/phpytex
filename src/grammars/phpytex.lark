@@ -45,7 +45,7 @@
 // ---------------- BLOCKS ---------------- //
 
 ?blocks: ( block newline |  emptyline )* ( block newline? |  emptyline ) -> blocks
-?block: ( blockquick | blockcode_regex | blockcontent ) -> block
+?block: ( blockquick | blockcode_regex | blockcomment | blockcontent ) -> block
 
 // BLOCK CODE AS REGEX
 ?blockcode_regex: /^(\s*)\<{3}[^\S\r\n]*([^\r\n]*\S)[^\S\r\n]*\r?\n((\1[^\r\n]*\r?\n)?)\1\>{3}$/m -> blockcode_regex
@@ -55,6 +55,11 @@
 ?blockcode_inside: text ( newline+ text )*                         -> blockcode_inside
 ?blockcode_instructions: "{" whitespaces? arglist whitespaces? "}" -> blockcode_instructions
     | arglist                                                      -> blockcode_instructions
+
+// BLOCK COMMENT
+?blockcomment: blockcomment_keep | blockcomment_simple -> blockcomment
+?blockcomment_simple: spaces /\%/ text   -> blockcomment_simple
+?blockcomment_keep: spaces /\%{2,}/ text -> blockcomment_keep
 
 // BLOCK CONTENT
 ?blockcontent: ( textcontent | codeinline )+ -> blockcontent
