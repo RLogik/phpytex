@@ -50,7 +50,13 @@ class TranspileBlock(object):
 
     @property
     def content(self) -> Generator[str, None, None]:
-        yield from [ self._content ] if hasattr(self, '_content') else formatBlockIndent(self.lines, indent=self.indentsymb*self.indentlevel);
+        if hasattr(self, '_content'):
+            yield '{tab}{line}'.format(
+                tab = self.indentsymb*self.indentlevel,
+                line = self._content
+            );
+        else:
+            yield from formatBlockIndent(self.lines, indent=self.indentsymb*self.indentlevel);
 
     def generateCode(self, offset: int = 0) -> Generator[str, None, None]:
         indentlevel_orig = self.indentlevel;
@@ -81,7 +87,7 @@ class TranspileBlock(object):
             yield from self.content;
         elif self.kind == 'code:value':
             yield from self.content;
-        elif self.kind == 'code:set':
+        elif re.match(r'^code:set', self.kind):
             yield '{tab}{varname} = {value};'.format(
                 tab = self.indentsymb*self.indentlevel,
                 **self.parameters
