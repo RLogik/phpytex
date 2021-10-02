@@ -8,7 +8,7 @@
 // ---------------- SYMBOLS ---------------- //
 
 // symbols - noncapture
-?whitespaces: WS                -> noncapture
+?whitespaces: /[^\r\n\S]+/      -> noncapture
 ?tab: /\t/                      -> noncapture
 ?newline: /[^\r\n\S]*\r?\n/m    -> noncapture
 ?endcode: /;/                   -> noncapture
@@ -17,10 +17,10 @@
 ?nmeta: /((?!(\<{3}|\>{3})).)+/ -> noncapture
 ?comma: /,/                     -> noncapture
 // symbols - capture
-?emptyline: /^[^\r\n\S]*\r?\n/m -> emptyline
-?indent: /\s+/                  -> text
-?nospaces: /\S+/                -> text
-?textnobreaks: /[^\n\r]+/       -> text
+?emptyline: /^[^\r\n\S]*\r?\n/m                 -> emptyline
+?indent: /\s+/                                  -> text
+?nospaces: /\S+/                                -> text
+?textnobreaks: nospaces (whitespaces nospaces)* -> text
 
 // ---------------- BASIC ---------------- //
 
