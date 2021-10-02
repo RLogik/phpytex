@@ -1,6 +1,6 @@
 \documentclass[a4paper,<<< FONT_SIZE; >>>]{article}
 
-<<< set draft = True; >>>
+<<< global set draft = True; >>>
 
     <<< python
     if draft:
@@ -19,5 +19,9 @@
 \begin{document}
     \section{<<< TITLE + '.'; >>>}
 
+    <<< local set method = 'simple approach'; >>>
+
     This is \description.
+
+    <<< input 'thanks.tex'; >>>
 \end{document}

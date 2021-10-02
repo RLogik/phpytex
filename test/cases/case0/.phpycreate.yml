@@ -5,7 +5,6 @@ ignore:      false
 compile:
   root:           root.tex
   output:         main.tex
-  export-params:  src.parameters
   debug:          false
   compile-latex:  true
   insert-bib:     true
