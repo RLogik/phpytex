@@ -3,7 +3,6 @@
 %import common.WS
 %import common.NUMBER
 %import common.WORD
-%import common.NEWLINE
 
 // ---------------- SYMBOLS ---------------- //
 
@@ -17,26 +16,30 @@
 ?nmeta: /((?!(\<{3}|\>{3})).)+/ -> noncapture
 ?comma: /,/                     -> noncapture
 // symbols - capture
-?emptyline: /^[^\r\n\S]*\r?\n/m                 -> emptyline
-?indent: /\s+/                                  -> text
-?nospaces: /\S+/                                -> text
-?textnobreaks: nospaces (whitespaces nospaces)* -> text
+?emptyline: /^[^\r\n\S]*\r?\n/m    -> emptyline
+?dblquote:  /"/                    -> text
+?sgquote:   /'/                    -> text
+?ndblquote: /[^"\r\n]+/            -> text
+?nsgquote:  /[^'\r\n]+/            -> text
+?spaces:    /[^\r\n\S]+/           -> text
+?nospaces:  /\S+/                  -> text
+?text: nospaces (spaces nospaces)* -> text
 
 // ---------------- BASIC ---------------- //
 
 // text with nested but balanced quotation marks
-?textquotesoneline: textdblquotes | textsgquotes
-?textdblquotes: /"/ textbalanceddblquotes /"/        -> textdblquotes
-?textsgquotes: /'/ textbalancedsgquotes /'/          -> textsgquotes
-?textbalanceddblquotes: ( textdblquotes | /[^"]+/ )+ -> textbalanceddblquotes
-?textbalancedsgquotes: ( textsgquotes | /[^']+/ )+   -> textbalancedsgquotes
+?textquotesoneline: textdblquotes | textsgquotes        -> text
+?textdblquotes: dblquote textbalanceddblquotes dblquote -> text
+?textsgquotes: sgquote textbalancedsgquotes sgquote     -> text
+?textbalanceddblquotes: ( textdblquotes | ndblquote )+  -> text
+?textbalancedsgquotes: ( textsgquotes | nsgquote )+     -> text
 
 // mixed value/kwvalue dictionaries
 ?arglist: argoption ( whitespaces? comma whitespaces? argoption )* -> arglist
 ?argoption: argoption_key whitespaces? "=" whitespaces? argoption_value -> argoption_kwarg
     | argoption_key                                                     -> argoption_token
-?argoption_key: /[^,\s=]+/                                              -> argoption_key
-?argoption_value: /[^,\s=]+/                                            -> argoption_value
+?argoption_key: /[^,\s=\r\n]+/                                          -> argoption_key
+?argoption_value: /[^,\s=\r\n]+/                                        -> argoption_value
     | textquotesoneline                                                 -> argoption_value
 
 // ---------------- BLOCKS ---------------- //
@@ -49,12 +52,11 @@
 
 // BLOCK CODE
 ?blockcode: lmeta whitespaces? blockcode_instructions newline+ blockcode_inside newline+ rmeta -> blockcode
-?blockcode_inside: textnobreaks ( newline+ textnobreaks )*         -> blockcode_inside
+?blockcode_inside: text ( newline+ text )*                         -> blockcode_inside
 ?blockcode_instructions: "{" whitespaces? arglist whitespaces? "}" -> blockcode_instructions
     | arglist                                                      -> blockcode_instructions
 
 // BLOCK CONTENT
-// ?blockcontent: /[^\r\n\s]+/
 ?blockcontent: ( textcontent | codeinline )+ -> blockcontent
 ?textcontent: ( /((?!(\<{3}|\>{3}|"|')).)+/ | textquotesoneline )+        -> textcontent
 ?codeinline: lmeta whitespaces? codeoneline whitespaces? rmeta            -> codeinline
@@ -64,12 +66,12 @@
 
 // BLOCK QUICK
 ?blockquick: whitespaces? lmeta whitespaces? quickinstruction whitespaces? endcode? whitespaces? rmeta -> blockquick
-?quickinstruction: "set"i whitespaces nospaces whitespaces? "=" whitespaces? textnobreaks -> quickglobalset
-    | "global set"i whitespaces nospaces whitespaces? "=" whitespaces? textnobreaks       -> quickglobalset
-    | "local set"i whitespaces nospaces whitespaces? "=" whitespaces? textnobreaks        -> quicklocalset
-    | "input"i whitespaces textnobreaks                                                   -> quickinput
-    | "input_anon"i whitespaces textnobreaks                                              -> quickinput_anon
-    | ( "bibliography"i | "bib"i ) whitespaces textnobreaks                               -> quickbib
-    | ( "bibliography_anon"i | "bib_anon"i ) whitespaces textnobreaks                     -> quickbib_anon
-    | ( "escape"i | "esc"i )                                                              -> quickescape
-    | ( "escape_once"i | "esc_once"i )                                                    -> quickescapeonce
+?quickinstruction: "set"i whitespaces nospaces whitespaces? "=" whitespaces? text -> quickglobalset
+    | "global set"i whitespaces nospaces whitespaces? "=" whitespaces? text       -> quickglobalset
+    | "local set"i whitespaces nospaces whitespaces? "=" whitespaces? text        -> quicklocalset
+    | "input"i whitespaces text                                                   -> quickinput
+    | "input_anon"i whitespaces text                                              -> quickinput_anon
+    | ( "bibliography"i | "bib"i ) whitespaces text                               -> quickbib
+    | ( "bibliography_anon"i | "bib_anon"i ) whitespaces text                     -> quickbib_anon
+    | ( "escape"i | "esc"i )                                                      -> quickescape
+    | ( "escape_once"i | "esc_once"i )                                            -> quickescapeonce
