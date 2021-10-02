@@ -100,7 +100,7 @@ def createFileParameters(
         try:
             typ, codedvalue = convertToPythonString(value, indent=0, multiline=False);
             appconfig.setExportVarsKeyValue(key=key, value=value, codedvalue=codedvalue);
-            lines.append('<<< set global {key} = {value}; >>>'.format(key = key, value = codedvalue));
+            lines.append('<<< global set {key} = {value}; >>>'.format(key = key, value = codedvalue));
         except:
             continue;
     if os.path.isfile(path) and not overwrite:
