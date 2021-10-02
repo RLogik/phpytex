@@ -45,7 +45,10 @@ def step(lines: List[str]):
         'show-structure': appconfig.getOptionShowStructure(),
     };
 
-    documents = TranspileDocuments(root=appconfig.getPathRoot(), indentsymb=appconfig.getIndentCharacter());
+    documents = TranspileDocuments(
+        root       = appconfig.getPathRoot(),
+        indentsymb = appconfig.getIndentCharacter()
+    );
 
     addPreamble(
         path      = appconfig.getFileStamp(),
@@ -141,15 +144,15 @@ def exportParameters(fname: str, globalvars: List[str]):
 def Knit(
     path:         str,
     documents:    TranspileDocuments,
-    chain:        List[str]                  = [],
-    imports:      List[str]                  = [],
-    anon:         bool                       = False,
-    mute:         bool                       = False,
-    silent:       bool                       = False,
-    params:       Dict[str, Any]             = {}
+    chain:        List[str]          = [],
+    imports:      List[str]          = [],
+    anon:         bool               = False,
+    mute:         bool               = False,
+    silent:       bool               = False,
+    params:       Dict[str, Any]     = {}
 ):
     if path in chain:
-        logWarn('The document contains a cycle!');
+        logError('The document contains a cycle!');
         return;
     lines = readTextFile(path);
     indentation = IndentationTracker(
@@ -158,8 +161,9 @@ def Knit(
         is_legacy  = appconfig.getOptionLegacy(),
     );
     blocks = parseText(lines, indentation);
-    documents.addDocument(path=path);
-    documents.addBlocks(path=path, blocks=blocks);
+    if not (path in documents.paths):
+        documents.addDocument(path=path);
+        documents.addBlocks(path=path, blocks=blocks);
     for subpath in documents.getSubPaths(path):
         Knit(
             path      = subpath,
