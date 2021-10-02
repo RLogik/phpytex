@@ -25,7 +25,6 @@ _config_parameters: Dict[str, ConfigParameter] = {
     'file_script':             ConfigParameter[str](),
     'file_latex':              ConfigParameter[str](),
     'file_stamp':              ConfigParameter[str](),
-    'file_params_latex':       ConfigParameter[str](),
     'file_params_py':          ConfigParameter[str](),
     'import_param_py':         ConfigParameter[str](),
     'param_module_name':       ConfigParameter[str]().setValue('MODULE_GLOBAL_PARAMS'),
@@ -213,14 +212,6 @@ def getOptionComments() -> str:
 def setOptionComments(value: str):
     global _config_parameters;
     _config_parameters['option_comments'].value = value;
-    return;
-
-def getFileParamsLatex() -> str:
-    return _config_parameters['file_params_latex'].value;
-
-def setFileParamsLatex(value: str):
-    global _config_parameters;
-    _config_parameters['file_params_latex'].value = value;
     return;
 
 def getFileParamsPy() -> str:

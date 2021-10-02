@@ -216,11 +216,3 @@ def ____compilephpytex():
 
     # END OF USER IMPORTS
     ################################
-
-    ################################
-    # USER 'GLOBAL'VARIABLES
-
-    {globalvars}
-
-    # END OF USER 'GLOBAL'VARIABLES
-    ################################

@@ -72,7 +72,7 @@ class TranspileDocument(list):
     def generateCode(
         self,
         offset:     int       = 0,
-        parameters: List[str] = []
+        globalvars: List[str] = []
     ) -> Generator[str, None, None]:
         yield '{tab}# generate content from file `{path}`'.format(
             tab  = self.indentsymb * offset,
@@ -86,7 +86,7 @@ class TranspileDocument(list):
             kind = 'code',
             lines = [
                 'global {name};'.format(name=name)
-                for name in parameters if not name in [ '__ROOT__', '__DIR__']
+                for name in globalvars if not name in [ '__ROOT__', '__DIR__']
             ] + [
                 '__ROOT__ = \'.\';'.format(),
                 '__DIR__ = \'{path}\';'.format(path = self.pathfolder),
@@ -216,7 +216,7 @@ class TranspileDocuments(object):
     def generateCode(
         self,
         offset:     int       = 0,
-        parameters: List[str] = []
+        globalvars: List[str] = []
     ) -> Generator[str, None, None]:
         ## generate universal reference function
         yield '';
@@ -243,7 +243,7 @@ class TranspileDocuments(object):
         ## generate universal individual functions for documents
         for document in self.documents.values():
             yield '';
-            yield from document.generateCode(offset=offset, parameters=parameters);
+            yield from document.generateCode(offset=offset, globalvars=globalvars);
 
         ## generate main function, which calls head functions first
         yield '';
