@@ -64,7 +64,9 @@
 
 // BLOCK QUICK
 ?blockquick: whitespaces? lmeta whitespaces? quickinstruction whitespaces? endcode? whitespaces? rmeta -> blockquick
-?quickinstruction: "set"i whitespaces nospaces whitespaces? "=" whitespaces? textnobreaks -> quickset
+?quickinstruction: "set"i whitespaces nospaces whitespaces? "=" whitespaces? textnobreaks -> quickglobalset
+    | "global set"i whitespaces nospaces whitespaces? "=" whitespaces? textnobreaks       -> quickglobalset
+    | "local set"i whitespaces nospaces whitespaces? "=" whitespaces? textnobreaks        -> quicklocalset
     | "input"i whitespaces textnobreaks                                                   -> quickinput
     | "input_anon"i whitespaces textnobreaks                                              -> quickinput_anon
     | ( "bibliography"i | "bib"i ) whitespaces textnobreaks                               -> quickbib

@@ -58,7 +58,6 @@ _config_parameters: Dict[str, ConfigParameter] = {
 _dictionary_stamp: Dict[str, Any] = dict();
 _dictionary_params: Dict[str, Any] = dict();
 _project_tree: ProjectTree = ProjectTree();
-_global_vars:         Dict[str, Any] = dict(__ROOT__='.', __DIR__='.');
 _export_vars:         Dict[str, Tuple[Any, str]] = dict();
 _includes:            List[str] = [];
 _precompile_lines:    List[Tuple[int, Any, str]] = [];
@@ -359,19 +358,6 @@ def getProjectTree() -> ProjectTree:
 def setProjectTree(value: ProjectTree):
     global _project_tree;
     _project_tree = value;
-    return;
-
-def getGlobalVars() -> Dict[str, Any]:
-    return _global_vars;
-
-def setGlobalVars(value: Dict[str, Any]):
-    global _global_vars;
-    _global_vars = value;
-    return;
-
-def setGlobalVarsKeyValue(key: str, value: Any):
-    global _global_vars;
-    _global_vars[key] = value;
     return;
 
 def getExportVars() -> Dict[str, Tuple[Any, str]]:
