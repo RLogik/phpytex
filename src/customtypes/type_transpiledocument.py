@@ -48,6 +48,13 @@ class TranspileDocument(list):
         self.blocks = [];
         return;
 
+    def __len__(self) -> int:
+        return len(self.blocks);
+
+    def __iter__(self) -> Generator[TranspileBlock, None, None]:
+        for block in self.blocks:
+            yield block;
+
     def pathRelativeToRoot(self, path: str) -> str:
         return os.path.relpath(path, self.root);
 
@@ -109,7 +116,11 @@ class TranspileDocuments(object):
         return;
 
     def __len__(self) -> int:
-        return len(self.paths);
+        return len(self.documents);
+
+    def __iter__(self) -> Generator[TranspileDocument, None, None]:
+        for _, document in self.documents.items():
+            yield document;
 
     def getFunctionName(self, path: str) -> str:
         index = self.paths.index(path);
