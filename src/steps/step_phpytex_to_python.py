@@ -141,13 +141,14 @@ def exportParameters(fname: str, globalvars: List[str]):
 def Knit(
     path:         str,
     documents:    TranspileDocuments,
+    chain:        List[str]                  = [],
     imports:      List[str]                  = [],
     anon:         bool                       = False,
     mute:         bool                       = False,
     silent:       bool                       = False,
     params:       Dict[str, Any]             = {}
 ):
-    if path in documents.paths:
+    if path in chain:
         logWarn('The document contains a cycle!');
         return;
     lines = readTextFile(path);
@@ -163,7 +164,8 @@ def Knit(
         Knit(
             path      = subpath,
             documents = documents,
-            imports   = imports + [path],
+            chain     = chain + [path],
+            imports   = imports,
             anon      = anon,
             mute      = mute,
             silent    = silent,
