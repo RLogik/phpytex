@@ -30,7 +30,6 @@ stamp:
 # ARTICLE PARAMETERS
 ################################################################################
 parameters:
-  file:      parameters.tex
   overwrite: true
   options:
     FONT_SIZE: 12pt

@@ -7,7 +7,6 @@ output-name: paper
 compile:
   root:           root.tex
   output:         main.tex
-  export-params:  src.parameters
   debug:          false
   compile-latex:  true
   insert-bib:     true
@@ -33,7 +32,7 @@ stamp:
 # ARTICLE PARAMETERS
 ################################################################################
 parameters:
-  file:      parameters.tex
+  file: src.parameters
   overwrite: true
   options:
     FONT_SIZE: 12pt
