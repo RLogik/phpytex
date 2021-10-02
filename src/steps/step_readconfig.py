@@ -69,7 +69,6 @@ def setCompileConfig(
     compile_latex:  bool,
     insert_bib:     bool,
     legacy:         bool = False,
-    export_params:  str  = '',
     comments:       str  = 'auto',
     show_structure: bool = True,
     max_length:     int  = 10000,
@@ -97,36 +96,42 @@ def setCompileConfig(
 
     appconfig.setFilePhpytex(setFile(root));
     appconfig.setFileLatex(setFile(output));
-
-    if isinstance(export_params, str) and not (export_params == ''):
-        assert re.match(r'^\.*(\S+\.)*\S+$', export_params), '\033[1mexport-params\033[0m option must by a python-like import path (relative to the root of the project).';
-        export_params_path = re.sub(r'([^\.]+)\.', r'\1/', export_params) + '.py';
-    else:
-        export_params_path = createNewPathName(dir=os.getcwd(), nameinit='parameters.py', namescheme='parameters_tmp_{}.py');
-        export_params_path = os.path.relpath(export_params_path, os.getcwd());
-        export_params = re.sub(r'\/', '.', os.path.splitext(export_params)[0]);
-    appconfig.setImportParamsPy(export_params);
-    appconfig.setFileParamsPy(setFile(export_params_path));
     return;
 
 def setStampConfig(
-    file: str,
-    options: Dict[str, Any],
+    file: str = '',
     overwrite: bool = True,
+    options: Dict[str, Any] = dict()
 ):
+    root = appconfig.getPathRoot();
+    if not isinstance(file, str) or file == '':
+        file = createNewPathName(dir=root, nameinit='stamp.tex', namescheme='stamp_{}.tex');
+        file = os.path.relpath(file, root);
     appconfig.setFileStamp(setFile(file));
     appconfig.setOptionOverwriteStamp(overwrite);
     appconfig.setDictionaryStamp(options);
     return;
 
 def setParamsConfig(
-    file: str,
-    options: Dict[str, Any],
+    file: str = '',
     overwrite: bool = True,
+    options: Dict[str, Any] = dict(),
 ):
-    appconfig.setFileParamsLatex(setFile(file));
     appconfig.setOptionOverwriteParams(overwrite);
     appconfig.setDictionaryParams(options);
+
+    root = appconfig.getPathRoot();
+    modulename = file if isinstance(file, str) else '';
+    if re.match(r'^[^\.\s]*(\.[^\.\s]*)+$', file):
+        path = re.sub(r'([^\.]+)\.', r'\1/', file) + '.py';
+    else:
+        logWarn('\033[1mparameters > file\033[0m option must by a python-like import path (relative to the root of the project).');
+        path = createNewPathName(dir=root, nameinit='parameters.py', namescheme='parameters_{}.py');
+        path = os.path.relpath(path, root);
+    modulename = re.sub(r'\/', '.', os.path.splitext(path)[0]);
+
+    appconfig.setImportParamsPy(modulename);
+    appconfig.setFileParamsPy(setFile(path));
     return;
 
 def setConfigFilesAndFolders(**config):

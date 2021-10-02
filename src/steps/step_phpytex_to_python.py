@@ -35,19 +35,16 @@ def step(lines: List[str]):
     appconfig.setDocumentStructure([]);
     random.seed(appconfig.getSeed()); # <-- only do this once!
     lines[:] = [];
-    _precompile_lines = [];
-    _list_of_imports = [];
-    _global_vars = [];
+    root = appconfig.getPathRoot();
 
     params = {
-        'comments': appconfig.getOptionComments(),
-        'no-comm': (appconfig.getOptionComments() is False),
-        'no-comm-auto': (appconfig.getOptionComments() == 'auto'),
+        'no-comm':       (appconfig.getOptionComments() is False),
+        'no-comm-auto':  (appconfig.getOptionComments() == 'auto'),
         'show-structure': appconfig.getOptionShowStructure(),
     };
 
     documents = TranspileDocuments(
-        root       = appconfig.getPathRoot(),
+        root       = root,
         indentsymb = appconfig.getIndentCharacter()
     );
 
@@ -61,25 +58,31 @@ def step(lines: List[str]):
     addDocument(
         path      = appconfig.getFilePhpytex(),
         documents = documents,
-        imports   = _list_of_imports,
         mute      = False,
         silent    = getQuietMode(),
         params    = params
     );
 
-    createImportFileParameters(fname=appconfig.getFileParamsPy(), documents=documents);
+    createImportFileParameters(
+        path      = os.path.join(root, appconfig.getFileParamsPy()),
+        overwrite = appconfig.getOptionOverwriteParams(),
+        documents = documents
+    );
 
-    parameters = unique(list(appconfig.getExportVars().keys()) + list(documents.variables.keys()));
-    for line in documents.generateCode(parameters=parameters):
-        logDebug(line);
-
+    globalvars = unique(list(appconfig.getExportVars().keys()) + list(documents.variables.keys()));
     fnameLatex, _, _ = extractPath(path=appconfig.getFileLatex(), relative=False, ext='tex');
-    fnamePy = createNewFileName(dir=appconfig.getPathRoot(), nameinit='phpytex_main.py', namescheme='phpytex_main_{}.py');
-    createmetacode(lines=lines, imports=_list_of_imports, globalvars=_global_vars, fname=fnameLatex, fnameOut=fnamePy);
+    fnamePy = createNewFileName(dir=root, nameinit='phpytex_main.py', namescheme='phpytex_main_{}.py');
+    createmetacode(
+        lines      = lines,
+        documents  = documents,
+        globalvars = globalvars,
+        fname      = fnameLatex,
+        fnameOut   = fnamePy
+    );
 
     appconfig.setFileScript(fnamePy);
-    appconfig.setPrecompileLines(_precompile_lines);
-    appconfig.setListOfImports(_list_of_imports);
+    # appconfig.setPrecompileLines(_precompile_lines);
+    # appconfig.setListOfImports(_list_of_imports);
 
     logInfo('Transpilation (phpytex -> python) complete.');
     return;
@@ -91,8 +94,8 @@ def step(lines: List[str]):
 def addPreamble(
     path: str,
     documents: TranspileDocuments,
-    params: Dict[str, Any],
-    silent: bool
+    params:    Dict[str, bool],
+    silent:    bool = False,
 ):
     # preamble = [];
     struct = appconfig.getDocumentStructure()[:]
@@ -126,12 +129,11 @@ def addPreamble(
 def addDocument(
     path:         str,
     documents:    TranspileDocuments,
+    params:       Dict[str, bool],
     chain:        List[str]          = [],
-    imports:      List[str]          = [],
     anon:         bool               = False,
     mute:         bool               = False,
     silent:       bool               = False,
-    params:       Dict[str, Any]     = {}
 ):
     if path in chain:
         logError('The document contains a cycle!');
@@ -146,16 +148,24 @@ def addDocument(
         pattern    = appconfig.getIndentCharacterRe(),
         is_legacy  = appconfig.getOptionLegacy(),
     );
-    blocks = parseText(lines, indentation);
-    if not (path in documents.paths):
-        documents.addDocument(path=path);
-        documents.addBlocks(path=path, blocks=blocks);
+    if path in documents.paths:
+        return;
+    blocks = [];
+    for block in parseText(lines, indentation):
+        kind = block.kind;
+        if re.match(r'^text:comment', kind) and (\
+            params['no-comm'] or \
+            ( params['no-comm-auto'] and re.match(r'^.*:simple$', kind) ) \
+        ):
+            continue;
+        blocks.append(block);
+    documents.addDocument(path=path);
+    documents.addBlocks(path=path, blocks=blocks);
     for subpath in documents.getSubPaths(path):
         addDocument(
             path      = subpath,
             documents = documents,
             chain     = chain + [path],
-            imports   = imports,
             anon      = anon,
             mute      = mute,
             silent    = silent,
@@ -163,7 +173,13 @@ def addDocument(
         );
     return;
 
-def createImportFileParameters(fname: str, documents: TranspileDocuments):
+def createImportFileParameters(
+    path:      str,
+    overwrite: bool,
+    documents: TranspileDocuments
+):
+    if os.path.exists(path) and not overwrite:
+        return;
     lines = formatTextBlockAsList(
         '''
         #!/usr/bin/env python3
@@ -179,16 +195,18 @@ def createImportFileParameters(fname: str, documents: TranspileDocuments):
             continue;
         lines.append('{name} = None;'.format(name=name));
     lines.append('');
-    writeTextFile(path=fname, lines=lines, force_create_path=True);
+    writeTextFile(path=path, lines=lines, force_create_path=True);
     return;
 
 def createmetacode(
-    fname: str,
-    fnameOut: str,
-    lines: List[str],
-    imports: List[str],
+    lines:      List[str],
+    documents:  TranspileDocuments,
+    fname:      str,
+    fnameOut:   str,
     globalvars: List[str]
 ):
+    imports = []; ## TODO: extract immports from special code-blocks
+    lines[:] = documents.generateCode(globalvars=globalvars);
     fname_rel, _, _ = extractPath(path=fname, relative=True, ext='');
     _phpytex_lines = getTemplatePhpytexLines()
     lines_pre = formatTextBlockAsList(
@@ -202,7 +220,6 @@ def createmetacode(
             rootdir       = appconfig.getPathRoot(),
             seed          = appconfig.getSeed(),
             imports       = '\n    '.join(imports if len(imports) > 0 else [ '# no imports' ]),
-            globalvars    = '\n    '.join(globalvars if len(globalvars) > 0 else [ '# no global vars' ]),
         )
     );
     appconfig.setLenPrecode(len(lines_pre));

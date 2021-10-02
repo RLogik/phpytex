@@ -57,7 +57,7 @@ def createFileStamp(
     overwrite: bool,
     options: Dict[str, Any]
 ):
-    if os.path.isfile(path) and not overwrite:
+    if os.path.exists(path) and not overwrite:
         return;
     lines = [];
     border = r'%% ' + '*'*80;
@@ -90,6 +90,8 @@ def createFileParameters(
     overwrite: bool,
     options: Dict[str, Any]
 ):
+    if os.path.exists(path) and not overwrite:
+        return;
     appconfig.setExportVars({});
     lines = [];
     for key, value in options.items():
