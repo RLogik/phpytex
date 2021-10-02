@@ -70,6 +70,8 @@ def createNewFileName(dir: str, nameinit: str = 'tmp', namescheme: str = 'tmp_{}
     return path;
 
 def createPath(path: str):
+    if path in [ '', '.', os.getcwd() ]:
+        return;
     if not os.path.exists(path):
         pathlib.Path(path).mkdir(parents=True, exist_ok=True);
     if not os.path.exists(path):
@@ -95,15 +97,16 @@ def writeTextFile(
 ):
     if force_create_path:
         createPath(os.path.dirname(path));
-    _lines = [lines] if isinstance(lines, str) else lines
+    _lines = [ lines ] if isinstance(lines, str) else lines;
     while len(_lines) > 0:
         if not re.match(r'^\s*$', _lines[-1]):
             break;
-        lines = lines[:-1];
+        _lines = _lines[:-1];
     if force_create_empty_line:
         _lines = _lines + [''];
     with open(path, 'w') as fp:
         fp.write('\n'.join(_lines));
+    return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # METHODS: cli
@@ -172,6 +175,18 @@ def lengthOfWhiteSpace(s: str) -> int:
         elif char == '\t':
             n = (n - n % 8) + 8; # next tab stop
     return n;
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# METHODS: array methods
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def unique(X: List[Any]) -> List[Any]:
+    X_ = [];
+    for el in X:
+        if el in X_:
+            continue;
+        X_.append(el);
+    return X_;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # METHODS: yaml and config
