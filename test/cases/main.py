@@ -19,7 +19,6 @@ from src.local.typing import *;
 from src.core.log import *;
 from src.core.utils import getAttribute;
 from src.core.utils import getCliArgs;
-from src.core.utils import createNewPathName;
 from src.core.utils import pipeCall;
 from src.core.utils import PythonCommand;
 from src.core.utils import readYamlFile;

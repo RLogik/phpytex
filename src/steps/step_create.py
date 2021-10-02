@@ -35,11 +35,7 @@ def step():
         overwrite=appconfig.getOptionOverwriteStamp(),
         options=appconfig.getDictionaryStamp()
     );
-    createFileParameters(
-        path=os.path.join(root, appconfig.getFileParamsLatex()),
-        overwrite=appconfig.getOptionOverwriteParams(),
-        options=appconfig.getDictionaryParms()
-    );
+    createParameters(options=appconfig.getDictionaryParms());
     logInfo('Creation stage complete.');
     return;
 
@@ -106,6 +102,17 @@ def createFileParameters(
     if os.path.isfile(path) and not overwrite:
         return;
     writeTextFile(path=path, lines=lines);
+    return;
+
+def createParameters(options: Dict[str, Any]):
+    appconfig.setExportVars({});
+    lines = [];
+    for key, value in options.items():
+        try:
+            typ, codedvalue = convertToPythonString(value, indent=0, multiline=False);
+            appconfig.setExportVarsKeyValue(key=key, value=value, codedvalue=codedvalue);
+        except:
+            continue;
     return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -12,6 +12,7 @@ from src.core.log import *;
 from src.core.utils import createNewFileName;
 from src.core.utils import formatTextBlockAsList;
 from src.core.utils import readTextFile;
+from src.core.utils import unique;
 from src.core.utils import writeTextFile;
 from src.customtypes.exports import *;
 from src.setup import appconfig;
@@ -57,7 +58,7 @@ def step(lines: List[str]):
         params    = params
     );
 
-    Knit(
+    addDocument(
         path      = appconfig.getFilePhpytex(),
         documents = documents,
         imports   = _list_of_imports,
@@ -66,9 +67,11 @@ def step(lines: List[str]):
         params    = params
     );
 
-    if appconfig.getExportParams():
-        fname_params, _, _ = extractPath(path=appconfig.getFileParamsPy(), relative=True, ext='py');
-        exportParameters(fname=fname_params, globalvars=_global_vars);
+    createImportFileParameters(fname=appconfig.getFileParamsPy(), documents=documents);
+
+    parameters = unique(list(appconfig.getExportVars().keys()) + list(documents.variables.keys()));
+    for line in documents.generateCode(parameters=parameters):
+        logDebug(line);
 
     fnameLatex, _, _ = extractPath(path=appconfig.getFileLatex(), relative=False, ext='tex');
     fnamePy = createNewFileName(dir=appconfig.getPathRoot(), nameinit='phpytex_main.py', namescheme='phpytex_main_{}.py');
@@ -95,7 +98,7 @@ def addPreamble(
     struct = appconfig.getDocumentStructure()[:]
     if isinstance(path, str) and not(path == ''):
         appconfig.setDocumentStructure([]);
-        Knit(
+        addDocument(
             # filecontents = preamble,
             path      = path,
             documents = documents,
@@ -120,28 +123,7 @@ def addPreamble(
     # appconfig.setPrecompileLines(verbatim + appconfig.getPrecompileLines());
     return;
 
-def exportParameters(fname: str, globalvars: List[str]):
-    lines = [];
-    for key, (value, codedvalue) in appconfig.getExportVars().items():
-        lines.append('{name} = {val};'.format(name=key, val=codedvalue));
-        # globalvars.append('{indent}from {importpath} import {name};'.format(
-        #     indent     = appconfig.getIndentCharacter()*1,
-        #     importpath = appconfig.getParamPyImport(),
-        #     name       = key,
-        # ));
-        globalvars.append('{indent}{name} = {mod}.{name};'.format(
-            indent = appconfig.getIndentCharacter()*1,
-            name   = key,
-            mod    = appconfig.getParamModuleName(),
-        ));
-    if len(lines) > 0:
-        lines = ['#!/usr/bin/env python3', '# -*- coding: utf-8 -*-', ''] + lines;
-    else:
-        lines = ['#!/usr/bin/env python3', '# -*- coding: utf-8 -*-'];
-    writeTextFile(path=fname, lines=lines, force_create_path=True);
-    return;
-
-def Knit(
+def addDocument(
     path:         str,
     documents:    TranspileDocuments,
     chain:        List[str]          = [],
@@ -154,7 +136,11 @@ def Knit(
     if path in chain:
         logError('The document contains a cycle!');
         return;
-    lines = readTextFile(path);
+    try:
+        lines = readTextFile(path);
+    except:
+        logError('Could not find or read document \033[1m{path}\033[0m!'.format(path = path));
+        return;
     indentation = IndentationTracker(
         symb       = appconfig.getIndentCharacter(),
         pattern    = appconfig.getIndentCharacterRe(),
@@ -165,7 +151,7 @@ def Knit(
         documents.addDocument(path=path);
         documents.addBlocks(path=path, blocks=blocks);
     for subpath in documents.getSubPaths(path):
-        Knit(
+        addDocument(
             path      = subpath,
             documents = documents,
             chain     = chain + [path],
@@ -175,6 +161,25 @@ def Knit(
             silent    = silent,
             params    = params
         );
+    return;
+
+def createImportFileParameters(fname: str, documents: TranspileDocuments):
+    lines = formatTextBlockAsList(
+        '''
+        #!/usr/bin/env python3
+        # -*- coding: utf-8 -*-
+        '''
+    );
+    lines.append('');
+    names = appconfig.getExportVars().keys();
+    for name, (value, codedvalue) in appconfig.getExportVars().items():
+        lines.append('{name} = {codedvalue};'.format(name=name, codedvalue=codedvalue));
+    for name in documents.variables.keys():
+        if name in names:
+            continue;
+        lines.append('{name} = None;'.format(name=name));
+    lines.append('');
+    writeTextFile(path=fname, lines=lines, force_create_path=True);
     return;
 
 def createmetacode(
@@ -188,7 +193,7 @@ def createmetacode(
     _phpytex_lines = getTemplatePhpytexLines()
     lines_pre = formatTextBlockAsList(
         _phpytex_lines.format(
-            import_params = '\nimport {} as {};\n'.format(appconfig.getImportParamsPy(), appconfig.getParamModuleName()) if appconfig.getExportParams() else '',
+            import_params = 'from {name} import *;\n'.format(name = appconfig.getImportParamsPy()),
             indentchar    = appconfig.getIndentCharacterRe(),
             fname         = fname,
             fname_rel     = fname_rel,

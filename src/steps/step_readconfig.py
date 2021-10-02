@@ -6,8 +6,11 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 from src.local.misc import *;
+from src.local.system import *;
 from src.local.typing import *;
 
+from src.core.log import *;
+from src.core.utils import createNewPathName;
 from src.core.utils import getAttribute;
 from src.core.utils import getFilesByPattern;
 from src.core.utils import readYamlFile;
@@ -82,7 +85,6 @@ def setCompileConfig(
     appconfig.setOptionInsertBib(insert_bib);
     appconfig.setOptionShowStructure(show_structure);
     appconfig.setOptionComments(comments);
-
     appconfig.setSeed(seed);
 
     appconfig.setMaxLengthOutput(max_length);
@@ -98,10 +100,13 @@ def setCompileConfig(
 
     if isinstance(export_params, str) and not (export_params == ''):
         assert re.match(r'^\.*(\S+\.)*\S+$', export_params), '\033[1mexport-params\033[0m option must by a python-like import path (relative to the root of the project).';
-        appconfig.setExportParams(True);
-        appconfig.setImportParamsPy(export_params);
-        appconfig.setFileParamsPy(setFile(re.sub(r'([^\.]+)\.', r'\1/', export_params)));
-
+        export_params_path = re.sub(r'([^\.]+)\.', r'\1/', export_params) + '.py';
+    else:
+        export_params_path = createNewPathName(dir=os.getcwd(), nameinit='parameters.py', namescheme='parameters_tmp_{}.py');
+        export_params_path = os.path.relpath(export_params_path, os.getcwd());
+        export_params = re.sub(r'\/', '.', os.path.splitext(export_params)[0]);
+    appconfig.setImportParamsPy(export_params);
+    appconfig.setFileParamsPy(setFile(export_params_path));
     return;
 
 def setStampConfig(
@@ -132,6 +137,6 @@ def setConfigFilesAndFolders(**config):
 # TERTIARY METHODS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def setFile(file: str = '', **_) -> str:
+def setFile(file: str) -> str:
     file, _, _ = extractPath(path=file, relative=True);
     return file;
