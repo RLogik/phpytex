@@ -11,21 +11,6 @@ from src.local.typing import *;
 from src.customtypes.exports import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# METHOD escape string for use in python code
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-def escapeForPython(s: str) -> str:
-    s = re.sub(r'(\\+)', r'\1\1', s);
-    s = re.sub(r'\n', r'\\n', s);
-    s = re.sub(r'\t', r'\\t', s);
-    s = re.sub(r'\"', r'\\u0022', s);
-    s = re.sub(r'\'', r'\\u0027', s);
-    # s = re.sub(r'\%', slash+'u0025', s);
-    s = re.sub(r'(\{+)', r'\1\1', s);
-    s = re.sub(r'(\}+)', r'\1\1', s);
-    return s;
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # METHOD convert variable to python string
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

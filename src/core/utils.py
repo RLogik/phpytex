@@ -141,6 +141,19 @@ def getCliArgs(*args: str) -> Tuple[List[str], Dict[str, Any]]:
 # METHODS: string
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# escapes string for use in python code
+def escapeForPython(s: str, withformatting: bool = False) -> str:
+    s = re.sub(r'(\\+)', r'\1\1', s);
+    s = re.sub(r'\n', r'\\n', s);
+    s = re.sub(r'\t', r'\\t', s);
+    s = re.sub(r'\"', r'\\u0022', s);
+    s = re.sub(r'\'', r'\\u0027', s);
+    # s = re.sub(r'\%', slash+'u0025', s);
+    if withformatting:
+        s = re.sub(r'(\{+)', r'\1\1', s);
+        s = re.sub(r'(\}+)', r'\1\1', s);
+    return s;
+
 def formatBlockUnindent(lines: List[str], reference: str) -> List[str]:
     s = dedent('\n'.join([ reference + '.' ] + lines));
     return s.split('\n')[1:];
