@@ -11,8 +11,9 @@ from src.local.misc import *;
 from src.local.typing import *;
 
 from src.core.utils import extractIndent;
-from src.core.utils import lengthOfWhiteSpace;
 from src.core.utils import formatBlockUnindent;
+from src.core.utils import getAttribute;
+from src.core.utils import lengthOfWhiteSpace;
 from src.core.log import *;
 from src.setup.methods import getGrammar;
 from src.parsers.methods import escapeForPython;
@@ -45,12 +46,11 @@ def tokeniseInput(mode: str, text: str):
 # MAIN METHODS string -> Expression
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def parseText(text: str, indentation: IndentationTracker) -> List[TranspileBlock]:
-    blocks = [];
+def parseText(text: str, indentation: IndentationTracker) -> Generator[TranspileBlock, None, None]:
     if not ( text.strip() == '' ):
         u = tokeniseInput('blocks', text);
-        blocks = lexedToBlocks(u, indentation=indentation);
-    return blocks;
+        yield from lexedToBlocks(u, indentation=indentation);
+    return;
 
 def parseCodeBlock(text: str, indentation: IndentationTracker) -> TranspileBlock:
     u = tokeniseInput('blockcode', text);
@@ -60,11 +60,13 @@ def parseCodeBlock(text: str, indentation: IndentationTracker) -> TranspileBlock
 # PRIVATE METHODS: recursive lex -> Expression
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def lexedToBlocks(u: Tree, indentation: IndentationTracker) -> List[TranspileBlock]:
+def lexedToBlocks(u: Tree, indentation: IndentationTracker) -> Generator[TranspileBlock, None, None]:
     typ = u.data;
     children = filterSubexpr(u);
     if typ == 'blocks':
-        return [ lexedToBlock(child, indentation=indentation) for child in children ];
+        for child in children:
+            yield lexedToBlock(child, indentation=indentation);
+        return;
     raise Exception('Could not parse expression!');
 
 def lexedToBlock(u: Tree, indentation: IndentationTracker) -> TranspileBlock:
@@ -170,9 +172,19 @@ def processBlockCode(u: Tree, indentation: IndentationTracker, offset: str = '')
     children = filterSubexpr(u);
     if typ == 'blockcode':
         instructions = processInstructions(children[0]);
+        tokens, kwargs = instructions;
         block = processBlockCode(children[1], indentation=indentation, offset=offset);
         block.parameters = dict(instructions=instructions);
-        return block;
+        if 'import' in tokens:
+            block.kind = 'code:import';
+            return block;
+        elif 'print' in tokens or getAttribute(kwargs, 'print', expectedtype=bool, default=False):
+            block.kind = 'code:value';
+            blockcontainer = TranspileBlock(kind='text:subst', content='{subst0}', indentlevel=indentation.last, indentsymb=indentation.symb);
+            blockcontainer.subst = { 'subst0': block };
+            return blockcontainer;
+        else:
+            return block;
     elif typ == 'blockcode_inside':
         lenOffset = lengthOfWhiteSpace(offset);
         lines = [ lexedToStr(child) for child in children ];
