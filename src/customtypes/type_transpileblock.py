@@ -6,6 +6,7 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 from __future__ import annotations
+from src.core.log import logDebug
 
 from src.local.misc import *;
 from src.local.typing import *;
@@ -36,7 +37,8 @@ class TranspileBlock(object):
         content: Any = None,
         lines: List[str] = [],
         indentlevel: int = 0,
-        indentsymb: str = '    '
+        indentsymb: str = '    ',
+        **_
     ):
         self.lines = lines;
         self.kind = kind;
@@ -65,6 +67,12 @@ class TranspileBlock(object):
             yield '{tab}print(\'\'\'\\n\'\'\');'.format(tab=self.indentsymb*self.indentlevel);
         elif re.match(r'^text:comment', self.kind):
             yield from self.content;
+        elif self.kind == 'text':
+            for line in self.content:
+                yield '{tab}print(\'\'\'{expr}\'\'\');'.format(
+                    tab  = self.indentsymb*self.indentlevel,
+                    expr = line,
+                );
         elif self.kind == 'text:subst':
             line = '{tab}print(\'\'\'{expr}\'\'\'.format('.format(
                 tab  = self.indentsymb*self.indentlevel,
@@ -84,6 +92,8 @@ class TranspileBlock(object):
             if len(self.subst) > 0:
                 yield '{tab});'.format(tab=self.indentsymb*self.indentlevel);
         elif self.kind == 'code':
+            yield from self.content;
+        elif self.kind == 'code:import':
             yield from self.content;
         elif self.kind == 'code:value':
             yield from self.content;
@@ -105,4 +115,26 @@ class TranspileBlock(object):
         elif self.kind == 'code:bib:anon':
             pass;
         self.indentlevel = indentlevel_orig;
+        return;
+
+class TranspileBlocks(object):
+    blocks: List[TranspileBlock];
+
+    def __init__(self):
+        self.blocks = [];
+
+    def __len__(self) -> int:
+        return len(self.blocks);
+
+    def __iter__(self) -> Generator[TranspileBlock, None, None]:
+        for block in self.blocks:
+            yield block;
+        return;
+
+    def append(self, block: TranspileBlock):
+        self.blocks.append(block);
+
+    def generateCode(self, offset: int = 0) -> Generator[str, None, None]:
+        for block in self.blocks:
+            yield from block.generateCode(offset=offset);
         return;
