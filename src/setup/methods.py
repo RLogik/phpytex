@@ -73,10 +73,10 @@ def extractPath(
     relative:    Any  = None,
     relative_to: Any  = None,
     ext:         Any  = None
-) -> Tuple[str, str, str]:
+) -> str:
     root = root if isinstance(root, str) else appconfig.getPathRoot();
     root = os.path.abspath(os.path.normpath(root));
-    if re.match(r'\:|^[\/\\]', path):
+    if os.path.isabs(path):
         relative = relative if isinstance(relative, bool) else False;
     else:
         relative = relative if isinstance(relative, bool) else True;
@@ -89,12 +89,9 @@ def extractPath(
         path = os.path.relpath(path=path, start=root);
 
     if isinstance(ext, str):
-        path, _ = os.path.splitext(path);
-        path = path if ext == '' else '{}.{}'.format(path, ext);
+        path = '{path}{ext}'.format(
+            path = os.path.splitext(path)[0],
+            ext = '' if ext == '' else '.' + ext,
+        );
 
-    root = fname = '';
-    if split:
-        root, fname = os.path.split(path);
-        path = os.path.normpath('/'.join([root, fname]));
-
-    return path, root, fname;
+    return path;
