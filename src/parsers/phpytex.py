@@ -11,12 +11,12 @@ from src.local.misc import *;
 from src.local.typing import *;
 
 from src.core.utils import extractIndent;
+from src.core.utils import escapeForPython;
 from src.core.utils import formatBlockUnindent;
 from src.core.utils import getAttribute;
 from src.core.utils import lengthOfWhiteSpace;
 from src.core.log import *;
 from src.setup.methods import getGrammar;
-from src.parsers.methods import escapeForPython;
 from src.customtypes.exports import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -104,7 +104,7 @@ def processBlockContent(children: List[Tree], indentation: IndentationTracker) -
     i = 0;
     for child in children:
         if child.data == 'textcontent':
-            text = escapeForPython(lexedToStr(child));
+            text = escapeForPython(lexedToStr(child), withformatting=True);
             exprs.append(text);
         elif child.data == 'codeinline':
             key = 'subst' +  str(i);

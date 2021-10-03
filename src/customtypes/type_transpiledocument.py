@@ -13,7 +13,6 @@ from src.local.typing import *;
 
 from src.core.log import *;
 from src.core.utils import formatTextBlockAsList;
-from src.parsers.methods import escapeForPython;
 from src.customtypes.type_transpileblock import TranspileBlock;
 from src.customtypes.type_transpileblock import TranspileBlocks;
 
