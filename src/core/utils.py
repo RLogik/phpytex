@@ -43,7 +43,7 @@ def pipeCall(*args: str, cwd = None, errormsg: str = '', fnameOut: Union[None, s
             result = subprocess.run(list(args), cwd=cwd, stdout=fp);
     if result.returncode == 0:
         return;
-    raise Exception(errormsg or 'Shell command < \033[94;1m{{}}\033[0m > failed.'.format(' '.join(args)));
+    raise Exception(errormsg or 'Shell command < \033[94;1m{}\033[0m > failed.'.format(' '.join(args)));
 
 def getFiles(path: str) -> List[Tuple[str, str]]:
     items = [(_, os.path.join(path, _)) for _ in os.listdir(path)];
