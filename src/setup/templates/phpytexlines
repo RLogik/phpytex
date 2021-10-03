@@ -7,7 +7,6 @@ import os;
 import re;
 import random;
 import subprocess;
-from typing import Any;
 
 ################################
 # USER IMPORTS
@@ -17,204 +16,89 @@ from typing import Any;
 # END OF USER IMPORTS
 ################################
 
-____lines____            = {{
-    'post-compile': [ ],
-    'anon':         [ ],
-    'bib':          dict(),
-}};
-____len_empty_block____  = 0;
-____indent____           = '{indentchar}';
-____indentation____      = '';
-____filetex_name____     = '{fname}';
-____filetex_name_rel____ = '{fname_rel}';
-____filetex____          = None;
-____error_toolong____    = False;
-____outputlength____     = 0;
-____maxlength____        = {maxlength};
-____insertbib____        = {insertbib};
-____last_latex____       = None;
-____rootdir____          = '{rootdir}';
-____seed____             = {seed};
-__ROOT__                 = None;
-__DIR__                  = None;
-__SKIP__                 = None;
-__FNAME__                = None;
-__LINENR__               = None;
-____error_eval____       = False;
+____phpytex_params____ = dict(
+    lines = dict(
+        post_compile = [ ],
+        anon         = [ ],
+        bib          = dict(),
+    ),
+    rootdir        = '{root}',
+    path           = '{path}',
+    fname          = '{fname}',
+    insert_bib     = {insert_bib},
+    seed           = {seed},
+    ctr_emptylines = 0,
+    length         = 0,
+    length_max     = {length_max},
+    length_error   = False,
+);
+__FNAME__  = '<undefined>';
+__ROOT__   = '.';
+__DIR__    = '.';
+__IGNORE__ = False;
 
 ## reseed-funktion:
 def ____reseed():
-    global ____seed____;
-    random.seed(____seed____);
+    global ____phpytex_params____;
+    random.seed(____phpytex_params____['seed']);
     return True;
 
-class ____skipclass:
-    def __init__(self):
-        self.len = 0;
-        self.chain = [];
-        self.status = False;
-        pass;
-
-    def get(self):
-        self.status = (True in self.chain);
-        return self.status;
-
-    def set(self, val):
-        if self.len == 0:
-            return False;
-        self.chain[self.len-1] = val;
-        self.get();
-        return True;
-
-    def add(self, val):
-        self.chain.append(val);
-        self.len += 1;
-        self.get();
-        pass;
-
-    def rem(self):
-        self.chain = self.chain[:-1];
-        self.len -= 1;
-        self.get();
-        pass;
-
-    pass;
-
-def ____ignore(opt, val=None):
-    global __SKIP__;
-    global ____skipclass;
-
-    if opt == 'get':
-        return __SKIP__.get();
-    elif opt == 'add':
-        __SKIP__.add(False);
-    elif opt == 'set':
-        __SKIP__.set(val);
-    elif opt == 'rem':
-        __SKIP__.rem();
-    elif opt == 'init':
-        __SKIP__ = ____skipclass();
-    pass;
-
-## expand: quickpython —> prä-eval-Ausdruck
-def ____qp(linenr=None, expr='', update_indentation=False):
-    if ____ignore('get'):
-        return "''";
-
-    global ____indentation____;
-    global ____error_eval____;
-    global ____last_latex____;
-    global __LINENR__;
-    ____error_eval____ = True;
-    ____last_latex____ = expr;
-    __LINENR__ = linenr;
-
-    m = re.match(r'^((?:\s|\\t)*)(.*)$', expr);
-    lmargin = re.sub(r'\\t', r'\t', m.group(1));
-    expr    = m.group(2);
-    re_meta = r'(\<{{3}}(?![\<|\`])(?:(?!(?:\<{{3}}|\>{{3}})).)*\>{{3}})';
-
-    has_subs = True;
-    while has_subs:
-        meta = "''";
-        has_subs = False;
-        for i,u in enumerate(re.split(re_meta, expr)):
-            m = re.match(r'^\<{{3}}((?![\<|\`])(?:(?!(?:\<{{3}}|\>{{3}})).)*)\>{{3}}$', u);
-            if m:
-                # has_subs = True;
-                # has_subs = False; # <— erlaube nur eine Auflösungsstufe.
-                u = m.group(1);
-                u = re.sub(r'^[\s\?\=]+|[\s\;]+$', '', u);
-                if u == '':
-                    continue;
-                u = 'str(' + u + ')';
-                meta += '+'+u;
-            else:
-                mm = re.split(r'(\'+)', u);
-                for uu in mm:
-                    if re.match(r'\'+', uu):
-                        uu = '"'+uu+'"';
-                    else:
-                        uu = "'"+uu+"'";
-                    meta += '+'+uu;
-        expr = meta;
-
-    if update_indentation:
-        ____indentation____ = lmargin;
-    else:
-        expr = "'{{}}' + ".format(lmargin) + expr;
-
-    return expr;
-
 ## record + print-to-latex
-def ____print(s: Any, use_indent=True, anon=False):
-    if ____ignore('get'):
-        return;
+def ____cleardocument():
+    with open(____phpytex_params____['path'], 'w') as fp:
+        fp.write('');
+    return;
 
-    global ____len_empty_block____;
-    global ____error_eval____;
-    global ____error_toolong____;
-    global ____outputlength____;
+def ____forceprint(s: str, anon=False):
+    global ____phpytex_params____;
+    fp = ____phpytex_params____['filetex'];
+
+    n = len(____phpytex_params____['lines']['post_compile']);
+    with open(____phpytex_params____['path'], 'a') as fp:
+        for _s in re.split(r'\r?\n', s):
+            print(_s, file=fp);
+            ____phpytex_params____['lines']['post_compile'].append(_s);
+            if anon:
+                ____phpytex_params____['lines']['anon'].append(n);
+            n += 1;
+    pass;
+
+def ____print(s: str, anon=False):
+    global ____phpytex_params____;
+    global __IGNORE__;
+
+    if __IGNORE__:
+        return;
+    if ____phpytex_params____['length_error']:
+        return;
 
     ## reduces blocks of empty lines to single empty lines:
-    s = str(s);
-    ____len_empty_block____ = (____len_empty_block____ + 1) if re.match(r'^\s*$', s) else 0;
-    if ____len_empty_block____ > 1:
+    ____phpytex_params____['ctr_emptylines'] = (____phpytex_params____['ctr_emptylines'] + 1) if re.match(r'^\s*$', s) else 0;
+    if ____phpytex_params____['ctr_emptylines'] > 1:
         return;
 
-    ____error_eval____ = False;
-    if ____error_toolong____:
-        return;
-    ____outputlength____ += 1;
-    if ____outputlength____ > ____maxlength____:
-        ____error_toolong____ = True;
-
-    ____forceprint(s, use_indent=use_indent, anon=anon);
+    ____phpytex_params____['length'] += 1;
+    ____phpytex_params____['length_error'] = ____phpytex_params____['length_error'] or ( ____phpytex_params____['length'] > ____phpytex_params____['length_max'] );
+    ____forceprint(s, anon=anon);
     pass;
 
-def ____forceprint(s: str, use_indent=True, anon=False):
-    global ____filetex____;
-    global ____lines____;
+def ____insertbib(
+    fname:  str,
+    src:    str,
+    anon:   bool = False
+):
+    global ____phpytex_params____;
 
-    n = len(____lines____['post-compile']);
-    for _s in re.split(r'\n', s):
-        if use_indent:
-            _s = ____indentation____ + _s;
-        print(_s, file=____filetex____);
-        ____lines____['post-compile'].append(_s);
-        if anon:
-            ____lines____['anon'].append(n);
-        n += 1;
-    pass;
-
-def ____insertbib(fname='', src='', indent='', anon=False):
-    global ____filetex____;
-    global ____lines____;
-    global ____insertbib____;
-
-    nom, _ = os.path.splitext(fname);
-    line = indent + r'\bibliography{{'+nom+'}}';
-    print(line, file=____filetex____);
-    ## lies Datei ein und füge Inhalte hinzu.
-    ____lines____['post-compile'].append(line);
-    if not src in ____lines____['bib']:
-        ____lines____['bib'][src] = [];
-    n = len(____lines____['post-compile']);
+    line = '\\bibliography{{{{\'{{file}}\'}}}}'.format(file=os.path.splitext(fname)[0]);
+    with open(____phpytex_params____['path'], 'a') as fp:
+        print(line, file=fp);
+    # read file and insert contents:
+    n = len(____phpytex_params____['lines']['post_compile']);
+    ____phpytex_params____['lines']['post_compile'].append(line);
+    if not ( src in ____phpytex_params____['lines']['bib'] ):
+        ____phpytex_params____['lines']['bib'][src] = [];
     if anon:
-        ____lines____['anon'].append(n-1);
-    elif ____insertbib____:
-        ____lines____['bib'][src].append(n-1);
+        ____phpytex_params____['lines']['anon'].append(n);
+    elif ____phpytex_params____['insert_bib']:
+        ____phpytex_params____['lines']['bib'][src].append(n);
     pass;
-
-def ____compilephpytex():
-    global ____reseed;
-    global ____print;
-    global ____qp;
-    global ____ignore;
-    global ____indentation____;
-    global __ROOT__;
-    global __DIR__;
-    global __FNAME__;
-    global __LINENR__;
-
-    ____ignore('init');

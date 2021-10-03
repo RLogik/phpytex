@@ -13,6 +13,7 @@ from src.local.typing import *;
 
 from src.core.log import *;
 from src.core.utils import formatTextBlockAsList;
+from src.core.utils import unique;
 from src.customtypes.type_transpileblock import TranspileBlock;
 from src.customtypes.type_transpileblock import TranspileBlocks;
 
@@ -20,9 +21,9 @@ from src.customtypes.type_transpileblock import TranspileBlocks;
 # GLOBAL VARIABLES
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-_FUNCTION_NAME_MAIN: str = '_phpytex_generate_main';
-_FUNCTION_NAME_FILE: str = '_phpytex_generate_file';
-_FUNCTION_NAME_PRE:  str = '_phpytex_generate_pre';
+_FUNCTION_NAME_MAIN: str = '____phpytex_main';
+_FUNCTION_NAME_FILE: str = '____phpytex_generate_file';
+_FUNCTION_NAME_PRE:  str = '____phpytex_generate_pre';
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # CLASS transpile document
@@ -61,6 +62,9 @@ class TranspileDocument(list):
         for block in self.blocks:
             yield block;
 
+    def tab(self, offset: int = 1) -> str:
+        return self.indentsymb * offset;
+
     # relativises a path relative to directory to a path relative to root
     def relativisePath(self, path: str):
         if not os.path.isabs(path):
@@ -78,26 +82,30 @@ class TranspileDocument(list):
         globalvars: List[str] = []
     ) -> Generator[str, None, None]:
         yield '{tab}# generate content from file `{path}`'.format(
-            tab  = self.indentsymb * offset,
+            tab  = self.tab(offset),
             path = self.path,
         );
         yield '{tab}def {label}():'.format(
-            tab  = self.indentsymb * offset,
+            tab  = self.tab(offset),
             label = self.label,
         );
         yield from TranspileBlock(
             kind = 'code',
             lines = [
                 'global {name};'.format(name=name)
-                for name in globalvars if not name in [ '__ROOT__', '__DIR__']
+                for name in unique([ '__ROOT__', '__DIR__', '__FNAME__', '__IGNORE__' ] + globalvars)
+                if not name in [ '__STATE__' ]
             ] + [
+                '__STATE__ = (__ROOT__, __DIR__, __FNAME__, __IGNORE__);',
                 '__ROOT__ = \'.\';'.format(),
                 '__DIR__ = \'{path}\';'.format(path = self.pathfolder),
+                '__FNAME__ = \'{path}\';'.format(path = self.path),
+                '__IGNORE__ = False;',
             ]
         ).generateCode(offset + 1);
         for block in self.blocks:
             yield from block.generateCode(offset + 1);
-        yield '{tab}return;'.format(tab = self.indentsymb * (offset + 1));
+        yield '{tab}return;'.format(tab=self.tab(offset + 1));
         return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -137,6 +145,9 @@ class TranspileDocuments(object):
 
     def __len__(self) -> int:
         return len(self.documents);
+
+    def tab(self, offset: int = 1) -> str:
+        return self.indentsymb * offset;
 
     def evaluate(self, codevalue: str, document: TranspileDocument):
         localvariables = self.variables | document.variables | {
@@ -214,10 +225,10 @@ class TranspileDocuments(object):
                 self.anon[_path] = True if re.match(r'^.*:anon$', block.kind) else False;
                 document.append(TranspileBlock(
                     kind        = 'code',
-                    content     = '{label}(\'{path}\');'.format(
-                        label = _FUNCTION_NAME_FILE,
-                        path  = _path,
-                    ),
+                    lines     = [
+                        '{label}(\'{path}\');'.format(label=_FUNCTION_NAME_FILE, path=_path),
+                        '__ROOT__, __DIR__, __FNAME__, __IGNORE__ = __STATE__;'
+                    ],
                     indentlevel = block.indentlevel,
                     indentsymb  = block.indentsymb
                 ));
@@ -267,7 +278,7 @@ class TranspileDocuments(object):
                 + formatTextBlockAsList(
                     '''
                     %%
-                    %% DOCUMENT-RANDOM-SEED: {}'
+                    %% DOCUMENT-RANDOM-SEED: {}
                     %% ********************************************************************************
                     '''.format(seed)
                 ),
@@ -283,36 +294,37 @@ class TranspileDocuments(object):
     ) -> Generator[str, None, None]:
         ## generate universal reference function
         yield '';
-        yield '{tab}# universal reference function for files'.format(tab = self.indentsymb * offset);
+        yield '{tab}# universal reference function for files'.format(tab=self.tab(offset));
         yield '{tab}def {label}(path: str):'.format(
-            tab   = self.indentsymb * offset,
+            tab   = self.tab(offset),
             label = _FUNCTION_NAME_FILE,
         );
         for path in self.paths:
             yield '{tab}    if path == \'{path}\':'.format(
-                tab  = self.indentsymb * offset,
+                tab  = self.tab(offset),
                 path = path,
             );
             yield '{tab}        {label}();'.format(
-                tab = self.indentsymb * offset,
+                tab = self.tab(offset),
                 path = path,
                 label = self.getFunctionName(path),
-            )
+            );
+            yield '{tab}        return;'.format(tab = self.tab(offset));
         yield '{tab}    raise Exception(\'{msg}\'.format(path));'.format(
-            msg = '[\033[91;1mERROR\033[0m] Could not find a method associated to the document path \033[1m{}\033[0m.',
-            tab = self.indentsymb * offset,
+            msg = r'[\033[91;1mERROR\033[0m] Could not find a method associated to the document path \033[1m{}\033[0m.',
+            tab = self.tab(offset),
         );
 
         ## generate function for preamble parts
         for name, blocks in self.preamble.items():
             yield '';
-            yield '{tab}# '.format(tab = self.indentsymb * offset)
+            yield '{tab}# preamble function `{name}`'.format(tab=self.tab(offset), name=name)
             yield '{tab}def {label}():'.format(
-                tab   = self.indentsymb * offset,
+                tab   = self.tab(offset),
                 label = '{label}_{name}'.format(label=_FUNCTION_NAME_PRE, name=name),
             );
             yield from blocks.generateCode(offset=offset+1);
-            yield '{tab}return'.format(tab = self.indentsymb * (offset + 1));
+            yield '{tab}return'.format(tab=self.tab(offset + 1));
 
         ## generate individual functions for documents
         for document in self.documents.values():
@@ -321,24 +333,22 @@ class TranspileDocuments(object):
 
         ## generate main function, which calls head functions first
         yield '';
-        yield '{tab}# generate content from all files'.format(tab = self.indentsymb * offset);
+        yield '{tab}# generate content from all files'.format(tab=self.tab(offset));
         yield '{tab}def {label}():'.format(
-            tab   = self.indentsymb * offset,
+            tab   = self.tab(offset),
             label = _FUNCTION_NAME_MAIN,
         );
+        yield '{tab}____cleardocument();'.format(tab=self.tab(offset + 1));
         for name in preamble:
             yield '{tab}{label}();'.format(
-                tab  = self.indentsymb * (offset + 1),
+                tab   = self.tab(offset + 1),
                 label = '{label}_{name}'.format(label=_FUNCTION_NAME_PRE, name=name),
             );
         for path in self.getHeadPaths():
-            yield '{tab}# {path}'.format(
-                tab  = self.indentsymb * (offset + 1),
-                path = path,
+            yield '{tab}{label}(\'{path}\');'.format(
+                tab   = self.tab(offset + 1),
+                label = _FUNCTION_NAME_FILE,
+                path  = path
             );
-            yield '{tab}{label}();'.format(
-                tab  = self.indentsymb * (offset + 1),
-                label = self.getFunctionName(path),
-            );
-        yield '{tab}return;'.format(tab = self.indentsymb * (offset + 1));
+        yield '{tab}return;'.format(tab=self.tab(offset + 1));
         return;

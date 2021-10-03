@@ -9,7 +9,6 @@ from src.local.maths import *;
 from src.local.typing import *;
 
 from src.core.log import *;
-from src.core.utils import createNewFileName;
 from src.core.utils import formatTextBlockAsList;
 from src.core.utils import readTextFile;
 from src.core.utils import unique;
@@ -31,22 +30,18 @@ from src.parsers.phpytex import parseText;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def step(lines: List[str]):
-    appconfig.setIncludes([]);
-    appconfig.setDocumentStructure([]);
-    random.seed(appconfig.getSeed()); # <-- only do this once!
-    lines[:] = [];
     root = appconfig.getPathRoot();
     indentsymb = appconfig.getIndentCharacter();
-    preamble = [];
-
     params = {
-        'no-comm':       (appconfig.getOptionComments() is False),
-        'no-comm-auto':  (appconfig.getOptionComments() == 'auto'),
+        'no-comm':      (appconfig.getOptionComments() is False),
+        'no-comm-auto': (appconfig.getOptionComments() == 'auto'),
     };
 
     ## Initialise structures for recording transpilation units:
-    documents = TranspileDocuments(root = root, indentsymb = indentsymb);
+    random.seed(appconfig.getSeed()); # <-- only do this once!
+    preamble = [];
     imports = TranspileBlocks();
+    documents = TranspileDocuments(root=root, indentsymb=indentsymb);
 
     ## Transpile preamble:
     name = 'stamp';
@@ -95,23 +90,17 @@ def step(lines: List[str]):
     ));
 
     ## Generate result of transpilation (phpytex -> python):
+    lines[:] = [];
     globalvars = unique(list(appconfig.getExportVars().keys()) + list(documents.variables.keys()));
-    fnameLatex, _, _ = extractPath(path=appconfig.getFileLatex(), relative=False, ext='tex');
-    fnamePy = createNewFileName(dir=root, nameinit='phpytex_main.py', namescheme='phpytex_main_{}.py');
     createmetacode(
+        fname      = appconfig.getFileLatex(),
+        fnameOut   = appconfig.getFileScript(),
         lines      = lines,
         documents  = documents,
         imports    = imports,
         preamble   = preamble,
-        globalvars = globalvars,
-        fname      = fnameLatex,
-        fnameOut   = fnamePy
+        globalvars = globalvars
     );
-
-    appconfig.setFileScript(fnamePy);
-    # appconfig.setPrecompileLines(_precompile_lines);
-    # appconfig.setListOfImports(_list_of_imports);
-
     logInfo('Transpilation (phpytex -> python) complete.');
     return;
 
@@ -205,30 +194,29 @@ def createImportFileParameters(
     return;
 
 def createmetacode(
+    fname:      str,
+    fnameOut:   str,
     lines:      List[str],
     documents:  TranspileDocuments,
     imports:    TranspileBlocks,
-    fname:      str,
-    fnameOut:   str,
     preamble:   List[str],
     globalvars: List[str]
 ):
     lines[:] = documents.generateCode(offset=0, preamble=preamble, globalvars=globalvars);
-    fname_rel, _, _ = extractPath(path=fname, relative=True, ext='');
     _phpytex_lines = getTemplatePhpytexLines()
     lines_pre = formatTextBlockAsList(
         _phpytex_lines.format(
-            indentchar    = appconfig.getIndentCharacterRe(),
-            fname         = fname,
-            fname_rel     = fname_rel,
-            maxlength     = appconfig.getMaxLengthOuput(),
-            insertbib     = appconfig.getOptionInsertBib(),
-            rootdir       = appconfig.getPathRoot(),
-            seed          = appconfig.getSeed(),
-            imports       = '\n'.join(imports.generateCode(offset=0)),
+            imports    = '\n'.join(imports.generateCode(offset=0)),
+            root       = appconfig.getPathRoot(),
+            path       = extractPath(path=appconfig.getFileLatex(), relative=False, ext='tex'),
+            fname      = extractPath(path=fname, relative=True, ext=''),
+            insert_bib = appconfig.getOptionInsertBib(),
+            length_max = appconfig.getMaxLengthOuput(),
+            seed       = appconfig.getSeed(),
         )
     );
     appconfig.setLenPrecode(len(lines_pre));
+    appconfig.setPrecompileLines(lines_pre);
     lines[:] = lines_pre + lines;
     ## create temp file and write to this:
     writeTextFile(fnameOut, lines);
