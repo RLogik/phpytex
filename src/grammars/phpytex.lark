@@ -59,8 +59,8 @@
 
 // BLOCK COMMENT
 ?blockcomment: blockcomment_keep | blockcomment_simple -> blockcomment
-?blockcomment_simple: spaces /\%/ text   -> blockcomment_simple
-?blockcomment_keep: spaces /\%{2,}/ text -> blockcomment_keep
+?blockcomment_simple: spaces? /\%/ text   -> blockcomment_simple
+?blockcomment_keep: spaces? /\%{2,}/ text -> blockcomment_keep
 
 // BLOCK CONTENT
 ?blockcontent: ( textcontent | codeinline )+ -> blockcontent
