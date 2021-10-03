@@ -153,7 +153,7 @@ def processBlockQuickCommand(u: Tree, indentation: IndentationTracker) -> Transp
         block.parameters = dict(path=path);
         return block;
     elif typ == 'quickescape':
-        indentation.last = 1;
+        indentation.last = 0;
         block = TranspileBlock(kind='code:escape', indentlevel=indentation.last, indentsymb=indentation.symb);
         return block;
     elif typ == 'quickescapeonce':
