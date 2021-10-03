@@ -12,7 +12,10 @@ from src.local.system import *;
 from src.local.typing import *;
 
 from src.core.log import *;
+from src.core.utils import formatTextBlockAsList;
+from src.parsers.methods import escapeForPython;
 from src.customtypes.type_transpileblock import TranspileBlock;
+from src.customtypes.type_transpileblock import TranspileBlocks;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES
@@ -20,6 +23,7 @@ from src.customtypes.type_transpileblock import TranspileBlock;
 
 _FUNCTION_NAME_MAIN: str = '_phpytex_generate_main';
 _FUNCTION_NAME_FILE: str = '_phpytex_generate_file';
+_FUNCTION_NAME_TREE: str = '_phpytex_generate_tree';
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # CLASS transpile document
@@ -30,7 +34,7 @@ class TranspileDocument(list):
     root: str;
     path: str;
     pathfolder: str;
-    blocks: List[TranspileBlock];
+    blocks: TranspileBlocks;
     variables: Dict[str, Any];
     indentsymb: str;
 
@@ -48,7 +52,7 @@ class TranspileDocument(list):
         self.label = label;
         self.indentsymb = indentsymb;
         self.variables = variables;
-        self.blocks = [];
+        self.blocks = TranspileBlocks();
         return;
 
     def __len__(self) -> int:
@@ -109,6 +113,8 @@ class TranspileDocuments(object):
     variables:  Dict[str, Any];
 
     paths:      List[str];
+    anon:       Dict[str, bool];
+    mute:       Dict[str, bool];
     edges:      List[Tuple[str, str]];
 
     variables: List[str];
@@ -126,6 +132,8 @@ class TranspileDocuments(object):
         self.edges = [];
         self.parameters = parameters;
         self.variables = variables;
+        self.anon = dict();
+        self.mute = dict();
         return;
 
     def __len__(self) -> int:
@@ -155,7 +163,7 @@ class TranspileDocuments(object):
     def getSubPaths(self, path: str) -> List[str]:
         return [ __ for _, __ in self.edges if _ == path ];
 
-    def addDocument(self, path: str):
+    def addDocument(self, path: str, mute: bool = False):
         if path in self.paths:
             return;
         self.paths.append(path);
@@ -166,9 +174,11 @@ class TranspileDocuments(object):
             label      = self.getFunctionName(path)
         );
         self.documents[path] = document;
+        self.anon[path] = self.anon[path] if path in self.anon else False;
+        self.mute[path] = mute;
         return;
 
-    def addBlocks(self, path: str, blocks: List[TranspileBlock]):
+    def addBlocks(self, path: str, blocks: TranspileBlocks):
         assert path in self.documents, 'Must add document first, before adding blocks.';
         document = self.documents[path];
         for block in blocks:
@@ -199,6 +209,7 @@ class TranspileDocuments(object):
                     continue;
                 _path = document.relativisePath(_path);
                 self.edges.append((path, _path));
+                self.anon[_path] = True if re.match(r'^.*:anon$', block.kind) else False;
                 document.append(TranspileBlock(
                     kind        = 'code',
                     content     = '{label}(\'{path}\');'.format(
@@ -213,10 +224,66 @@ class TranspileDocuments(object):
                 pass;
         return;
 
+    def documentStructurePretty(
+        self,
+        path = None,
+        prefix: str = '',
+        indentsymb: str = '    ',
+        branchsymb: str = '  |____',
+        depth: int = 0
+    ) -> Generator[str, None, None]:
+        if not isinstance(path, str):
+            depth = 0;
+            children = self.getHeadPaths();
+        elif path in self.paths:
+            ## mute <==> do not show path or subpaths in tree
+            if self.mute[path]:
+                return;
+            yield '{prefix}{tab}{branchsymb}`{path}`'.format(
+                prefix = prefix,
+                tab = indentsymb*(depth if depth == 0 else depth - 1),
+                branchsymb = '' if depth == 0 else branchsymb,
+                path = '#####' if self.anon[path] else path,
+            );
+            depth = depth + 1;
+            children = [ v for u, v in self.edges if u == path ];
+        else:
+            return;
+        for subpath in children:
+            yield from self.documentStructurePretty(subpath, prefix=prefix, indentsymb=indentsymb, branchsymb=branchsymb, depth=depth);
+        return;
+
+    def documentTree(self, seed: int) -> TranspileBlock:
+        lines = formatTextBlockAsList(
+            '''
+            %% ********************************************************************************
+            %% DOCUMENT STRUCTURE:
+            %% ~~~~~~~~~~~~~~~~~~~
+            %%
+            '''
+        ) \
+        + list(self.documentStructurePretty(prefix='%% ')) \
+        + formatTextBlockAsList(
+            '''
+            %%
+            %% DOCUMENT-RANDOM-SEED: {}'
+            %% ********************************************************************************
+            '''.format(seed)
+        );
+        return TranspileBlock(
+            kind = 'text',
+            lines = [ escapeForPython(line) for line in lines ],
+            indentlevel = 0,
+            indentsymb = self.indentsymb,
+        );
+        return;
+
     def generateCode(
         self,
         offset:     int       = 0,
-        globalvars: List[str] = []
+        globalvars: List[str] = [],
+        show_tree:  bool      = True,
+        seed:       int       = 0
     ) -> Generator[str, None, None]:
         ## generate universal reference function
         yield '';
@@ -240,7 +307,17 @@ class TranspileDocuments(object):
             tab = self.indentsymb * offset,
         );
 
-        ## generate universal individual functions for documents
+        ## generate function for document tree
+        yield '';
+        yield '{tab}# '.format(tab = self.indentsymb * offset)
+        yield '{tab}def {label}():'.format(
+            tab   = self.indentsymb * offset,
+            label = _FUNCTION_NAME_TREE
+        );
+        yield from self.documentTree(seed).generateCode(offset=offset+1);
+        yield '{tab}return'.format(tab = self.indentsymb * (offset + 1));
+
+        ## generate individual functions for documents
         for document in self.documents.values():
             yield '';
             yield from document.generateCode(offset=offset, globalvars=globalvars);
@@ -252,6 +329,11 @@ class TranspileDocuments(object):
             tab   = self.indentsymb * offset,
             label = _FUNCTION_NAME_MAIN,
         );
+        if show_tree:
+            yield '{tab}{label}();'.format(
+                tab  = self.indentsymb * (offset + 1),
+                label = _FUNCTION_NAME_TREE,
+            );
         for path in self.getHeadPaths():
             yield '{tab}# {path}'.format(
                 tab  = self.indentsymb * (offset + 1),
