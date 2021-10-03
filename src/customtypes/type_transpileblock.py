@@ -120,8 +120,8 @@ class TranspileBlock(object):
 class TranspileBlocks(object):
     blocks: List[TranspileBlock];
 
-    def __init__(self):
-        self.blocks = [];
+    def __init__(self, blocks: List[TranspileBlock] = []):
+        self.blocks = blocks[:];
 
     def __len__(self) -> int:
         return len(self.blocks);
