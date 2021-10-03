@@ -5,12 +5,12 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from __future__ import annotations
-from src.core.log import logDebug
+from __future__ import annotations;
 
 from src.local.misc import *;
 from src.local.typing import *;
 
+from src.core.utils import escapeForPython;
 from src.core.utils import formatBlockIndent;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -62,20 +62,24 @@ class TranspileBlock(object):
 
     def generateCode(self, offset: int = 0) -> Generator[str, None, None]:
         indentlevel_orig = self.indentlevel;
-        self.indentlevel += offset;
+        offset_python = offset + indentlevel_orig;
         if self.kind == 'text:linebreak':
-            yield '{tab}print(\'\'\'\\n\'\'\');'.format(tab=self.indentsymb*self.indentlevel);
+            yield '{tab}print(\'\'\'\\n\'\'\');'.format(tab=self.indentsymb*offset_python);
         elif re.match(r'^text:comment', self.kind):
-            yield from self.content;
+            for line in self.content:
+                yield '{tab}print(\'\'\'{expr}\'\'\');'.format(
+                    tab  = self.indentsymb*offset_python,
+                    expr = escapeForPython(line, withformatting=False),
+                );
         elif self.kind == 'text':
             for line in self.content:
                 yield '{tab}print(\'\'\'{expr}\'\'\');'.format(
-                    tab  = self.indentsymb*self.indentlevel,
-                    expr = line,
+                    tab  = self.indentsymb*offset_python,
+                    expr = escapeForPython(line, withformatting=False),
                 );
         elif self.kind == 'text:subst':
             line = '{tab}print(\'\'\'{expr}\'\'\'.format('.format(
-                tab  = self.indentsymb*self.indentlevel,
+                tab  = self.indentsymb*offset_python,
                 expr = '\n'.join(list(self.content)),
             )
             yield line + ('));' if len(self.subst) == 0 else '');
@@ -84,28 +88,32 @@ class TranspileBlock(object):
                 value_lines = formatBlockIndent(value.lines, indent=self.indentsymb*(self.indentlevel + 2));
                 value_lines[0] = re.sub(r'^\s*(.*)$', r'\1', value_lines[0]);
                 yield '{tab}\'{key}\': {value},'.format(
-                    tab = self.indentsymb*(self.indentlevel + 1),
+                    tab = self.indentsymb*(offset_python + 1),
                     key = key,
                     value = '\n'.join(value_lines),
                 );
                 value.indentlevel = indentlevel;
             if len(self.subst) > 0:
-                yield '{tab});'.format(tab=self.indentsymb*self.indentlevel);
+                yield '{tab});'.format(tab=self.indentsymb*offset_python);
         elif self.kind == 'code':
+            self.indentlevel = offset_python;
             yield from self.content;
         elif self.kind == 'code:import':
+            self.indentlevel = offset_python;
             yield from self.content;
         elif self.kind == 'code:value':
+            self.indentlevel = offset_python;
             yield from self.content;
         elif re.match(r'^code:set', self.kind):
+            self.indentlevel = offset_python;
             yield '{tab}{varname} = {codevalue};'.format(
-                tab = self.indentsymb*self.indentlevel,
+                tab = self.indentsymb*offset_python,
                 **self.parameters
             );
         elif self.kind == 'code:escape':
-            yield '{tab}pass;'.format(tab=self.indentsymb*self.indentlevel);
+            yield '{tab}pass;'.format(tab=self.indentsymb*offset_python);
         elif self.kind == 'code:escape:1':
-            yield '{tab}pass;'.format(tab=self.indentsymb*self.indentlevel);
+            yield '{tab}pass;'.format(tab=self.indentsymb*offset_python);
         elif self.kind == 'code:input':
             pass;
         elif self.kind == 'code:input:anon':
