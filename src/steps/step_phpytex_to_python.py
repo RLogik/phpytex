@@ -37,6 +37,7 @@ def step(lines: List[str]):
     lines[:] = [];
     root = appconfig.getPathRoot();
     indentsymb = appconfig.getIndentCharacter();
+    preamble = [];
 
     params = {
         'no-comm':       (appconfig.getOptionComments() is False),
@@ -48,24 +49,35 @@ def step(lines: List[str]):
     imports = TranspileBlocks();
 
     ## Transpile preamble:
+    name = 'stamp';
+    preamble.append(name);
     transpileDocument(
-        path      = appconfig.getFileStamp(),
-        documents = documents,
-        imports   = TranspileBlocks(),
-        silent    = True,
-        mute      = True,
-        params    = params | { 'no-comm': False, 'no-comm-auto': True }
+        path        = appconfig.getFileStamp(),
+        documents   = documents,
+        imports     = TranspileBlocks(),
+        name        = name,
+        is_preamble = True,
+        silent      = True,
+        params      = params | { 'no-comm': False, 'no-comm-auto': True }
     );
 
     ## Transpile document file:
     transpileDocument(
-        path      = appconfig.getFilePhpytex(),
-        documents = documents,
-        imports   = imports,
-        silent    = getQuietMode(),
-        mute      = False,
-        params    = params
+        path        = appconfig.getFilePhpytex(),
+        documents   = documents,
+        imports     = imports,
+        name        = '',
+        is_preamble = False,
+        silent      = getQuietMode(),
+        params      = params
     );
+
+    ## Add document structure:
+    name = 'tree';
+    if appconfig.getOptionShowStructure():
+        preamble.append(name);
+    blocks = TranspileBlocks([documents.documentTree(seed=appconfig.getSeed())]);
+    documents.addPreamble(name=name, blocks=blocks);
 
     ## Create `parameters.py`:
     createImportFileParameters(
@@ -90,6 +102,7 @@ def step(lines: List[str]):
         lines      = lines,
         documents  = documents,
         imports    = imports,
+        preamble   = preamble,
         globalvars = globalvars,
         fname      = fnameLatex,
         fnameOut   = fnamePy
@@ -111,8 +124,9 @@ def transpileDocument(
     documents:    TranspileDocuments,
     imports:      TranspileBlocks,
     chain:        List[str]          = [],
+    name:         str                = '',
+    is_preamble:  bool               = False,
     silent:       bool               = False,
-    mute:         bool               = False,
     params:       Dict[str, bool]    = dict()
 ):
     if path in chain:
@@ -128,32 +142,41 @@ def transpileDocument(
         pattern    = appconfig.getIndentCharacterRe(),
         is_legacy  = appconfig.getOptionLegacy(),
     );
-    if path in documents.paths:
-        return;
-    blocks = TranspileBlocks();
-    for block in parseText(lines, indentation):
-        kind = block.kind;
-        if kind == 'code:import':
-            imports.append(block);
-            continue;
-        if re.match(r'^text:comment', kind) and (\
-            params['no-comm'] or \
-            ( re.match(r'^.*:simple$', kind) and params['no-comm-auto'] ) \
-        ):
-            continue;
-        blocks.append(block);
-    documents.addDocument(path=path, mute=mute);
-    documents.addBlocks(path=path, blocks=blocks);
-    for subpath in documents.getSubPaths(path):
-        transpileDocument(
-            path      = subpath,
-            documents = documents,
-            imports   = imports,
-            chain     = chain + [path],
-            silent    = silent,
-            mute      = mute,
-            params    = params
-        );
+    if is_preamble:
+        blocks = TranspileBlocks();
+        for block in parseText(lines, indentation):
+            if not re.match(r'^text:comment', block.kind):
+                continue;
+            blocks.append(block);
+        documents.addPreamble(name=name, blocks=blocks);
+    else:
+        if path in documents.paths:
+            return;
+        blocks = TranspileBlocks();
+        for block in parseText(lines, indentation):
+            kind = block.kind;
+            if is_preamble:
+                if not re.match(r'^text:comment', kind):
+                    continue;
+            else:
+                if kind == 'code:import':
+                    imports.append(block);
+                    continue;
+                if re.match(r'^text:comment', kind):
+                    if params['no-comm'] or ( re.match(r'^.*:simple$', kind) and params['no-comm-auto'] ):
+                        continue;
+            blocks.append(block);
+        documents.addDocument(path=path);
+        documents.addBlocks(path=path, blocks=blocks);
+        for subpath in documents.getSubPaths(path):
+            transpileDocument(
+                path      = subpath,
+                documents = documents,
+                imports   = imports,
+                chain     = chain + [path],
+                silent    = silent,
+                params    = params
+            );
     return;
 
 def createImportFileParameters(
@@ -187,14 +210,10 @@ def createmetacode(
     imports:    TranspileBlocks,
     fname:      str,
     fnameOut:   str,
+    preamble:   List[str],
     globalvars: List[str]
 ):
-    lines[:] = documents.generateCode(
-        offset = 0,
-        globalvars = globalvars,
-        show_tree = appconfig.getOptionShowStructure(),
-        seed = appconfig.getSeed()
-    );
+    lines[:] = documents.generateCode(offset=0, preamble=preamble, globalvars=globalvars);
     fname_rel, _, _ = extractPath(path=fname, relative=True, ext='');
     _phpytex_lines = getTemplatePhpytexLines()
     lines_pre = formatTextBlockAsList(

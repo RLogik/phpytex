@@ -23,7 +23,7 @@ from src.customtypes.type_transpileblock import TranspileBlocks;
 
 _FUNCTION_NAME_MAIN: str = '_phpytex_generate_main';
 _FUNCTION_NAME_FILE: str = '_phpytex_generate_file';
-_FUNCTION_NAME_TREE: str = '_phpytex_generate_tree';
+_FUNCTION_NAME_PRE:  str = '_phpytex_generate_pre';
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # CLASS transpile document
@@ -108,13 +108,13 @@ class TranspileDocument(list):
 class TranspileDocuments(object):
     root:       str;
     indentsymb: str;
+    preamble:   Dict[str, TranspileBlocks];
     documents:  Dict[str, TranspileDocument];
     parameters: Dict[str, Any];
     variables:  Dict[str, Any];
 
     paths:      List[str];
     anon:       Dict[str, bool];
-    mute:       Dict[str, bool];
     edges:      List[Tuple[str, str]];
 
     variables: List[str];
@@ -132,8 +132,8 @@ class TranspileDocuments(object):
         self.edges = [];
         self.parameters = parameters;
         self.variables = variables;
+        self.preamble = dict();
         self.anon = dict();
-        self.mute = dict();
         return;
 
     def __len__(self) -> int:
@@ -163,7 +163,7 @@ class TranspileDocuments(object):
     def getSubPaths(self, path: str) -> List[str]:
         return [ __ for _, __ in self.edges if _ == path ];
 
-    def addDocument(self, path: str, mute: bool = False):
+    def addDocument(self, path: str):
         if path in self.paths:
             return;
         self.paths.append(path);
@@ -175,7 +175,10 @@ class TranspileDocuments(object):
         );
         self.documents[path] = document;
         self.anon[path] = self.anon[path] if path in self.anon else False;
-        self.mute[path] = mute;
+        return;
+
+    def addPreamble(self, name: str, blocks: TranspileBlocks):
+        self.preamble[name] = blocks;
         return;
 
     def addBlocks(self, path: str, blocks: TranspileBlocks):
@@ -236,9 +239,6 @@ class TranspileDocuments(object):
             depth = 0;
             children = self.getHeadPaths();
         elif path in self.paths:
-            ## mute <==> do not show path or subpaths in tree
-            if self.mute[path]:
-                return;
             yield '{prefix}{tab}{branchsymb}`{path}`'.format(
                 prefix = prefix,
                 tab = indentsymb*(depth if depth == 0 else depth - 1),
@@ -254,36 +254,33 @@ class TranspileDocuments(object):
         return;
 
     def documentTree(self, seed: int) -> TranspileBlock:
-        lines = formatTextBlockAsList(
-            '''
-            %% ********************************************************************************
-            %% DOCUMENT STRUCTURE:
-            %% ~~~~~~~~~~~~~~~~~~~
-            %%
-            '''
-        ) \
-        + list(self.documentStructurePretty(prefix='%% ')) \
-        + formatTextBlockAsList(
-            '''
-            %%
-            %% DOCUMENT-RANDOM-SEED: {}'
-            %% ********************************************************************************
-            '''.format(seed)
-        );
         return TranspileBlock(
-            kind = 'text',
-            lines = [ escapeForPython(line) for line in lines ],
+            kind = 'text:comment',
+            lines = formatTextBlockAsList(
+                    '''
+                    %% ********************************************************************************
+                    %% DOCUMENT STRUCTURE:
+                    %% ~~~~~~~~~~~~~~~~~~~
+                    %%
+                    '''
+                ) \
+                + list(self.documentStructurePretty(prefix='%% ')) \
+                + formatTextBlockAsList(
+                    '''
+                    %%
+                    %% DOCUMENT-RANDOM-SEED: {}'
+                    %% ********************************************************************************
+                    '''.format(seed)
+                ),
             indentlevel = 0,
             indentsymb = self.indentsymb,
         );
-        return;
 
     def generateCode(
         self,
         offset:     int       = 0,
-        globalvars: List[str] = [],
-        show_tree:  bool      = True,
-        seed:       int       = 0
+        preamble:   List[str] = [],
+        globalvars: List[str] = []
     ) -> Generator[str, None, None]:
         ## generate universal reference function
         yield '';
@@ -307,15 +304,16 @@ class TranspileDocuments(object):
             tab = self.indentsymb * offset,
         );
 
-        ## generate function for document tree
-        yield '';
-        yield '{tab}# '.format(tab = self.indentsymb * offset)
-        yield '{tab}def {label}():'.format(
-            tab   = self.indentsymb * offset,
-            label = _FUNCTION_NAME_TREE
-        );
-        yield from self.documentTree(seed).generateCode(offset=offset+1);
-        yield '{tab}return'.format(tab = self.indentsymb * (offset + 1));
+        ## generate function for preamble parts
+        for name, blocks in self.preamble.items():
+            yield '';
+            yield '{tab}# '.format(tab = self.indentsymb * offset)
+            yield '{tab}def {label}():'.format(
+                tab   = self.indentsymb * offset,
+                label = '{label}_{name}'.format(label=_FUNCTION_NAME_PRE, name=name),
+            );
+            yield from blocks.generateCode(offset=offset+1);
+            yield '{tab}return'.format(tab = self.indentsymb * (offset + 1));
 
         ## generate individual functions for documents
         for document in self.documents.values():
@@ -329,10 +327,10 @@ class TranspileDocuments(object):
             tab   = self.indentsymb * offset,
             label = _FUNCTION_NAME_MAIN,
         );
-        if show_tree:
+        for name in preamble:
             yield '{tab}{label}();'.format(
                 tab  = self.indentsymb * (offset + 1),
-                label = _FUNCTION_NAME_TREE,
+                label = '{label}_{name}'.format(label=_FUNCTION_NAME_PRE, name=name),
             );
         for path in self.getHeadPaths():
             yield '{tab}# {path}'.format(
