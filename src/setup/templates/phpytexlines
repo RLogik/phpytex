@@ -1,11 +1,21 @@
-from __future__ import annotations;
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
+from __future__ import annotations;
 import sys;
 import os;
 import re;
 import random;
 import subprocess;
-from typing import Any;{import_params}
+from typing import Any;
+
+################################
+# USER IMPORTS
+
+{imports}
+
+# END OF USER IMPORTS
+################################
 
 ____lines____            = {{
     'post-compile': [ ],
@@ -208,11 +218,3 @@ def ____compilephpytex():
     global __LINENR__;
 
     ____ignore('init');
-
-    ################################
-    # USER IMPORTS
-
-    {imports}
-
-    # END OF USER IMPORTS
-    ################################
