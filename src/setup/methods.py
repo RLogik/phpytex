@@ -19,10 +19,12 @@ from src.setup import appconfig;
 # GLOBAL VARIABLES
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-PATH_TO_VERSION: str = 'src/setup/VERSION';
+PATH_TO_VERSION:       str = 'src/setup/VERSION';
 PATH_TO_TEMPLATE_HELP: str = 'src/setup/templates/help';
-PATH_TO_TEMPLATE_PHPYTEXLINES: str = 'src/setup/templates/phpytexlines';
-PATH_TO_GRAMMARS: str = 'src/grammars';
+PATH_TO_TEMPLATE_PRE:  str = 'src/setup/templates/phpytexpre';
+PATH_TO_TEMPLATE_POST: str = 'src/setup/templates/phpytexpost';
+PATH_TO_GRAMMARS:      str = 'src/grammars';
+
 _opensource: bool = True;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -56,8 +58,11 @@ def getVersion() -> str:
 def getTemplateHelp() -> str:
     return readFileContents(PATH_TO_TEMPLATE_HELP);
 
-def getTemplatePhpytexLines() -> str:
-    return readFileContents(PATH_TO_TEMPLATE_PHPYTEXLINES);
+def getTemplatePhpytexLinesPre() -> str:
+    return readFileContents(PATH_TO_TEMPLATE_PRE);
+
+def getTemplatePhpytexLinesPost() -> str:
+    return readFileContents(PATH_TO_TEMPLATE_POST);
 
 def getGrammar(fname: str) -> str:
     return readFileContents(os.path.join(PATH_TO_GRAMMARS, fname));

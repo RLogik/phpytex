@@ -1,0 +1,206 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# IMPORTS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+from __future__ import annotations;
+import sys;
+import os;
+import re;
+import random;
+import subprocess;
+
+## USER IMPORTS
+{imports}
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# GLOBAL VARIABLES AND CONSTANTS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+____phpytex_params____ = dict(
+    lines = dict(
+        content = [ ],
+        anon    = [ ],
+        bib     = dict(),
+    ),
+    rootdir        = '{root}',
+    path           = '{path}',
+    fname          = '{fname}',
+    compile_latex  = {compile_latex},
+    insert_bib     = {insert_bib},
+    seed           = {seed},
+    ctr_emptylines = 0,
+    length         = 0,
+    length_max     = {length_max},
+    length_error   = False,
+);
+__FNAME__  = '<undefined>';
+__ROOT__   = '.';
+__DIR__    = '.';
+__IGNORE__ = False;
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# MAIN PROCESS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def main():
+    global ____phpytex_params____;
+    rootdir = ____phpytex_params____['rootdir'];
+    os.chdir(rootdir);
+
+    ## transpile (python -> latex):
+    {mainfct}();
+
+    ## compile (latex -> pdf):
+    if ____phpytex_params____['compile_latex']:
+        ____compilelatex();
+
+    ## rewrite contents of latex file:
+    contents = ____phpytex_params____['lines']['content'];
+    anon = ____phpytex_params____['lines']['anon'];
+    bib = ____phpytex_params____['lines']['bib'];
+    bibcontents = ____get_bib_contents();
+    ____cleardocument();
+    for index, line in enumerate(contents):
+        lines = [ line ];
+        tab = re.sub(r'^(\s*)(.*)$', r'\1', line);
+        if index in anon:
+            continue;
+        sources = [ src for src, indexes in bib.items() if index in indexes ];
+        if len(sources) > 0:
+            src = sources[0];
+            if src in bibcontents.keys():
+                lines = [ tab + line for line in bibcontents[src] ];
+        with open(____phpytex_params____['path'], 'a') as fp:
+            for line in lines:
+                print(line, fp);
+    return;
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# SECONDARY METHODS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+## reseed-funktion:
+def ____reseed():
+    global ____phpytex_params____;
+    random.seed(____phpytex_params____['seed']);
+    return True;
+
+## record + print-to-latex:
+def ____cleardocument():
+    with open(____phpytex_params____['path'], 'w') as fp:
+        fp.write('');
+    return;
+
+def ____forceprint(s: str, anon=False):
+    global ____phpytex_params____;
+    fp = ____phpytex_params____['filetex'];
+
+    n = len(____phpytex_params____['lines']['content']);
+    with open(____phpytex_params____['path'], 'a') as fp:
+        for _s in re.split(r'\r?\n', s):
+            print(_s, file=fp);
+            ____phpytex_params____['lines']['content'].append(_s);
+            if anon:
+                ____phpytex_params____['lines']['anon'].append(n);
+            n += 1;
+    return;
+
+def ____print(s: str, anon=False):
+    global ____phpytex_params____;
+    global __IGNORE__;
+
+    if __IGNORE__:
+        return;
+    if ____phpytex_params____['length_error']:
+        return;
+
+    ## reduces blocks of empty lines to single empty lines:
+    ____phpytex_params____['ctr_emptylines'] = (____phpytex_params____['ctr_emptylines'] + 1) if re.match(r'^\s*$', s) else 0;
+    if ____phpytex_params____['ctr_emptylines'] > 1:
+        return;
+
+    ____phpytex_params____['length'] += 1;
+    ____phpytex_params____['length_error'] = ____phpytex_params____['length_error'] or ( ____phpytex_params____['length'] > ____phpytex_params____['length_max'] );
+    ____forceprint(s, anon=anon);
+    return;
+
+## handling of bib:
+def ____insertbib(
+    fname:  str,
+    src:    str,
+    anon:   bool = False
+):
+    global ____phpytex_params____;
+
+    line = '\\bibliography{{{{\'{{file}}\'}}}}'.format(file=os.path.splitext(fname)[0]);
+    with open(____phpytex_params____['path'], 'a') as fp:
+        print(line, file=fp);
+    # read file and insert contents:
+    n = len(____phpytex_params____['lines']['content']);
+    ____phpytex_params____['lines']['content'].append(line);
+    if not ( src in ____phpytex_params____['lines']['bib'] ):
+        ____phpytex_params____['lines']['bib'][src] = [];
+    if anon:
+        ____phpytex_params____['lines']['anon'].append(n);
+    elif ____phpytex_params____['insert_bib']:
+        ____phpytex_params____['lines']['bib'][src].append(n);
+    return;
+
+def ____get_bib_contents() -> dict:
+    global ____phpytex_params____;
+    bib = ____phpytex_params____['lines']['bib'];
+    bibcontents = dict();
+    for src in bib.keys():
+        try:
+            lines = [];
+            _lines = [];
+            with open(src, 'r') as fp:
+                _lines = fp.readlines();
+            for line in _lines:
+                line = re.sub(r'[\s\r\n]+$', '', line);
+                # line = re.sub(r'^(.*)\%(.*)', r'\1', line);
+                if re.match(r'^\s*\%.*', line):
+                    continue;
+                lines.append(line);
+            bibcontents[src] = lines;
+        except:
+            print('[\033[93;1mWARNING\033[0m] Bibliography file, \033[1m{{file}}\033[0m, could not be found or read.'.format(file=src));
+    return bibcontents;
+
+## handling of pdflatex:
+def ____compilelatex():
+    global ____phpytex_params____;
+
+    fname = ____phpytex_params____['fname'];
+    bib = ____phpytex_params____['lines']['bib'];
+
+    print('[\033[94;1mINFO\033[0m] RUN PDFLATEX');
+    # pipeCall('pdflatex', '-interaction=scrollmode', fnameOut=fname);
+    # pipeCall('pdflatex', '-interaction=batchmode', fnameOut=fname);
+    pipeCall('pdflatex', '-interaction=errorstopmode', fnameOut=fname);
+    # pipeCall('pdflatex', '-interaction=nonstopmode', fnameOut=fname);
+
+    print('[\033[94;1mINFO\033[0m] RUN BIBTEX');
+    for src in bib.keys():
+        bibname = os.path.splitext(src)[0];
+        pipeCall('bibtex', bibname);
+    pass;
+
+## NOTE: subprocess.run is like subprocess.Popen but waits for result
+def pipeCall(*args: str, cwd = None, errormsg: str = '', fnameOut = None):
+    cwd = cwd if isinstance(cwd, str) else os.getcwd();
+    if not isinstance(fnameOut, str):
+        result = subprocess.run(list(args), cwd=cwd)
+    else:
+        with open(fnameOut, 'w') as fp:
+            result = subprocess.run(list(args), cwd=cwd, stdout=fp);
+    if result.returncode == 0:
+        return;
+    raise Exception(errormsg or 'Shell command < \033[94;1m{{}}\033[0m > failed.'.format(' '.join(args)));
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# TRANSPILED METHODS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
