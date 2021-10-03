@@ -17,13 +17,14 @@
 ?comma: /,/                     -> noncapture
 // symbols - capture
 ?emptyline: /^[^\r\n\S]*\r?\n/m    -> emptyline
-?dblquote:  /"/                    -> text
-?sgquote:   /'/                    -> text
-?ndblquote: /[^"\r\n]+/            -> text
-?nsgquote:  /[^'\r\n]+/            -> text
-?spaces:    /[^\r\n\S]+/           -> text
-?nospaces:  /\S+/                  -> text
-?text: nospaces (spaces nospaces)* -> text
+?dblquote:  /"/                        -> text
+?sgquote:   /'/                        -> text
+?ndblquote: /[^"\r\n]+/                -> text
+?nsgquote:  /[^'\r\n]+/                -> text
+?spaces:    /[^\r\n\S]+/               -> text
+?nospaces:  /\S+/                      -> text
+?texttrim: nospaces (spaces nospaces)* -> text
+?text: spaces? texttrim spaces?        -> text
 
 // ---------------- BASIC ---------------- //
 
@@ -38,17 +39,17 @@
 ?arglist: argoption ( whitespaces? comma whitespaces? argoption )* -> arglist
 ?argoption: argoption_key whitespaces? "=" whitespaces? argoption_value -> argoption_kwarg
     | argoption_key                                                     -> argoption_token
-?argoption_key: /[^,\s=\r\n]+/                                          -> argoption_key
-?argoption_value: /[^,\s=\r\n]+/                                        -> argoption_value
+?argoption_key: /[^,\s=]+/                                              -> argoption_key
+?argoption_value: /[^,\s=]+/                                            -> argoption_value
     | textquotesoneline                                                 -> argoption_value
 
 // ---------------- BLOCKS ---------------- //
 
 ?blocks: ( block newline |  emptyline )* ( block newline? |  emptyline ) -> blocks
-?block: ( blockquick | blockcode_regex | blockcomment | blockcontent ) -> block
+?block: ( blockquick | blockcode_regex | blockcomment | blockcontent )   -> block
 
 // BLOCK CODE AS REGEX
-?blockcode_regex: /^(\s*)\<{3}[^\S\r\n]*([^\r\n]*\S)[^\S\r\n]*\r?\n((\1[^\r\n]*\r?\n)?)\1\>{3}$/m -> blockcode_regex
+?blockcode_regex: /^([^\S\r\n]*)\<{3}([^\S\r\n]*\S+)+[^\S\r\n]*\r?\n(\1[^\r\n]*\r?\n)*?(\1\>{3})$/m -> blockcode_regex
 
 // BLOCK CODE
 ?blockcode: lmeta whitespaces? blockcode_instructions newline+ blockcode_inside newline+ rmeta -> blockcode
@@ -71,12 +72,12 @@
 
 // BLOCK QUICK
 ?blockquick: whitespaces? lmeta whitespaces? quickinstruction whitespaces? endcode? whitespaces? rmeta -> blockquick
-?quickinstruction: "set"i whitespaces nospaces whitespaces? "=" whitespaces? text -> quickglobalset
-    | "global set"i whitespaces nospaces whitespaces? "=" whitespaces? text       -> quickglobalset
-    | "local set"i whitespaces nospaces whitespaces? "=" whitespaces? text        -> quicklocalset
-    | "input"i whitespaces text                                                   -> quickinput
-    | "input_anon"i whitespaces text                                              -> quickinput_anon
-    | ( "bibliography"i | "bib"i ) whitespaces text                               -> quickbib
-    | ( "bibliography_anon"i | "bib_anon"i ) whitespaces text                     -> quickbib_anon
-    | ( "escape"i | "esc"i )                                                      -> quickescape
-    | ( "escape_once"i | "esc_once"i )                                            -> quickescapeonce
+?quickinstruction: "set"i whitespaces nospaces whitespaces? "=" whitespaces? texttrim -> quickglobalset
+    | "global set"i whitespaces nospaces whitespaces? "=" whitespaces? texttrim       -> quickglobalset
+    | "local set"i whitespaces nospaces whitespaces? "=" whitespaces? texttrim        -> quicklocalset
+    | "input"i whitespaces texttrim                                                   -> quickinput
+    | "input_anon"i whitespaces texttrim                                              -> quickinput_anon
+    | ( "bibliography"i | "bib"i ) whitespaces texttrim                               -> quickbib
+    | ( "bibliography_anon"i | "bib_anon"i ) whitespaces texttrim                     -> quickbib_anon
+    | ( "escape"i | "esc"i )                                                          -> quickescape
+    | ( "escape_once"i | "esc_once"i )                                                -> quickescapeonce
