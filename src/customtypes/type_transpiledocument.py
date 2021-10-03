@@ -21,9 +21,7 @@ from src.customtypes.type_transpileblock import TranspileBlocks;
 # GLOBAL VARIABLES
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-_FUNCTION_NAME_MAIN: str = '____phpytex_main';
-_FUNCTION_NAME_FILE: str = '____phpytex_generate_file';
-_FUNCTION_NAME_PRE:  str = '____phpytex_generate_pre';
+#
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # CLASS transpile document
@@ -117,8 +115,8 @@ class TranspileDocuments(object):
     indentsymb: str;
     preamble:   Dict[str, TranspileBlocks];
     documents:  Dict[str, TranspileDocument];
-    parameters: Dict[str, Any];
     variables:  Dict[str, Any];
+    schemes:    Dict[str, str];
 
     paths:      List[str];
     anon:       Dict[str, bool];
@@ -127,20 +125,20 @@ class TranspileDocuments(object):
     variables: List[str];
 
     def __init__(
-        self, root: str,
+        self,
+        root: str,
         indentsymb: str,
-        parameters: Dict[str, Any] = dict(),
-        variables: Dict[str, Any] = dict()
+        schemes:    Dict[str, str] = dict()
     ):
         self.root = root;
         self.indentsymb = indentsymb;
         self.paths = [];
         self.documents = dict();
         self.edges = [];
-        self.parameters = parameters;
-        self.variables = variables;
+        self.variables = dict();
         self.preamble = dict();
         self.anon = dict();
+        self.schemes = schemes;
         return;
 
     def __len__(self) -> int:
@@ -162,7 +160,7 @@ class TranspileDocuments(object):
 
     def getFunctionName(self, path: str) -> str:
         index = self.paths.index(path);
-        return '{label}_{index}'.format(label=_FUNCTION_NAME_FILE, index=index);
+        return '{label}_{index}'.format(label=self.schemes['file'], index=index);
 
     def getHeadPaths(self) -> List[str]:
         degreeIn = { path: 0 for path in self.paths };
@@ -226,7 +224,7 @@ class TranspileDocuments(object):
                 document.append(TranspileBlock(
                     kind        = 'code',
                     lines     = [
-                        '{label}(\'{path}\');'.format(label=_FUNCTION_NAME_FILE, path=_path),
+                        '{label}(\'{path}\');'.format(label=self.schemes['file'], path=_path),
                         '__ROOT__, __DIR__, __FNAME__, __IGNORE__ = __STATE__;'
                     ],
                     indentlevel = block.indentlevel,
@@ -297,7 +295,7 @@ class TranspileDocuments(object):
         yield '{tab}# universal reference function for files'.format(tab=self.tab(offset));
         yield '{tab}def {label}(path: str):'.format(
             tab   = self.tab(offset),
-            label = _FUNCTION_NAME_FILE,
+            label = self.schemes['file'],
         );
         for path in self.paths:
             yield '{tab}    if path == \'{path}\':'.format(
@@ -321,7 +319,7 @@ class TranspileDocuments(object):
             yield '{tab}# preamble function `{name}`'.format(tab=self.tab(offset), name=name)
             yield '{tab}def {label}():'.format(
                 tab   = self.tab(offset),
-                label = '{label}_{name}'.format(label=_FUNCTION_NAME_PRE, name=name),
+                label = '{label}_{name}'.format(label=self.schemes['pre'], name=name),
             );
             yield from blocks.generateCode(offset=offset+1);
             yield '{tab}return'.format(tab=self.tab(offset + 1));
@@ -336,18 +334,18 @@ class TranspileDocuments(object):
         yield '{tab}# generate content from all files'.format(tab=self.tab(offset));
         yield '{tab}def {label}():'.format(
             tab   = self.tab(offset),
-            label = _FUNCTION_NAME_MAIN,
+            label = self.schemes['main'],
         );
         yield '{tab}____cleardocument();'.format(tab=self.tab(offset + 1));
         for name in preamble:
             yield '{tab}{label}();'.format(
                 tab   = self.tab(offset + 1),
-                label = '{label}_{name}'.format(label=_FUNCTION_NAME_PRE, name=name),
+                label = '{label}_{name}'.format(label=self.schemes['pre'], name=name),
             );
         for path in self.getHeadPaths():
             yield '{tab}{label}(\'{path}\');'.format(
                 tab   = self.tab(offset + 1),
-                label = _FUNCTION_NAME_FILE,
+                label = self.schemes['file'],
                 path  = path
             );
         yield '{tab}return;'.format(tab=self.tab(offset + 1));
