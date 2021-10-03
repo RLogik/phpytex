@@ -16,7 +16,9 @@ from src.core.utils import writeTextFile;
 from src.customtypes.exports import *;
 from src.setup import appconfig;
 from src.setup.methods import extractPath;
-from src.setup.methods import getTemplatePhpytexLines;
+from src.setup.methods import getTemplatePhpytexLinesPre;
+from src.setup.methods import getTemplatePhpytexLinesPost;
+from src.setup.templates.exports import *;
 from src.parsers.phpytex import parseText;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -29,7 +31,7 @@ from src.parsers.phpytex import parseText;
 # METHOD: step transpile phpytex to python
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def step(lines: List[str]):
+def step():
     root = appconfig.getPathRoot();
     indentsymb = appconfig.getIndentCharacter();
     params = {
@@ -41,7 +43,15 @@ def step(lines: List[str]):
     random.seed(appconfig.getSeed()); # <-- only do this once!
     preamble = [];
     imports = TranspileBlocks();
-    documents = TranspileDocuments(root=root, indentsymb=indentsymb);
+    documents = TranspileDocuments(
+        root       = root,
+        indentsymb = indentsymb,
+        schemes    = dict(
+            file = FUNCTION_NAME_FILE,
+            main = FUNCTION_NAME_MAIN,
+            pre  = FUNCTION_NAME_PRE
+        )
+    );
 
     ## Transpile preamble:
     name = 'stamp';
@@ -90,12 +100,10 @@ def step(lines: List[str]):
     ));
 
     ## Generate result of transpilation (phpytex -> python):
-    lines[:] = [];
     globalvars = unique(list(appconfig.getExportVars().keys()) + list(documents.variables.keys()));
     createmetacode(
         fname      = appconfig.getFileLatex(),
         fnameOut   = appconfig.getFileScript(),
-        lines      = lines,
         documents  = documents,
         imports    = imports,
         preamble   = preamble,
@@ -196,28 +204,30 @@ def createImportFileParameters(
 def createmetacode(
     fname:      str,
     fnameOut:   str,
-    lines:      List[str],
     documents:  TranspileDocuments,
     imports:    TranspileBlocks,
     preamble:   List[str],
     globalvars: List[str]
 ):
-    lines[:] = documents.generateCode(offset=0, preamble=preamble, globalvars=globalvars);
-    _phpytex_lines = getTemplatePhpytexLines()
-    lines_pre = formatTextBlockAsList(
-        _phpytex_lines.format(
-            imports    = '\n'.join(imports.generateCode(offset=0)),
-            root       = appconfig.getPathRoot(),
-            path       = extractPath(path=appconfig.getFileLatex(), relative=False, ext='tex'),
-            fname      = extractPath(path=fname, relative=True, ext=''),
-            insert_bib = appconfig.getOptionInsertBib(),
-            length_max = appconfig.getMaxLengthOuput(),
-            seed       = appconfig.getSeed(),
+    _lines_pre = getTemplatePhpytexLinesPre();
+    _lines_post = getTemplatePhpytexLinesPost();
+    lines = [];
+    lines += formatTextBlockAsList(
+        _lines_pre.format(
+            imports       = '\n'.join(imports.generateCode()),
+            root          = appconfig.getPathRoot(),
+            path          = extractPath(path=appconfig.getFileLatex(), relative=False, ext='tex'),
+            fname         = extractPath(path=fname, relative=True, ext=''),
+            insert_bib    = appconfig.getOptionInsertBib(),
+            compile_latex = appconfig.getOptionCompileLatex(),
+            length_max    = appconfig.getMaxLengthOuput(),
+            seed          = appconfig.getSeed(),
+            mainfct       = FUNCTION_NAME_MAIN,
         )
     );
-    appconfig.setLenPrecode(len(lines_pre));
-    appconfig.setPrecompileLines(lines_pre);
-    lines[:] = lines_pre + lines;
-    ## create temp file and write to this:
+    lines += documents.generateCode(offset=0, preamble=preamble, globalvars=globalvars);
+    lines += formatTextBlockAsList(
+        _lines_post.format()
+    );
     writeTextFile(fnameOut, lines);
     return;

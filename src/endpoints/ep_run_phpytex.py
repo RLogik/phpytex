@@ -25,12 +25,10 @@ def endpoint(fname: str, **_):
         ----------------------
     '''));
     step_create();
-    lines = [];
-    step_phpytex_to_python(lines=lines);
+    step_phpytex_to_python();
     if appconfig.getOptionDebug():
         logInfo('See output file: \033[1m{fnamePy}\033[0m'.format(fnamePy=appconfig.getFileScript()));
         return;
-    step_python_to_latex(lines=lines);
-    if appconfig.getOptionCompileLatex():
-        step_latex_to_pdf();
+    step_python_to_latex_to_pdf();
+    step_latex_to_pdf();
     return;
