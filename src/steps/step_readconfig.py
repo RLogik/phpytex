@@ -10,6 +10,7 @@ from src.local.system import *;
 from src.local.typing import *;
 
 from src.core.log import *;
+from src.core.utils import createNewFileName;
 from src.core.utils import createNewPathName;
 from src.core.utils import getAttribute;
 from src.core.utils import getFilesByPattern;
@@ -63,6 +64,8 @@ def getPhpytexConfig(fname: str) -> Dict[str, Any]:
 
 def setCompileConfig(
     root:           str,
+    # DEV-NOTE: this is the _only_ place that root refers to a file.
+    # Otherwise root denotes the root directory in which the script is called.
     seed:           int,
     ignore:         bool,
     debug:          bool,
@@ -96,6 +99,11 @@ def setCompileConfig(
 
     appconfig.setFilePhpytex(setFile(root));
     appconfig.setFileLatex(setFile(output));
+
+    root = appconfig.getPathRoot();
+    file = createNewFileName(dir=root, nameinit='phpytex_main.py', namescheme='phpytex_main_{}.py');
+    file = os.path.relpath(path=file, start=root);
+    appconfig.setFileScript(setFile(file));
     return;
 
 def setStampConfig(
@@ -106,7 +114,7 @@ def setStampConfig(
     root = appconfig.getPathRoot();
     if not isinstance(file, str) or file == '':
         file = createNewPathName(dir=root, nameinit='stamp.tex', namescheme='stamp_{}.tex');
-        file = os.path.relpath(file, root);
+        file = os.path.relpath(path=file, start=root);
     appconfig.setFileStamp(setFile(file));
     appconfig.setOptionOverwriteStamp(overwrite);
     appconfig.setDictionaryStamp(options);
@@ -143,5 +151,4 @@ def setConfigFilesAndFolders(**config):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def setFile(file: str) -> str:
-    file, _, _ = extractPath(path=file, relative=True);
-    return file;
+    return extractPath(path=file, relative=True);
