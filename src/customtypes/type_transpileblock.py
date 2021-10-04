@@ -60,7 +60,7 @@ class TranspileBlock(object):
         if hasattr(self, '_content'):
             yield '{tab}{line}'.format(tab = tab, line = self._content);
         else:
-            yield from formatBlockIndent(self.lines, indent=tab);
+            yield from formatBlockIndent(self.lines, indent=tab, unindent=False);
 
     def tab(self, delta: int = 0) -> str:
         return self.indentsymb * (self.indentlevel + delta);
@@ -68,23 +68,23 @@ class TranspileBlock(object):
     def generateCode(self, offset: int = 0) -> Generator[str, None, None]:
         state = dict(indentlevel=self.indentlevel, indentsymb=self.indentsymb);
         self.indentlevel += offset;
-        if self.kind == 'text:linebreak':
-            yield '{tab}print(\'\'\'\\n\'\'\');'.format(tab=self.tab());
+        if self.kind == 'text:empty':
+            yield '{tab}____print(\'\');'.format(tab=self.tab());
         elif self.kind == 'text' or re.match(r'^text:comment', self.kind):
             for line in self.content:
-                yield '{tab}print(\'\'\'{expr}\'\'\');'.format(
+                yield '{tab}____print(\'\'\'{expr}\'\'\');'.format(
                     tab  = self.tab(),
                     expr = escapeForPython(line, withformatting=False),
                 );
         elif self.kind == 'text:subst':
-            line = '{tab}print(\'\'\'{expr}\'\'\'.format('.format(
+            line = '{tab}____print(\'\'\'{expr}\'\'\'.format('.format(
                 tab  = self.tab(),
                 expr = '\n'.join(list(self.content)),
             )
             yield line + ('));' if len(self.subst) == 0 else '');
             for key, value in self.subst.items():
                 indentlevel = value.indentlevel;
-                value_lines = formatBlockIndent(value.lines, indent=self.tab(2));
+                value_lines = formatBlockIndent(value.lines, indent=self.tab(2), unindent=True);
                 value_lines[0] = re.sub(r'^\s*(.*)$', r'\1', value_lines[0]);
                 yield '{tab}{key} = {value},'.format(
                     tab = self.tab(1),
