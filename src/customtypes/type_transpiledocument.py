@@ -12,6 +12,7 @@ from src.local.system import *;
 from src.local.typing import *;
 
 from src.core.log import *;
+from src.core.utils import formatTextBlock;
 from src.core.utils import formatTextBlockAsList;
 from src.core.utils import unique;
 from src.customtypes.type_transpileblock import TranspileBlock;
@@ -77,7 +78,8 @@ class TranspileDocument(list):
     def generateCode(
         self,
         offset:     int       = 0,
-        globalvars: List[str] = []
+        globalvars: List[str] = [],
+        anon:       bool      = False
     ) -> Generator[str, None, None]:
         yield '{tab}# generate content from file `{path}`'.format(
             tab  = self.tab(offset),
@@ -91,14 +93,15 @@ class TranspileDocument(list):
             kind = 'code',
             lines = [
                 'global {name};'.format(name=name)
-                for name in unique([ '__ROOT__', '__DIR__', '__FNAME__', '__IGNORE__' ] + globalvars)
+                for name in unique([ '__ROOT__', '__DIR__', '__FNAME__', '__ANON__', '__IGNORE__' ] + globalvars)
                 if not name in [ '__STATE__' ]
             ] + [
-                '__STATE__ = (__ROOT__, __DIR__, __FNAME__, __IGNORE__);',
+                '__STATE__ = (__ROOT__, __DIR__, __FNAME__, __ANON__, __IGNORE__);',
                 '__ROOT__ = \'.\';'.format(),
                 '__DIR__ = \'{path}\';'.format(path = self.pathfolder),
                 '__FNAME__ = \'{path}\';'.format(path = self.path),
                 '__IGNORE__ = False;',
+                '__ANON__ = {};'.format(anon),
             ]
         ).generateCode(offset + 1);
         for block in self.blocks:
@@ -147,6 +150,17 @@ class TranspileDocuments(object):
     def tab(self, offset: int = 1) -> str:
         return self.indentsymb * offset;
 
+    def isAnon(self, path: str) -> bool:
+        if (path in self.anon) and self.anon[path]:
+            return True;
+        for u, v in self.edges:
+            if v == path and (u in self.anon) and self.anon[u]:
+                return True;
+        return False;
+
+    def displayPath(self, path: str) -> str:
+        return '#####' if self.isAnon(path) else path;
+
     def evaluate(self, codevalue: str, document: TranspileDocument):
         localvariables = self.variables | document.variables | {
             '__ROOT__': os.path.abspath(document.root),
@@ -182,7 +196,7 @@ class TranspileDocuments(object):
             label      = self.getFunctionName(path)
         );
         self.documents[path] = document;
-        self.anon[path] = self.anon[path] if path in self.anon else False;
+        self.anon[path] = self.isAnon(path);
         return;
 
     def addPreamble(self, name: str, blocks: TranspileBlocks):
@@ -220,12 +234,13 @@ class TranspileDocuments(object):
                     continue;
                 _path = document.relativisePath(_path);
                 self.edges.append((path, _path));
-                self.anon[_path] = True if re.match(r'^.*:anon$', block.kind) else False;
+                if re.match(r'^.*:anon$', block.kind):
+                    self.anon[_path] = True;
                 document.append(TranspileBlock(
                     kind        = 'code',
                     lines     = [
                         '{label}(\'{path}\');'.format(label=self.schemes['file'], path=_path),
-                        '__ROOT__, __DIR__, __FNAME__, __IGNORE__ = __STATE__;'
+                        '__ROOT__, __DIR__, __FNAME__, __ANON__, __IGNORE__ = __STATE__;'
                     ],
                     indentlevel = block.indentlevel,
                     indentsymb  = block.indentsymb
@@ -238,48 +253,71 @@ class TranspileDocuments(object):
     def documentStructurePretty(
         self,
         path = None,
-        prefix: str = '',
-        indentsymb: str = '    ',
-        branchsymb: str = '  |____',
-        depth: int = 0
+        anon:       bool = False,
+        prefix:     str  = '',
+        indentsymb: str  = '    ',
+        branchsymb: str  = '  |____',
+        depth:      int  = 0
     ) -> Generator[str, None, None]:
         if not isinstance(path, str):
             depth = 0;
             children = self.getHeadPaths();
         elif path in self.paths:
+            anon = anon or self.anon[path];
             yield '{prefix}{tab}{branchsymb}`{path}`'.format(
                 prefix = prefix,
                 tab = indentsymb*(depth if depth == 0 else depth - 1),
                 branchsymb = '' if depth == 0 else branchsymb,
-                path = '#####' if self.anon[path] else path,
+                path = '#####' if anon else path,
             );
             depth = depth + 1;
             children = [ v for u, v in self.edges if u == path ];
         else:
             return;
         for subpath in children:
-            yield from self.documentStructurePretty(subpath, prefix=prefix, indentsymb=indentsymb, branchsymb=branchsymb, depth=depth);
+            yield from self.documentStructurePretty(subpath, anon=anon, prefix=prefix, indentsymb=indentsymb, branchsymb=branchsymb, depth=depth);
         return;
+
+    def documentStamp(self, path: str, depth: int = 0, start: bool = True) -> TranspileBlock:
+        return TranspileBlock(
+            kind = 'text:comment',
+            lines = formatTextBlockAsList(
+                formatTextBlock(
+                    '''
+                    {tab}%% ******************************************************************************
+                    {tab}%% {part}: {path}
+                    {tab}%% ******************************************************************************
+                    '''
+                ).format(
+                    tab  = self.indentsymb * depth,
+                    part = 'START OF FILE' if start else 'END OF FILE',
+                    path = self.displayPath(path),
+                ),
+                unindent=False
+            ) + [ '' ],
+            indentlevel = 0,
+            indentsymb = self.indentsymb
+        );
 
     def documentTree(self, seed: int) -> TranspileBlock:
         return TranspileBlock(
             kind = 'text:comment',
             lines = formatTextBlockAsList(
-                    '''
-                    %% ********************************************************************************
-                    %% DOCUMENT STRUCTURE:
-                    %% ~~~~~~~~~~~~~~~~~~~
-                    %%
-                    '''
-                ) \
-                + list(self.documentStructurePretty(prefix='%% ')) \
-                + formatTextBlockAsList(
-                    '''
-                    %%
-                    %% DOCUMENT-RANDOM-SEED: {}
-                    %% ********************************************************************************
-                    '''.format(seed)
-                ),
+                '''
+                %% ********************************************************************************
+                %% DOCUMENT STRUCTURE:
+                %% ~~~~~~~~~~~~~~~~~~~
+                %%
+                '''
+            ) \
+            + list(self.documentStructurePretty(prefix='%% ')) \
+            + formatTextBlockAsList(
+                '''
+                %%
+                %% DOCUMENT-RANDOM-SEED: {}
+                %% ********************************************************************************
+                '''.format(seed)
+            ) + [ '' ],
             indentlevel = 0,
             indentsymb = self.indentsymb,
         );
@@ -291,7 +329,6 @@ class TranspileDocuments(object):
         globalvars: List[str] = []
     ) -> Generator[str, None, None]:
         ## generate universal reference function
-        yield '';
         yield '{tab}# universal reference function for files'.format(tab=self.tab(offset));
         yield '{tab}def {label}(path: str):'.format(
             tab   = self.tab(offset),
@@ -327,7 +364,7 @@ class TranspileDocuments(object):
         ## generate individual functions for documents
         for document in self.documents.values():
             yield '';
-            yield from document.generateCode(offset=offset, globalvars=globalvars);
+            yield from document.generateCode(offset=offset, globalvars=globalvars, anon=self.isAnon(path));
 
         ## generate main function, which calls head functions first
         yield '';
