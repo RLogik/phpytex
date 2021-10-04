@@ -31,9 +31,9 @@ def getLexer(mode: str = 'blocks') -> Lark:
     global _lexer;
     if not (mode in _grammar):
         _grammar[mode] = getGrammar('phpytex.lark');
-    if not mode in _lexer:
+    if not (mode in _lexer):
         parser = 'earley'; # 'lalr', 'earley', 'cyk'
-        _lexer[mode] = Lark(_grammar, start=mode, regex=True, parser=parser);
+        _lexer[mode] = Lark(_grammar[mode], start=mode, regex=True, parser=parser);
     return _lexer[mode];
 
 def tokeniseInput(mode: str, text: str):
