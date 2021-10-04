@@ -25,7 +25,7 @@ from src.main import enter;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 if __name__ == '__main__':
-    sys.tracebacklimit = 4;
+    sys.tracebacklimit = 0;
     setOpenSource(False);
     tokens, kwargs = getCliArgs(*sys.argv[1:]);
     kwargs = dict(

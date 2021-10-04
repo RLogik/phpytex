@@ -36,7 +36,7 @@ def enter(*tokens: str, file: str, pathApp: str, pathRoot: str, **kwargs: str):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 if __name__ == '__main__':
-    sys.tracebacklimit = 4;
+    sys.tracebacklimit = 0;
     tokens, kwargs = getCliArgs(*sys.argv[1:]);
     kwargs = dict(
         file     = '',

@@ -67,7 +67,7 @@ def logError(*lines: Any, force: bool = False, file=sys.stdout):
     logGeneric('[\033[91;1mERROR\033[0m]', *lines, force=force, file=file);
 
 def logFatal(*lines: Any, force: bool = False, file=sys.stdout):
-    logGeneric('[\033[94;1mFATAL\033[0m]', *lines, force=force, file=file);
+    logGeneric('[\033[91;1mFATAL\033[0m]', *lines, force=force, file=file);
     exit(1);
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
