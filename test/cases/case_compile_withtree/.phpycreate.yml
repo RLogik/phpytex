@@ -7,7 +7,7 @@ output-name: paper
 compile:
   root:       root.tex
   output:     main.tex
-  debug:      true
+  debug:      false
   compile:    true
   insert-bib: true
   comments:   auto
