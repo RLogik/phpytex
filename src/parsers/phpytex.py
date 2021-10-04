@@ -75,7 +75,7 @@ def lexedToBlock(u: Tree, indentation: IndentationTracker) -> TranspileBlock:
     if typ == 'block':
         return lexedToBlock(children[0], indentation=indentation);
     if typ == 'emptyline':
-        return TranspileBlock(kind='text:linebreak', indentlevel=indentation.last, indentsymb=indentation.symb);
+        return TranspileBlock(kind='text:empty', indentlevel=indentation.last, indentsymb=indentation.symb);
     ## TEXT COMMENT
     elif typ == 'blockcomment':
         return lexedToBlock(children[0], indentation=indentation);
