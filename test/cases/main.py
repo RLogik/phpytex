@@ -28,7 +28,7 @@ from src.core.utils import readYamlFile;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 PATH_CASES:   str = 'test/cases';
-PATTERN_CASE: str = r'^case.*';
+PATTERN_CASE: str = r'^(case|private_).*';
 PATH_CONFIG:  str = 'test/cases/setup/config.yml';
 PATH_SCRIPT:  str = os.path.join(PATH_PROJECT, 'src', 'main.py');
 PATH_SANDBOX: str = os.path.join(PATH_CASES, 'sandbox');
