@@ -158,15 +158,17 @@ def formatBlockUnindent(lines: List[str], reference: str) -> List[str]:
     s = dedent('\n'.join([ reference + '.' ] + lines));
     return s.split('\n')[1:];
 
-def formatBlockIndent(lines: List[str], indent: str) -> List[str]:
-    s = dedent('\n'.join(lines));
-    return [ indent + line for line in s.split('\n') ];
+def formatBlockIndent(lines: List[str], indent: str, unindent: bool = True) -> List[str]:
+    if unindent:
+        s = dedent('\n'.join(lines));
+        lines = s.split('\n');
+    return [ indent + line for line in lines ];
 
 def formatTextBlock(s: str) -> str:
     return dedentIgnoreFirstAndLast(s);
 
-def formatTextBlockAsList(s: str) -> List[str]:
-    return re.split(r'\n', dedentIgnoreFirstAndLast(s));
+def formatTextBlockAsList(s: str, unindent: bool = True) -> List[str]:
+    return re.split(r'\n', dedentIgnoreFirstAndLast(s) if unindent else s);
 
 def dedentRelativeTo(s: str, reference: str) -> str:
     lines = formatBlockUnindent(lines=s.split('\n'), reference=reference);
@@ -228,26 +230,28 @@ def getAttributeIgnoreError(obj: Any, *keys: Union[str, int], expectedtype: Unio
         value = default;
     return value;
 
-def getAttribute(obj: Any, *keys: Union[str, int], expectedtype: Union[Type, Tuple[Type]] = Any, default: Any = None) -> Any:
+def getAttribute(obj: Any, *keys: Union[str, int, List[Union[str, int]]], expectedtype: Union[Type, Tuple[Type]] = Any, default: Any = None) -> Any:
     if len(keys) == 0:
         return obj;
-    key = keys[0];
+    nextkey = keys[0];
+    nextkey = nextkey if isinstance(nextkey, list) else [ nextkey ];
     try:
-        if isinstance(key, str) and isinstance(obj, dict) and key in obj:
-            value = obj[key];
-            if len(keys) <= 1:
-                return value if isinstance(value, expectedtype) else default;
-            else:
-                return getAttribute(obj[key], *keys[1:], expectedtype=expectedtype, default=default);
-        elif isinstance(key, int) and isinstance(obj, (list,tuple)) and key < len(obj):
-            value = obj[key];
-            if len(keys) <= 1:
-                return value if isinstance(value, expectedtype) else default;
-            else:
-                return getAttribute(obj[key], *keys[1:], expectedtype=expectedtype, default=default);
+        for key in nextkey:
+            if isinstance(key, str) and isinstance(obj, dict) and key in obj:
+                value = obj[key];
+                if len(keys) <= 1:
+                    return value if isinstance(value, expectedtype) else default;
+                else:
+                    return getAttribute(obj[key], *keys[1:], expectedtype=expectedtype, default=default);
+            elif isinstance(key, int) and isinstance(obj, (list,tuple)) and key < len(obj):
+                value = obj[key];
+                if len(keys) <= 1:
+                    return value if isinstance(value, expectedtype) else default;
+                else:
+                    return getAttribute(obj[key], *keys[1:], expectedtype=expectedtype, default=default);
     except:
         pass;
     if len(keys) <= 1:
         return default;
-    path = ' -> '.join([ key if isinstance(key, str) else '[{}]'.format(key) for key in keys ]);
+    path = ' -> '.join([ str(key) for key in keys ]);
     raise Exception('Could not find \033[1m{}\033[0m in object!'.format(path));
