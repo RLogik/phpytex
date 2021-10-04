@@ -39,7 +39,7 @@ def step():
 def execmetacode(fnamePy: str, fnameLatex: str):
     try:
         cmd = re.split(r'\s+', appconfig.getPythonPath());
-        pipeCall(*cmd, fnamePy, fnameOut=fnameLatex);
+        pipeCall(*cmd, fnamePy);
         os.remove(fnamePy);
     except:
         appconfig.setHasError(True);
