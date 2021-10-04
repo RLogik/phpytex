@@ -34,7 +34,7 @@ _config_parameters: Dict[str, ConfigParameter] = {
     'option_ignore':           ConfigParameter[bool]().setValue(False),
     'option_debug':            ConfigParameter[bool]().setValue(False),
     'option_compile_latex':    ConfigParameter[bool]().setValue(False),
-    'option_show_structure':   ConfigParameter[bool]().setValue(True),
+    'option_show_tree':        ConfigParameter[bool]().setValue(True),
     'option_comments':         ConfigParameter[str]().setValue('auto'),
     'option_insert_bib':       ConfigParameter[bool]().setValue(False),
     'option_overwrite_stamp':  ConfigParameter[bool]().setValue(True),
@@ -198,12 +198,12 @@ def setOptionCompileLatex(value: bool):
     _config_parameters['option_compile_latex'].value = value;
     return;
 
-def getOptionShowStructure() -> bool:
-    return _config_parameters['option_show_structure'].value;
+def getOptionShowTree() -> bool:
+    return _config_parameters['option_show_tree'].value;
 
-def setOptionShowStructure(value: bool):
+def setOptionShowTree(value: bool):
     global _config_parameters;
-    _config_parameters['option_show_structure'].value = value;
+    _config_parameters['option_show_tree'].value = value;
     return;
 
 def getOptionComments() -> str:
