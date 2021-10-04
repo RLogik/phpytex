@@ -59,12 +59,12 @@
 
 // BLOCK COMMENT
 ?blockcomment: blockcomment_keep | blockcomment_simple -> blockcomment
-?blockcomment_simple: spaces? /\%/ text   -> blockcomment_simple
+?blockcomment_simple: spaces? /\%/   text -> blockcomment_simple
 ?blockcomment_keep: spaces? /\%{2,}/ text -> blockcomment_keep
 
 // BLOCK CONTENT
 ?blockcontent: ( textcontent | codeinline )+ -> blockcontent
-?textcontent: ( /((?!(\<{3}|\>{3}|"|')).)+/ | textquotesoneline )+        -> textcontent
+?textcontent: nmeta+                                                      -> textcontent
 ?codeinline: lmeta whitespaces? codeoneline whitespaces? rmeta            -> codeinline
     | lmeta whitespaces? newline codemultiline newline whitespaces? rmeta -> codeinline
 ?codemultiline: codeoneline ( newline+ codeoneline )*                     -> codemultiline
