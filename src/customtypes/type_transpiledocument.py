@@ -66,7 +66,10 @@ class TranspileDocument(list):
 
     # relativises a path relative to directory to a path relative to root
     def relativisePath(self, path: str):
-        if not os.path.isabs(path):
+        if os.path.isabs(path):
+            if path.startswith(self.root):
+                path = os.path.relpath(path=path, start=self.root);
+        else:
             path = os.path.join(self.pathfolder, path);
             path = os.path.relpath(path=path, start=self.root);
         return path;
