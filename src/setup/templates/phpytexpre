@@ -26,10 +26,18 @@ ____phpytex_params____ = dict(
         bib     = dict(),
     ),
     rootdir        = '{root}',
-    path           = '{path}',
-    fname          = '{fname}',
+    output         = '{output}',
+    name           = '{name}',
     compile_latex  = {compile_latex},
+    pdflatex       = [
+        # '-interaction=scrollmode',
+        # '-interaction=batchmode',
+        '-interaction=errorstopmode',
+        # '-interaction=nonstopmode',
+    ],
     insert_bib     = {insert_bib},
+    bibtex         = [
+    ],
     seed           = {seed},
     ctr_emptylines = 0,
     length         = 0,
@@ -39,6 +47,7 @@ ____phpytex_params____ = dict(
 __FNAME__  = '<undefined>';
 __ROOT__   = '.';
 __DIR__    = '.';
+__ANON__   = False;
 __IGNORE__ = False;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -73,9 +82,9 @@ def main():
             src = sources[0];
             if src in bibcontents.keys():
                 lines = [ tab + line for line in bibcontents[src] ];
-        with open(____phpytex_params____['path'], 'a') as fp:
+        with open(____phpytex_params____['output'], 'a') as fp:
             for line in lines:
-                print(line, fp);
+                print(line, file=fp);
     return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -90,16 +99,15 @@ def ____reseed():
 
 ## record + print-to-latex:
 def ____cleardocument():
-    with open(____phpytex_params____['path'], 'w') as fp:
+    with open(____phpytex_params____['output'], 'w') as fp:
         fp.write('');
     return;
 
 def ____forceprint(s: str, anon=False):
     global ____phpytex_params____;
-    fp = ____phpytex_params____['filetex'];
 
     n = len(____phpytex_params____['lines']['content']);
-    with open(____phpytex_params____['path'], 'a') as fp:
+    with open(____phpytex_params____['output'], 'a') as fp:
         for _s in re.split(r'\r?\n', s):
             print(_s, file=fp);
             ____phpytex_params____['lines']['content'].append(_s);
@@ -110,6 +118,7 @@ def ____forceprint(s: str, anon=False):
 
 def ____print(s: str, anon=False):
     global ____phpytex_params____;
+    global __ANON__;
     global __IGNORE__;
 
     if __IGNORE__:
@@ -122,6 +131,7 @@ def ____print(s: str, anon=False):
     if ____phpytex_params____['ctr_emptylines'] > 1:
         return;
 
+    anon = (anon or __ANON__);
     ____phpytex_params____['length'] += 1;
     ____phpytex_params____['length_error'] = ____phpytex_params____['length_error'] or ( ____phpytex_params____['length'] > ____phpytex_params____['length_max'] );
     ____forceprint(s, anon=anon);
@@ -136,11 +146,11 @@ def ____insertbib(
     global ____phpytex_params____;
 
     line = '\\bibliography{{{{\'{{file}}\'}}}}'.format(file=os.path.splitext(fname)[0]);
-    with open(____phpytex_params____['path'], 'a') as fp:
-        print(line, file=fp);
-    # read file and insert contents:
     n = len(____phpytex_params____['lines']['content']);
+    with open(____phpytex_params____['output'], 'a') as fp:
+        print(line, file=fp);
     ____phpytex_params____['lines']['content'].append(line);
+
     if not ( src in ____phpytex_params____['lines']['bib'] ):
         ____phpytex_params____['lines']['bib'][src] = [];
     if anon:
@@ -174,19 +184,18 @@ def ____get_bib_contents() -> dict:
 def ____compilelatex():
     global ____phpytex_params____;
 
-    fname = ____phpytex_params____['fname'];
+    name = ____phpytex_params____['name'];
     bib = ____phpytex_params____['lines']['bib'];
+    pdflatex_options = ____phpytex_params____['pdflatex'];
+    bibtex_options = ____phpytex_params____['bibtex'];
 
     print('[\033[94;1mINFO\033[0m] RUN PDFLATEX');
-    # pipeCall('pdflatex', '-interaction=scrollmode', fnameOut=fname);
-    # pipeCall('pdflatex', '-interaction=batchmode', fnameOut=fname);
-    pipeCall('pdflatex', '-interaction=errorstopmode', fnameOut=fname);
-    # pipeCall('pdflatex', '-interaction=nonstopmode', fnameOut=fname);
+    pipeCall('pdflatex', *pdflatex_options, name);#, errormsg='PDFLATEX encountered a problem.');
 
     print('[\033[94;1mINFO\033[0m] RUN BIBTEX');
     for src in bib.keys():
         bibname = os.path.splitext(src)[0];
-        pipeCall('bibtex', bibname);
+        pipeCall('bibtex', *bibtex_options, bibname);#, errormsg='BIBTEX encountered a problem.');
     pass;
 
 ## NOTE: subprocess.run is like subprocess.Popen but waits for result
