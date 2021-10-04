@@ -34,10 +34,6 @@ from src.parsers.phpytex import parseText;
 def step():
     root = appconfig.getPathRoot();
     indentsymb = appconfig.getIndentCharacter();
-    params = {
-        'no-comm':      (appconfig.getOptionComments() is False),
-        'no-comm-auto': (appconfig.getOptionComments() == 'auto'),
-    };
 
     ## Initialise structures for recording transpilation units:
     random.seed(appconfig.getSeed()); # <-- only do this once!
@@ -63,7 +59,7 @@ def step():
         name        = name,
         is_preamble = True,
         silent      = True,
-        params      = params | { 'no-comm': False, 'no-comm-auto': True }
+        params      = { 'no-comm': False, 'no-comm-auto': True, 'show-tree': False }
     );
 
     ## Transpile document file:
@@ -74,12 +70,16 @@ def step():
         name        = '',
         is_preamble = False,
         silent      = getQuietMode(),
-        params      = params
+        params      = {
+            'no-comm':      (appconfig.getOptionComments() is False),
+            'no-comm-auto': (appconfig.getOptionComments() == 'auto'),
+            'show-tree':    appconfig.getOptionShowTree()
+        }
     );
 
     ## Add document structure:
     name = 'tree';
-    if appconfig.getOptionShowStructure():
+    if appconfig.getOptionShowTree():
         preamble.append(name);
     blocks = TranspileBlocks([documents.documentTree(seed=appconfig.getSeed())]);
     documents.addPreamble(name=name, blocks=blocks);
@@ -102,8 +102,6 @@ def step():
     ## Generate result of transpilation (phpytex -> python):
     globalvars = unique(list(appconfig.getExportVars().keys()) + list(documents.variables.keys()));
     createmetacode(
-        fname      = appconfig.getFileLatex(),
-        fnameOut   = appconfig.getFileScript(),
         documents  = documents,
         imports    = imports,
         preamble   = preamble,
@@ -134,8 +132,10 @@ def transpileDocument(
     except:
         logError('Could not find or read document \033[1m{path}\033[0m!'.format(path = path));
         return;
+    depth = len(chain);
+    indentsymb = appconfig.getIndentCharacter();
     indentation = IndentationTracker(
-        symb       = appconfig.getIndentCharacter(),
+        symb       = indentsymb,
         pattern    = appconfig.getIndentCharacterRe(),
         is_legacy  = appconfig.getOptionLegacy(),
     );
@@ -145,11 +145,15 @@ def transpileDocument(
             if not re.match(r'^text:comment', block.kind):
                 continue;
             blocks.append(block);
+        blocks.append(TranspileBlock(kind='text:empty'))
         documents.addPreamble(name=name, blocks=blocks);
     else:
         if path in documents.paths:
             return;
+        documents.addDocument(path=path); ## NOTE: need to do this first, in order to update anon-state
         blocks = TranspileBlocks();
+        if not is_preamble and params['show-tree']:
+            blocks.append(documents.documentStamp(path, depth=0, start=True));
         for block in parseText(lines, indentation):
             kind = block.kind;
             if is_preamble:
@@ -163,7 +167,8 @@ def transpileDocument(
                     if params['no-comm'] or ( re.match(r'^.*:simple$', kind) and params['no-comm-auto'] ):
                         continue;
             blocks.append(block);
-        documents.addDocument(path=path);
+        if not is_preamble and params['show-tree']:
+            blocks.append(documents.documentStamp(path, depth=0, start=False));
         documents.addBlocks(path=path, blocks=blocks);
         for subpath in documents.getSubPaths(path):
             transpileDocument(
@@ -202,13 +207,12 @@ def createImportFileParameters(
     return;
 
 def createmetacode(
-    fname:      str,
-    fnameOut:   str,
     documents:  TranspileDocuments,
     imports:    TranspileBlocks,
     preamble:   List[str],
     globalvars: List[str]
 ):
+    fnameLatex = appconfig.getFileLatex();
     _lines_pre = getTemplatePhpytexLinesPre();
     _lines_post = getTemplatePhpytexLinesPost();
     lines = [];
@@ -216,8 +220,8 @@ def createmetacode(
         _lines_pre.format(
             imports       = '\n'.join(imports.generateCode()),
             root          = appconfig.getPathRoot(),
-            path          = extractPath(path=appconfig.getFileLatex(), relative=False, ext='tex'),
-            fname         = extractPath(path=fname, relative=True, ext=''),
+            output        = extractPath(path=fnameLatex, relative=False, ext='tex'),
+            name          = extractPath(path=fnameLatex, relative=True, ext=''),
             insert_bib    = appconfig.getOptionInsertBib(),
             compile_latex = appconfig.getOptionCompileLatex(),
             length_max    = appconfig.getMaxLengthOuput(),
@@ -225,9 +229,11 @@ def createmetacode(
             mainfct       = FUNCTION_NAME_MAIN,
         )
     );
+    lines.append('');
     lines += documents.generateCode(offset=0, preamble=preamble, globalvars=globalvars);
+    lines.append('');
     lines += formatTextBlockAsList(
         _lines_post.format()
     );
-    writeTextFile(fnameOut, lines);
+    writeTextFile(appconfig.getFileScript(), lines);
     return;

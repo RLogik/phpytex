@@ -28,8 +28,8 @@ def step():
     fnameLatex = appconfig.getFileLatex();
     execmetacode(fnamePy=fnamePy, fnameLatex=fnameLatex);
     logInfo('Transpilation (python -> latex) complete.');
-    # pipeCall('pdflatex', appconfig.getLatexFile(), errormsg='Pdflatex encountered a problem.');
-    # logInfo('Compilation (latex -> pdf) complete.');
+    if appconfig.getOptionCompileLatex():
+        logInfo('Compilation (latex -> pdf) complete.');
     return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -40,11 +40,40 @@ def execmetacode(fnamePy: str, fnameLatex: str):
     try:
         cmd = re.split(r'\s+', appconfig.getPythonPath());
         pipeCall(*cmd, fnamePy, fnameOut=fnameLatex);
+        os.remove(fnamePy);
     except:
         appconfig.setHasError(True);
         appconfig.setHasPyError(True);
         _, err, tb = sys.exc_info();
-
+        # ## ERSETZUNG VON \bibliography-Befehlen durch Inhalte + Anonymisierung:
+        # try:
+        # except Exception as e:
+        #     ## Provide information, then exit with status 1.
+        #     print("-----------------------------------------------------------------");
+        #     print("!!! (PH(p)y)TeX Compile error !!!");
+        #     if ____error_eval____:
+        #         ____last_latex____ = eval("'"+____last_latex____+"'");
+        #         print("  FILE: "+str(__FNAME__));
+        #         print("  LINE: "+str(__LINENR__ + 1)+" (local position in file).");
+        #         print("!!! Line could not be evaluated !!!");
+        #         print("-----------------------------------------------------------------");
+        #         print(____last_latex____);
+        #         print("-----------------------------------------------------------------");
+        #         ____forceprint("-----------------------------------------------------------------");
+        #         ____forceprint("!!! (PH(p)y)TeX Compile error !!!");
+        #         ____forceprint("  FILE: "+str(__FNAME__));
+        #         ____forceprint("  LINE: "+str(__LINENR__ + 1)+" (local position in file).");
+        #         ____forceprint("!!! Line could not be evaluated !!!");
+        #         ____forceprint("-----------------------------------------------------------------");
+        #         ____forceprint(____last_latex____);
+        #         ____forceprint("-----------------------------------------------------------------");
+        #     else:
+        #         print("-----------------------------------------------------------------");
+        #         # print(sys.exc_info());
+        #         print(e);
+        #         print("-----------------------------------------------------------------");
+        #     exit(1);
+        #
         # try:
         #     n = tb.tb_lineno - 1 if isinstance(tb, TracebackType) else 0;
         #     line_err = lines[n];
@@ -66,7 +95,7 @@ def execmetacode(fnamePy: str, fnameLatex: str):
         #             __LINENR__ = int(k); ## lokale Zeilennummer innerhalb Datei
         #             break;
         #         continue;
-
+        #
         #     logError(formatTextBlock(
         #         '''
         #         -----------------------------------------------------------------
@@ -84,7 +113,7 @@ def execmetacode(fnamePy: str, fnameLatex: str):
         #             err    = line_err
         #         ))
         #     );
-
+        #
         #     ## print to main tex file:
         #     with open(fnameLatex, 'w+') as fp:
         #         logPlain(*[line for k, ignore, line in precompilelines if k < n and not (ignore is True)], file=fp);
@@ -107,34 +136,5 @@ def execmetacode(fnamePy: str, fnameLatex: str):
         # except:
         #     os.remove(fnamePy);
         #     logFatal(err);
-    os.remove(fnamePy);
+        logFatal('An error occurred during either (python -> latex -> pdf) conversion.');
     return;
-
-# ## ERSETZUNG VON \bibliography-Befehlen durch Inhalte + Anonymisierung:
-# try:
-# except Exception as e:
-#     ## Provide information, then exit with status 1.
-#     print("-----------------------------------------------------------------");
-#     print("!!! (PH(p)y)TeX Compile error !!!");
-#     if ____error_eval____:
-#         ____last_latex____ = eval("'"+____last_latex____+"'");
-#         print("  FILE: "+str(__FNAME__));
-#         print("  LINE: "+str(__LINENR__ + 1)+" (local position in file).");
-#         print("!!! Line could not be evaluated !!!");
-#         print("-----------------------------------------------------------------");
-#         print(____last_latex____);
-#         print("-----------------------------------------------------------------");
-#         ____forceprint("-----------------------------------------------------------------");
-#         ____forceprint("!!! (PH(p)y)TeX Compile error !!!");
-#         ____forceprint("  FILE: "+str(__FNAME__));
-#         ____forceprint("  LINE: "+str(__LINENR__ + 1)+" (local position in file).");
-#         ____forceprint("!!! Line could not be evaluated !!!");
-#         ____forceprint("-----------------------------------------------------------------");
-#         ____forceprint(____last_latex____);
-#         ____forceprint("-----------------------------------------------------------------");
-#     else:
-#         print("-----------------------------------------------------------------");
-#         # print(sys.exc_info());
-#         print(e);
-#         print("-----------------------------------------------------------------");
-#     exit(1);
