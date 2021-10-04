@@ -24,12 +24,13 @@ from src.setup import appconfig;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def step():
+    logInfo('CONVERSION (python -> latex [+ latex -> pdf]) STARTED.');
     fnamePy = appconfig.getFileScript();
     fnameLatex = appconfig.getFileLatex();
     execmetacode(fnamePy=fnamePy, fnameLatex=fnameLatex);
-    logInfo('Transpilation (python -> latex) complete.');
+    logInfo('CONVERSION (python -> latex) COMPLETE.');
     if appconfig.getOptionCompileLatex():
-        logInfo('Compilation (latex -> pdf) complete.');
+        logInfo('CONVERSION (latex -> pdf) COMPLETE.');
     return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

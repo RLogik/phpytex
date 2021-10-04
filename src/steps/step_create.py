@@ -28,6 +28,7 @@ from src.parsers.methods import convertToPythonString;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def step():
+    logInfo('CREATION STAGE STARTED.');
     root = appconfig.getPathRoot();
     createFilesAndFolders(path=root, projectTree=appconfig.getProjectTree());
     createFileStamp(
@@ -36,7 +37,7 @@ def step():
         options=appconfig.getDictionaryStamp()
     );
     createParameters(options=appconfig.getDictionaryParms());
-    logInfo('Creation stage complete.');
+    logInfo('CREATION STAGE COMPLETE.');
     return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

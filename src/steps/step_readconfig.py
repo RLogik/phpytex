@@ -33,6 +33,7 @@ from src.setup.userconfig import setupYamlReader;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def step(fname: str):
+    logInfo('READ CONFIG STARTED');
     ## get configuration file
     config = getPhpytexConfig(fname);
     ## get main parts of config
@@ -49,6 +50,7 @@ def step(fname: str):
     setConfigFilesAndFolders(**toPythonKeysDict(config));
 
     assert not (appconfig.getFilePhpytex() == appconfig.getFileLatex()), 'The output and root files must be different!';
+    logInfo('READ CONFIG COMPLETE');
     return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
