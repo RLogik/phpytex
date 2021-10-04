@@ -38,11 +38,12 @@ def step(fname: str):
     ## get main parts of config
     config_compile = getAttribute(config, 'compile', 'options', expectedtype=dict, default=None) \
                      or getAttribute(config, 'compile', expectedtype=dict, default={});
+    config_compile = preProcessCompileConfig(restrictDictionary(config, ['ignore']) | config_compile);
     config_stamp = getAttribute(config, 'stamp', expectedtype=dict, default={});
     config_parameters = getAttribute(config, 'parameters', expectedtype=dict, default={});
 
     ## set app config
-    setCompileConfig(**toPythonKeysDict(restrictDictionary(config, ['ignore']) | config_compile));
+    setCompileConfig(**config_compile);
     setStampConfig(**toPythonKeysDict(config_stamp));
     setParamsConfig(**toPythonKeysDict(config_parameters));
     setConfigFilesAndFolders(**toPythonKeysDict(config));
@@ -62,30 +63,46 @@ def getPhpytexConfig(fname: str) -> Dict[str, Any]:
         raise Exception('Could not find or read any phpytex configuration files.');
     return readYamlFile(fname);
 
+def preProcessCompileConfig(config: Dict[str, Any]) -> Dict[str, Any]:
+    return dict(
+        root       = getAttribute(config, 'root', expectedtype=str),
+        seed       = getAttribute(config, 'seed', expectedtype=int),
+        ignore     = getAttribute(config, 'ignore', expectedtype=bool, default=False),
+        debug      = getAttribute(config, 'debug', expectedtype=bool, default=False),
+        compile    = getAttribute(config, ['compile-latex', 'compile'], expectedtype=bool, default=False),
+        insert_bib = getAttribute(config, 'insert-bib', expectedtype=bool, default=True),
+        legacy     = getAttribute(config, 'legacy', expectedtype=bool, default=False),
+        comments   = getAttribute(config, 'comments', expectedtype=str, default='auto'),
+        show_tree  = getAttribute(config, ['show-structure', 'show-tree'], expectedtype=bool, default=True),
+        max_length = getAttribute(config, 'max-length', expectedtype=int, default=10000),
+        tabs       = getAttribute(config, 'tabs', expectedtype=bool, default=False),
+        spaces     = getAttribute(config, 'spaces', expectedtype=int, default=4),
+        output     = getAttribute(config, 'output', expectedtype=str, default='main.tex'),
+    );
+
 def setCompileConfig(
-    root:           str,
-    # DEV-NOTE: this is the _only_ place that root refers to a file.
+    # DEV-NOTE: This is the _only_ place that root refers to a file.
     # Otherwise root denotes the root directory in which the script is called.
-    seed:           int,
-    ignore:         bool,
-    debug:          bool,
-    compile_latex:  bool,
-    insert_bib:     bool,
-    legacy:         bool = False,
-    comments:       str  = 'auto',
-    show_structure: bool = True,
-    max_length:     int  = 10000,
-    tabs:           bool = False,
-    spaces:         int  = 4,
-    output:         str  = 'main.tex',
-    **_
+    root:       str,
+    seed:       int,
+    ignore:     bool,
+    debug:      bool,
+    compile:    bool,
+    insert_bib: bool,
+    legacy:     bool,
+    comments:   str,
+    show_tree:  bool,
+    max_length: int,
+    tabs:       bool,
+    spaces:     int,
+    output:     str,
 ):
     appconfig.setOptionLegacy(legacy);
     appconfig.setOptionIgnore(ignore);
     appconfig.setOptionDebug(debug);
-    appconfig.setOptionCompileLatex(compile_latex);
+    appconfig.setOptionCompileLatex(compile);
     appconfig.setOptionInsertBib(insert_bib);
-    appconfig.setOptionShowStructure(show_structure);
+    appconfig.setOptionShowTree(show_tree);
     appconfig.setOptionComments(comments);
     appconfig.setSeed(seed);
 
