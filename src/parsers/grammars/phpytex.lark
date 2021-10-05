@@ -79,10 +79,11 @@ quickvariable: VARNAME -> quickvariable
 ?blockcode_regex.30: /^([^\S\r\n]*)\<{3}([^\S\r\n]*\S+)+[^\S\r\n]*(?<!(\>{3}))\r?\n(\1[^\r\n]*\r?\n)*?(\1\>{3})$/m -> blockcode_regex
 
 // BLOCK CODE (separately lexed, after blockcode_regex recognised)
-blockcode: LMETA WHITESPACES? blockcode_instructions NEWLINE+ blockcode_inside NEWLINE+ RMETA -> blockcode
-blockcode_inside:       TEXT ( NEWLINE+ TEXT )*                   -> blockcode_inside
-blockcode_instructions: "{" WHITESPACES? arglist WHITESPACES? "}" -> blockcode_instructions
-    | arglist                                                     -> blockcode_instructions
+blockcode: LMETA WHITESPACES? blockcode_args NEWLINE+ blockcode_inside NEWLINE+ RMETA -> blockcode
+blockcode_inside: blockcode_line ( NEWLINE blockcode_line )* -> blockcode_inside
+blockcode_line:   TEXT?                                      -> blockcode_line
+blockcode_args:   "{" WHITESPACES? arglist WHITESPACES? "}"  -> blockcode_args
+    | arglist                                                -> blockcode_args
 
 // BLOCK COMMENT
 blockcomment.20: blockcomment_keep | blockcomment_simple -> blockcomment
