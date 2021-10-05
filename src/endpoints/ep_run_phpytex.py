@@ -15,15 +15,15 @@ from src.steps.exports import *;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def endpoint(fname: str, **_):
-    step_readconfig(fname=fname);
-    if appconfig.getOptionIgnore():
-        logInfo('\033[32;1m(PH(p)y)tex\033[0m transpilation will be skipped.');
-        return;
     logPlain(formatTextBlock('''
         ----------------------
         |     \033[32;1m(PH(p)y)tex\033[0m    |
         ----------------------
     '''));
+    step_readconfig(fname=fname);
+    if appconfig.getOptionIgnore():
+        logInfo('\033[32;1m(PH(p)y)tex\033[0m transpilation will be skipped.');
+        return;
     step_create();
     step_phpytex_to_python();
     if appconfig.getOptionDebug():
