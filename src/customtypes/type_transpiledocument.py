@@ -212,45 +212,73 @@ class TranspileDocuments(object):
         for block in blocks:
             if re.match(r'^text($|:)', block.kind):
                 document.append(block);
-            elif re.match(r'^code($|:escape)', block.kind):
+            elif block.kind == 'code':
                 document.append(block);
-            elif re.match(r'^code:set', block.kind):
-                key = block.parameters['varname'];
-                codevalue = block.parameters['codevalue'];
+            elif block.kind == 'code:escape':
+                document.append(block);
+            elif block.kind == 'code:set':
+                varname   = block.parameters.varname;
+                codevalue = block.parameters.codevalue;
+                scope     = block.parameters.scope;
                 try:
                     value = self.evaluate(codevalue, document=document);
                 except:
                     ## TODO: deal with error
-                    logError('Could not evaluate <<< set \033[1m{}\033[0m >>>.'.format(value));
+                    logError('Could not evaluate \033[1m<<< {scope} set {varname} = {codevalue} >>>\033[0m.'.format(
+                        scope   = scope,
+                        varname = varname,
+                        codevalue = codevalue,
+                    ));
                     continue;
-                if re.match(r'^.*:local$', block.kind):
-                    document.variables[key] = value;
-                elif re.match(r'^.*:global$', block.kind):
-                    self.variables[key] = value;
+                if scope == 'local':
+                    document.variables[varname] = value;
+                elif scope == 'global':
+                    self.variables[varname] = value;
                 document.append(block);
-            elif re.match(r'^code:input', block.kind):
-                _path = block.parameters['path'];
+            elif block.kind == 'code:input':
+                ## extract block parameters:
+                _path      = block.parameters.path;
+                anon       = block.parameters.anon;
+                mode       = block.parameters.mode;
+                textindent = block.parameters.tab;
+                ## unpack path expression (potentially evaluate):
                 try:
                     _path = self.evaluate(_path, document=document);
                 except:
-                    logError('Could not evaluate <<< input \033[1m{}\033[0m >>>.'.format(_path));
+                    ## TODO: deal with error
+                    logError('Could not evaluate \033[1m<<< {cmd} {path}\033[0m >>>\033[0m.'.format(
+                        cmd  = ('bibliography' if mode == 'bib' else 'input') + ('_anon' if anon else ''),
+                        path = _path,
+                    ));
                     continue;
                 _path = document.relativisePath(_path);
-                self.edges.append((path, _path));
-                if re.match(r'^.*:anon$', block.kind):
-                    self.anon[_path] = True;
-                document.append(TranspileBlock(
-                    kind        = 'code',
-                    lines     = [
-                        '{label}(\'{path}\');'.format(label=self.schemes['file'], path=_path),
-                        '__ROOT__, __DIR__, __FNAME__, __ANON__, __IGNORE__ = __STATE__;'
-                    ],
-                    indentlevel = block.indentlevel,
-                    indentsymb  = block.indentsymb
-                ));
-            elif re.match(r'^code:bib', block.kind):
-                # TODO
-                pass;
+                ## create phpytex-code blocks based on computed path:
+                if mode == 'input':
+                    self.edges.append((path, _path));
+                    if anon:
+                        self.anon[_path] = True;
+                    document.append(TranspileBlock(
+                        kind        = 'code',
+                        lines       = [
+                            '{label}(\'{path}\');'.format(label=self.schemes['file'], path=_path),
+                            '__ROOT__, __DIR__, __FNAME__, __ANON__, __IGNORE__ = __STATE__;'
+                        ],
+                        indentlevel = block.indentlevel,
+                        indentsymb  = block.indentsymb
+                    ));
+                elif mode == 'bib':
+                    document.append(TranspileBlock(
+                        kind           = 'code',
+                        lines          = [
+                            '____insertbib(\'{fname}\', textindent=\'{textindent}\', anon={anon});'.format(
+                                fname      = _path,
+                                textindent = textindent,
+                                anon       = anon,
+                            )
+                        ],
+                        indentlevel = block.indentlevel,
+                        indentsymb  = block.indentsymb
+                    ));
         return;
 
     def documentStructurePretty(

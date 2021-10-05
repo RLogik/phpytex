@@ -129,9 +129,11 @@ def lexedToBlock(u: Tree, indentation: IndentationTracker) -> TranspileBlock:
     elif typ == 'blockcomment':
         return lexedToBlock(children[0], indentation=indentation);
     elif typ == 'blockcomment_simple':
-        return TranspileBlock(kind='text:comment:simple', content=lexedToStr(u), indentlevel=indentation.last, indentsymb=indentation.symb);
+        parameters = dict(keep=False);
+        return TranspileBlock(kind='text:comment', content=lexedToStr(u), indentlevel=indentation.last, indentsymb=indentation.symb, parameters=parameters);
     elif typ == 'blockcomment_keep':
-        return TranspileBlock(kind='text:comment:keep', content=lexedToStr(u), indentlevel=indentation.last, indentsymb=indentation.symb);
+        parameters = dict(keep=True);
+        return TranspileBlock(kind='text:comment', content=lexedToStr(u), indentlevel=indentation.last, indentsymb=indentation.symb, parameters=parameters);
     ## TEXT CONTENT
     elif typ == 'blockcontent':
         return processBlockContent(children, indentation=indentation);
@@ -143,7 +145,8 @@ def lexedToBlock(u: Tree, indentation: IndentationTracker) -> TranspileBlock:
         return processBlockCode(children[0], indentation=indentation);
     ## QUICK COMMAND
     elif typ == 'blockquick':
-        return processBlockQuickCommand(children[0], indentation=indentation);
+        textindent = lexedToStr(children[0]);
+        return processBlockQuickCommand(children[1], textindent=textindent, indentation=indentation);
     raise Exception('Could not parse expression!');
 
 ## BLOCK PARSERS
@@ -166,49 +169,38 @@ def processBlockContent(children: List[Tree], indentation: IndentationTracker) -
     block.subst = subst;
     return block;
 
-def processBlockQuickCommand(u: Tree, indentation: IndentationTracker) -> TranspileBlock:
+def processBlockQuickCommand(u: Tree, textindent: str, indentation: IndentationTracker) -> TranspileBlock:
     typ = u.data;
     children = filterSubExpr(u);
-    if typ == 'quickglobalset':
+    if typ in [ 'quickglobalset', 'quicklocalset' ]:
         varname = lexedToStr(children[0]);
-        codevalue = stripEndOfCode(lexedToStr(children[1]));
-        block = TranspileBlock(kind='code:set:global', indentlevel=indentation.last, indentsymb=indentation.symb);
-        block.parameters = dict(varname=varname, codevalue=codevalue);
-        return block;
-    if typ == 'quicklocalset':
-        varname = lexedToStr(children[0]);
-        codevalue = stripEndOfCode(lexedToStr(children[1]));
-        block = TranspileBlock(kind='code:set:local', indentlevel=indentation.last, indentsymb=indentation.symb);
-        block.parameters = dict(varname=varname, codevalue=codevalue);
-        return block;
-    elif typ == 'quickinput':
+        codevalue = stripEndOfCode(lexedToStr(children[1])).strip();
+        parameters = dict(varname=varname, codevalue=codevalue);
+        if typ == 'quickglobalset':
+            parameters = parameters | dict(scope='global');
+        elif typ == 'quicklocalset':
+            parameters = parameters | dict(scope='local');
+        return TranspileBlock(kind='code:set', indentlevel=indentation.last, indentsymb=indentation.symb, parameters=parameters);
+    elif typ in [ 'quickinput', 'quickinput_anon', 'quickbib', 'quickbib_anon' ]:
         path = stripEndOfCode(lexedToStr(children[0]));
-        block = TranspileBlock(kind='code:input', content=path, indentlevel=indentation.last, indentsymb=indentation.symb);
-        block.parameters = dict(path=path);
-        return block;
-    elif typ == 'quickinput_anon':
-        path = stripEndOfCode(lexedToStr(children[0]));
-        block = TranspileBlock(kind='code:input:anon', content=path, indentlevel=indentation.last, indentsymb=indentation.symb);
-        block.parameters = dict(path=path);
-        return block;
-    elif typ == 'quickbib':
-        path = stripEndOfCode(lexedToStr(children[0]));
-        block = TranspileBlock(kind='code:bib', content=path, indentlevel=indentation.last, indentsymb=indentation.symb);
-        block.parameters = dict(path=path);
-        return block;
-    elif typ == 'quickbib_anon':
-        path = stripEndOfCode(lexedToStr(children[0]));
-        block = TranspileBlock(kind='code:bib:anon', content=path, indentlevel=indentation.last, indentsymb=indentation.symb);
-        block.parameters = dict(path=path);
-        return block;
+        parameters = dict(path=path, tab=textindent);
+        if typ == 'quickinput':
+            parameters = parameters | dict(mode='input', anon=False);
+        elif typ == 'quickinput_anon':
+            parameters = parameters | dict(mode='input', anon=True);
+        elif typ == 'quickbib':
+            parameters = parameters | dict(mode='bib', anon=False);
+        elif typ == 'quickbib_anon':
+            parameters = parameters | dict(mode='bib', anon=True);
+        return TranspileBlock(kind='code:input', indentlevel=indentation.last, indentsymb=indentation.symb, parameters=parameters);
     elif typ == 'quickescape':
         indentation.last = 0;
-        block = TranspileBlock(kind='code:escape', indentlevel=indentation.last, indentsymb=indentation.symb);
-        return block;
+        parameters = dict(level=0);
+        return TranspileBlock(kind='code:escape', indentlevel=indentation.last, indentsymb=indentation.symb, parameters=parameters);
     elif typ == 'quickescapeonce':
         indentation.decrOffset();
-        block = TranspileBlock(kind='code:escape:1', indentlevel=indentation.last, indentsymb=indentation.symb);
-        return block;
+        parameters = dict(level=indentation.last);
+        return TranspileBlock(kind='code:escape', indentlevel=indentation.last, indentsymb=indentation.symb, parameters=parameters);
     raise Exception('Could not parse expression!');
 
 # see .lark file for regex pattern
@@ -223,7 +215,6 @@ def processBlockCode(u: Tree, indentation: IndentationTracker, offset: str = '')
         instructions = processInstructions(children[0]);
         tokens, kwargs = instructions;
         block = processBlockCode(children[1], indentation=indentation, offset=offset);
-        block.parameters = dict(instructions=instructions);
         if 'import' in tokens:
             block.kind = 'code:import';
             return block;

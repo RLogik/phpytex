@@ -145,7 +145,7 @@ def transpileDocument(
     if is_preamble:
         blocks = TranspileBlocks();
         for block in parseText(lines, indentation):
-            if not re.match(r'^text:comment', block.kind):
+            if not (block.kind == 'text:comment'):
                 continue;
             blocks.append(block);
         blocks.append(TranspileBlock(kind='text:empty'))
@@ -155,22 +155,17 @@ def transpileDocument(
             return;
         documents.addDocument(path=path); ## NOTE: need to do this first, in order to update anon-state
         blocks = TranspileBlocks();
-        if not is_preamble and params['show-tree']:
+        if params['show-tree']:
             blocks.append(documents.documentStamp(path, depth=0, start=True));
         for block in parseText(lines, indentation):
-            kind = block.kind;
-            if is_preamble:
-                if not re.match(r'^text:comment', kind):
+            if block.kind == 'code:import':
+                imports.append(block);
+                continue;
+            if block.kind == 'text:comment':
+                if params['no-comm'] or ( params['no-comm-auto'] and not block.parameters.keep ):
                     continue;
-            else:
-                if kind == 'code:import':
-                    imports.append(block);
-                    continue;
-                if re.match(r'^text:comment', kind):
-                    if params['no-comm'] or ( re.match(r'^.*:simple$', kind) and params['no-comm-auto'] ):
-                        continue;
             blocks.append(block);
-        if not is_preamble and params['show-tree']:
+        if params['show-tree']:
             blocks.append(documents.documentStamp(path, depth=0, start=False));
         documents.addBlocks(path=path, blocks=blocks);
         for subpath in documents.getSubPaths(path):

@@ -20,6 +20,59 @@ from src.core.utils import formatBlockIndent;
 #
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# CLASS transpile parameters
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+class TranspileBlockParameters(object):
+    mode:      str;
+    scope:     str;
+    anon:      bool;
+    varname:   str;
+    codevalue: str;
+    keep:      bool;
+    level:     int;
+    path:      str;
+    tab:       str;
+
+    def __init__(
+        self,
+        mode:      str  = '',
+        scope:     str  = '',
+        anon:      bool = False,
+        varname:   str  = '',
+        codevalue: str  = '',
+        keep:      bool = True,
+        level:     int  = 0,
+        path:      str  = '',
+        tab:       str  = '',
+        **_
+    ):
+        self.mode      = mode;
+        self.scope     = scope;
+        self.anon      = anon;
+        self.varname   = varname;
+        self.codevalue = codevalue;
+        self.keep      = keep;
+        self.level     = level;
+        self.path      = path;
+        self.tab       = tab;
+        return;
+
+    def asDict(self) -> Dict[str, Any]:
+        return dict(
+            mode      = self.mode,
+            scope     = self.scope,
+            anon      = self.anon,
+            varname   = self.varname,
+            codevalue = self.codevalue,
+            keep      = self.keep,
+            level     = self.level,
+            path      = self.path,
+            tab       = self.tab,
+        );
+    pass;
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # CLASS transpile block
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -29,22 +82,23 @@ class TranspileBlock(object):
     lines: List[str];
     indentlevel: int;
     indentsymb: str;
-    parameters: Dict[str, Any];
+    parameters: TranspileBlockParameters;
     subst: Dict[str, TranspileBlock];
 
     def __init__(self,
-        kind: str,
-        content: Any = None,
-        lines: List[str] = [],
-        indentlevel: int = 0,
-        indentsymb: str = '    ',
+        kind:        str,
+        content:     Any            = None,
+        lines:       List[str]      = [],
+        indentlevel: int            = 0,
+        indentsymb:  str            = '    ',
+        parameters:  Dict[str, Any] = dict(),
         **_
     ):
         self.lines = lines;
         self.kind = kind;
         self.indentlevel = indentlevel;
         self.indentsymb = indentsymb;
-        self.parameters = dict();
+        self.parameters = TranspileBlockParameters(**parameters);
         self.subst = dict();
         if isinstance(content, str):
             self._content = content;
@@ -70,7 +124,7 @@ class TranspileBlock(object):
         self.indentlevel += offset;
         if self.kind == 'text:empty':
             yield '{tab}____print(\'\');'.format(tab=self.tab());
-        elif self.kind == 'text' or re.match(r'^text:comment', self.kind):
+        elif self.kind in [ 'text', 'text:comment' ]:
             for line in self.content:
                 yield '{tab}____print(\'\'\'{expr}\'\'\');'.format(
                     tab  = self.tab(),
@@ -96,20 +150,14 @@ class TranspileBlock(object):
                 yield '{tab}));'.format(tab=self.tab());
         elif self.kind in [ 'code', 'code:import', 'code:value']:
             yield from self.content;
-        elif re.match(r'^code:set', self.kind):
-            line = '{varname} = {codevalue};'.format(**self.parameters);
+        elif self.kind == 'code:set':
+            line = '{varname} = {codevalue};'.format(**self.parameters.asDict());
             block = TranspileBlock(kind='code', content=line, **state);
             yield from block.generateCode(offset=offset);
-        elif re.match(r'^code:escape', self.kind):
+        elif self.kind == 'code:escape':
             block = TranspileBlock(kind='code', content='pass;', **state);
             yield from block.generateCode(offset=offset);
         elif self.kind == 'code:input':
-            pass;
-        elif self.kind == 'code:input:anon':
-            pass;
-        elif self.kind == 'code:bib':
-            pass;
-        elif self.kind == 'code:bib:anon':
             pass;
         self.indentlevel = state['indentlevel'];
         return;
