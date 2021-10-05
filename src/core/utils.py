@@ -45,6 +45,26 @@ def pipeCall(*args: str, cwd = None, errormsg: str = '', fnameOut: Union[None, s
         return;
     raise Exception(errormsg or 'Shell command < \033[94;1m{}\033[0m > failed.'.format(' '.join(args)));
 
+def getFullPath(path: str, shouldexist: bool = False) -> str:
+    path = os.path.abspath(path);
+    if shouldexist and not os.path.exists(path):
+        raise Exception('Path \033[1m{}\033[0m does not exist!');
+    return path;
+
+def formatPath(path: str, root: str, relative: bool, ext: Any = None, ext_if_empty: Any = None) -> str:
+    if os.path.isabs(path):
+        if relative:
+            path = os.path.relpath(path=path, start=root);
+    else:
+        if not relative:
+            path = os.path.abspath(os.path.join(root, path));
+    path_, ext_ = os.path.splitext(path);
+    if isinstance(ext, str):
+        path = '{path}{ext}'.format(path=path_, ext=ext);
+    elif isinstance(ext_if_empty, str) and ext_ == '':
+        path = '{path}{ext}'.format(path=path_, ext=ext_if_empty);
+    return path;
+
 def getFiles(path: str) -> List[Tuple[str, str]]:
     items = [(_, os.path.join(path, _)) for _ in os.listdir(path)];
     return [ (_, __) for _, __ in items if os.path.isfile(__)];

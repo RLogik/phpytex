@@ -66,37 +66,3 @@ def getTemplatePhpytexLinesPost() -> str:
 
 def getGrammar(fname: str) -> str:
     return readFileContents(os.path.join(PATH_TO_GRAMMARS, fname));
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# METHODS: extract path
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-def extractPath(
-    path:        str,
-    root:        Any  = None,
-    split:       bool = False,
-    relative:    Any  = None,
-    relative_to: Any  = None,
-    ext:         Any  = None
-) -> str:
-    root = root if isinstance(root, str) else appconfig.getPathRoot();
-    root = os.path.abspath(os.path.normpath(root));
-    if os.path.isabs(path):
-        relative = relative if isinstance(relative, bool) else False;
-    else:
-        relative = relative if isinstance(relative, bool) else True;
-        path = os.path.join(root, path);
-    path = os.path.abspath(os.path.normpath(path));
-
-    if relative:
-        root = relative_to if isinstance(relative_to, str) else appconfig.getPathRoot();
-        root = os.path.abspath(os.path.normpath(root));
-        path = os.path.relpath(path=path, start=root);
-
-    if isinstance(ext, str):
-        path = '{path}{ext}'.format(
-            path = os.path.splitext(path)[0],
-            ext = '' if ext == '' else '.' + ext,
-        );
-
-    return path;
