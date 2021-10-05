@@ -25,8 +25,8 @@ from src.setup import appconfig;
 
 def step():
     logInfo('CONVERSION (python -> latex [+ latex -> pdf]) STARTED.');
-    fnamePy = appconfig.getFileTranspiled(rel=False);
-    fnameLatex = appconfig.getFileOutput(rel=False);
+    fnamePy = appconfig.getFileTranspiled(rel=True);
+    fnameLatex = appconfig.getFileOutput(rel=True);
     execTranspiledCode(fnamePy=fnamePy, fnameLatex=fnameLatex);
     logInfo('CONVERSION (python -> latex) COMPLETE.');
     if appconfig.getOptionCompileLatex():
@@ -40,11 +40,13 @@ def step():
 def execTranspiledCode(fnamePy: str, fnameLatex: str):
     try:
         cmd = re.split(r'\s+', appconfig.getPythonPath());
+        logInfo('CALL < \033[94;1m{}\033[0m >'.format(' '.join(cmd + [fnamePy])));
         pipeCall(*cmd, fnamePy);
         os.remove(fnamePy);
     except:
-        appconfig.setHasError(True);
-        appconfig.setHasPyError(True);
-        _, err, tb = sys.exc_info();
-        logFatal('An error occurred during either (python -> latex -> pdf) conversion.');
+        logFatal(
+            'An error occurred during (python -> latex -> pdf) conversion.',
+            '  - Consult the error logs and the script \033[1m{path}\033[0m for more information.'.format(path=fnamePy),
+            '  - Partial output may also be found in \033[1m{path}\033[0m.'.format(path=fnameLatex)
+        );
     return;

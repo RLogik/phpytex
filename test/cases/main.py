@@ -87,7 +87,10 @@ def StepRunTestCase(
 
     shutil.copytree(src=path, dst=sandboxpath);
     cmd = re.split(r'\s+', PythonCommand());
-    pipeCall(*cmd, phpytex_script, cwd=sandboxpath);
+    try:
+        pipeCall(*cmd, phpytex_script, cwd=sandboxpath);
+    except:
+        logFatal('Test case \033[1m{}\033[0m failed.'.format(getRelPath(path)));
 
     if inspect:
         logDebug('Output can be temporarily inspected in \033[1m{}\033[0m'.format(getRelPath(sandboxpath)))
