@@ -107,6 +107,6 @@ def getRelPath(path: str) -> str:
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 if __name__ == '__main__':
-    sys.tracebacklimit = 4;
+    sys.tracebacklimit = 0;
     tokens, kwargs = getCliArgs(*sys.argv[1:]);
     main(*tokens, **kwargs);
