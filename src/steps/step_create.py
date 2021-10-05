@@ -32,7 +32,7 @@ def step():
     root = appconfig.getPathRoot();
     createFilesAndFolders(path=root, projectTree=appconfig.getProjectTree());
     createFileStamp(
-        path=os.path.join(root, appconfig.getFileStamp()),
+        path=appconfig.getFileStamp(rel=False),
         overwrite=appconfig.getOptionOverwriteStamp(),
         options=appconfig.getDictionaryStamp()
     );

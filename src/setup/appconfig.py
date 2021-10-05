@@ -7,10 +7,12 @@
 
 from __future__ import annotations;
 
+from src.local.system import *;
 from src.local.maths import *;
 from src.local.typing import *;
 
 from src.core.utils import PythonCommand;
+from src.core.utils import getFullPath;
 from src.customtypes.exports import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -79,9 +81,11 @@ def getPathApp() -> str:
 
 def setPathApp(value: str):
     global _config_parameters;
-    if value == '':
-        return;
-    _config_parameters['path_app'].value = value;
+    try:
+        path = getFullPath(value or '.');
+    except:
+        raise Exception('Path \033[1m{}\033[0m does not exist and cannot be used as the app path!'.format(value));
+    _config_parameters['path_app'].value = path;
     return;
 
 def getPathRoot() -> str:
@@ -89,8 +93,11 @@ def getPathRoot() -> str:
 
 def setPathRoot(value: str):
     global _config_parameters;
-    if value == '':
-        return;
+    try:
+        path = getFullPath(value or '.');
+        os.chdir(path);
+    except:
+        raise Exception('Path \033[1m{}\033[0m does not exist and cannot be used as the root path!'.format(value));
     _config_parameters['path_root'].value = value;
     return;
 
@@ -126,8 +133,9 @@ def setOptionOverwriteParams(value: bool):
     _config_parameters['option_overwrite_params'].value = value;
     return;
 
-def getFileStamp() -> str:
-    return _config_parameters['file_stamp'].value;
+def getFileStamp(rel: bool = True) -> str:
+    path = os.path.abspath(_config_parameters['file_stamp'].value);
+    return relativisePath(path) if rel else path;
 
 def setFileStamp(value: str):
     global _config_parameters;
@@ -136,8 +144,9 @@ def setFileStamp(value: str):
     _config_parameters['file_stamp'].value = value;
     return;
 
-def getFileStart() -> str:
-    return _config_parameters['file_start'].value;
+def getFileStart(rel: bool = True) -> str:
+    path = os.path.abspath(_config_parameters['file_start'].value);
+    return relativisePath(path) if rel else path;
 
 def setFileStart(value: str):
     global _config_parameters;
@@ -146,8 +155,9 @@ def setFileStart(value: str):
     _config_parameters['file_start'].value = value;
     return;
 
-def getFileTranspiled() -> str:
-    return _config_parameters['file_transpiled'].value;
+def getFileTranspiled(rel: bool = True) -> str:
+    path = os.path.abspath(_config_parameters['file_transpiled'].value);
+    return relativisePath(path) if rel else path;
 
 def setFileTranspiled(value: str):
     global _config_parameters;
@@ -156,8 +166,17 @@ def setFileTranspiled(value: str):
     _config_parameters['file_transpiled'].value = value;
     return;
 
-def getFileOutput() -> str:
-    return _config_parameters['file_output'].value;
+def getFileOutput(rel: bool = True) -> str:
+    path = os.path.abspath(_config_parameters['file_output'].value);
+    return relativisePath(path) if rel else path;
+
+def getFileOutput(rel: bool = True) -> str:
+    path = os.path.abspath(_config_parameters['file_output'].value);
+    return relativisePath(path) if rel else path;
+
+def getFileOutputBase() -> str:
+    path = _config_parameters['file_output'].value;
+    return os.path.splitext(os.path.basename(path))[0];
 
 def setFileOutput(value: str):
     global _config_parameters;
@@ -214,8 +233,9 @@ def setOptionComments(value: str):
     _config_parameters['option_comments'].value = value;
     return;
 
-def getFileParamsPy() -> str:
-    return _config_parameters['file_params_py'].value;
+def getFileParamsPy(rel: bool = True) -> str:
+    path = os.path.abspath(_config_parameters['file_params_py'].value);
+    return relativisePath(path) if rel else path;
 
 def setFileParamsPy(value: str):
     global _config_parameters;
@@ -386,3 +406,10 @@ def setListOfImports(value: List[str]):
     global _list_of_imports;
     _list_of_imports = value;
     return;
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# AUXILIARY METHODS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def relativisePath(path: str):
+    return os.path.relpath(path=path, start=getPathRoot());

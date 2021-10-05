@@ -12,6 +12,7 @@ from src.local.typing import *;
 from src.core.log import *;
 from src.core.utils import createNewFileName;
 from src.core.utils import createNewPathName;
+from src.core.utils import formatPath;
 from src.core.utils import getAttribute;
 from src.core.utils import getFilesByPattern;
 from src.core.utils import readYamlFile;
@@ -19,7 +20,6 @@ from src.core.utils import restrictDictionary;
 from src.core.utils import toPythonKeysDict;
 from src.customtypes.exports import ProjectTree;
 from src.setup import appconfig;
-from src.setup.methods import extractPath;
 from src.setup.userconfig import setupYamlReader;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -49,7 +49,6 @@ def step(fname: str):
     setParamsConfig(**toPythonKeysDict(config_parameters));
     setConfigFilesAndFolders(**toPythonKeysDict(config));
 
-    assert not (appconfig.getFileStart() == appconfig.getFileOutput()), 'The output and start (\'root\') files must be different!';
     logInfo('READ CONFIG COMPLETE');
     return;
 
@@ -97,6 +96,7 @@ def setCompileConfig(
     spaces:     int,
     seed:       int,
 ):
+    root = appconfig.getPathRoot();
     appconfig.setOptionLegacy(legacy);
     appconfig.setOptionIgnore(ignore);
     appconfig.setOptionDebug(debug);
@@ -114,13 +114,17 @@ def setCompileConfig(
         appconfig.setIndentCharacter(' '*spaces);
         appconfig.setIndentCharacterRe(' '*spaces);
 
-    appconfig.setFileStart(setFile(startfile));
-    appconfig.setFileOutput(setFile(outputfile));
+    fileStart = formatPath(startfile, root=root, relative=False);
+    fileOutput = formatPath(outputfile, root=root, relative=False, ext_if_empty='.tex');
 
-    root = appconfig.getPathRoot();
+    assert os.path.dirname(fileOutput) == root, 'The output file can only be set to be in the root directory!';
+    assert not (fileStart == fileOutput), 'The output and start (\'root\'-attribute in config) paths must be different!';
+
+    appconfig.setFileStart(fileStart);
+    appconfig.setFileOutput(fileOutput);
+
     file = createNewFileName(dir=root, nameinit='phpytex_main.py', namescheme='phpytex_main_{}.py');
-    file = os.path.relpath(path=file, start=root);
-    appconfig.setFileTranspiled(setFile(file));
+    appconfig.setFileTranspiled(formatPath(file, root=root, relative=False));
     return;
 
 def setStampConfig(
@@ -132,7 +136,7 @@ def setStampConfig(
     if not isinstance(file, str) or file == '':
         file = createNewPathName(dir=root, nameinit='stamp.tex', namescheme='stamp_{}.tex');
         file = os.path.relpath(path=file, start=root);
-    appconfig.setFileStamp(setFile(file));
+    appconfig.setFileStamp(formatPath(file, root=root, relative=False));
     appconfig.setOptionOverwriteStamp(overwrite);
     appconfig.setDictionaryStamp(options);
     return;
@@ -156,16 +160,9 @@ def setParamsConfig(
     modulename = re.sub(r'\/', '.', os.path.splitext(path)[0]);
 
     appconfig.setImportParamsPy(modulename);
-    appconfig.setFileParamsPy(setFile(path));
+    appconfig.setFileParamsPy(formatPath(path, root=root, relative=False));
     return;
 
 def setConfigFilesAndFolders(**config):
     appconfig.setProjectTree(ProjectTree(**config));
     return;
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# TERTIARY METHODS
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-def setFile(file: str) -> str:
-    return extractPath(path=file, relative=True);

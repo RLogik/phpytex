@@ -25,9 +25,9 @@ from src.setup import appconfig;
 
 def step():
     logInfo('CONVERSION (python -> latex [+ latex -> pdf]) STARTED.');
-    fnamePy = appconfig.getFileTranspiled();
-    fnameLatex = appconfig.getFileOutput();
-    execmetacode(fnamePy=fnamePy, fnameLatex=fnameLatex);
+    fnamePy = appconfig.getFileTranspiled(rel=False);
+    fnameLatex = appconfig.getFileOutput(rel=False);
+    execTranspiledCode(fnamePy=fnamePy, fnameLatex=fnameLatex);
     logInfo('CONVERSION (python -> latex) COMPLETE.');
     if appconfig.getOptionCompileLatex():
         logInfo('CONVERSION (latex -> pdf) COMPLETE.');
@@ -37,7 +37,7 @@ def step():
 # SECONDARY METHODS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def execmetacode(fnamePy: str, fnameLatex: str):
+def execTranspiledCode(fnamePy: str, fnameLatex: str):
     try:
         cmd = re.split(r'\s+', appconfig.getPythonPath());
         pipeCall(*cmd, fnamePy);

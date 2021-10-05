@@ -15,7 +15,6 @@ from src.core.utils import unique;
 from src.core.utils import writeTextFile;
 from src.customtypes.exports import *;
 from src.setup import appconfig;
-from src.setup.methods import extractPath;
 from src.setup.methods import getTemplatePhpytexLinesPre;
 from src.setup.methods import getTemplatePhpytexLinesPost;
 from src.setup.templates.exports import *;
@@ -54,7 +53,7 @@ def step():
     name = 'stamp';
     preamble.append(name);
     transpileDocument(
-        path        = appconfig.getFileStamp(),
+        path        = appconfig.getFileStamp(rel=True),
         documents   = documents,
         imports     = TranspileBlocks(),
         name        = name,
@@ -65,7 +64,7 @@ def step():
 
     ## Transpile document file:
     transpileDocument(
-        path        = appconfig.getFileStart(),
+        path        = appconfig.getFileStart(rel=True),
         documents   = documents,
         imports     = imports,
         name        = '',
@@ -87,7 +86,7 @@ def step():
 
     ## Create `parameters.py`:
     createImportFileParameters(
-        path      = os.path.join(root, appconfig.getFileParamsPy()),
+        path      = appconfig.getFileParamsPy(rel=False),
         overwrite = appconfig.getOptionOverwriteParams(),
         documents = documents
     );
@@ -216,7 +215,7 @@ def createmetacode(
     preamble:   List[str],
     globalvars: List[str]
 ):
-    fnameLatex = appconfig.getFileOutput();
+    fnameLatex = appconfig.getFileOutput(rel=False);
     _lines_pre = getTemplatePhpytexLinesPre();
     _lines_post = getTemplatePhpytexLinesPost();
     lines = [];
@@ -224,8 +223,8 @@ def createmetacode(
         _lines_pre.format(
             imports       = '\n'.join(imports.generateCode()),
             root          = appconfig.getPathRoot(),
-            output        = extractPath(path=fnameLatex, relative=False, ext='tex'),
-            name          = extractPath(path=fnameLatex, relative=True, ext=''),
+            output        = appconfig.getFileOutput(rel=False),
+            name          = appconfig.getFileOutputBase(),
             insert_bib    = appconfig.getOptionInsertBib(),
             compile_latex = appconfig.getOptionCompileLatex(),
             length_max    = appconfig.getMaxLengthOuput(),
@@ -239,5 +238,5 @@ def createmetacode(
     lines += formatTextBlockAsList(
         _lines_post.format()
     );
-    writeTextFile(appconfig.getFileTranspiled(), lines);
+    writeTextFile(appconfig.getFileTranspiled(rel=False), lines);
     return;
