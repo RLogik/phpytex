@@ -28,6 +28,9 @@ EMPTYQUOTES: /('')+|("")+/
 
 // ---------------- BASIC ---------------- //
 
+// indentation
+indenttext: WHITESPACES? -> indenttext
+
 // text with nested but balanced quotation marks
 quotetext: quotetext_nonempty | quotetext_empty -> quotetext
 quotetext_nonempty.2: QUOTES
@@ -60,7 +63,7 @@ block.100: blockquick       -> block // highest priority = 40
     | blockcontent          -> block // priority 10
 
 // BLOCK QUICK
-blockquick.40: WHITESPACES? LMETA WHITESPACES? quickinstruction WHITESPACES? ENDCODE? WHITESPACES? RMETA -> blockquick
+blockquick.40: indenttext LMETA WHITESPACES? quickinstruction WHITESPACES? ENDCODE? WHITESPACES? RMETA -> blockquick
 quickinstruction: "set"i WHITESPACES quickvariable WHITESPACES? "=" WHITESPACES? safetext -> quickglobalset
     | "global set"i WHITESPACES quickvariable WHITESPACES? "=" WHITESPACES? safetext      -> quickglobalset
     | "local set"i WHITESPACES quickvariable WHITESPACES? "=" WHITESPACES? safetext       -> quicklocalset
