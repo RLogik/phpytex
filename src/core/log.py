@@ -43,31 +43,33 @@ def setLoggingState(state: str = 'out'):
 # Logging
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def logGeneric(tag: str, *lines: Any, force: bool = False, file = sys.stdout):
+def logGeneric(tag: str, *lines: Any, force: bool = False, tag_all: bool = True, file = sys.stdout):
     if not force and _quietmode:
         return;
     tag = '' if tag == '' else tag + ' ';
     for line in lines:
         print('{}{}{}'.format(_logging_prefix, tag, line), file=file);
+        if not tag_all:
+            tag = '';
     return;
 
 def logPlain(*lines: Any, force: bool = False, file=sys.stdout):
     logGeneric('', *lines, force=force, file=file);
 
-def logInfo(*lines: Any, force: bool = False, file=sys.stdout):
-    logGeneric('[\033[94;1mINFO\033[0m]', *lines, force=force, file=file);
+def logInfo(*lines: Any, force: bool = False, tag_all: bool = True, file=sys.stdout):
+    logGeneric('[\033[94;1mINFO\033[0m]', *lines, force=force, tag_all=tag_all, file=file);
 
-def logDebug(*lines: Any, force: bool = False, file=sys.stdout):
-    logGeneric('[\033[96;1mDEBUG\033[0m]', *lines, force=force, file=file);
+def logDebug(*lines: Any, force: bool = False, tag_all: bool = True, file=sys.stdout):
+    logGeneric('[\033[96;1mDEBUG\033[0m]', *lines, force=force, tag_all=tag_all, file=file);
 
-def logWarn(*lines: Any, force: bool = False, file=sys.stdout):
-    logGeneric('[\033[93;1mWARNING\033[0m]', *lines, force=force, file=file);
+def logWarn(*lines: Any, force: bool = False, tag_all: bool = False, file=sys.stdout):
+    logGeneric('[\033[93;1mWARNING\033[0m]', *lines, force=force, tag_all=tag_all, file=file);
 
-def logError(*lines: Any, force: bool = False, file=sys.stdout):
-    logGeneric('[\033[91;1mERROR\033[0m]', *lines, force=force, file=file);
+def logError(*lines: Any, force: bool = False, tag_all: bool = False, file=sys.stdout):
+    logGeneric('[\033[91;1mERROR\033[0m]', *lines, force=force, tag_all=tag_all, file=file);
 
-def logFatal(*lines: Any, force: bool = False, file=sys.stdout):
-    logGeneric('[\033[91;1mFATAL\033[0m]', *lines, force=force, file=file);
+def logFatal(*lines: Any, force: bool = False, tag_all: bool = False, file=sys.stdout):
+    logGeneric('[\033[91;1mFATAL\033[0m]', *lines, force=force, tag_all=tag_all, file=file);
     exit(1);
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
