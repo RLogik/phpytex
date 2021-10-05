@@ -12,6 +12,9 @@ import re;
 import random;
 import subprocess;
 
+sys.path.insert(0, os.path.dirname(__file__));
+os.chdir(os.path.dirname(__file__));
+
 ## USER IMPORTS
 {imports}
 
