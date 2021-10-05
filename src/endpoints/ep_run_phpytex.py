@@ -20,14 +20,14 @@ def endpoint(fname: str, **_):
         |     \033[32;1m(PH(p)y)tex\033[0m    |
         ----------------------
     '''));
-    step_readconfig(fname=fname);
+    step_configure(fname=fname);
     if appconfig.getOptionIgnore():
         logInfo('\033[32;1m(PH(p)y)tex\033[0m transpilation will be skipped.');
         return;
     step_create();
-    step_phpytex_to_python();
+    step_transpile();
     if appconfig.getOptionDebug():
         logInfo('The result of transpilation can be viewed in \033[1m{fnamePy}\033[0m'.format(fnamePy=appconfig.getFileTranspiled()));
         return;
-    step_python_to_latex_to_pdf();
+    step_compile();
     return;
