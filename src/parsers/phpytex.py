@@ -212,7 +212,7 @@ def processBlockCode(u: Tree, indentation: IndentationTracker, offset: str = '')
     typ = u.data;
     children = filterSubExpr(u);
     if typ == 'blockcode':
-        instructions = processInstructions(children[0]);
+        instructions = processBlockCodeArguments(children[0]);
         tokens, kwargs = instructions;
         block = processBlockCode(children[1], indentation=indentation, offset=offset);
         if 'import' in tokens:
@@ -261,10 +261,10 @@ def processCodeInline(u: Tree, indentation: IndentationTracker) -> TranspileBloc
         return TranspileBlock(kind='code:value', lines=lines, indentlevel=indentation.last, indentsymb=indentation.symb);
     raise Exception('Could not parse expression!');
 
-def processInstructions(u: Tree) -> Tuple[List[str], Dict[str, Any]]:
+def processBlockCodeArguments(u: Tree) -> Tuple[List[str], Dict[str, Any]]:
     typ = u.data;
     children = filterSubExpr(u);
-    if typ == 'blockcode_instructions':
+    if typ == 'blockcode_args':
         return processArgList(children[0]);
     raise Exception('Could not parse expression!');
 
