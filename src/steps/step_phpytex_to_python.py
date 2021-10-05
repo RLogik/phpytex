@@ -9,7 +9,7 @@ from src.local.maths import *;
 from src.local.typing import *;
 
 from src.core.log import *;
-from src.core.utils import dedentIgnoreFirstAndLast, formatTextBlockAsList;
+from src.core.utils import formatTextBlockAsList;
 from src.core.utils import readTextFile;
 from src.core.utils import unique;
 from src.core.utils import writeTextFile;
@@ -141,22 +141,11 @@ def transpileDocument(
         is_legacy  = appconfig.getOptionLegacy(),
     );
 
-    try:
-        parsedblocks = list(parseText(lines, indentation));
-    except Exception as e:
-        logError(dedentIgnoreFirstAndLast(
-            '''
-            Could not tokenise/parse the phpytex content of
-              \033[1m{path}\033[0m.
-            '''
-        ).format(path = path));
-        raise e;
-
     logInfo('Parse phpytex file \033[1m{}\033[0m'.format(path));
 
     if is_preamble:
         blocks = TranspileBlocks();
-        for block in parsedblocks:
+        for block in parseText(lines, indentation):
             if not re.match(r'^text:comment', block.kind):
                 continue;
             blocks.append(block);
@@ -169,7 +158,7 @@ def transpileDocument(
         blocks = TranspileBlocks();
         if not is_preamble and params['show-tree']:
             blocks.append(documents.documentStamp(path, depth=0, start=True));
-        for block in parsedblocks:
+        for block in parseText(lines, indentation):
             kind = block.kind;
             if is_preamble:
                 if not re.match(r'^text:comment', kind):
