@@ -41,18 +41,11 @@ _config_parameters: Dict[str, ConfigParameter] = {
     'option_insert_bib':       ConfigParameter[bool]().setValue(False),
     'option_overwrite_stamp':  ConfigParameter[bool]().setValue(True),
     'option_overwrite_params': ConfigParameter[bool]().setValue(True),
-    'len_precode':             ConfigParameter[int]().setValue(0),
-    'length_output':           ConfigParameter[int]().setValue(0),
     'max_length':              ConfigParameter[int]().setValue(10000),
         # <-- prevents transpiler from creating overlarge files
     'seed':                    ConfigParameter[int]().setValue(random.randint(0,10**8 - 1)),
     'indent_character':        ConfigParameter[str](),
     'indent_character_re':     ConfigParameter[str](),
-    ####
-    'has_error':               ConfigParameter[bool]().setValue(False),
-    'has_py_error':            ConfigParameter[bool]().setValue(False),
-    'is_too_long':             ConfigParameter[bool]().setValue(False),
-    'censor_length':           ConfigParameter[int]().setValue(8),
 };
 
 _dictionary_stamp: Dict[str, Any] = dict();
@@ -257,21 +250,6 @@ def setParamModuleName(value: str):
     global _config_parameters;
     _config_parameters['param_module_name'].value = value;
     return;
-
-def getLenPrecode() -> int:
-    return _config_parameters['len_precode'].value;
-
-def setLenPrecode(value: int):
-    global _config_parameters;
-    _config_parameters['len_precode'].value = value;
-    return;
-
-def getLengthOutput() -> int:
-    return _config_parameters['length_output'].value;
-
-def setLengthOutput(value: int):
-    global _config_parameters;
-    _config_parameters['length_output'].value = value;
     return;
 
 def getMaxLengthOuput() -> int:
@@ -304,38 +282,6 @@ def getIndentCharacterRe() -> str:
 def setIndentCharacterRe(value: str):
     global _config_parameters;
     _config_parameters['indent_character_re'].value = value;
-    return;
-
-def getHasError() -> bool:
-    return _config_parameters['has_error'].value;
-
-def setHasError(value: bool):
-    global _config_parameters;
-    _config_parameters['has_error'].value = value;
-    return;
-
-def getHasPyError() -> bool:
-    return _config_parameters['has_py_error'].value;
-
-def setHasPyError(value: bool):
-    global _config_parameters;
-    _config_parameters['has_py_error'].value = value;
-    return;
-
-def getIsTooLong() -> bool:
-    return _config_parameters['is_too_long'].value;
-
-def setIsTooLong(value: bool):
-    global _config_parameters;
-    _config_parameters['is_too_long'].value = value;
-    return;
-
-def getCensorLength() -> int:
-    return _config_parameters['censor_length'].value;
-
-def setCensorLength(value: int):
-    global _config_parameters;
-    _config_parameters['censor_length'].value = value;
     return;
 
 def getDictionaryStamp() -> Dict[str, Any]:
