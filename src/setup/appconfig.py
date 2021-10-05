@@ -21,9 +21,9 @@ _config_parameters: Dict[str, ConfigParameter] = {
     'pattern_config':          ConfigParameter[str]().setValue(r'^(|.*\.)(phpytex|phpycreate)\.(yml|yaml)$'),
     'path_app':                ConfigParameter[str](),
     'path_root':               ConfigParameter[str](),
-    'file_phpytex':            ConfigParameter[str](),
-    'file_script':             ConfigParameter[str](),
-    'file_latex':              ConfigParameter[str](),
+    'file_start':              ConfigParameter[str](),
+    'file_transpiled':         ConfigParameter[str](),
+    'file_output':             ConfigParameter[str](),
     'file_stamp':              ConfigParameter[str](),
     'file_params_py':          ConfigParameter[str](),
     'import_param_py':         ConfigParameter[str](),
@@ -136,34 +136,34 @@ def setFileStamp(value: str):
     _config_parameters['file_stamp'].value = value;
     return;
 
-def getFilePhpytex() -> str:
-    return _config_parameters['file_phpytex'].value;
+def getFileStart() -> str:
+    return _config_parameters['file_start'].value;
 
-def setFilePhpytex(value: str):
+def setFileStart(value: str):
     global _config_parameters;
     if value == '':
         return;
-    _config_parameters['file_phpytex'].value = value;
+    _config_parameters['file_start'].value = value;
     return;
 
-def getFileScript() -> str:
-    return _config_parameters['file_script'].value;
+def getFileTranspiled() -> str:
+    return _config_parameters['file_transpiled'].value;
 
-def setFileScript(value: str):
+def setFileTranspiled(value: str):
     global _config_parameters;
     if value == '':
         return;
-    _config_parameters['file_script'].value = value;
+    _config_parameters['file_transpiled'].value = value;
     return;
 
-def getFileLatex() -> str:
-    return _config_parameters['file_latex'].value;
+def getFileOutput() -> str:
+    return _config_parameters['file_output'].value;
 
-def setFileLatex(value: str):
+def setFileOutput(value: str):
     global _config_parameters;
     if value == '':
         return;
-    _config_parameters['file_latex'].value = value;
+    _config_parameters['file_output'].value = value;
     return;
 
 def getOptionLegacy() -> bool:

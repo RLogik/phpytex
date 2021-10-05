@@ -49,7 +49,7 @@ def step(fname: str):
     setParamsConfig(**toPythonKeysDict(config_parameters));
     setConfigFilesAndFolders(**toPythonKeysDict(config));
 
-    assert not (appconfig.getFilePhpytex() == appconfig.getFileLatex()), 'The output and root files must be different!';
+    assert not (appconfig.getFileStart() == appconfig.getFileOutput()), 'The output and start (\'root\') files must be different!';
     logInfo('READ CONFIG COMPLETE');
     return;
 
@@ -67,37 +67,35 @@ def getPhpytexConfig(fname: str) -> Dict[str, Any]:
 
 def preProcessCompileConfig(config: Dict[str, Any]) -> Dict[str, Any]:
     return dict(
-        root       = getAttribute(config, 'root', expectedtype=str),
-        seed       = getAttribute(config, 'seed', expectedtype=int),
         ignore     = getAttribute(config, 'ignore', expectedtype=bool, default=False),
+        legacy     = getAttribute(config, 'legacy', expectedtype=bool, default=False),
+        startfile  = getAttribute(config, 'root', expectedtype=str),
+        outputfile = getAttribute(config, 'output', expectedtype=str, default='main.tex'),
         debug      = getAttribute(config, 'debug', expectedtype=bool, default=False),
         compile    = getAttribute(config, ['compile-latex', 'compile'], expectedtype=bool, default=False),
         insert_bib = getAttribute(config, 'insert-bib', expectedtype=bool, default=True),
-        legacy     = getAttribute(config, 'legacy', expectedtype=bool, default=False),
         comments   = getAttribute(config, 'comments', expectedtype=str, default='auto'),
         show_tree  = getAttribute(config, ['show-structure', 'show-tree'], expectedtype=bool, default=True),
         max_length = getAttribute(config, 'max-length', expectedtype=int, default=10000),
         tabs       = getAttribute(config, 'tabs', expectedtype=bool, default=False),
         spaces     = getAttribute(config, 'spaces', expectedtype=int, default=4),
-        output     = getAttribute(config, 'output', expectedtype=str, default='main.tex'),
+        seed       = getAttribute(config, 'seed', expectedtype=int),
     );
 
 def setCompileConfig(
-    # DEV-NOTE: This is the _only_ place that root refers to a file.
-    # Otherwise root denotes the root directory in which the script is called.
-    root:       str,
-    seed:       int,
     ignore:     bool,
+    legacy:     bool,
+    startfile:  str,
+    outputfile: str,
     debug:      bool,
     compile:    bool,
     insert_bib: bool,
-    legacy:     bool,
     comments:   str,
     show_tree:  bool,
     max_length: int,
     tabs:       bool,
     spaces:     int,
-    output:     str,
+    seed:       int,
 ):
     appconfig.setOptionLegacy(legacy);
     appconfig.setOptionIgnore(ignore);
@@ -116,13 +114,13 @@ def setCompileConfig(
         appconfig.setIndentCharacter(' '*spaces);
         appconfig.setIndentCharacterRe(' '*spaces);
 
-    appconfig.setFilePhpytex(setFile(root));
-    appconfig.setFileLatex(setFile(output));
+    appconfig.setFileStart(setFile(startfile));
+    appconfig.setFileOutput(setFile(outputfile));
 
     root = appconfig.getPathRoot();
     file = createNewFileName(dir=root, nameinit='phpytex_main.py', namescheme='phpytex_main_{}.py');
     file = os.path.relpath(path=file, start=root);
-    appconfig.setFileScript(setFile(file));
+    appconfig.setFileTranspiled(setFile(file));
     return;
 
 def setStampConfig(

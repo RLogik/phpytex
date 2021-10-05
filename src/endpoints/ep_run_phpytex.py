@@ -27,7 +27,7 @@ def endpoint(fname: str, **_):
     step_create();
     step_phpytex_to_python();
     if appconfig.getOptionDebug():
-        logInfo('See output file: \033[1m{fnamePy}\033[0m'.format(fnamePy=appconfig.getFileScript()));
+        logInfo('The result of transpilation can be viewed in \033[1m{fnamePy}\033[0m'.format(fnamePy=appconfig.getFileTranspiled()));
         return;
     step_python_to_latex_to_pdf();
     return;

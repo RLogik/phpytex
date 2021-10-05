@@ -25,8 +25,8 @@ from src.setup import appconfig;
 
 def step():
     logInfo('CONVERSION (python -> latex [+ latex -> pdf]) STARTED.');
-    fnamePy = appconfig.getFileScript();
-    fnameLatex = appconfig.getFileLatex();
+    fnamePy = appconfig.getFileTranspiled();
+    fnameLatex = appconfig.getFileOutput();
     execmetacode(fnamePy=fnamePy, fnameLatex=fnameLatex);
     logInfo('CONVERSION (python -> latex) COMPLETE.');
     if appconfig.getOptionCompileLatex():

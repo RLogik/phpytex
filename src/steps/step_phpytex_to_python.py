@@ -65,7 +65,7 @@ def step():
 
     ## Transpile document file:
     transpileDocument(
-        path        = appconfig.getFilePhpytex(),
+        path        = appconfig.getFileStart(),
         documents   = documents,
         imports     = imports,
         name        = '',
@@ -216,7 +216,7 @@ def createmetacode(
     preamble:   List[str],
     globalvars: List[str]
 ):
-    fnameLatex = appconfig.getFileLatex();
+    fnameLatex = appconfig.getFileOutput();
     _lines_pre = getTemplatePhpytexLinesPre();
     _lines_post = getTemplatePhpytexLinesPost();
     lines = [];
@@ -239,5 +239,5 @@ def createmetacode(
     lines += formatTextBlockAsList(
         _lines_post.format()
     );
-    writeTextFile(appconfig.getFileScript(), lines);
+    writeTextFile(appconfig.getFileTranspiled(), lines);
     return;
