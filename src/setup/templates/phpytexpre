@@ -142,17 +142,23 @@ def ____print(s: str, anon=False):
 
 ## handling of bib:
 def ____insertbib(
-    fname:  str,
-    src:    str,
-    anon:   bool = False
+    fname:      str,
+    textindent: str  = '',
+    anon:       bool = False
 ):
     global ____phpytex_params____;
 
-    line = '\\bibliography{{{{\'{{file}}\'}}}}'.format(file=os.path.splitext(fname)[0]);
+    line = '{{tab}}\\bibliography{{{{\'{{file}}\'}}}}'.format(
+        tab  = textindent,
+        file = os.path.splitext(fname)[0]
+    );
     n = len(____phpytex_params____['lines']['content']);
     with open(____phpytex_params____['output'], 'a') as fp:
         print(line, file=fp);
     ____phpytex_params____['lines']['content'].append(line);
+
+    ## TODO: This needs to be generalised to allow the possibility of compiling multiple .bib files
+    src = '{{bibname}}.bbl'.format(bibname = ____phpytex_params____['name']);
 
     if not ( src in ____phpytex_params____['lines']['bib'] ):
         ____phpytex_params____['lines']['bib'][src] = [];
