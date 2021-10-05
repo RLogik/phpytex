@@ -23,7 +23,7 @@ PATH_TO_VERSION:       str = 'src/setup/VERSION';
 PATH_TO_TEMPLATE_HELP: str = 'src/setup/templates/help';
 PATH_TO_TEMPLATE_PRE:  str = 'src/setup/templates/phpytexpre';
 PATH_TO_TEMPLATE_POST: str = 'src/setup/templates/phpytexpost';
-PATH_TO_GRAMMARS:      str = 'src/grammars';
+PATH_TO_GRAMMARS:      str = 'src/parsers/grammars';
 
 _opensource: bool = True;
 
