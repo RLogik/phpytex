@@ -17,6 +17,8 @@ source scripts/.lib.sh;
 
 mode="$( get_one_kwarg_space "$SCRIPTARGS" "-+mode" "")";
 options="$( get_kwarg "$SCRIPTARGS" "-+options" "" )";
+option_venv="$( get_one_kwarg_space "$SCRIPTARGS" "-+venv" "true" )";
+( $option_venv ) && use_python_venv_true || use_python_venv_false;
 
 if [ "$mode" == "setup" ]; then
     # whale_call <service>  <tag-sequence> <save, it, ports> <type, command>

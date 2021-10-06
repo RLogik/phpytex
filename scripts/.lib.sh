@@ -24,6 +24,7 @@ export CONFIGENV="data/.env";
 export PYTHON_APP_PREFIX=\
 '''#!/usr/bin/env python3
 # -*- coding: utf-8 -*-'''
+export USE_VENV=false;
 
 ##############################################################################
 # AUXILIARY METHODS: Zip
@@ -37,7 +38,12 @@ function create_zip_archive() {
 # AUXILIARY METHODS: Python
 ##############################################################################
 
+function use_python_venv_true() { USE_VENV=true; }
+function use_python_venv_false() { USE_VENV=false; }
+
 function create_python_venv() {
+    ! ( $USE_VENV ) && return;
+    _log_info "Create VENV";
     ! [ -d build ] && mkdir build;
     pushd build >> $VERBOSE;
         call_python -m venv env;
@@ -45,7 +51,7 @@ function create_python_venv() {
 }
 
 function activate_python_venv() {
-    return;
+    ! ( $USE_VENV ) && return;
     if ( is_linux ); then
         source build/env/bin/activate;
     else
@@ -54,6 +60,7 @@ function activate_python_venv() {
 }
 
 function deactivate_python_venv() {
+    ! ( $USE_VENV ) && return;
     if ( is_linux ); then
         source build/env/bin/deactivate;
     else
@@ -152,7 +159,6 @@ function garbage_collection_python() {
 
 function run_setup() {
     _log_info "RUN SETUP";
-    _log_info "Create VENV";
     create_python_venv;
     _log_info "Check and install missing requirements";
     install_requirements_v_python "$PATH_REQ_PY";
