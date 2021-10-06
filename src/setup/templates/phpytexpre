@@ -148,9 +148,10 @@ def ____insertbib(
 ):
     global ____phpytex_params____;
 
-    line = '{{tab}}\\bibliography{{{{\'{{file}}\'}}}}'.format(
+    line = '{{tab}}\\bibliography{{{{{{file}}}}}}'.format(
         tab  = textindent,
-        file = os.path.splitext(fname)[0]
+        # file = os.path.splitext(fname)[0] ## NOTE: older compilers require .bib to be stripped!
+        file = fname, ## NOTE: \bibliography file argument cannot contain ", ', or  spaces!
     );
     n = len(____phpytex_params____['lines']['content']);
     with open(____phpytex_params____['output'], 'a') as fp:
