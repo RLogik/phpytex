@@ -84,7 +84,7 @@ def step():
     blocks = TranspileBlocks([documents.documentTree(seed=appconfig.getSeed())]);
     documents.addPreamble(name=name, blocks=blocks);
 
-    ## Create `parameters.py`:
+    ## Create 'parameters.py':
     createImportFileParameters(
         path      = appconfig.getFileParamsPy(rel=False),
         overwrite = appconfig.getOptionOverwriteParams(),
@@ -95,7 +95,7 @@ def step():
     imports.append(TranspileBlock(
         kind        = 'code',
         content     = 'from {name} import *;'.format(name = appconfig.getImportParamsPy()),
-        indentlevel = 0,
+        level       = 0,
         indentsymb  = indentsymb,
     ));
 
@@ -133,18 +133,18 @@ def transpileDocument(
         logError('Could not find or read document \033[1m{path}\033[0m!'.format(path = path));
         return;
     depth = len(chain);
-    indentsymb = appconfig.getIndentCharacter();
+    indentsymb = appconfig.getOffsetSymbol();
+    offset = appconfig.getOffsetSymbol();
     indentation = IndentationTracker(
-        symb       = indentsymb,
-        pattern    = appconfig.getIndentCharacterRe(),
-        is_legacy  = appconfig.getOptionLegacy(),
+        symb    = indentsymb,
+        pattern = appconfig.getIndentCharacterRe(),
     );
 
     logPlain(displayTreeBranch(path=path, anon=documents.isAnon(path), depth=depth));
 
     if is_preamble:
         blocks = TranspileBlocks();
-        for block in parseText(lines, indentation):
+        for block in parseText(lines, indentation, offset=offset):
             if not (block.kind == 'text:comment'):
                 continue;
             blocks.append(block);
@@ -157,7 +157,7 @@ def transpileDocument(
         blocks = TranspileBlocks();
         if params['show-tree']:
             blocks.append(documents.documentStamp(depth=0, start=True));
-        for block in parseText(lines, indentation):
+        for block in parseText(lines, indentation, offset=offset):
             if block.kind == 'code:import':
                 imports.append(block);
                 continue;
@@ -246,7 +246,7 @@ def displayTreeBranch(
     branchsymb: str  = '  |____',
     depth:      int  = 0
 ) -> str:
-    return '{prefix}{tab}{branchsymb}`{path}`'.format(
+    return '{prefix}{tab}{branchsymb} {path}'.format(
         prefix = prefix,
         tab = indentsymb*(depth if depth == 0 else depth - 1),
         branchsymb = '' if depth == 0 else branchsymb,

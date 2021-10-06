@@ -10,13 +10,12 @@ from src.local.lexers import *;
 from src.local.misc import *;
 from src.local.typing import *;
 
-from src.core.timer import Timer;
+from src.core.log import *;
 from src.core.utils import extractIndent;
 from src.core.utils import escapeForPython;
 from src.core.utils import formatBlockUnindent;
 from src.core.utils import getAttribute;
 from src.core.utils import lengthOfWhiteSpace;
-from src.core.log import *;
 from src.setup.methods import getGrammar;
 from src.customtypes.exports import *;
 
@@ -56,27 +55,27 @@ def tokeniseInput(mode: str, text: str):
 # MAIN METHODS string -> Expression
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def parseText(text: str, indentation: IndentationTracker) -> Generator[TranspileBlock, None, None]:
+def parseText(text: str, indentation: IndentationTracker, offset: str = '') -> Generator[TranspileBlock, None, None]:
     if text.strip() == '':
         return;
     try:
         u = tokeniseInput('blocks', text);
-        yield from lexedToBlocks(u, indentation=indentation);
+        yield from lexedToBlocks(u, offset=offset, indentation=indentation);
     except Exception as err:
-        yield from lexedToBlockFeed(text, indentation=indentation);
+        yield from lexedToBlockFeed(text, offset=offset, indentation=indentation);
         return;
     return;
 
-def parseCodeBlock(text: str, indentation: IndentationTracker) -> TranspileBlock:
+def parseCodeBlock(text: str, indentation: IndentationTracker, offset: str = '') -> TranspileBlock:
     u = tokeniseInput('blockcode', text);
-    return processBlockCode(u, indentation=indentation);
+    return processBlockCode(u, offset=offset, indentation=indentation);
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # PRIVATE METHODS: recursive lex -> Expression
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ## NOTE: This method is too slow. Thus only used when parseText fails, in order to pinpoint failure.
-def lexedToBlockFeed(text: str, indentation: IndentationTracker) -> Generator[TranspileBlock, None, None]:
+def lexedToBlockFeed(text: str, offset: str, indentation: IndentationTracker) -> Generator[TranspileBlock, None, None]:
     lines = re.split(r'\r?\n', text);
     numlines = len(lines);
     linespos = 0;
@@ -86,7 +85,7 @@ def lexedToBlockFeed(text: str, indentation: IndentationTracker) -> Generator[Tr
         try:
             u = tokeniseInput('blockfeed', textrest);
         except Exception as err:
-            raiseLexError(lines, linespos);
+            raiseLexError(lines, linespos, err);
         ## extract tokenised information:
         linespos_old = linespos;
         children = filterSubExpr(u);
@@ -97,52 +96,51 @@ def lexedToBlockFeed(text: str, indentation: IndentationTracker) -> Generator[Tr
             linespos = numlines - numlines_;
         ## attempt to parse next block:
         try:
-            block = lexedToBlock(children[0], indentation=indentation);
+            block = lexedToBlock(children[0], offset=offset, indentation=indentation);
             yield block;
         except Exception as err:
-            raiseParseError(lines, linespos_old, linespos);
+            raiseParseError(lines, linespos_old, linespos, err);
         ## break, if not 'rest' found
         if len(children) == 1:
             break;
     return;
 
-def lexedToBlocks(u: Tree, indentation: IndentationTracker) -> Generator[TranspileBlock, None, None]:
+def lexedToBlocks(u: Tree, offset: str, indentation: IndentationTracker) -> Generator[TranspileBlock, None, None]:
     typ = u.data;
     children = filterSubExpr(u);
     if typ == 'blocks':
         for child in children:
-            yield lexedToBlock(child, indentation=indentation);
+            yield lexedToBlock(child, offset=offset, indentation=indentation);
         return;
-        # return [ lexedToBlock(child, indentation=indentation) for child in children ];
     raise Exception('Could not parse expression!');
 
-def lexedToBlock(u: Tree, indentation: IndentationTracker) -> TranspileBlock:
+def lexedToBlock(u: Tree, offset: str, indentation: IndentationTracker) -> TranspileBlock:
     typ = u.data;
     children = filterSubExpr(u);
     if typ == 'blockfeedone':
-        return lexedToBlock(children[0], indentation=indentation);
+        return lexedToBlock(children[0], offset=offset, indentation=indentation);
     if typ == 'block':
-        return lexedToBlock(children[0], indentation=indentation);
+        return lexedToBlock(children[0], offset=offset, indentation=indentation);
     if typ == 'emptyline':
-        return TranspileBlock(kind='text:empty', indentlevel=indentation.last, indentsymb=indentation.symb);
+        return TranspileBlock(kind='text:empty', level=indentation.level, indentsymb=indentation.symb);
     ## TEXT COMMENT
     elif typ == 'blockcomment':
-        return lexedToBlock(children[0], indentation=indentation);
+        return lexedToBlock(children[0], offset=offset, indentation=indentation);
     elif typ == 'blockcomment_simple':
         parameters = dict(keep=False);
-        return TranspileBlock(kind='text:comment', content=lexedToStr(u), indentlevel=indentation.last, indentsymb=indentation.symb, parameters=parameters);
+        return TranspileBlock(kind='text:comment', content=lexedToStr(u), level=indentation.level, indentsymb=indentation.symb, parameters=parameters);
     elif typ == 'blockcomment_keep':
         parameters = dict(keep=True);
-        return TranspileBlock(kind='text:comment', content=lexedToStr(u), indentlevel=indentation.last, indentsymb=indentation.symb, parameters=parameters);
+        return TranspileBlock(kind='text:comment', content=lexedToStr(u), level=indentation.level, indentsymb=indentation.symb, parameters=parameters);
     ## TEXT CONTENT
     elif typ == 'blockcontent':
         return processBlockContent(children, indentation=indentation);
     ## CODE BLOCK REGEX
     elif typ == 'blockcode_regex':
-        return processBlockCodeRegex(lexedToStr(u), indentation=indentation);
+        return processBlockCodeRegex(lexedToStr(u), offset=offset, indentation=indentation);
     ## CODE BLOCK
     elif typ == 'blockcode':
-        return processBlockCode(children[0], indentation=indentation);
+        return processBlockCode(children[0], offset=offset, indentation=indentation);
     ## QUICK COMMAND
     elif typ == 'blockquick':
         textindent = lexedToStr(children[0]);
@@ -165,7 +163,7 @@ def processBlockContent(children: List[Tree], indentation: IndentationTracker) -
             exprs.append('{{{}}}'.format(key));
             i += 1;
     expr = ''.join(exprs);
-    block = TranspileBlock(kind='text:subst', content=expr, indentlevel=indentation.last, indentsymb=indentation.symb);
+    block = TranspileBlock(kind='text:subst', content=expr, level=indentation.level, indentsymb=indentation.symb);
     block.subst = subst;
     return block;
 
@@ -180,7 +178,7 @@ def processBlockQuickCommand(u: Tree, textindent: str, indentation: IndentationT
             parameters = parameters | dict(scope='global');
         elif typ == 'quicklocalset':
             parameters = parameters | dict(scope='local');
-        return TranspileBlock(kind='code:set', indentlevel=indentation.last, indentsymb=indentation.symb, parameters=parameters);
+        return TranspileBlock(kind='code:set', level=indentation.level, indentsymb=indentation.symb, parameters=parameters);
     elif typ in [ 'quickinput', 'quickinput_anon', 'quickbib', 'quickbib_anon' ]:
         path = stripEndOfCode(lexedToStr(children[0]));
         parameters = dict(path=path, tab=textindent);
@@ -192,35 +190,35 @@ def processBlockQuickCommand(u: Tree, textindent: str, indentation: IndentationT
             parameters = parameters | dict(mode='bib', anon=False);
         elif typ == 'quickbib_anon':
             parameters = parameters | dict(mode='bib', anon=True);
-        return TranspileBlock(kind='code:input', indentlevel=indentation.last, indentsymb=indentation.symb, parameters=parameters);
+        return TranspileBlock(kind='code:input', level=indentation.level, indentsymb=indentation.symb, parameters=parameters);
     elif typ == 'quickescape':
-        indentation.last = 0;
+        indentation.level = 0;
         parameters = dict(level=0);
-        return TranspileBlock(kind='code:escape', indentlevel=indentation.last, indentsymb=indentation.symb, parameters=parameters);
+        return TranspileBlock(kind='code:escape', level=indentation.level, indentsymb=indentation.symb, parameters=parameters);
     elif typ == 'quickescapeonce':
         indentation.decrOffset();
-        parameters = dict(level=indentation.last);
-        return TranspileBlock(kind='code:escape', indentlevel=indentation.last, indentsymb=indentation.symb, parameters=parameters);
+        parameters = dict(level=indentation.level);
+        return TranspileBlock(kind='code:escape', level=indentation.level, indentsymb=indentation.symb, parameters=parameters);
     raise Exception('Could not parse expression!');
 
 # see .lark file for regex pattern
-def processBlockCodeRegex(text: str, indentation: IndentationTracker) -> TranspileBlock:
+def processBlockCodeRegex(text: str, offset: str, indentation: IndentationTracker) -> TranspileBlock:
     text = dedent(text);
-    return parseCodeBlock(text, indentation=indentation);
+    return parseCodeBlock(text, offset=offset, indentation=indentation);
 
-def processBlockCode(u: Tree, indentation: IndentationTracker, offset: str = '') -> TranspileBlock:
+def processBlockCode(u: Tree, offset: str, indentation: IndentationTracker) -> TranspileBlock:
     typ = u.data;
     children = filterSubExpr(u);
     if typ == 'blockcode':
         instructions = processBlockCodeArguments(children[0]);
         tokens, kwargs = instructions;
-        block = processBlockCode(children[1], indentation=indentation, offset=offset);
+        block = processBlockCode(children[1], offset=offset, indentation=indentation);
         if 'import' in tokens:
             block.kind = 'code:import';
             return block;
         elif 'print' in tokens or getAttribute(kwargs, 'print', expectedtype=bool, default=False):
             block.kind = 'code:value';
-            blockcontainer = TranspileBlock(kind='text:subst', content='{subst0}', indentlevel=indentation.last, indentsymb=indentation.symb);
+            blockcontainer = TranspileBlock(kind='text:subst', content='{subst0}', level=indentation.level, indentsymb=indentation.symb);
             blockcontainer.subst = { 'subst0': block };
             return blockcontainer;
         else:
@@ -228,10 +226,13 @@ def processBlockCode(u: Tree, indentation: IndentationTracker, offset: str = '')
     elif typ == 'blockcode_inside':
         lenOffset = lengthOfWhiteSpace(offset);
         lines = [ lexedToStr(child) for child in children ];
-        lenIndentation = [ lengthOfWhiteSpace(extractIndent(line)) for line in lines ];
-        assert all( n >= lenOffset for n in lenIndentation ), 'Invalid indentation inside code block!';
-        lines = formatBlockUnindent(lines=lines, reference=offset + indentation.symb);
-        indentation.initOffset(''); # <- NOTE: have dedented, thus offsett now empty.
+        lenIndentation = [
+            lengthOfWhiteSpace(extractIndent(line))
+            for line in lines
+            if not re.match(r'^\s*$', line) # ignore indentation of empty lines
+        ];
+        assert all( n >= lenOffset for n in lenIndentation ), 'One or more lines inside code block are too far left of acceptable minimal offset.';
+        lines = formatBlockUnindent(lines=lines, reference=offset);
         is_under_splitline = False;
         for k, line in enumerate(lines):
             indent = extractIndent(line);
@@ -242,7 +243,7 @@ def processBlockCode(u: Tree, indentation: IndentationTracker, offset: str = '')
                 is_under_splitline = True;
             if re.match(r'^.*:\s*$', line):
                 indentation.incrOffset();
-        return TranspileBlock(kind='code', lines=lines, indentlevel=indentation.start, indentsymb=indentation.symb);
+        return TranspileBlock(kind='code', lines=lines, level=0, indentsymb=indentation.symb);
     raise Exception('Could not parse expression!');
 
 ## MISCELLANEOUS PARSERS
@@ -250,15 +251,15 @@ def processBlockCode(u: Tree, indentation: IndentationTracker, offset: str = '')
 def processCodeInline(u: Tree, indentation: IndentationTracker) -> TranspileBlock:
     typ = u.data;
     children = filterSubExpr(u);
-    indent = indentation.symb*indentation.last;
+    indent = indentation.symb*indentation.level;
     if typ == 'codeinline':
         return processCodeInline(children[0], indentation=indentation);
     elif typ == 'codeoneline':
         lines = formatValue([ lexedToStr(u) ], indent=indent);
-        return TranspileBlock(kind='code:value', lines=lines, indentlevel=indentation.last, indentsymb=indentation.symb);
+        return TranspileBlock(kind='code:value', lines=lines, level=indentation.level, indentsymb=indentation.symb);
     elif typ == 'codemultiline':
         lines = formatValue([ lexedToStr(child) for child in children ], indent=indent);
-        return TranspileBlock(kind='code:value', lines=lines, indentlevel=indentation.last, indentsymb=indentation.symb);
+        return TranspileBlock(kind='code:value', lines=lines, level=indentation.level, indentsymb=indentation.symb);
     raise Exception('Could not parse expression!');
 
 def processBlockCodeArguments(u: Tree) -> Tuple[List[str], Dict[str, Any]]:
@@ -294,7 +295,7 @@ def processArgList(u: Tree) -> Tuple[List[str], Dict[str, Any]]:
 # ERROR HANDLING METHODS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def raiseLexError(lines: List[str], linepos: int):
+def raiseLexError(lines: List[str], linepos: int, err: Exception):
     text_consumed = lines[:linepos];
     text_remaining = lines[linepos:];
     message = [ 'At line \033[1m{}\033[0m the text could not be \033[1mtokenised\033[0m:'.format(linepos) ];
@@ -303,9 +304,10 @@ def raiseLexError(lines: List[str], linepos: int):
     message += [ '\033[91;1m{}\033[0m'.format(line) for line in text_remaining[:1] ];
     message += [ '\033[2m{}\033[0m'.format(line) for line in text_remaining[1:3] ];
     message.append('\033[1m--------------------------------\033[0m');
+    message.append(str(err));
     logFatal(*message);
 
-def raiseParseError(lines: List[str], linepos1: int, linepos2: int):
+def raiseParseError(lines: List[str], linepos1: int, linepos2: int, err: Exception):
     text_consumed = lines[:linepos1];
     text_block = lines[linepos1:linepos2];
     text_remaining = lines[linepos2:];
@@ -315,6 +317,7 @@ def raiseParseError(lines: List[str], linepos1: int, linepos2: int):
     message += [ '\033[91;1m{}\033[0m'.format(line) for line in text_block ];
     message += [ '\033[2m{}\033[0m'.format(line) for line in text_remaining[:3] ];
     message.append('\033[1m--------------------------------\033[0m');
+    message.append(str(err));
     logFatal(*message);
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

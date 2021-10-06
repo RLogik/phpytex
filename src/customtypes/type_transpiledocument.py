@@ -84,7 +84,7 @@ class TranspileDocument(list):
         globalvars: List[str] = [],
         anon:       bool      = False
     ) -> Generator[str, None, None]:
-        yield '{tab}# generate content from file `{path}`'.format(
+        yield '{tab}# generate content from file \'{path}\''.format(
             tab  = self.tab(offset),
             path = self.path,
         );
@@ -210,7 +210,7 @@ class TranspileDocuments(object):
         assert path in self.documents, 'Must add document first, before adding blocks.';
         document = self.documents[path];
         for block in blocks:
-            state = dict(indentlevel=block.indentlevel, indentsymb=block.indentsymb);
+            state = dict(level=block.level, indentsymb=block.indentsymb);
             if re.match(r'^text($|:)', block.kind):
                 document.append(block);
             elif block.kind == 'code':
@@ -279,7 +279,7 @@ class TranspileDocuments(object):
                         ],
                         **state
                     ));
-        document.append(TranspileBlock(kind='text:empty', indentlevel=0, indentsymb=self.indentsymb)); # force empty add end of file
+        document.append(TranspileBlock(kind='text:empty', level=0, indentsymb=self.indentsymb)); # force empty add end of file
         return;
 
     def documentStructurePretty(
@@ -296,7 +296,7 @@ class TranspileDocuments(object):
             children = self.getHeadPaths();
         elif path in self.paths:
             anon = anon or self.anon[path];
-            yield '{prefix}{tab}{branchsymb}`{path}`'.format(
+            yield '{prefix}{tab}{branchsymb} {path}'.format(
                 prefix = prefix,
                 tab = indentsymb*(depth if depth == 0 else depth - 1),
                 branchsymb = '' if depth == 0 else branchsymb,
@@ -312,16 +312,16 @@ class TranspileDocuments(object):
 
     def documentStamp(self, depth: int = 0, start: bool = True) -> TranspileBlock:
         return TranspileBlock(
-            kind = 'code',
-            content = '____printfilestamp(depth={depth}, start={start});'.format(depth=depth, start=start),
-            indentlevel = 0,
+            kind       = 'code',
+            content    = '____printfilestamp(depth={depth}, start={start});'.format(depth=depth, start=start),
+            level      = 0,
             indentsymb = self.indentsymb
         );
 
     def documentTree(self, seed: int) -> TranspileBlock:
         return TranspileBlock(
-            kind = 'text:comment',
-            lines = formatTextBlockAsList(
+            kind       = 'text:comment',
+            lines      = formatTextBlockAsList(
                 '''
                 %% ********************************************************************************
                 %% DOCUMENT STRUCTURE:
@@ -337,7 +337,7 @@ class TranspileDocuments(object):
                 %% ********************************************************************************
                 '''.format(seed)
             ) + [ '' ],
-            indentlevel = 0,
+            level      = 0,
             indentsymb = self.indentsymb,
         );
 
@@ -372,7 +372,7 @@ class TranspileDocuments(object):
         ## generate function for preamble parts
         for name, blocks in self.preamble.items():
             yield '';
-            yield '{tab}# preamble function `{name}`'.format(tab=self.tab(offset), name=name)
+            yield '{tab}# preamble function \'{name}\''.format(tab=self.tab(offset), name=name)
             yield '{tab}def {label}():'.format(
                 tab   = self.tab(offset),
                 label = '{label}_{name}'.format(label=self.schemes['pre'], name=name),
