@@ -88,7 +88,7 @@ def StepRunTestCase(
     shutil.copytree(src=path, dst=sandboxpath);
     cmd = re.split(r'\s+', PythonCommand());
     try:
-        pipeCall(*cmd, phpytex_script, cwd=sandboxpath);
+        pipeCall(*cmd, phpytex_script, 'run', cwd=sandboxpath);
     except:
         logFatal('Test case \033[1m{}\033[0m failed.'.format(getRelPath(path)));
 

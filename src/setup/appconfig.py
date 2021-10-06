@@ -20,7 +20,7 @@ from src.customtypes.exports import *;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 _config_parameters: Dict[str, ConfigParameter] = {
-    'pattern_config':          ConfigParameter[str]().setValue(r'^(|.*\.)(phpytex|phpycreate)\.(yml|yaml)$'),
+    'pattern_config':          ConfigParameter[str](),
     'path_app':                ConfigParameter[str](),
     'path_root':               ConfigParameter[str](),
     'file_start':              ConfigParameter[str](),

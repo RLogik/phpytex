@@ -11,6 +11,6 @@ from src.setup.methods import getVersion;
 # ENDPOINT display version
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def endpoint(**_):
+def endpoint():
     print(getVersion());
     return;

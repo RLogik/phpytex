@@ -32,10 +32,10 @@ from src.setup.userconfig import setupYamlReader;
 # METHOD: step get config
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def step(fname: str):
+def step(fnameConfig: str):
     logInfo('READ CONFIG STARTED');
     ## get configuration file
-    config = getPhpytexConfig(fname);
+    config = getPhpytexConfig(fnameConfig);
     ## get main parts of config
     config_compile = getAttribute(config, 'compile', 'options', expectedtype=dict, default=None) \
                      or getAttribute(config, 'compile', expectedtype=dict, default={});
@@ -56,13 +56,17 @@ def step(fname: str):
 # SECONDARY METHODS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def getPhpytexConfig(fname: str) -> Dict[str, Any]:
+def getPhpytexConfig(fnameConfig: str) -> Dict[str, Any]:
     setupYamlReader();
     try:
-        fname = fname or getFilesByPattern(path=appconfig.getPathRoot(), filepattern=appconfig.getPatternConfig())[0];
+        if not isinstance(fnameConfig, str) or fnameConfig == '':
+            fnameConfig = getFilesByPattern(
+                path        = appconfig.getPathRoot(),
+                filepattern = appconfig.getPatternConfig()
+            )[0];
     except:
         raise Exception('Could not find or read any phpytex configuration files.');
-    return readYamlFile(fname);
+    return readYamlFile(fnameConfig);
 
 def preProcessCompileConfig(config: Dict[str, Any]) -> Dict[str, Any]:
     return dict(

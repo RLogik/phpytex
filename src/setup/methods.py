@@ -20,7 +20,6 @@ from src.setup import appconfig;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 PATH_TO_VERSION:       str = 'src/setup/VERSION';
-PATH_TO_TEMPLATE_HELP: str = 'src/setup/templates/help';
 PATH_TO_TEMPLATE_PRE:  str = 'src/setup/templates/phpytexpre';
 PATH_TO_TEMPLATE_POST: str = 'src/setup/templates/phpytexpost';
 PATH_TO_GRAMMARS:      str = 'src/parsers/grammars';
@@ -54,9 +53,6 @@ def readFileContents(path: str, encoding: str = ENCODING_UTF8) -> str:
 
 def getVersion() -> str:
     return readFileContents(PATH_TO_VERSION).strip();
-
-def getTemplateHelp() -> str:
-    return readFileContents(PATH_TO_TEMPLATE_HELP);
 
 def getTemplatePhpytexLinesPre() -> str:
     return readFileContents(PATH_TO_TEMPLATE_PRE);

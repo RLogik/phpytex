@@ -14,13 +14,13 @@ from src.steps.exports import *;
 # ENDPOINT run phpytex
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def endpoint(fname: str, **_):
+def endpoint(fnameConfig: str, **_):
     logPlain(formatTextBlock('''
         ----------------------
         |     \033[32;1m(PH(p)y)tex\033[0m    |
         ----------------------
     '''));
-    step_configure(fname=fname);
+    step_configure(fnameConfig=fnameConfig);
     if appconfig.getOptionIgnore():
         logInfo('\033[32;1m(PH(p)y)tex\033[0m transpilation will be skipped.');
         return;

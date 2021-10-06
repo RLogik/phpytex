@@ -16,19 +16,29 @@ from src.setup import appconfig;
 from src.endpoints.exports import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# GLOBAL VARIABLES
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+_pattern_config: str = r'^(|.*\.)(phpytex|phpycreate)\.(yml|yaml)$';
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MAIN PROCESS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def enter(*tokens: str, file: str, pathApp: str, pathRoot: str, **kwargs: str):
     appconfig.setPathApp(pathApp);
     appconfig.setPathRoot(pathRoot);
+    appconfig.setPatternConfig(_pattern_config);
+
     setQuietMode(('q' in tokens));
     if ('version' in tokens) or ('v' in tokens):
-        endpoint_display_version()
+        endpoint_display_version();
     elif ('help' in tokens) or ('info' in tokens) or ('man' in tokens):
-        endpoint_display_help()
+        endpoint_display_help();
+    elif 'run' in tokens:
+        endpoint_run_phpytex(fnameConfig=file);
     else:
-        endpoint_run_phpytex(fname=file);
+        endpoint_display_help();
     return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
