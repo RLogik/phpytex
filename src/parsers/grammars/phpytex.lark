@@ -10,6 +10,8 @@
 WHITESPACES: /[^\r\n\S]+/
 NEWLINE:     /[^\r\n\S]*\r?\n/m
 ENDCODE:     /;/
+COMMENT:     /\%/
+NCOMMENT:    /[^\%\r\n]/
 LMETA:       /\<{3}/
 RMETA:       /\>{3}/
 NMETA:       /((?!(\<{3}|\>{3})).)+/
@@ -86,9 +88,9 @@ blockcode_args:   "{" WHITESPACES? arglist WHITESPACES? "}"  -> blockcode_args
     | arglist                                                -> blockcode_args
 
 // BLOCK COMMENT
-blockcomment.20: blockcomment_keep | blockcomment_simple -> blockcomment
-blockcomment_keep.22:   SPACES? /\%{2,}/ TEXT            -> blockcomment_keep
-blockcomment_simple.21: SPACES? /\%/     TEXT            -> blockcomment_simple
+blockcomment.20: blockcomment_keep | blockcomment_simple   -> blockcomment
+blockcomment_keep.22:   SPACES? COMMENT COMMENT TEXT       -> blockcomment_keep
+blockcomment_simple.21: SPACES? COMMENT ( NCOMMENT TEXT )? -> blockcomment_simple
 
 // BLOCK CONTENT
 blockcontent.10: ( textcontent | codeinline )+ -> blockcontent

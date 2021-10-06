@@ -46,6 +46,8 @@ ____phpytex_params____ = dict(
     length         = 0,
     length_max     = {length_max},
     length_error   = False,
+    indentsymb     = '{indentsymb}',
+    censorsymb     = '{censorsymb}',
 );
 __FNAME__  = '<undefined>';
 __ROOT__   = '.';
@@ -75,7 +77,10 @@ def main():
     bib = ____phpytex_params____['lines']['bib'];
     bibcontents = ____get_bib_contents();
     ____cleardocument();
+    feed_buffer = [];
+    # NOTE: usage of `all_lines_empty` ensure that final line is non-empty
     for index, line in enumerate(contents):
+        all_lines_empty = False if re.match('\S', line) else True;
         lines = [ line ];
         tab = re.sub(r'^(\s*)(.*)$', r'\1', line);
         if index in anon:
@@ -85,6 +90,16 @@ def main():
             src = sources[0];
             if src in bibcontents.keys():
                 lines = [ tab + line for line in bibcontents[src] ];
+                # NOTE: bibcontents[src] is guaranteed to not end in an empty line:
+                if len(bibcontents[src]) > 0:
+                    all_lines_empty = True;
+        # if all lines are empty, buffer and then continue
+        lines = feed_buffer + lines;
+        if all_lines_empty:
+            feed_buffer = lines;
+            continue;
+        # else clear buffer and print lines
+        feed_buffer = [];
         with open(____phpytex_params____['output'], 'a') as fp:
             for line in lines:
                 print(line, file=fp);
@@ -106,20 +121,20 @@ def ____cleardocument():
         fp.write('');
     return;
 
-def ____forceprint(s: str, anon=False):
+def ____forceprint(s: str, anon: bool = False):
     global ____phpytex_params____;
 
     n = len(____phpytex_params____['lines']['content']);
     with open(____phpytex_params____['output'], 'a') as fp:
-        for _s in re.split(r'\r?\n', s):
-            print(_s, file=fp);
-            ____phpytex_params____['lines']['content'].append(_s);
+        for line in re.split(r'\r?\n', s):
+            print(line, file=fp);
+            ____phpytex_params____['lines']['content'].append(line);
             if anon:
                 ____phpytex_params____['lines']['anon'].append(n);
             n += 1;
     return;
 
-def ____print(s: str, anon=False):
+def ____print(s: str, anon: bool = False):
     global ____phpytex_params____;
     global __ANON__;
     global __IGNORE__;
@@ -138,6 +153,25 @@ def ____print(s: str, anon=False):
     ____phpytex_params____['length'] += 1;
     ____phpytex_params____['length_error'] = ____phpytex_params____['length_error'] or ( ____phpytex_params____['length'] > ____phpytex_params____['length_max'] );
     ____forceprint(s, anon=anon);
+    return;
+
+def ____printfilestamp(depth: int = 0, start: bool = True, anon: bool = False):
+    global ____phpytex_params____;
+    global __ANON__;
+    global __FNAME__;
+
+    anon = (anon or __ANON__);
+    params = dict(
+        tab  = ____phpytex_params____['indentsymb'] * depth,
+        path = ____phpytex_params____['censorsymb'] if anon else __FNAME__,
+    );
+    if start:
+        ____print('{{tab}}%% ********************************************************************************'.format(**params), anon=anon);
+        ____print('{{tab}}%% FILE: {{path}}'.format(**params), anon=anon);
+        ____print('{{tab}}%% ********************************************************************************'.format(**params), anon=anon);
+        ____print('', anon=anon);
+    else:
+        ____print('{{tab}}%% ********** END OF FILE: {{path}} **********'.format(**params), anon=anon);
     return;
 
 ## handling of bib:
@@ -174,6 +208,8 @@ def ____get_bib_contents() -> dict:
     bib = ____phpytex_params____['lines']['bib'];
     bibcontents = dict();
     for src in bib.keys():
+        if src in bibcontents:
+            continue;
         try:
             lines = [];
             _lines = [];
@@ -181,10 +217,12 @@ def ____get_bib_contents() -> dict:
                 _lines = fp.readlines();
             for line in _lines:
                 line = re.sub(r'[\s\r\n]+$', '', line);
-                # line = re.sub(r'^(.*)\%(.*)', r'\1', line);
                 if re.match(r'^\s*\%.*', line):
                     continue;
                 lines.append(line);
+            # Ensure that final line is non-empty
+            while len(lines) > 0 and re.match(r'^\s*$', lines[-1]):
+                lines = lines[:-1];
             bibcontents[src] = lines;
         except:
             print('[\033[93;1mWARNING\033[0m] Bibliography file, \033[1m{{file}}\033[0m, could not be found or read.'.format(file=src));

@@ -156,7 +156,7 @@ def transpileDocument(
         documents.addDocument(path=path); ## NOTE: need to do this first, in order to update anon-state
         blocks = TranspileBlocks();
         if params['show-tree']:
-            blocks.append(documents.documentStamp(path, depth=0, start=True));
+            blocks.append(documents.documentStamp(depth=0, start=True));
         for block in parseText(lines, indentation):
             if block.kind == 'code:import':
                 imports.append(block);
@@ -166,7 +166,7 @@ def transpileDocument(
                     continue;
             blocks.append(block);
         if params['show-tree']:
-            blocks.append(documents.documentStamp(path, depth=0, start=False));
+            blocks.append(documents.documentStamp(depth=0, start=False));
         documents.addBlocks(path=path, blocks=blocks);
         for subpath in documents.getSubPaths(path):
             transpileDocument(
@@ -224,6 +224,8 @@ def createmetacode(
             compile_latex = appconfig.getOptionCompileLatex(),
             length_max    = appconfig.getMaxLengthOuput(),
             seed          = appconfig.getSeed(),
+            indentsymb    = appconfig.getIndentCharacter(),
+            censorsymb    = appconfig.getCensorSymbol(),
             mainfct       = FUNCTION_NAME_MAIN,
         )
     );
@@ -248,5 +250,5 @@ def displayTreeBranch(
         prefix = prefix,
         tab = indentsymb*(depth if depth == 0 else depth - 1),
         branchsymb = '' if depth == 0 else branchsymb,
-        path = '########' if anon else path,
+        path = appconfig.getCensorSymbol() if anon else path,
     );

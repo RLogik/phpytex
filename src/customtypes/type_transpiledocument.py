@@ -210,6 +210,7 @@ class TranspileDocuments(object):
         assert path in self.documents, 'Must add document first, before adding blocks.';
         document = self.documents[path];
         for block in blocks:
+            state = dict(indentlevel=block.indentlevel, indentsymb=block.indentsymb);
             if re.match(r'^text($|:)', block.kind):
                 document.append(block);
             elif block.kind == 'code':
@@ -257,14 +258,14 @@ class TranspileDocuments(object):
                     self.edges.append((path, _path));
                     if anon:
                         self.anon[_path] = True;
+                    document.append(TranspileBlock(kind='text:empty', **state)); # force empty line before input of file
                     document.append(TranspileBlock(
                         kind        = 'code',
                         lines       = [
                             '{label}(\'{path}\');'.format(label=self.schemes['file'], path=_path),
                             '__ROOT__, __DIR__, __FNAME__, __ANON__, __IGNORE__ = __STATE__;'
                         ],
-                        indentlevel = block.indentlevel,
-                        indentsymb  = block.indentsymb
+                        **state
                     ));
                 elif mode == 'bib':
                     document.append(TranspileBlock(
@@ -276,9 +277,9 @@ class TranspileDocuments(object):
                                 anon       = anon,
                             )
                         ],
-                        indentlevel = block.indentlevel,
-                        indentsymb  = block.indentsymb
+                        **state
                     ));
+        document.append(TranspileBlock(kind='text:empty', indentlevel=0, indentsymb=self.indentsymb)); # force empty add end of file
         return;
 
     def documentStructurePretty(
@@ -309,23 +310,10 @@ class TranspileDocuments(object):
             yield from self.documentStructurePretty(subpath, anon=anon, prefix=prefix, indentsymb=indentsymb, branchsymb=branchsymb, depth=depth);
         return;
 
-    def documentStamp(self, path: str, depth: int = 0, start: bool = True) -> TranspileBlock:
+    def documentStamp(self, depth: int = 0, start: bool = True) -> TranspileBlock:
         return TranspileBlock(
-            kind = 'text:comment',
-            lines = formatTextBlockAsList(
-                formatTextBlock(
-                    '''
-                    {tab}%% ******************************************************************************
-                    {tab}%% {part}: {path}
-                    {tab}%% ******************************************************************************
-                    '''
-                ).format(
-                    tab  = self.indentsymb * depth,
-                    part = 'START OF FILE' if start else 'END OF FILE',
-                    path = self.displayPath(path),
-                ),
-                unindent=False
-            ) + [ '' ],
+            kind = 'code',
+            content = '____printfilestamp(depth={depth}, start={start});'.format(depth=depth, start=start),
             indentlevel = 0,
             indentsymb = self.indentsymb
         );
