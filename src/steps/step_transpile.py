@@ -37,7 +37,7 @@ def step():
 
     ## Initialise structures for recording transpilation units:
     random.seed(appconfig.getSeed()); # <-- only do this once!
-    preamble = [];
+    preambles = [];
     imports = TranspileBlocks();
     documents = TranspileDocuments(
         root       = root,
@@ -51,7 +51,7 @@ def step():
 
     ## Transpile preamble:
     name = 'stamp';
-    preamble.append(name);
+    preambles.append(name);
     transpileDocument(
         path        = appconfig.getFileStamp(rel=True),
         documents   = documents,
@@ -80,7 +80,7 @@ def step():
     ## Add document structure:
     name = 'tree';
     if appconfig.getOptionShowTree():
-        preamble.append(name);
+        preambles.append(name);
     blocks = TranspileBlocks([documents.documentTree(seed=appconfig.getSeed())]);
     documents.addPreamble(name=name, blocks=blocks);
 
@@ -104,7 +104,7 @@ def step():
     createmetacode(
         documents  = documents,
         imports    = imports,
-        preamble   = preamble,
+        preambles  = preambles,
         globalvars = globalvars
     );
     logInfo('TRANSPILATION (phpytex -> python) COMPLETE.');
@@ -207,7 +207,7 @@ def createImportFileParameters(
 def createmetacode(
     documents:  TranspileDocuments,
     imports:    TranspileBlocks,
-    preamble:   List[str],
+    preambles:  List[str],
     globalvars: List[str]
 ):
     fnameLatex = appconfig.getFileOutput(rel=False);
@@ -228,7 +228,7 @@ def createmetacode(
         )
     );
     lines.append('');
-    lines += documents.generateCode(offset=0, preamble=preamble, globalvars=globalvars);
+    lines += documents.generateCode(offset=0, preambles=preambles, globalvars=globalvars);
     lines.append('');
     lines += formatTextBlockAsList(
         _lines_post.format()

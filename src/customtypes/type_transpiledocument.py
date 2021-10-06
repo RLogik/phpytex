@@ -356,7 +356,7 @@ class TranspileDocuments(object):
     def generateCode(
         self,
         offset:     int       = 0,
-        preamble:   List[str] = [],
+        preambles:  List[str] = [],
         globalvars: List[str] = []
     ) -> Generator[str, None, None]:
         ## generate universal reference function
@@ -405,7 +405,7 @@ class TranspileDocuments(object):
             label = self.schemes['main'],
         );
         yield '{tab}____cleardocument();'.format(tab=self.tab(offset + 1));
-        for name in preamble:
+        for name in preambles:
             yield '{tab}{label}();'.format(
                 tab   = self.tab(offset + 1),
                 label = '{label}_{name}'.format(label=self.schemes['pre'], name=name),
