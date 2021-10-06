@@ -1,0 +1,172 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# IMPORTS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+from src.local.misc import *;
+from src.local.system import *;
+from src.local.typing import *;
+
+from src.core.log import *;
+from src.core.utils import createNewFileName;
+from src.core.utils import createNewPathName;
+from src.core.utils import formatPath;
+from src.core.utils import getAttribute;
+from src.core.utils import getFilesByPattern;
+from src.core.utils import readYamlFile;
+from src.core.utils import restrictDictionary;
+from src.core.utils import toPythonKeysDict;
+from src.customtypes.exports import ProjectTree;
+from src.setup import appconfig;
+from src.setup.userconfig import setupYamlReader;
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# GLOBAL VARIABLES
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# METHOD: step get config
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def step(fnameConfig: str):
+    logInfo('READ CONFIG STARTED');
+    ## get configuration file
+    config = getPhpytexConfig(fnameConfig);
+    ## get main parts of config
+    config_compile = getAttribute(config, 'compile', 'options', expectedtype=dict, default=None) \
+                     or getAttribute(config, 'compile', expectedtype=dict, default={});
+    config_compile = preProcessCompileConfig(restrictDictionary(config, ['ignore']) | config_compile);
+    config_stamp = getAttribute(config, 'stamp', expectedtype=dict, default={});
+    config_parameters = getAttribute(config, 'parameters', expectedtype=dict, default={});
+
+    ## set app config
+    setCompileConfig(**config_compile);
+    setStampConfig(**toPythonKeysDict(config_stamp));
+    setParamsConfig(**toPythonKeysDict(config_parameters));
+    setConfigFilesAndFolders(**toPythonKeysDict(config));
+
+    logInfo('READ CONFIG COMPLETE');
+    return;
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# SECONDARY METHODS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def getPhpytexConfig(fnameConfig: str) -> Dict[str, Any]:
+    setupYamlReader();
+    try:
+        if not isinstance(fnameConfig, str) or fnameConfig == '':
+            fnameConfig = getFilesByPattern(
+                path        = appconfig.getPathRoot(),
+                filepattern = appconfig.getPatternConfig()
+            )[0];
+    except:
+        raise Exception('Could not find or read any phpytex configuration files.');
+    return readYamlFile(fnameConfig);
+
+def preProcessCompileConfig(config: Dict[str, Any]) -> Dict[str, Any]:
+    return dict(
+        ignore     = getAttribute(config, 'ignore', expectedtype=bool, default=False),
+        legacy     = getAttribute(config, 'legacy', expectedtype=bool, default=False),
+        startfile  = getAttribute(config, 'root', expectedtype=str),
+        outputfile = getAttribute(config, 'output', expectedtype=str, default='main.tex'),
+        debug      = getAttribute(config, 'debug', expectedtype=bool, default=False),
+        compile    = getAttribute(config, ['compile-latex', 'compile'], expectedtype=bool, default=False),
+        insert_bib = getAttribute(config, 'insert-bib', expectedtype=bool, default=True),
+        comments   = getAttribute(config, 'comments', expectedtype=str, default='auto'),
+        show_tree  = getAttribute(config, ['show-structure', 'show-tree'], expectedtype=bool, default=True),
+        max_length = getAttribute(config, 'max-length', expectedtype=int, default=10000),
+        tabs       = getAttribute(config, 'tabs', expectedtype=bool, default=False),
+        spaces     = getAttribute(config, 'spaces', expectedtype=int, default=4),
+        seed       = getAttribute(config, 'seed', expectedtype=int),
+    );
+
+def setCompileConfig(
+    ignore:     bool,
+    legacy:     bool,
+    startfile:  str,
+    outputfile: str,
+    debug:      bool,
+    compile:    bool,
+    insert_bib: bool,
+    comments:   str,
+    show_tree:  bool,
+    max_length: int,
+    tabs:       bool,
+    spaces:     int,
+    seed:       int,
+):
+    root = appconfig.getPathRoot();
+    appconfig.setOptionLegacy(legacy);
+    appconfig.setOptionIgnore(ignore);
+    appconfig.setOptionDebug(debug);
+    appconfig.setOptionCompileLatex(compile);
+    appconfig.setOptionInsertBib(insert_bib);
+    appconfig.setOptionShowTree(show_tree);
+    appconfig.setOptionComments(comments);
+    appconfig.setSeed(seed);
+
+    appconfig.setMaxLengthOutput(max_length);
+    if tabs:
+        appconfig.setIndentCharacter('\t');
+        appconfig.setIndentCharacterRe(r'\t');
+    else:
+        appconfig.setIndentCharacter(' '*spaces);
+        appconfig.setIndentCharacterRe(' '*spaces);
+
+    fileStart = formatPath(startfile, root=root, relative=False);
+    fileOutput = formatPath(outputfile, root=root, relative=False, ext_if_empty='.tex');
+
+    assert os.path.dirname(fileOutput) == root, 'The output file can only be set to be in the root directory!';
+    assert not (fileStart == fileOutput), 'The output and start (\'root\'-attribute in config) paths must be different!';
+
+    appconfig.setFileStart(fileStart);
+    appconfig.setFileOutput(fileOutput);
+
+    file = createNewFileName(dir=root, nameinit='phpytex_main.py', namescheme='phpytex_main_{}.py');
+    appconfig.setFileTranspiled(formatPath(file, root=root, relative=False));
+    return;
+
+def setStampConfig(
+    file: str = '',
+    overwrite: bool = True,
+    options: Dict[str, Any] = dict()
+):
+    root = appconfig.getPathRoot();
+    if not isinstance(file, str) or file == '':
+        file = createNewPathName(dir=root, nameinit='stamp.tex', namescheme='stamp_{}.tex');
+        file = os.path.relpath(path=file, start=root);
+    appconfig.setFileStamp(formatPath(file, root=root, relative=False));
+    appconfig.setOptionOverwriteStamp(overwrite);
+    appconfig.setDictionaryStamp(options);
+    return;
+
+def setParamsConfig(
+    file: str = '',
+    overwrite: bool = True,
+    options: Dict[str, Any] = dict(),
+):
+    appconfig.setOptionOverwriteParams(overwrite);
+    appconfig.setDictionaryParams(options);
+
+    root = appconfig.getPathRoot();
+    modulename = file if isinstance(file, str) else '';
+    if re.match(r'^[^\.\s]*(\.[^\.\s]*)+$', file):
+        path = re.sub(r'([^\.]+)\.', r'\1/', file) + '.py';
+    else:
+        logWarn('\033[1mparameters > file\033[0m option must by a python-like import path (relative to the root of the project).');
+        path = createNewPathName(dir=root, nameinit='parameters.py', namescheme='parameters_{}.py');
+        path = os.path.relpath(path, root);
+    modulename = re.sub(r'\/', '.', os.path.splitext(path)[0]);
+
+    appconfig.setImportParamsPy(modulename);
+    appconfig.setFileParamsPy(formatPath(path, root=root, relative=False));
+    return;
+
+def setConfigFilesAndFolders(**config):
+    appconfig.setProjectTree(ProjectTree(**config));
+    return;

@@ -1,0 +1,21 @@
+*
+!/.gitignore
+!/.dockerignore
+# needed for artefact
+!/VERSION
+
+################################################################
+# WHALES SETUP
+################################################################
+
+# explicitly exclude state files:
+/DOCKER_STATE
+/WHALES_STATE
+
+!/logging.env
+!/.lib.globals.sh
+!/.lib.utils.sh
+!/.lib.docker.sh
+!/.lib.meta.sh
+!/.lib.sh
+!/docker.sh

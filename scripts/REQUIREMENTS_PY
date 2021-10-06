@@ -1,0 +1,13 @@
+## PIP + wheel for package installation
+pip==21.2.4
+wheel==0.36.1
+
+## utility
+pyyaml==5.4.1
+typing==3.7.4.3
+# pytypes==1.0b5
+
+## other
+lark==0.11.3
+lark-parser==0.11.3
+lark-parser[regex]==0.11.3

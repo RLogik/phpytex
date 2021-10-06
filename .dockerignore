@@ -1,14 +1,4 @@
 *
-!/.gitignore
-!/.dockerignore
-
-################################################################
-# GITHUB
-################################################################
-
-!/.github
-!/.github/workflows
-!/.github/**/*.yml
 
 ################################################################
 # MAIN FOLDER
@@ -16,7 +6,6 @@
 
 !/.env
 !/README.md
-!/LONGREADME.md
 !/ISSUES.md
 !/LICENSE
 
@@ -30,8 +19,6 @@
 
 !/.whales
 !/.whales.env
-!/.whales.Dockerfile
-!/.whales.docker-compose.yml
 
 ################################################################
 # PROJECT FILES
@@ -41,26 +28,15 @@
 !/src/**
 
 !/test
-!/test/cases
-!/test/cases/case*
-!/test/cases/case*/**/
-!/test/cases/setup
-!/test/unit
-!/test/**/*.py
-!/test/**/*.tex
-!/test/**/*.yml
-
-!/data
-/data/**
-!/data/*-example.*
-
-!/dist
-!/dist/VERSION
+!/test/**
 
 ################################################################
-# AUXLIARY
+# EXCLUDED FOLDERS (e.g. for mount-only volumes)
 ################################################################
 
+/dist
+/data
+/build
 /logs
 
 ################################################################
@@ -70,7 +46,6 @@
 /**/__pycache__
 /**/.DS_Store
 /**/__archive__*
-/**/sandbox
 
 ################################################################
 # Git Keep

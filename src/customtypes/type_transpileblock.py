@@ -1,0 +1,185 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# IMPORTS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+from __future__ import annotations;
+
+from src.local.misc import *;
+from src.local.typing import *;
+
+from src.core.utils import escapeForPython;
+from src.core.utils import formatBlockIndent;
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# GLOBAL VARIABLES
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# CLASS transpile parameters
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+class TranspileBlockParameters(object):
+    mode:      str;
+    scope:     str;
+    anon:      bool;
+    varname:   str;
+    codevalue: str;
+    keep:      bool;
+    level:     int;
+    path:      str;
+    tab:       str;
+
+    def __init__(
+        self,
+        mode:      str  = '',
+        scope:     str  = '',
+        anon:      bool = False,
+        varname:   str  = '',
+        codevalue: str  = '',
+        keep:      bool = True,
+        level:     int  = 0,
+        path:      str  = '',
+        tab:       str  = '',
+        **_
+    ):
+        self.mode      = mode;
+        self.scope     = scope;
+        self.anon      = anon;
+        self.varname   = varname;
+        self.codevalue = codevalue;
+        self.keep      = keep;
+        self.level     = level;
+        self.path      = path;
+        self.tab       = tab;
+        return;
+
+    def asDict(self) -> Dict[str, Any]:
+        return dict(
+            mode      = self.mode,
+            scope     = self.scope,
+            anon      = self.anon,
+            varname   = self.varname,
+            codevalue = self.codevalue,
+            keep      = self.keep,
+            level     = self.level,
+            path      = self.path,
+            tab       = self.tab,
+        );
+    pass;
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# CLASS transpile block
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+class TranspileBlock(object):
+    kind: str;
+    _content: str;
+    lines: List[str];
+    indentlevel: int;
+    indentsymb: str;
+    parameters: TranspileBlockParameters;
+    subst: Dict[str, TranspileBlock];
+
+    def __init__(self,
+        kind:        str,
+        content:     Any            = None,
+        lines:       List[str]      = [],
+        indentlevel: int            = 0,
+        indentsymb:  str            = '    ',
+        parameters:  Dict[str, Any] = dict(),
+        **_
+    ):
+        self.lines = lines;
+        self.kind = kind;
+        self.indentlevel = indentlevel;
+        self.indentsymb = indentsymb;
+        self.parameters = TranspileBlockParameters(**parameters);
+        self.subst = dict();
+        if isinstance(content, str):
+            self._content = content;
+        return;
+
+    @property
+    def isCode(self) -> bool:
+        return True if re.match(r'^code(:|$)', self.kind) else False;
+
+    @property
+    def content(self) -> Generator[str, None, None]:
+        tab = self.tab() if self.isCode else '';
+        if hasattr(self, '_content'):
+            yield '{tab}{line}'.format(tab = tab, line = self._content);
+        else:
+            yield from formatBlockIndent(self.lines, indent=tab, unindent=False);
+
+    def tab(self, delta: int = 0) -> str:
+        return self.indentsymb * (self.indentlevel + delta);
+
+    def generateCode(self, offset: int = 0) -> Generator[str, None, None]:
+        state = dict(indentlevel=self.indentlevel, indentsymb=self.indentsymb);
+        self.indentlevel += offset;
+        if self.kind == 'text:empty':
+            yield '{tab}____print(\'\');'.format(tab=self.tab());
+        elif self.kind in [ 'text', 'text:comment' ]:
+            for line in self.content:
+                yield '{tab}____print(\'\'\'{expr}\'\'\');'.format(
+                    tab  = self.tab(),
+                    expr = escapeForPython(line, withformatting=False),
+                );
+        elif self.kind == 'text:subst':
+            line = '{tab}____print(\'\'\'{expr}\'\'\'.format('.format(
+                tab  = self.tab(),
+                expr = '\n'.join(list(self.content)),
+            )
+            yield line + ('));' if len(self.subst) == 0 else '');
+            for key, value in self.subst.items():
+                indentlevel = value.indentlevel;
+                value_lines = formatBlockIndent(value.lines, indent=self.tab(2), unindent=True);
+                value_lines[0] = re.sub(r'^\s*(.*)$', r'\1', value_lines[0]);
+                yield '{tab}{key} = {value},'.format(
+                    tab = self.tab(1),
+                    key = key,
+                    value = '\n'.join(value_lines),
+                );
+                value.indentlevel = indentlevel;
+            if len(self.subst) > 0:
+                yield '{tab}));'.format(tab=self.tab());
+        elif self.kind in [ 'code', 'code:import', 'code:value']:
+            yield from self.content;
+        elif self.kind == 'code:set':
+            line = '{varname} = {codevalue};'.format(**self.parameters.asDict());
+            block = TranspileBlock(kind='code', content=line, **state);
+            yield from block.generateCode(offset=offset);
+        elif self.kind == 'code:escape':
+            block = TranspileBlock(kind='code', content='pass;', **state);
+            yield from block.generateCode(offset=offset);
+        elif self.kind == 'code:input':
+            pass;
+        self.indentlevel = state['indentlevel'];
+        return;
+
+class TranspileBlocks(object):
+    blocks: List[TranspileBlock];
+
+    def __init__(self, blocks: List[TranspileBlock] = []):
+        self.blocks = blocks[:];
+
+    def __len__(self) -> int:
+        return len(self.blocks);
+
+    def __iter__(self) -> Generator[TranspileBlock, None, None]:
+        for block in self.blocks:
+            yield block;
+        return;
+
+    def append(self, block: TranspileBlock):
+        self.blocks.append(block);
+
+    def generateCode(self, offset: int = 0) -> Generator[str, None, None]:
+        for block in self.blocks:
+            yield from block.generateCode(offset=offset);
+        return;
