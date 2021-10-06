@@ -140,7 +140,7 @@ def transpileDocument(
         is_legacy  = appconfig.getOptionLegacy(),
     );
 
-    logInfo('Parse phpytex file \033[1m{}\033[0m'.format(path));
+    logPlain(displayTreeBranch(path=path, anon=documents.isAnon(path), depth=depth));
 
     if is_preamble:
         blocks = TranspileBlocks();
@@ -235,3 +235,18 @@ def createmetacode(
     );
     writeTextFile(appconfig.getFileTranspiled(rel=False), lines);
     return;
+
+def displayTreeBranch(
+    path:       str,
+    anon:       bool = False,
+    prefix:     str  = '',
+    indentsymb: str  = '    ',
+    branchsymb: str  = '  |____',
+    depth:      int  = 0
+) -> str:
+    return '{prefix}{tab}{branchsymb}`{path}`'.format(
+        prefix = prefix,
+        tab = indentsymb*(depth if depth == 0 else depth - 1),
+        branchsymb = '' if depth == 0 else branchsymb,
+        path = '########' if anon else path,
+    );

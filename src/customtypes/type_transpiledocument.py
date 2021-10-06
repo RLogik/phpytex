@@ -299,7 +299,7 @@ class TranspileDocuments(object):
                 prefix = prefix,
                 tab = indentsymb*(depth if depth == 0 else depth - 1),
                 branchsymb = '' if depth == 0 else branchsymb,
-                path = '#####' if anon else path,
+                path = '########' if anon else path,
             );
             depth = depth + 1;
             children = [ v for u, v in self.edges if u == path ];
