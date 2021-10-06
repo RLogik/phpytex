@@ -1,0 +1,26 @@
+name: Create Release
+on:
+  workflow_dispatch:
+    inputs:
+      use_venv: # usage
+        description: 'Whether or not to use python virtual environment'
+        default:     true
+        required:    true
+jobs:
+  setup:
+    runs-on: python:3.9.5-slim
+    steps:
+    - name: Install system requirements via apt-get
+      run: |-
+        apt-get -y update && \
+        apt-get -y upgrade && \
+        apt-get install -y dos2unix && \
+        apt-get install -y apt-utils && \
+        apt-get install -y zip unzip xz-utils && \
+        apt-get clean
+    - name: Grant execution rights
+      run: chmod +x scripts/*.sh
+    - name: Run setup
+      run: ./scripts/build.sh --venv ${{ github.event.inputs.use_venv }} --mode setup
+    - name: Create artefact
+      run: ./scripts/build.sh --mode dist
