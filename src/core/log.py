@@ -10,16 +10,21 @@ from src.local.misc import *;
 from src.local.system import *;
 from src.local.typing import *;
 
+from datetime import timedelta;
+
+from src.core.timer import *;
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-_logging_depth:  int  = 0;
-_logging_prefix: str  = '';
-_quietmode:      bool = False;
+_logging_depth:  int   = 0;
+_logging_prefix: str   = '';
+_quietmode:      bool  = False;
+_tm:             Timer = Timer();
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# METHOD get/set quiet mode, logging depth
+# METHOD get/set quiet mode, logging depth, timer
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def getQuietMode() -> bool:
@@ -38,6 +43,16 @@ def setLoggingState(state: str = 'out'):
     if _logging_depth > 0:
         _logging_prefix = '>'*_logging_depth + ' ';
     return;
+
+def restartTimer():
+    global _tm;
+    _tm.reset();
+    return;
+
+def timeElapsed() -> timedelta:
+    global _tm;
+    _tm.stop();
+    return _tm.elapsed;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Logging
