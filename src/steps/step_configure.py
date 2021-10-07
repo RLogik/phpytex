@@ -73,7 +73,7 @@ def preProcessCompileConfig(config: Dict[str, Any]) -> Dict[str, Any]:
     return dict(
         ignore     = getAttribute(config, 'ignore', expectedtype=bool, default=False),
         legacy     = getAttribute(config, 'legacy', expectedtype=bool, default=False),
-        startfile  = getAttribute(config, 'root', expectedtype=str),
+        startfile  = getAttribute(config, ['root', 'input'], expectedtype=str),
         outputfile = getAttribute(config, 'output', expectedtype=str, default='main.tex'),
         debug      = getAttribute(config, 'debug', expectedtype=bool, default=False),
         compile    = getAttribute(config, ['compile-latex', 'compile'], expectedtype=bool, default=False),
