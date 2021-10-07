@@ -15,6 +15,7 @@ from src.core.utils import createNewPathName;
 from src.core.utils import formatPath;
 from src.core.utils import getAttribute;
 from src.core.utils import getFilesByPattern;
+from src.core.utils import lengthOfWhiteSpace;
 from src.core.utils import readYamlFile;
 from src.core.utils import restrictDictionary;
 from src.core.utils import toPythonKeysDict;
@@ -120,8 +121,10 @@ def setCompileConfig(
     else:
         appconfig.setIndentCharacter(' '*spaces);
         appconfig.setIndentCharacterRe(' '*spaces);
+    indentsymb = appconfig.getIndentCharacter();
+    if lengthOfWhiteSpace(indentsymb) == 0:
+        raise AttributeError('Indentation symbol cannot be the empty string!');
     if legacy:
-        indentsymb = appconfig.getIndentCharacter();
         appconfig.setOffsetSymbol(indentsymb);
 
     fileStart = formatPath(startfile, root=root, relative=False);
