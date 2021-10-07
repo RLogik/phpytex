@@ -133,7 +133,7 @@ function link_command_to_distribution() {
     ! [ -d "$path" ] && echo -e "[\033[91;1mERROR\033[0m] Invalid value for \033[1mTAG\033[0m." >> $ERR && return 1;
     [ -d "$folder" ] && rm -rf "$folder";
     require_folder "$folder" || return 1;
-    ln -s "${path}/dist/${APPNAME}" "$HOME/$LOCALDIST/bin";
+    cp "${path}/dist/${APPNAME}" "$HOME/$LOCALDIST/bin";
     echo -e "[\033[94;1mINFO\033[0m] Linked \033[1mphpytex\033[0m command to \033[1m${path}/dist/phpytex\033[0m:";
     return 0;
 }
