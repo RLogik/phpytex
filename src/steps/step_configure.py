@@ -15,6 +15,7 @@ from src.core.utils import createNewPathName;
 from src.core.utils import formatPath;
 from src.core.utils import getAttribute;
 from src.core.utils import getFilesByPattern;
+from src.core.utils import lengthOfWhiteSpace;
 from src.core.utils import readYamlFile;
 from src.core.utils import restrictDictionary;
 from src.core.utils import toPythonKeysDict;
@@ -83,6 +84,7 @@ def preProcessCompileConfig(config: Dict[str, Any]) -> Dict[str, Any]:
         tabs       = getAttribute(config, 'tabs', expectedtype=bool, default=False),
         spaces     = getAttribute(config, 'spaces', expectedtype=int, default=4),
         seed       = getAttribute(config, 'seed', expectedtype=int),
+        offset     = getAttribute(config, 'offset', expectedtype=str, default=''),
     );
 
 def setCompileConfig(
@@ -99,6 +101,7 @@ def setCompileConfig(
     tabs:       bool,
     spaces:     int,
     seed:       int,
+    offset:     str
 ):
     root = appconfig.getPathRoot();
     appconfig.setOptionLegacy(legacy);
@@ -109,6 +112,7 @@ def setCompileConfig(
     appconfig.setOptionShowTree(show_tree);
     appconfig.setOptionComments(comments);
     appconfig.setSeed(seed);
+    appconfig.setOffsetSymbol(offset);
 
     appconfig.setMaxLengthOutput(max_length);
     if tabs:
@@ -117,6 +121,11 @@ def setCompileConfig(
     else:
         appconfig.setIndentCharacter(' '*spaces);
         appconfig.setIndentCharacterRe(' '*spaces);
+    indentsymb = appconfig.getIndentCharacter();
+    if lengthOfWhiteSpace(indentsymb) == 0:
+        raise AttributeError('Indentation symbol cannot be the empty string!');
+    if legacy:
+        appconfig.setOffsetSymbol(indentsymb);
 
     fileStart = formatPath(startfile, root=root, relative=False);
     fileOutput = formatPath(outputfile, root=root, relative=False, ext_if_empty='.tex');

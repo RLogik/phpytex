@@ -46,6 +46,8 @@ _config_parameters: Dict[str, ConfigParameter] = {
     'seed':                    ConfigParameter[int]().setValue(random.randint(0,10**8 - 1)),
     'indent_character':        ConfigParameter[str](),
     'indent_character_re':     ConfigParameter[str](),
+    'censor_symbol':           ConfigParameter[str]().setValue('########'),
+    'offset_symbol':           ConfigParameter[str]().setValue(''),
 };
 
 _dictionary_stamp: Dict[str, Any] = dict();
@@ -282,6 +284,22 @@ def getIndentCharacterRe() -> str:
 def setIndentCharacterRe(value: str):
     global _config_parameters;
     _config_parameters['indent_character_re'].value = value;
+    return;
+
+def getCensorSymbol() -> str:
+    return _config_parameters['censor_symbol'].value;
+
+def setCensorSymbol(value: str):
+    global _config_parameters;
+    _config_parameters['censor_symbol'].value = value;
+    return;
+
+def getOffsetSymbol() -> str:
+    return _config_parameters['offset_symbol'].value;
+
+def setOffsetSymbol(value: str):
+    global _config_parameters;
+    _config_parameters['offset_symbol'].value = value;
     return;
 
 def getDictionaryStamp() -> Dict[str, Any]:

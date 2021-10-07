@@ -14,9 +14,7 @@ from src.local.typing import *;
 # GLOBAL VARIABLES
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ENCODING_ASCII:   str = 'ascii';
-ENCODING_UTF8:    str = 'utf-8';
-ENCODING_UNICODE: str = 'unicode_escape';
+#
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # METHOD os sensitive commands
@@ -210,6 +208,11 @@ def lengthOfWhiteSpace(s: str) -> int:
         elif char == '\t':
             n = (n - n % 8) + 8; # next tab stop
     return n;
+
+def sizeOfIndent(s: str, indentsymb: str) -> int:
+    lenIndent = lengthOfWhiteSpace(s);
+    lenUnit = lengthOfWhiteSpace(indentsymb);
+    return int(lenIndent / lenUnit);
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # METHODS: array methods

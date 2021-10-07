@@ -18,7 +18,7 @@ from src.setup import appconfig;
 from src.setup.methods import getTemplatePhpytexLinesPre;
 from src.setup.methods import getTemplatePhpytexLinesPost;
 from src.setup.templates.exports import *;
-from src.parsers.phpytex import parseText;
+from src.parsers.phpytextokeniser import parseText;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES
@@ -84,7 +84,7 @@ def step():
     blocks = TranspileBlocks([documents.documentTree(seed=appconfig.getSeed())]);
     documents.addPreamble(name=name, blocks=blocks);
 
-    ## Create `parameters.py`:
+    ## Create 'parameters.py':
     createImportFileParameters(
         path      = appconfig.getFileParamsPy(rel=False),
         overwrite = appconfig.getOptionOverwriteParams(),
@@ -95,7 +95,7 @@ def step():
     imports.append(TranspileBlock(
         kind        = 'code',
         content     = 'from {name} import *;'.format(name = appconfig.getImportParamsPy()),
-        indentlevel = 0,
+        level       = 0,
         indentsymb  = indentsymb,
     ));
 
@@ -134,17 +134,17 @@ def transpileDocument(
         return;
     depth = len(chain);
     indentsymb = appconfig.getIndentCharacter();
+    offset = appconfig.getOffsetSymbol();
     indentation = IndentationTracker(
-        symb       = indentsymb,
-        pattern    = appconfig.getIndentCharacterRe(),
-        is_legacy  = appconfig.getOptionLegacy(),
+        symb    = indentsymb,
+        pattern = appconfig.getIndentCharacterRe(),
     );
 
     logPlain(displayTreeBranch(path=path, anon=documents.isAnon(path), depth=depth));
 
     if is_preamble:
         blocks = TranspileBlocks();
-        for block in parseText(lines, indentation):
+        for block in parseText(lines, indentation, offset=offset):
             if not (block.kind == 'text:comment'):
                 continue;
             blocks.append(block);
@@ -156,8 +156,8 @@ def transpileDocument(
         documents.addDocument(path=path); ## NOTE: need to do this first, in order to update anon-state
         blocks = TranspileBlocks();
         if params['show-tree']:
-            blocks.append(documents.documentStamp(path, depth=0, start=True));
-        for block in parseText(lines, indentation):
+            blocks.append(documents.documentStamp(depth=0, start=True));
+        for block in parseText(lines, indentation, offset=offset):
             if block.kind == 'code:import':
                 imports.append(block);
                 continue;
@@ -166,7 +166,7 @@ def transpileDocument(
                     continue;
             blocks.append(block);
         if params['show-tree']:
-            blocks.append(documents.documentStamp(path, depth=0, start=False));
+            blocks.append(documents.documentStamp(depth=0, start=False));
         documents.addBlocks(path=path, blocks=blocks);
         for subpath in documents.getSubPaths(path):
             transpileDocument(
@@ -224,6 +224,8 @@ def createmetacode(
             compile_latex = appconfig.getOptionCompileLatex(),
             length_max    = appconfig.getMaxLengthOuput(),
             seed          = appconfig.getSeed(),
+            indentsymb    = appconfig.getIndentCharacter(),
+            censorsymb    = appconfig.getCensorSymbol(),
             mainfct       = FUNCTION_NAME_MAIN,
         )
     );
@@ -244,9 +246,9 @@ def displayTreeBranch(
     branchsymb: str  = '  |____',
     depth:      int  = 0
 ) -> str:
-    return '{prefix}{tab}{branchsymb}`{path}`'.format(
+    return '{prefix}{tab}{branchsymb} {path}'.format(
         prefix = prefix,
         tab = indentsymb*(depth if depth == 0 else depth - 1),
         branchsymb = '' if depth == 0 else branchsymb,
-        path = '########' if anon else path,
+        path = appconfig.getCensorSymbol() if anon else path,
     );

@@ -7,12 +7,12 @@
 
 from zipfile import ZipFile;
 
+from src.local.encoding import *;
 from src.local.misc import *;
 from src.local.system import *;
 from src.local.typing import *;
 
 from src.core.utils import readTextFile;
-from src.core.utils import ENCODING_UTF8;
 from src.setup import appconfig;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

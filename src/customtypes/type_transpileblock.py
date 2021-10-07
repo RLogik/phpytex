@@ -80,7 +80,7 @@ class TranspileBlock(object):
     kind: str;
     _content: str;
     lines: List[str];
-    indentlevel: int;
+    level: int;
     indentsymb: str;
     parameters: TranspileBlockParameters;
     subst: Dict[str, TranspileBlock];
@@ -89,14 +89,14 @@ class TranspileBlock(object):
         kind:        str,
         content:     Any            = None,
         lines:       List[str]      = [],
-        indentlevel: int            = 0,
+        level: int            = 0,
         indentsymb:  str            = '    ',
         parameters:  Dict[str, Any] = dict(),
         **_
     ):
         self.lines = lines;
         self.kind = kind;
-        self.indentlevel = indentlevel;
+        self.level = level;
         self.indentsymb = indentsymb;
         self.parameters = TranspileBlockParameters(**parameters);
         self.subst = dict();
@@ -117,11 +117,11 @@ class TranspileBlock(object):
             yield from formatBlockIndent(self.lines, indent=tab, unindent=False);
 
     def tab(self, delta: int = 0) -> str:
-        return self.indentsymb * (self.indentlevel + delta);
+        return self.indentsymb * (self.level + delta);
 
     def generateCode(self, offset: int = 0) -> Generator[str, None, None]:
-        state = dict(indentlevel=self.indentlevel, indentsymb=self.indentsymb);
-        self.indentlevel += offset;
+        state = dict(level=self.level, indentsymb=self.indentsymb);
+        self.level += offset;
         if self.kind == 'text:empty':
             yield '{tab}____print(\'\');'.format(tab=self.tab());
         elif self.kind in [ 'text', 'text:comment' ]:
@@ -137,7 +137,7 @@ class TranspileBlock(object):
             )
             yield line + ('));' if len(self.subst) == 0 else '');
             for key, value in self.subst.items():
-                indentlevel = value.indentlevel;
+                level = value.level;
                 value_lines = formatBlockIndent(value.lines, indent=self.tab(2), unindent=True);
                 value_lines[0] = re.sub(r'^\s*(.*)$', r'\1', value_lines[0]);
                 yield '{tab}{key} = {value},'.format(
@@ -145,7 +145,7 @@ class TranspileBlock(object):
                     key = key,
                     value = '\n'.join(value_lines),
                 );
-                value.indentlevel = indentlevel;
+                value.level = level;
             if len(self.subst) > 0:
                 yield '{tab}));'.format(tab=self.tab());
         elif self.kind in [ 'code', 'code:import', 'code:value']:
@@ -159,7 +159,7 @@ class TranspileBlock(object):
             yield from block.generateCode(offset=offset);
         elif self.kind == 'code:input':
             pass;
-        self.indentlevel = state['indentlevel'];
+        self.level = state['level'];
         return;
 
 class TranspileBlocks(object):
