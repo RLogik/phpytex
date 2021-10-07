@@ -172,13 +172,25 @@ def escapeForPython(s: str, withformatting: bool = False) -> str:
         s = re.sub(r'(\}+)', r'\1\1', s);
     return s;
 
+## NOTE: dedent ignores lines that consist entirely of whitespaces, otherwise would needs to be handled differently:
+def dedentIgnoreEmptyLines(s: str) -> str:
+    return dedent(s);
+
+def dedentRelativeTo(s: str, reference: str) -> str:
+    lines = formatBlockUnindent(lines=s.split('\n'), reference=reference);
+    return '\n'.join(lines);
+
+def dedentIgnoreFirstAndLast(s: str) -> str:
+    s = re.sub(r'^\s*[\n\r]|[\n\r]\s*$', '', s);
+    return dedentIgnoreEmptyLines(s);
+
 def formatBlockUnindent(lines: List[str], reference: str) -> List[str]:
-    s = dedent('\n'.join([ reference + '.' ] + lines));
+    s = dedentIgnoreEmptyLines('\n'.join([ reference + '.' ] + lines));
     return s.split('\n')[1:];
 
 def formatBlockIndent(lines: List[str], indent: str, unindent: bool = True) -> List[str]:
     if unindent:
-        s = dedent('\n'.join(lines));
+        s = dedentIgnoreEmptyLines('\n'.join(lines));
         lines = s.split('\n');
     return [ indent + line for line in lines ];
 
@@ -187,14 +199,6 @@ def formatTextBlock(s: str) -> str:
 
 def formatTextBlockAsList(s: str, unindent: bool = True) -> List[str]:
     return re.split(r'\n', dedentIgnoreFirstAndLast(s) if unindent else s);
-
-def dedentRelativeTo(s: str, reference: str) -> str:
-    lines = formatBlockUnindent(lines=s.split('\n'), reference=reference);
-    return '\n'.join(lines);
-
-def dedentIgnoreFirstAndLast(s: str) -> str:
-    s = re.sub(r'^\s*[\n\r]|[\n\r]\s*$', '', s);
-    return dedent(s);
 
 def extractIndent(s: str) -> str:
     return re.sub(r'^(\s*).*$', r'\1', s);
