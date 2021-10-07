@@ -133,7 +133,7 @@ def transpileDocument(
         logError('Could not find or read document \033[1m{path}\033[0m!'.format(path = path));
         return;
     depth = len(chain);
-    indentsymb = appconfig.getOffsetSymbol();
+    indentsymb = appconfig.getIndentCharacter();
     offset = appconfig.getOffsetSymbol();
     indentation = IndentationTracker(
         symb    = indentsymb,
