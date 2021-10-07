@@ -5,5 +5,6 @@
 # EXPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-import io;
-import getpass;
+ENCODING_ASCII:   str = 'ascii';
+ENCODING_UTF8:    str = 'utf-8';
+ENCODING_UNICODE: str = 'unicode_escape';
