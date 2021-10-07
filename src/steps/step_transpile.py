@@ -18,7 +18,7 @@ from src.setup import appconfig;
 from src.setup.methods import getTemplatePhpytexLinesPre;
 from src.setup.methods import getTemplatePhpytexLinesPost;
 from src.setup.templates.exports import *;
-from src.parsers.phpytex import parseText;
+from src.parsers.phpytextokeniser import parseText;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES
