@@ -7,7 +7,7 @@
 
 from __future__ import annotations;
 
-from src.core.utils import lengthOfWhiteSpace;
+from src.core.utils import sizeOfIndent;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES
@@ -35,17 +35,12 @@ class IndentationTracker(object):
         self.initOffset();
         return;
 
-    def size(self, s: str) -> int:
-        lenIndent = lengthOfWhiteSpace(s);
-        lenUnit = lengthOfWhiteSpace(self.symb);
-        return int(lenIndent / lenUnit);
-
     def relativeOffset(self, s: str):
-        return max(self.size(s) - self._reference, 0);
+        return max(sizeOfIndent(s, indentsymb=self.symb) - self._reference, 0);
 
     def initOffset(self, s: str = '') -> int:
         self.level      = 0;
-        self._reference = self.size(s);
+        self._reference = sizeOfIndent(s, indentsymb=self.symb);
         return self._reference;
 
     def setOffset(self, s: str) -> int:
