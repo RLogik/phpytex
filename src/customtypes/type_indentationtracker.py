@@ -22,26 +22,23 @@ from src.core.utils import sizeOfIndent;
 class IndentationTracker(object):
     pattern:    str;
     symb:       str;
-    _reference: int;
+    reference: int;
     level:     int;
 
     def __init__(
         self,
         symb: str,
-        pattern: str
+        pattern: str,
+        reference: str = ''
     ):
         self.symb = symb;
         self.pattern = pattern;
-        self.initOffset();
+        self.level = 0;
+        self.reference = sizeOfIndent(reference, indentsymb=symb);
         return;
 
     def relativeOffset(self, s: str):
-        return max(sizeOfIndent(s, indentsymb=self.symb) - self._reference, 0);
-
-    def initOffset(self, s: str = '') -> int:
-        self.level      = 0;
-        self._reference = sizeOfIndent(s, indentsymb=self.symb);
-        return self._reference;
+        return max(sizeOfIndent(s, indentsymb=self.symb) - self.reference, 0);
 
     def setOffset(self, s: str) -> int:
         n = self.relativeOffset(s);
