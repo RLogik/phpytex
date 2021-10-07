@@ -5,7 +5,8 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from src.local.config import *;
+from src.local.config import *
+from src.local.encoding import *;
 from src.local.lexers import *;
 from src.local.misc import *;
 from src.local.typing import *;
@@ -18,6 +19,7 @@ from src.core.utils import getAttribute;
 from src.core.utils import lengthOfWhiteSpace;
 from src.setup.methods import getGrammar;
 from src.customtypes.exports import *;
+from src.parsers.pythontokeniser import getIndentations;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL CONSTANTS
@@ -233,16 +235,10 @@ def processBlockCode(u: Tree, offset: str, indentation: IndentationTracker) -> T
         ];
         assert all( n >= lenOffset for n in lenIndentation ), 'One or more lines inside code block are too far left of acceptable minimal offset.';
         lines = formatBlockUnindent(lines=lines, reference=offset);
-        is_under_splitline = False;
-        for k, line in enumerate(lines):
-            indent = extractIndent(line);
-            if k == 0 or not is_under_splitline:
-                indentation.setOffset(indent);
-            is_under_splitline = False;
-            if re.match(r'^.*\\$', line):
-                is_under_splitline = True;
-            if re.match(r'^.*:\s*$', line):
-                indentation.incrOffset();
+        # NOTE: uses python's tokenize module to extract syntactic information:
+        indents = getIndentations(lines, indentsymb=indentation.symb, encoding=ENCODING_UTF8);
+        if len(indents) > 0:
+            indentation.setOffset(indents[-1]);
         return TranspileBlock(kind='code', lines=lines, level=0, indentsymb=indentation.symb);
     raise Exception('Could not parse expression!');
 
