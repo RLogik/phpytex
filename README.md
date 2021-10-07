@@ -59,6 +59,8 @@ ignore:      false # (optional) whether or not to skip this project.
 # COMPILE OPTIONS - control how `phpytex run` should processes your project
 ################################################################################
 compile:
+  # legacy:     false    # true => chooses options customised for legacy documents.
+  #                      # (default=false)
   root:       root.tex # path to starting document relative to root folder.
   output:     main.tex # desired name of transpiled output file.
   debug:      false    # true = stop transpilation before generation of latex file
@@ -78,6 +80,7 @@ compile:
   max-length: 10000    # Safeguard against infinite documents!
   tabs:       false    # true -> python blocks use \t; false -> use n spaces.
   spaces:     4        #
+  # offset:     '    '  # minimal offset inside code blocks, defaults to empty string.
   seed:       4627833  # any (not too large) integer to see the RNG.
 ################################################################################
 # STAMP OPTIONS - (optional) defines a comment block at the start of main.tex output
