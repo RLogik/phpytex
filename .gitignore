@@ -24,6 +24,10 @@
 !/scripts/*.sh
 !/scripts/REQUIREMENTS_*
 
+!/install
+!/install/installphpytex
+!/install/README.md
+
 ################################################################
 # WHALES
 ################################################################
