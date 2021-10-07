@@ -18,27 +18,8 @@ to a python script, which in turn generates a single LaTeX file
 
 ## Installation ##
 
-1. Clone this repository
-2. Open a bash console (on Windows install [bash for windows](https://gitforwindows.org))
-  and change the directory to the root directory of this project.
-3. Call
-  ```bash
-  chmod +x scripts/*.sh; # or simply chmod +x scripts/build.sh
-  ```
-  That grants the process scripts execution rights.
-4. Run the setup process without venv (installs necessary python packages) via
-  ```bash
-  ./scripts/build.sh --mode setup --venv false
-  ```
-5. Run the distribution process (compresses the source folder to an runnable zip file)
-  ```bash
-  ./scripts/build.sh --mode dist
-  ```
-  to create the binary.
-6. Copy this binary to a folder with local binaries on your system (_e.g._ `/usr/local/bin` on OSX),
-  and grant the script execution rights via `chmod +x path/to/file`.
-
-You can now call `phpytex` within any project containing a `.phpytex.yml` config file.
+Follow the instructions in [install/README.md](./install/README.md).
+This will enable you to call `phpytex` within any project containing a `.phpytex.yml` config file.
 
 ## Usage - quick start ##
 
