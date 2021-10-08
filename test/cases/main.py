@@ -8,7 +8,7 @@
 import os;
 import sys;
 
-PATH_PROJECT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)));
+PATH_PROJECT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))));
 os.chdir(PATH_PROJECT);
 sys.path.insert(0, PATH_PROJECT);
 
