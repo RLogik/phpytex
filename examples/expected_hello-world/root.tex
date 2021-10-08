@@ -1,7 +1,17 @@
 \documentclass[a4paper]{report}
+
 <<< python, import
 import re;
+import math;
+import random;
 >>>
+
+% This comment block will be removed.
+%% This comment block will be retained.
+%% The following block of empty lines will be reduced to a maximum of 1 empty line:
+
+
+
 
 \begin{document}
     Hello world and hello <<<
@@ -16,7 +26,7 @@ import re;
     \begin{itemize}
         <<< python
         for name in [
-            'Sun'
+            # 'Sun',
             'Mercury',
             'Venus',
             'Earth',
@@ -35,4 +45,6 @@ import re;
         \item A planet in the upper half of the alphabet: <<< name; >>>.
         <<< escape; >>>
     \end{itemize}
+
+    The value $x=<<< random.random(); >>>$ is a randomly generated number in $[0,1]$.
 \end{document}
