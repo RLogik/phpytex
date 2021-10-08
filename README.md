@@ -110,7 +110,7 @@ and see the [examples](./examples) subfolder for concrete examples.
 
 ----
 
-<div style='font-size:10pt'>
+<div style='font-size:8pt'>
 <a name='footnote_1'><b>[1]</b></a> But incidentally, with phpytex one can do this and just about any such task.
 The user simply has to program their own methods, say a python function <tt>makegraphics(...)</tt>
 in a code block or an importable script, and ensure this method takes desired inputs and
