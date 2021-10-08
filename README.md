@@ -1,32 +1,60 @@
 # (PH(p)y)TeX #
 
-The Phpytex programme enables
-
-- python-augmented LaTeX;
-- generation of a single tex-file from a project structure;
-- managing of complex document structures via single (yaml) config files containing
-  - parameter definitions;
-  - (creation of) folder and file structures.
-
 Phpytex transpiles hybrid code (ordinary LaTeX files augmented by blocks of python code)
 to a python script, which in turn generates a single LaTeX file
-(which in turn may be optionally compiled to pdf).
+(which in turn may be optionally compiled to pdf), _i.e._
 
-## What does it do? Show me examples! ##
+```
+augmented code ⟶ python script ⟶ single .tex [⟶ pdf]
+```
 
-See the [examples](./examples) subfolder.
+### Why Phpytex? There are lots of transpilers out there! ###
 
-## System requirements ##
+There are many _(insert language here)_-to-LaTeX transpilers available.
+And many of these do all sorts of fancy things like incorporate lots of
+extra special syntax to embed plots, _etc._
+By contrast our transpiler is intentionally designed to be 'boring' (=sufficently general)!
+It has no built-in _'We can produce these cool graphics with this one command!'_<sup>[[1]](#footnote_1)</a></sup> selling point.
+
+And neither—in our opinion—does it need to.
+
+By our philosophy, the only things a transpiler should do are:
+
+- assume the user can already use {python,LaTeX};
+- _not_ burden the user with a bunch of extra syntax beyond an absolute minimum
+  (_e.g._ markdown languages achieve this wonderfully);
+- reliably incorporate the full generality of features of an ordinary (python) coding project; and
+- leave the _bells-and-whistles_
+  (generation of graphics, usage of complex mathematical objects, data-frames, _etc._)
+  completely over to the user's imagination and mastery of both languages.
+
+That is, transpilation allows the user to marry the two languages with little effort
+but in as generic a manner as possible,
+leaving the specific applications over to the user.
+
+Furthermore Phpytex was originally conceived for the personal reason to
+
+- allow the user to easily manage complex folder structures and generate a single-file-output.
+
+And this shall remain a cornerstone feature of Phpytex.
+
+### But what exactly does it do? Show me examples! ###
+
+See the [examples](./examples) subfolder for some examples.
+Each case contains a set of initial files and a counterpart folder with the outputs.
+
+## Getting started ##
+### System requirements ###
 
 - Bash (windows users may install [git/bash for windows](https://gitforwindows.org))
 - Python 3 (currently developed under python 3.9.5)
 
-## Installation ##
+### Installation ###
 
 Follow the instructions in [install/README.md](./install/README.md).
 This will enable you to call `phpytex` within any project containing a `.phpytex.yml` config file.
 
-## Usage - quick start ##
+### Usage - quick start ###
 
 - `phpytex` or `phpytex help` displays a message with the commands.
 - `phpytex version` displays in plain text the version number.
@@ -40,93 +68,57 @@ To use phpytex, a `.phpytex.yml` file is required in the (root of) the project f
 This should contain 4 parts with the following structure:
 
 ```yaml
-ignore:      false # (optional) whether or not to skip this project.
-################################################################################
-# COMPILE OPTIONS - control how `phpytex run` should processes your project
-################################################################################
+########################################
+# COMPILE OPTIONS
+########################################
 compile:
-  # legacy:     false    # true => chooses options customised for legacy documents.
-  #                      # (default=false)
-  root:       root.tex # path to starting document relative to root folder.
-  output:     main.tex # desired name of transpiled output file.
-  debug:      false    # true = stop transpilation before generation of latex file
-  compile:    true     # true = full compilation: phpytex -> python -> latex -> pdf
-                       #        (only works if debug=false is set).
-  insert-bib: true     # true = after compilation, <<< bibliograph >>> command
-                       #        replaced by bbl-file content.
-  comments:   auto     # Handling of comments:
-                       #   true = allow all comment lines
-                       #   false = remove all comment lines
-                       #   auto = remove only those comment lines
-                       #          starting with a single %
-                       #          E.g. '%% test' will be retained.
-                       #   (default=auto)
-  show-tree:  true     # true = output file (main.tex) will contain information
-                       #        about document structure displayed as comments.
-  max-length: 10000    # Safeguard against infinite documents!
-  tabs:       false    # true -> python blocks use \t; false -> use n spaces.
-  spaces:     4        #
-  # offset:     '    '  # minimal offset inside code blocks, defaults to empty string.
-  seed:       4627833  # any (not too large) integer to see the RNG.
-################################################################################
-# STAMP OPTIONS - Defines a comment block at the start of main.tex output
-# (optional)      Useful for recording meta information.
-################################################################################
+  root:   root.tex
+  output: main.tex
+  ...
+########################################
+# STAMP OPTIONS (optional)
+########################################
 stamp:
-  file: stamp.tex      # desired name of file.
-  overwrite: true      # whether or not to overwrite existing file.
-  options:             # <- one can set arbitrary key-value arguments.
-    author:    Max Mustermann
-    created:   27.08.2021
-    edited:    28.08.2021
-    title:     &title The stages of artificial intelligence beyond human intelligence
-    institute: Faculty of mathematics
-################################################################################
-# DOCUMENT PARAMETERS - Defines global params to be used throughout the project.
-# (optional)            Useful for managing complex document structures.
-################################################################################
+  file:      stamp.tex
+  overwrite: true
+  options:
+    ...
+########################################
+# DOCUMENT PARAMETERS (optional)
+########################################
 parameters:
-  file: src.parameters  # desired location of file (as python import).
-  overwrite: true       # whether or not to overwrite existing file.
-  options:              # <- one can set arbitrary key-value arguments.
-    FONT_SIZE: 12pt         # usage in document: <<< FONT_SIZE >>>
-    TITLE:     *title       # usage in document: <<< TITLE >>>
-    KEYWORDS:
-      - ai
-      - computer science    # usage in document: <<< KEYWORDS[1] >>>
-      - research
-################################################################################
-# DOCUMENT TREE - Allows creation of arbitrary folders/files in project.
-# (optional)      NOTE: existing files will not be overwritten.
-################################################################################
+  file: src.parameters
+  overwrite: true
+  options:
+  ...
+########################################
+# DOCUMENT TREE (optional)
+########################################
 files:
-  - root.tex
-  - title.tex
-  - contents.tex
+  ...
 folders:
-  body:
-    files:
-     - introduction.tex
-     - definitions.tex
-     - parts.tex
-    folders:
-  ## the files / folders dictionary may be arbitrarily nested
+  ...
 ```
 
-Within documents use `<<< input 'path-to-file' >>>` or `<<< input_anon 'path-to-file' >>>`
-to input a file or to do this anonymously (will be excluded from final output).
-</br>
-Similarly `<<< bibliography 'path-to-bib-file' >>>` and `<<< bibliography_anon 'path-to-bib-file' >>>`
-may be used to indicated the inclusion of a bib-file.
-</br>
-Note that the path is always taken to be relative to the folder of the current document.
-</br>
-For example within `body/parts.tex` the following commands are equivalent:
+See [LONGREADME.md](./LONGREADME.md#usage-short_config) for more details
+and see the [examples](./examples) subfolder for concrete examples.
 
-```coffee
-<<< input 'part-one/definitions.tex' >>>
-<<< input __DIR__ + '/part-one/definitions.tex' >>>
-<<< input __ROOT__ + '/body/part-one/basic-concepts.tex' >>>
-```
+<br/>
+<br/>
+<br/>
+<br/>
 
-The dynamic `__ROOT__` variable is useful if one wishes to input files from adjacent subfolders.
+<tt>----------------</tt>
+<br/>
+<div style='font-size:10pt'>
+<a name='footnote_1'>[1]</a> But incidentally, with phpytex one can do this and just about any such task.
+The user simply has to program their own methods, say a python function <tt>makegraphics(...)</tt>
+in a code block or an importable script, and ensure this method takes desired inputs and
+<i>either</i> generates an image and returns suitable LaTeX command to include this,
+<i>or</i> returns a series of LaTeX commands (_e.g._ <tt>tikz</tt> commands)
+to produce the image natively in LaTeX.
+
+One can clearly make a standard suite of such functions.
+But creating such things should not be in the scope of a good, sufficiently general, transpiler,
+but rather of package development.
+</div>

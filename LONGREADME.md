@@ -69,7 +69,7 @@ This will enable you to call `phpytex` within any project containing a `.phpytex
   </br>
   If the `file` flag is left empty, the programme searches for the first yaml-file matching the pattern `*.(phpytex|phpycreate).(yml|yaml)` and uses this as the config file.
 
-### Set up of config file ###
+### <a name="usage-short_config">Set up of config file</a> ###
 
 To use phpytex, a `.phpytex.yml` file is required in the (root of) the project folder.
 This should contain 4 parts with the following structure:
