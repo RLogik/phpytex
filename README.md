@@ -69,7 +69,8 @@ compile:
   # offset:     '    '  # minimal offset inside code blocks, defaults to empty string.
   seed:       4627833  # any (not too large) integer to see the RNG.
 ################################################################################
-# STAMP OPTIONS - (optional) defines a comment block at the start of main.tex output
+# STAMP OPTIONS - Defines a comment block at the start of main.tex output
+# (optional)      Useful for recording meta information.
 ################################################################################
 stamp:
   file: stamp.tex      # desired name of file.
@@ -81,8 +82,8 @@ stamp:
     title:     &title The stages of artificial intelligence beyond human intelligence
     institute: Faculty of mathematics
 ################################################################################
-# DOCUMENT PARAMETERS - (optional) defines global parameters.
-#                       Useful for managing complex document structures.
+# DOCUMENT PARAMETERS - Defines global params to be used throughout the project.
+# (optional)            Useful for managing complex document structures.
 ################################################################################
 parameters:
   file: src.parameters  # desired location of file (as python import).
@@ -95,38 +96,21 @@ parameters:
       - computer science    # usage in document: <<< KEYWORDS[1] >>>
       - research
 ################################################################################
-# DOCUMENT TREE - (optional) allows users to create folders/files
-#                 NOTE: existing files will not be overwritten.
+# DOCUMENT TREE - Allows creation of arbitrary folders/files in project.
+# (optional)      NOTE: existing files will not be overwritten.
 ################################################################################
 files:
   - root.tex
+  - title.tex
+  - contents.tex
 folders:
-  src:
-    files:
-      - methods.py
-      - packages.tex
-      - layout.tex
-      - macros.tex
-  front:
-    files:
-      - contents.tex
-      - title.tex
-      - abstract.tex
   body:
     files:
-     - foreword.tex
+     - introduction.tex
+     - definitions.tex
      - parts.tex
     folders:
-      part-one:
-        files:
-          - definitions.tex
-          - basic-concepts.tex
-      part-two:
-        files:
-          - results.tex
-   back:
-     files:
-       - literature.bib
+  ## the files / folders dictionary may be arbitrarily nested
 ```
 
 Within documents use `<<< input 'path-to-file' >>>` or `<<< input_anon 'path-to-file' >>>`
