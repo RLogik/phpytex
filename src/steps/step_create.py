@@ -31,12 +31,14 @@ def step():
     logInfo('CREATION STAGE STARTED.');
     root = appconfig.getPathRoot();
     createFilesAndFolders(path=root, projectTree=appconfig.getProjectTree());
-    createFileStamp(
-        path=appconfig.getFileStamp(rel=False),
-        overwrite=appconfig.getOptionOverwriteStamp(),
-        options=appconfig.getDictionaryStamp()
-    );
-    createParameters(options=appconfig.getDictionaryParms());
+    if appconfig.getWithFileStamp():
+        createFileStamp(
+            path=appconfig.getFileStamp(rel=False),
+            overwrite=appconfig.getOptionOverwriteStamp(),
+            options=appconfig.getDictionaryStamp()
+        );
+    if appconfig.getWithFileParamsPy():
+        createParameters(options=appconfig.getDictionaryParms());
     logInfo('CREATION STAGE COMPLETE.');
     return;
 

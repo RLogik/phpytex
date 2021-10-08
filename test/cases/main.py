@@ -42,11 +42,9 @@ def main(*tokens, **kwargs):
 
     config = StepGetConfig(PATH_CONFIG);
     paths = getAttribute(config, 'cases', expectedtype=list, default=[]);
-    cases = StepGetTestCases(PATH_CASES, PATTERN_CASE);
+    # cases = StepGetTestCases(PATH_CASES, PATTERN_CASE);
     ClearSandbox(PATH_SANDBOX);
-    for path in cases:
-        if not (path in paths):
-            continue;
+    for path in paths:
         logPlain('');
         StepRunTestCase(path=path, sandboxpath=PATH_SANDBOX, phpytex_script=PATH_SCRIPT, inspect=inspect);
         ClearSandbox(PATH_SANDBOX);

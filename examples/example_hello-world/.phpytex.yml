@@ -1,0 +1,8 @@
+compile:
+  options:
+    root:       root.tex
+    output:     main.tex
+    debug:      false
+    compile:    false
+    tabs:       false
+    spaces:     4

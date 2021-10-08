@@ -1,0 +1,61 @@
+ignore:      false
+################################################################################
+# COMPILE OPTIONS
+################################################################################
+compile:
+  options:
+    root:       root.tex
+    output:     main.tex
+    debug:      false
+    compile:    false
+    insert-bib: true
+    comments:   auto
+    show-tree:  true
+    max-length: 10000
+    tabs:       false
+    spaces:     4
+    seed:       41019283
+################################################################################
+# STAMP OPTIONS
+################################################################################
+stamp:
+  file:      stamp.tex
+  overwrite: true
+  options:
+    author: &ref_author Max Mustermann
+    date:   &ref_date 37-17-25401
+    title:  &ref_title Critical functionality of intersystemic technologies at low temperatures
+################################################################################
+# ARTICLE PARAMETERS
+################################################################################
+parameters:
+  file:      src.parameters
+  overwrite: true
+  options:
+    AUTHOR: *ref_author
+    DATE:   *ref_date
+    TITLE:  *ref_title
+    FontSize: 12
+    SystemNames:
+      - alpha centauri
+      - proxima
+      - iridium
+    T_range: [222.0, 254.167]
+################################################################################
+# DOCUMENT TREE
+################################################################################
+files:
+  - root.tex
+folders:
+  src:
+    files:
+      - index.tex
+      - macros.tex
+      - layout.tex
+  body:
+    files:
+      - index.tex
+      - title.tex
+      - abstract.tex
+      - definitions.tex
+      - results.tex

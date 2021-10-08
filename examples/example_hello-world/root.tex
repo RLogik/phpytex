@@ -1,0 +1,50 @@
+\documentclass[a4paper]{report}
+
+<<< python, import
+import re;
+import math;
+import random;
+>>>
+
+% This comment block will be removed.
+%% This comment block will be retained.
+%% The following block of empty lines will be reduced to a maximum of 1 empty line:
+
+
+
+
+\begin{document}
+    Hello world and hello <<<
+        ', '.join([
+            'Venus',
+            'Mars',
+            'Jupiter',
+            'Saturn',
+        ]);
+    >>>. We can also greet like this:
+
+    \begin{itemize}
+        <<< python
+        for name in [
+            # 'Sun',
+            'Mercury',
+            'Venus',
+            'Earth',
+            'Mars',
+            'Jupiter',
+            'Saturn',
+            'Uranus',
+            'Neptune',
+        ]:
+            if re.match(r'^[a-m]', name, re.IGNORECASE):
+        >>>
+        \item A planet in the lower half of the alphabet: <<< name; >>>.
+        <<< python
+            else:
+        >>>
+        \item A planet in the upper half of the alphabet: <<< name; >>>.
+        <<< escape; >>>
+    \end{itemize}
+
+    The value $x=<<< random.random(); >>>$ is a randomly generated number in $[0,1]$.
+\end{document}

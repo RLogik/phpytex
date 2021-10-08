@@ -20,34 +20,37 @@ from src.customtypes.exports import *;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 _config_parameters: Dict[str, ConfigParameter] = {
-    'pattern_config':          ConfigParameter[str](),
-    'path_app':                ConfigParameter[str](),
-    'path_root':               ConfigParameter[str](),
-    'file_start':              ConfigParameter[str](),
-    'file_transpiled':         ConfigParameter[str](),
-    'file_output':             ConfigParameter[str](),
-    'file_stamp':              ConfigParameter[str](),
-    'file_params_py':          ConfigParameter[str](),
-    'import_param_py':         ConfigParameter[str](),
-    'param_module_name':       ConfigParameter[str]().setValue('MODULE_GLOBAL_PARAMS'),
-    'python_path':             ConfigParameter[str]().setValue(PythonCommand()),
+    'pattern_config':          ConfigParameter[str]('patternConfig'),
+    'path_app':                ConfigParameter[str]('pathApp'),
+    'path_root':               ConfigParameter[str]('pathRoot'),
+    'file_start':              ConfigParameter[str]('fileStart'),
+    'file_transpiled':         ConfigParameter[str]('fileTranspiled'),
+    'file_output':             ConfigParameter[str]('fileOutput'),
+    'file_stamp':              ConfigParameter[str]('fileStamp'),
+    'with_file_stamp':         ConfigParameter[bool]('withFileStamp').setValue(False),
+    'file_params_py':          ConfigParameter[str]('fileParamsPy'),
+    'with_file_params_py':     ConfigParameter[bool]('withFileParamsPy').setValue(False),
+    'import_param_py':         ConfigParameter[str]('importParamPy'),
+    'param_module_name':       ConfigParameter[str]('paramModuleName').setValue('MODULE_GLOBAL_PARAMS'),
+    'python_path':             ConfigParameter[str]('pythonPath').setValue(PythonCommand()),
     ####
-    'option_legacy':           ConfigParameter[bool]().setValue(False),
-    'option_ignore':           ConfigParameter[bool]().setValue(False),
-    'option_debug':            ConfigParameter[bool]().setValue(False),
-    'option_compile_latex':    ConfigParameter[bool]().setValue(False),
-    'option_show_tree':        ConfigParameter[bool]().setValue(True),
-    'option_comments':         ConfigParameter[str]().setValue('auto'),
-    'option_insert_bib':       ConfigParameter[bool]().setValue(False),
-    'option_overwrite_stamp':  ConfigParameter[bool]().setValue(True),
-    'option_overwrite_params': ConfigParameter[bool]().setValue(True),
-    'max_length':              ConfigParameter[int]().setValue(10000),
+    'option_legacy':           ConfigParameter[bool]('optionLegacy').setValue(False),
+    'option_ignore':           ConfigParameter[bool]('optionIgnore').setValue(False),
+    'option_debug':            ConfigParameter[bool]('optionDebug').setValue(False),
+    'option_compile_latex':    ConfigParameter[bool]('optionCompileLatex').setValue(False),
+    'option_show_tree':        ConfigParameter[bool]('optionShowTree').setValue(True),
+    'option_comments_auto':    ConfigParameter[bool]('optionCommentsAuto').setValue(True),
+    'option_comments_on':      ConfigParameter[bool]('optionCommentsOn').setValue(True),
+    'option_insert_bib':       ConfigParameter[bool]('optionInsertBib').setValue(False),
+    'option_overwrite_stamp':  ConfigParameter[bool]('optionOverwriteStamp').setValue(True),
+    'option_overwrite_params': ConfigParameter[bool]('optionOverwriteParams').setValue(True),
+    'max_length':              ConfigParameter[int]('maxLength').setValue(10000),
         # <-- prevents transpiler from creating overlarge files
-    'seed':                    ConfigParameter[int]().setValue(random.randint(0,10**8 - 1)),
-    'indent_character':        ConfigParameter[str](),
-    'indent_character_re':     ConfigParameter[str](),
-    'censor_symbol':           ConfigParameter[str]().setValue('########'),
-    'offset_symbol':           ConfigParameter[str]().setValue(''),
+    'seed':                    ConfigParameter[int]('seed'),
+    'indent_character':        ConfigParameter[str]('indentCharacter'),
+    'indent_character_re':     ConfigParameter[str]('indentCharacterRe'),
+    'censor_symbol':           ConfigParameter[str]('censorSymbol').setValue('########'),
+    'offset_symbol':           ConfigParameter[str]('offsetSymbol').setValue(''),
 };
 
 _dictionary_stamp: Dict[str, Any] = dict();
@@ -126,6 +129,14 @@ def getOptionOverwriteParams() -> bool:
 def setOptionOverwriteParams(value: bool):
     global _config_parameters;
     _config_parameters['option_overwrite_params'].value = value;
+    return;
+
+def getWithFileStamp() -> bool:
+    return _config_parameters['with_file_stamp'].value;
+
+def setWithFileStamp(value: bool):
+    global _config_parameters;
+    _config_parameters['with_file_stamp'].value = value;
     return;
 
 def getFileStamp(rel: bool = True) -> str:
@@ -220,12 +231,28 @@ def setOptionShowTree(value: bool):
     _config_parameters['option_show_tree'].value = value;
     return;
 
-def getOptionComments() -> str:
-    return _config_parameters['option_comments'].value;
+def getOptionCommentsAuto() -> bool:
+    return _config_parameters['option_comments_auto'].value;
 
-def setOptionComments(value: str):
+def setOptionCommentsAuto(value: bool):
     global _config_parameters;
-    _config_parameters['option_comments'].value = value;
+    _config_parameters['option_comments_auto'].value = value;
+    return;
+
+def getOptionCommentsOn() -> bool:
+    return _config_parameters['option_comments_on'].value;
+
+def setOptionCommentsOn(value: bool):
+    global _config_parameters;
+    _config_parameters['option_comments_on'].value = value;
+    return;
+
+def getWithFileParamsPy() -> bool:
+    return _config_parameters['with_file_params_py'].value;
+
+def setWithFileParamsPy(value: bool):
+    global _config_parameters;
+    _config_parameters['with_file_params_py'].value = value;
     return;
 
 def getFileParamsPy(rel: bool = True) -> str:
@@ -262,12 +289,21 @@ def setMaxLengthOutput(value: int):
     _config_parameters['max_length'].value = value;
     return;
 
+def hasSeed() -> bool:
+    return _config_parameters['seed'].hasValue;
+
 def getSeed() -> int:
     return _config_parameters['seed'].value;
 
 def setSeed(value: int):
     global _config_parameters;
     _config_parameters['seed'].value = value;
+    return;
+
+def reSeed():
+    global _config_parameters;
+    if _config_parameters['seed'].hasValue:
+        random.seed(_config_parameters['seed'].value);
     return;
 
 def getIndentCharacter() -> str:

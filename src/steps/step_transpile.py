@@ -34,9 +34,10 @@ def step():
     logInfo('TRANSPILATION (phpytex -> python) STARTED.');
     root = appconfig.getPathRoot();
     indentsymb = appconfig.getIndentCharacter();
+    seed = appconfig.getSeed() if appconfig.hasSeed() else None;
 
     ## Initialise structures for recording transpilation units:
-    random.seed(appconfig.getSeed()); # <-- only do this once!
+    appconfig.reSeed(); # <-- only do this once!
     preambles = [];
     imports = TranspileBlocks();
     documents = TranspileDocuments(
@@ -50,17 +51,18 @@ def step():
     );
 
     ## Transpile preamble:
-    name = 'stamp';
-    preambles.append(name);
-    transpileDocument(
-        path        = appconfig.getFileStamp(rel=True),
-        documents   = documents,
-        imports     = TranspileBlocks(),
-        name        = name,
-        is_preamble = True,
-        silent      = True,
-        params      = { 'no-comm': False, 'no-comm-auto': True, 'show-tree': False }
-    );
+    if appconfig.getWithFileStamp():
+        name = 'stamp';
+        preambles.append(name);
+        transpileDocument(
+            path        = appconfig.getFileStamp(rel=True),
+            documents   = documents,
+            imports     = TranspileBlocks(),
+            name        = name,
+            is_preamble = True,
+            silent      = True,
+            params      = { 'comm': True, 'comm-auto': False, 'show-tree': False }
+        );
 
     ## Transpile document file:
     transpileDocument(
@@ -71,9 +73,9 @@ def step():
         is_preamble = False,
         silent      = getQuietMode(),
         params      = {
-            'no-comm':      (appconfig.getOptionComments() is False),
-            'no-comm-auto': (appconfig.getOptionComments() == 'auto'),
-            'show-tree':    appconfig.getOptionShowTree()
+            'comm':      appconfig.getOptionCommentsOn(),
+            'comm-auto': appconfig.getOptionCommentsAuto(),
+            'show-tree': appconfig.getOptionShowTree()
         }
     );
 
@@ -81,23 +83,24 @@ def step():
     name = 'tree';
     if appconfig.getOptionShowTree():
         preambles.append(name);
-    blocks = TranspileBlocks([documents.documentTree(seed=appconfig.getSeed())]);
+    blocks = TranspileBlocks([documents.documentTree(seed=seed)]);
     documents.addPreamble(name=name, blocks=blocks);
 
-    ## Create 'parameters.py':
-    createImportFileParameters(
-        path      = appconfig.getFileParamsPy(rel=False),
-        overwrite = appconfig.getOptionOverwriteParams(),
-        documents = documents
-    );
-
-    ## Add import block for global parameters:
-    imports.append(TranspileBlock(
-        kind        = 'code',
-        content     = 'from {name} import *;'.format(name = appconfig.getImportParamsPy()),
-        level       = 0,
-        indentsymb  = indentsymb,
-    ));
+    ## Handle global parameters:
+    if appconfig.getWithFileParamsPy():
+        ## Create file:
+        createImportFileParameters(
+            path      = appconfig.getFileParamsPy(rel=False),
+            overwrite = appconfig.getOptionOverwriteParams(),
+            documents = documents
+        );
+        ## Add import block for global parameters:
+        imports.append(TranspileBlock(
+            kind        = 'code',
+            content     = 'from {name} import *;'.format(name = appconfig.getImportParamsPy()),
+            level       = 0,
+            indentsymb  = indentsymb,
+        ));
 
     ## Generate result of transpilation (phpytex -> python):
     globalvars = unique(list(appconfig.getExportVars().keys()) + list(documents.variables.keys()));
@@ -105,7 +108,8 @@ def step():
         documents  = documents,
         imports    = imports,
         preambles  = preambles,
-        globalvars = globalvars
+        globalvars = globalvars,
+        seed       = seed
     );
     logInfo('TRANSPILATION (phpytex -> python) COMPLETE.');
     return;
@@ -162,7 +166,10 @@ def transpileDocument(
                 imports.append(block);
                 continue;
             if block.kind == 'text:comment':
-                if params['no-comm'] or ( params['no-comm-auto'] and not block.parameters.keep ):
+                if params['comm-auto'] == True:
+                    if not block.parameters.keep:
+                        continue;
+                elif params['comm'] == False:
                     continue;
             blocks.append(block);
         if params['show-tree']:
@@ -208,9 +215,9 @@ def createmetacode(
     documents:  TranspileDocuments,
     imports:    TranspileBlocks,
     preambles:  List[str],
-    globalvars: List[str]
+    globalvars: List[str],
+    seed:       Union[int, None]
 ):
-    fnameLatex = appconfig.getFileOutput(rel=False);
     _lines_pre = getTemplatePhpytexLinesPre();
     _lines_post = getTemplatePhpytexLinesPost();
     lines = [];
@@ -223,7 +230,7 @@ def createmetacode(
             insert_bib    = appconfig.getOptionInsertBib(),
             compile_latex = appconfig.getOptionCompileLatex(),
             length_max    = appconfig.getMaxLengthOuput(),
-            seed          = appconfig.getSeed(),
+            seed          = seed,
             indentsymb    = appconfig.getIndentCharacter(),
             censorsymb    = appconfig.getCensorSymbol(),
             mainfct       = FUNCTION_NAME_MAIN,

@@ -12,8 +12,8 @@ from src.local.system import *;
 from src.local.typing import *;
 
 from src.core.log import *;
-from src.core.utils import formatTextBlock;
 from src.core.utils import formatTextBlockAsList;
+from src.core.utils import getAttribute;
 from src.core.utils import unique;
 from src.customtypes.type_transpileblock import TranspileBlock;
 from src.customtypes.type_transpileblock import TranspileBlocks;
@@ -99,12 +99,13 @@ class TranspileDocument(list):
                 for name in unique([ '__ROOT__', '__DIR__', '__FNAME__', '__ANON__', '__IGNORE__' ] + globalvars)
                 if not name in [ '__STATE__' ]
             ] + [
-                '__STATE__ = (__ROOT__, __DIR__, __FNAME__, __ANON__, __IGNORE__);',
                 '__ROOT__ = \'.\';'.format(),
                 '__DIR__ = \'{path}\';'.format(path = self.pathfolder),
                 '__FNAME__ = \'{path}\';'.format(path = self.path),
                 '__IGNORE__ = False;',
                 '__ANON__ = {};'.format(anon),
+                '# Save current state locally. Use to restore state after importing subfiles.',
+                '__STATE__ = (__ROOT__, __DIR__, __FNAME__, __ANON__, __IGNORE__);',
             ]
         ).generateCode(offset + 1);
         for block in self.blocks:
@@ -127,8 +128,9 @@ class TranspileDocuments(object):
     paths:      List[str];
     anon:       Dict[str, bool];
     edges:      List[Tuple[str, str]];
+    docEdges:   List[Tuple[str, str]];
 
-    variables: List[str];
+    variables:  List[str];
 
     def __init__(
         self,
@@ -141,6 +143,7 @@ class TranspileDocuments(object):
         self.paths = [];
         self.documents = dict();
         self.edges = [];
+        self.docEdges = [];
         self.variables = dict();
         self.preamble = dict();
         self.anon = dict();
@@ -253,17 +256,21 @@ class TranspileDocuments(object):
                     ));
                     continue;
                 _path = document.relativisePath(_path);
+                ## add edge for the sake of display (regardless of whether input or bib mode):
+                self.docEdges.append((path, _path));
+                if not (_path in self.anon):
+                    self.anon[_path] = False;
+                self.anon[_path] = anon or self.anon[_path];
                 ## create phpytex-code blocks based on computed path:
                 if mode == 'input':
                     self.edges.append((path, _path));
-                    if anon:
-                        self.anon[_path] = True;
                     document.append(TranspileBlock(kind='text:empty', **state)); # force empty line before input of file
                     document.append(TranspileBlock(
                         kind        = 'code',
                         lines       = [
                             '{label}(\'{path}\');'.format(label=self.schemes['file'], path=_path),
-                            '__ROOT__, __DIR__, __FNAME__, __ANON__, __IGNORE__ = __STATE__;'
+                            '# Restore state of current file:',
+                            '__ROOT__, __DIR__, __FNAME__, __ANON__, __IGNORE__ = __STATE__;',
                         ],
                         **state
                     ));
@@ -294,8 +301,8 @@ class TranspileDocuments(object):
         if not isinstance(path, str):
             depth = 0;
             children = self.getHeadPaths();
-        elif path in self.paths:
-            anon = anon or self.anon[path];
+        else:
+            anon = anon or getAttribute(self.anon, path, expectedtype=bool, default=False);
             yield '{prefix}{tab}{branchsymb} {path}'.format(
                 prefix = prefix,
                 tab = indentsymb*(depth if depth == 0 else depth - 1),
@@ -303,9 +310,9 @@ class TranspileDocuments(object):
                 path = '########' if anon else path,
             );
             depth = depth + 1;
-            children = [ v for u, v in self.edges if u == path ];
-        else:
-            return;
+            children = [];
+            if path in self.paths:
+                children = [ v for u, v in self.docEdges if u == path ];
         for subpath in children:
             yield from self.documentStructurePretty(subpath, anon=anon, prefix=prefix, indentsymb=indentsymb, branchsymb=branchsymb, depth=depth);
         return;
@@ -318,7 +325,7 @@ class TranspileDocuments(object):
             indentsymb = self.indentsymb
         );
 
-    def documentTree(self, seed: int) -> TranspileBlock:
+    def documentTree(self, seed: Union[int, None]) -> TranspileBlock:
         return TranspileBlock(
             kind       = 'text:comment',
             lines      = formatTextBlockAsList(
@@ -335,7 +342,7 @@ class TranspileDocuments(object):
                 %%
                 %% DOCUMENT-RANDOM-SEED: {}
                 %% ********************************************************************************
-                '''.format(seed)
+                '''.format(seed if isinstance(seed, int) else '---')
             ) + [ '' ],
             level      = 0,
             indentsymb = self.indentsymb,

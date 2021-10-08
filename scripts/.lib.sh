@@ -5,20 +5,16 @@
 #    Include using source .whales/.lib.sh
 ##############################################################################
 
-source .whales/.lib.sh;
+source scripts/.lib.globals.sh;
+source scripts/.lib.utils.sh;
 
 ##############################################################################
 # GLOBAL VARIABLES
 ##############################################################################
 
+env_from ".env" import REQUIREMENTS_GO     as PATH_REQ_GO;
 env_from ".env" import REQUIREMENTS_PY     as PATH_REQ_PY;
 env_from ".env" import NAME_OF_APP;
-env_from ".env" import IP                  as DOCKER_IP;
-env_from ".env" import PORT_HOST           as DOCKER_PORT_HOST;
-env_from ".env" import PORT_CONTAINER      as DOCKER_PORT_CONTAINER;
-env_from ".env" import PORTS               as DOCKER_PORTS;
-
-whales_set_ports "$DOCKER_PORTS";
 
 export CONFIGENV="data/.env";
 export PYTHON_APP_PREFIX=\
@@ -32,6 +28,35 @@ export USE_VENV=false;
 
 function create_zip_archive() {
     zip -r $@;
+}
+
+##############################################################################
+# AUXILIARY METHODS: Go
+##############################################################################
+
+function call_go() {
+    go $@;
+}
+
+function install_requirements_go() {
+    local path="$1";
+    local cwd="$PWD";
+    pushd src-go >> $VERBOSE;
+        # go mod tidy; # <- use to detect unused packages in project
+        remove_file "go.sum";
+        _log_info "Add go requirements";
+        call_go get "$( cat "$cwd/$path" )";
+    popd >> $VERBOSE
+}
+
+function compile_go() {
+    _log_info "Compile \033[1mmain.go\033[0m with \033[1mgolang\033[0m";
+    local cwd="$PWD";
+    remove_file "dist/$NAME_OF_APP";
+    pushd src-go >> $VERBOSE;
+        call_go build -o $cwd/dist/$NAME_OF_APP "main.go";
+    popd >> $VERBOSE;
+    ! [ -f "dist/$NAME_OF_APP" ] && exit 1;
 }
 
 ##############################################################################
@@ -153,6 +178,10 @@ function garbage_collection_python() {
     done
 }
 
+function garbage_collection_dist() {
+    remove_file "dist/$NAME_OF_APP";
+}
+
 ##############################################################################
 # MAIN METHODS: PROCESSES
 ##############################################################################
@@ -162,6 +191,10 @@ function run_setup() {
     create_python_venv;
     _log_info "Check and install missing requirements";
     install_requirements_v_python "$PATH_REQ_PY";
+}
+
+function run_setup_go() {
+    install_requirements_go "$PATH_REQ_GO";
 }
 
 function run_create_artefact() {
@@ -182,9 +215,40 @@ function run_create_artefact() {
     remove_file "dist/app.zip";
 }
 
+function run_create_artefact_go() {
+    compile_go;
+}
+
+function  run_create_examples() {
+    local current_dir="$PWD";
+    local path;
+    local sandboxpath;
+    _log_info "CHECK IF ARTEFACT EXISTS";
+    ! [ -f dist/$NAME_OF_APP ] && _log_fail "First run \033[1mbuild --mode dist\033[0m.";
+    _log_info "Binary artefact exists.";
+    _log_info "CREATE EXAMPLES";
+    while read path; do
+        [ "$path" == "" ] && continue;
+        sandboxpath="$( echo "$path" | sed -E "s/^examples\/example_/examples\/expected_/g" )";
+        [ "$path" == "$sandboxpath" ] && _log_error "Could not create example for \033[1m$path\033[0m." && continue;
+        [ -d "$sandboxpath" ] && remove_dir "$sandboxpath";
+        [ -d "$sandboxpath" ] && _log_error "Could not clear the output folder \033[1m$sandboxpath\033[0m." && continue;
+        cp -r "$path/." "$sandboxpath";
+        pushd "$sandboxpath" >> $VERBOSE;
+            $current_dir/dist/$NAME_OF_APP run;
+        popd >> $VERBOSE;
+        # [ -f "$path" ] && remove_file "$path" >> $VERBOSE && continue;
+        # [ -d "$path" ] && rm -rf "$path" && continue;
+    done <<< $( find examples/example_* -mindepth 0 -maxdepth 0 2> $VERBOSE );
+}
+
 function run_main() {
-    args="$@";
-    call_v_python src/main.py $args;
+    call_v_python src/main.py $@;
+}
+
+function run_main_go() {
+    compile_go;
+    ./dist/$NAME_OF_APP $@;
 }
 
 function run_explore_console() {
@@ -209,14 +273,23 @@ function run_test_unit() {
     _log_info "Unit tests successful!";
 }
 
+function run_test_unit_go() {
+    _log_fail "Unit tests not yet implemented for go.";
+}
+
 function run_test_cases() {
     local args="$@";
     _log_info "RUN TEST CASES";
     call_v_python test/cases/main.py $args;
 }
 
+function run_test_cases_go() {
+    _log_fail "Case tests not yet implemented for go.";
+}
+
 function run_clean_artefacts() {
     _log_info "CLEAN ARTEFACTS";
     garbage_collection_build;
     garbage_collection_python;
+    garbage_collection_dist;
 }
