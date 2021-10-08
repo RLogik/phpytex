@@ -258,9 +258,13 @@ def ____compilelatex():
     pipeCall('pdflatex', *pdflatex_options, name);#, errormsg='PDFLATEX encountered a problem.');
 
     print('[\033[94;1mINFO\033[0m] RUN BIBTEX');
-    for src in bib.keys():
+    sources = [];
+    for fname, (src, indexes) in bib.items():
+        if src in sources:
+            continue;
         bibname = os.path.splitext(src)[0];
         pipeCall('bibtex', *bibtex_options, bibname);#, errormsg='BIBTEX encountered a problem.');
+        sources.append(src);
     pass;
 
 ## NOTE: subprocess.run is like subprocess.Popen but waits for result
