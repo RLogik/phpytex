@@ -77,7 +77,7 @@ blockcode_args:   "{" WHITESPACES? arglist WHITESPACES? "}"  -> blockcode_args
 
 // BLOCK COMMENT
 blockcomment.320: blockcomment_keep | blockcomment_simple   -> blockcomment
-blockcomment_keep:   SPACES? COMMENT COMMENT TEXT       -> blockcomment_keep
+blockcomment_keep:   SPACES? COMMENT COMMENT TEXT?      -> blockcomment_keep
 blockcomment_simple: SPACES? COMMENT ( NCOMMENT TEXT )? -> blockcomment_simple
 
 // BLOCK CONTENT
