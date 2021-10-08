@@ -61,7 +61,7 @@ def step():
             name        = name,
             is_preamble = True,
             silent      = True,
-            params      = { 'no-comm': False, 'no-comm-auto': True, 'show-tree': False }
+            params      = { 'comm': True, 'comm-auto': False, 'show-tree': False }
         );
 
     ## Transpile document file:
@@ -73,9 +73,9 @@ def step():
         is_preamble = False,
         silent      = getQuietMode(),
         params      = {
-            'no-comm':      (appconfig.getOptionComments() is False),
-            'no-comm-auto': (appconfig.getOptionComments() == 'auto'),
-            'show-tree':    appconfig.getOptionShowTree()
+            'comm':      appconfig.getOptionCommentsOn(),
+            'comm-auto': appconfig.getOptionCommentsAuto(),
+            'show-tree': appconfig.getOptionShowTree()
         }
     );
 
@@ -166,7 +166,10 @@ def transpileDocument(
                 imports.append(block);
                 continue;
             if block.kind == 'text:comment':
-                if params['no-comm'] or ( params['no-comm-auto'] and not block.parameters.keep ):
+                if params['comm-auto'] == True:
+                    if not block.parameters.keep:
+                        continue;
+                elif params['comm'] == False:
                     continue;
             blocks.append(block);
         if params['show-tree']:

@@ -77,7 +77,7 @@ def preProcessCompileConfig(config: Dict[str, Any]) -> Dict[str, Any]:
         debug      = getAttribute(config, 'debug', expectedtype=bool, default=False),
         compile    = getAttribute(config, ['compile-latex', 'compile'], expectedtype=bool, default=False),
         insert_bib = getAttribute(config, 'insert-bib', expectedtype=bool, default=True),
-        comments   = getAttribute(config, 'comments', expectedtype=str, default='auto'),
+        comments   = getAttribute(config, 'comments', expectedtype=(str,bool), default='auto'),
         show_tree  = getAttribute(config, ['show-structure', 'show-tree'], expectedtype=bool, default=False),
         max_length = getAttribute(config, 'max-length', expectedtype=int, default=10000),
         tabs       = getAttribute(config, 'tabs', expectedtype=bool, default=False),
@@ -95,7 +95,7 @@ def setCompileConfig(
     debug:      bool,
     compile:    bool,
     insert_bib: bool,
-    comments:   str,
+    comments:   Union[str, bool],
     show_tree:  bool,
     max_length: int,
     tabs:       bool,
@@ -110,8 +110,12 @@ def setCompileConfig(
     appconfig.setOptionCompileLatex(compile);
     appconfig.setOptionInsertBib(insert_bib);
     appconfig.setOptionShowTree(show_tree);
-    appconfig.setOptionComments(comments);
-    logDebug(comments)
+    if isinstance(comments, str):
+        appconfig.setOptionCommentsAuto(comments in [ 'auto', 'default' ]);
+        appconfig.setOptionCommentsOn(comments in [ 'on', 'default' ] or not comments in [ 'off' ]);
+    else:# elif isinstance(comments, bool):
+        appconfig.setOptionCommentsAuto(False);
+        appconfig.setOptionCommentsOn(comments);
     if isinstance(seed, int):
         appconfig.setSeed(seed);
     appconfig.setOffsetSymbol(offset);

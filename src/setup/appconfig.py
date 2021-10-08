@@ -39,7 +39,8 @@ _config_parameters: Dict[str, ConfigParameter] = {
     'option_debug':            ConfigParameter[bool]('optionDebug').setValue(False),
     'option_compile_latex':    ConfigParameter[bool]('optionCompileLatex').setValue(False),
     'option_show_tree':        ConfigParameter[bool]('optionShowTree').setValue(True),
-    'option_comments':         ConfigParameter[str]('optionComments').setValue('auto'),
+    'option_comments_auto':    ConfigParameter[bool]('optionCommentsAuto').setValue(True),
+    'option_comments_on':      ConfigParameter[bool]('optionCommentsOn').setValue(True),
     'option_insert_bib':       ConfigParameter[bool]('optionInsertBib').setValue(False),
     'option_overwrite_stamp':  ConfigParameter[bool]('optionOverwriteStamp').setValue(True),
     'option_overwrite_params': ConfigParameter[bool]('optionOverwriteParams').setValue(True),
@@ -230,12 +231,20 @@ def setOptionShowTree(value: bool):
     _config_parameters['option_show_tree'].value = value;
     return;
 
-def getOptionComments() -> str:
-    return _config_parameters['option_comments'].value;
+def getOptionCommentsAuto() -> bool:
+    return _config_parameters['option_comments_auto'].value;
 
-def setOptionComments(value: str):
+def setOptionCommentsAuto(value: bool):
     global _config_parameters;
-    _config_parameters['option_comments'].value = value;
+    _config_parameters['option_comments_auto'].value = value;
+    return;
+
+def getOptionCommentsOn() -> bool:
+    return _config_parameters['option_comments_on'].value;
+
+def setOptionCommentsOn(value: bool):
+    global _config_parameters;
+    _config_parameters['option_comments_on'].value = value;
     return;
 
 def getWithFileParamsPy() -> bool:
