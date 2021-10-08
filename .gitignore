@@ -44,9 +44,7 @@
 !/test/**/*.tex
 !/test/**/*.yml
 
-!/data
-/data/**
-!/data/*-example.*
+!/examples
 
 !/dist
 !/dist/VERSION

@@ -12,8 +12,13 @@ Phpytex transpiles hybrid code (ordinary LaTeX files augmented by blocks of pyth
 to a python script, which in turn generates a single LaTeX file
 (which in turn may be optionally compiled to pdf).
 
+## What does it do? Show me examples! ##
+
+See the [examples](./examples) subfolder.
+
 ## System requirements ##
 
+- Bash (windows users may install [git/bash for windows](https://gitforwindows.org))
 - Python 3 (currently developed under python 3.9.5)
 
 ## Installation ##
