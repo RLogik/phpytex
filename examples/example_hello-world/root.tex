@@ -1,0 +1,38 @@
+\documentclass[a4paper]{report}
+<<< python, import
+import re;
+>>>
+
+\begin{document}
+    Hello world and hello <<<
+        ', '.join([
+            'Venus',
+            'Mars',
+            'Jupiter',
+            'Saturn',
+        ]);
+    >>>. We can also greet like this:
+
+    \begin{itemize}
+        <<< python
+        for name in [
+            'Sun'
+            'Mercury',
+            'Venus',
+            'Earth',
+            'Mars',
+            'Jupiter',
+            'Saturn',
+            'Uranus',
+            'Neptune',
+        ]:
+            if re.match(r'^[a-m]', name, re.IGNORECASE):
+        >>>
+        \item A planet in the lower half of the alphabet: <<< name; >>>.
+        <<< python
+            else:
+        >>>
+        \item A planet in the upper half of the alphabet: <<< name; >>>.
+        <<< escape; >>>
+    \end{itemize}
+\end{document}
