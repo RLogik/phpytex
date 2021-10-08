@@ -137,15 +137,27 @@ def lexedToBlock(u: Tree, offset: str, indentation: IndentationTracker) -> Trans
         return TranspileBlock(kind='text:comment', content=lexedToStr(u), level=indentation.level, indentsymb=indentation.symb, parameters=parameters);
     ## TEXT CONTENT
     elif typ == 'blockcontent':
-        return processBlockContent(children, indentation=indentation);
+        ## attempt to re-process as quick command:
+        try:
+            text = lexedToStr(u);
+            u = tokeniseInput('blockquick', text);
+            return lexedToQuickBlock(u, indentation=indentation);
+        ## otherwise, consider block to contain purely text + inline code:
+        except:
+            return processBlockContent(children, indentation=indentation);
     ## CODE BLOCK REGEX
     elif typ == 'blockcode_regex':
         return processBlockCodeRegex(lexedToStr(u), offset=offset, indentation=indentation);
     ## CODE BLOCK
     elif typ == 'blockcode':
         return processBlockCode(children[0], offset=offset, indentation=indentation);
-    ## QUICK COMMAND
-    elif typ == 'blockquick':
+    raise Exception('Could not parse expression!');
+
+## QUICK COMMAND
+def lexedToQuickBlock(u: Tree, indentation: IndentationTracker) -> TranspileBlock:
+    typ = u.data;
+    children = filterSubExpr(u);
+    if typ == 'blockquick':
         textindent = lexedToStr(children[0]);
         return processBlockQuickCommand(children[1], textindent=textindent, indentation=indentation);
     raise Exception('Could not parse expression!');
