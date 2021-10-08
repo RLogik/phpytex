@@ -61,6 +61,9 @@ __IGNORE__ = False;
 
 def main():
     global ____phpytex_params____;
+    global __ANON__;
+    global __FNAME__;
+
     rootdir = ____phpytex_params____['rootdir'];
     os.chdir(rootdir);
 
@@ -76,36 +79,45 @@ def main():
 
     ## rewrite contents of latex file:
     contents = ____phpytex_params____['lines']['content'];
-    anon = ____phpytex_params____['lines']['anon'];
+    anon_indexes = ____phpytex_params____['lines']['anon'];
     bib = ____phpytex_params____['lines']['bib'];
-    bibcontents = ____get_bib_contents();
+    bibcontents = ____get_bib_data();
     ____cleardocument();
     feed_buffer = [];
     # NOTE: usage of `all_lines_empty` ensure that final line is non-empty
     for index, line in enumerate(contents):
-        all_lines_empty = False if re.match('\S', line) else True;
-        lines = [ line ];
         tab = re.sub(r'^(\s*)(.*)$', r'\1', line);
-        if index in anon:
+        anon = (index in anon_indexes);
+        if anon:
             continue;
-        sources = [ src for src, indexes in bib.items() if index in indexes ];
+        sources = [
+            (fname, src) for fname, (src, indexes) in bib.items()
+                if src in bibcontents.keys()
+                and index in indexes
+        ];
+        # check if insert bib contents necessary, and do this if possible:
         if len(sources) > 0:
-            src = sources[0];
-            if src in bibcontents.keys():
-                lines = [ tab + line for line in bibcontents[src] ];
-                # NOTE: bibcontents[src] is guaranteed to not end in an empty line:
-                if len(bibcontents[src]) > 0:
-                    all_lines_empty = True;
-        # if all lines are empty, buffer and then continue
-        lines = feed_buffer + lines;
-        if all_lines_empty:
-            feed_buffer = lines;
+            fname, src = sources[0];
+            # NOTE: bibcontents[src] is guaranteed to not end in an empty line:
+            # Print lines, even if contents are empty.
+            __FNAME__ = fname;
+            __ANON__ = anon;
+            # ____printfilestamp(depth=0, start=True, anon=anon);
+            with open(____phpytex_params____['output'], 'a') as fp:
+                for _line in bibcontents[src]:
+                    print(tab + _line, file=fp);
+            # ____printfilestamp(depth=0, start=False, anon=anon);
+            feed_buffer = [];
             continue;
-        # else clear buffer and print lines
-        feed_buffer = [];
-        with open(____phpytex_params____['output'], 'a') as fp:
-            for line in lines:
-                print(line, file=fp);
+        ## or print original line if non-empty:
+        if re.match('\S', line):
+            with open(____phpytex_params____['output'], 'a') as fp:
+                for _line in feed_buffer + [ line ]:
+                    print(_line, file=fp);
+            feed_buffer = [];
+            continue;
+        ## otherwise add to buffer and continue
+        feed_buffer = feed_buffer + [ line ];
     return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -200,19 +212,19 @@ def ____insertbib(
     ## TODO: This needs to be generalised to allow the possibility of compiling multiple .bib files
     src = '{{bibname}}.bbl'.format(bibname = ____phpytex_params____['name']);
 
-    if not ( src in ____phpytex_params____['lines']['bib'] ):
-        ____phpytex_params____['lines']['bib'][src] = [];
+    if not ( fname in ____phpytex_params____['lines']['bib'] ):
+        ____phpytex_params____['lines']['bib'][fname] = (src, []);
     if anon:
         ____phpytex_params____['lines']['anon'].append(n);
     elif ____phpytex_params____['insert_bib']:
-        ____phpytex_params____['lines']['bib'][src].append(n);
+        ____phpytex_params____['lines']['bib'][fname][1].append(n);
     return;
 
-def ____get_bib_contents() -> dict:
+def ____get_bib_data() -> dict:
     global ____phpytex_params____;
     bib = ____phpytex_params____['lines']['bib'];
     bibcontents = dict();
-    for src in bib.keys():
+    for fname, (src, indexes) in bib.items():
         if src in bibcontents:
             continue;
         try:
