@@ -11,7 +11,6 @@ from src.local.typing import *;
 
 from src.core.log import *;
 from src.core.utils import createNewFileName;
-from src.core.utils import createNewPathName;
 from src.core.utils import formatPath;
 from src.core.utils import getAttribute;
 from src.core.utils import getFilesByPattern;
@@ -48,7 +47,7 @@ def step(fnameConfig: str):
     setCompileConfig(**config_compile);
     setStampConfig(**toPythonKeysDict(config_stamp));
     setParamsConfig(**toPythonKeysDict(config_parameters));
-    setConfigFilesAndFolders(**toPythonKeysDict(config));
+    setConfigFilesAndFolders(toPythonKeysDict(config));
 
     logInfo('READ CONFIG COMPLETE');
     return;
@@ -79,11 +78,12 @@ def preProcessCompileConfig(config: Dict[str, Any]) -> Dict[str, Any]:
         compile    = getAttribute(config, ['compile-latex', 'compile'], expectedtype=bool, default=False),
         insert_bib = getAttribute(config, 'insert-bib', expectedtype=bool, default=True),
         comments   = getAttribute(config, 'comments', expectedtype=str, default='auto'),
-        show_tree  = getAttribute(config, ['show-structure', 'show-tree'], expectedtype=bool, default=True),
+        show_tree  = getAttribute(config, ['show-structure', 'show-tree'], expectedtype=bool, default=False),
         max_length = getAttribute(config, 'max-length', expectedtype=int, default=10000),
         tabs       = getAttribute(config, 'tabs', expectedtype=bool, default=False),
         spaces     = getAttribute(config, 'spaces', expectedtype=int, default=4),
-        seed       = getAttribute(config, 'seed', expectedtype=int),
+        ## NOTE: Do not force seed to be set if not given. Allow user to decide to NOT seed the rng.
+        seed       = getAttribute(config, 'seed', expectedtype=int, default=None),
         offset     = getAttribute(config, 'offset', expectedtype=str, default=''),
     );
 
@@ -100,7 +100,7 @@ def setCompileConfig(
     max_length: int,
     tabs:       bool,
     spaces:     int,
-    seed:       int,
+    seed:       Any,
     offset:     str
 ):
     root = appconfig.getPathRoot();
@@ -111,7 +111,9 @@ def setCompileConfig(
     appconfig.setOptionInsertBib(insert_bib);
     appconfig.setOptionShowTree(show_tree);
     appconfig.setOptionComments(comments);
-    appconfig.setSeed(seed);
+    logDebug(comments)
+    if isinstance(seed, int):
+        appconfig.setSeed(seed);
     appconfig.setOffsetSymbol(offset);
 
     appconfig.setMaxLengthOutput(max_length);
@@ -147,11 +149,16 @@ def setStampConfig(
 ):
     root = appconfig.getPathRoot();
     if not isinstance(file, str) or file == '':
-        file = createNewPathName(dir=root, nameinit='stamp.tex', namescheme='stamp_{}.tex');
+        file = 'stamp.tex';
         file = os.path.relpath(path=file, start=root);
-    appconfig.setFileStamp(formatPath(file, root=root, relative=False));
-    appconfig.setOptionOverwriteStamp(overwrite);
-    appconfig.setDictionaryStamp(options);
+
+    if not isinstance(options, dict) or len(options) == 0:
+        appconfig.setWithFileStamp(False);
+    else:
+        appconfig.setWithFileStamp(True);
+        appconfig.setFileStamp(formatPath(file, root=root, relative=False));
+        appconfig.setOptionOverwriteStamp(overwrite);
+        appconfig.setDictionaryStamp(options);
     return;
 
 def setParamsConfig(
@@ -168,14 +175,18 @@ def setParamsConfig(
         path = re.sub(r'([^\.]+)\.', r'\1/', file) + '.py';
     else:
         logWarn('\033[1mparameters > file\033[0m option must by a python-like import path (relative to the root of the project).');
-        path = createNewPathName(dir=root, nameinit='parameters.py', namescheme='parameters_{}.py');
+        path = 'parameters.py';
         path = os.path.relpath(path, root);
     modulename = re.sub(r'\/', '.', os.path.splitext(path)[0]);
 
-    appconfig.setImportParamsPy(modulename);
-    appconfig.setFileParamsPy(formatPath(path, root=root, relative=False));
+    if not isinstance(options, dict) or len(options) == 0:
+        appconfig.setWithFileParamsPy(False);
+    else:
+        appconfig.setWithFileParamsPy(True);
+        appconfig.setImportParamsPy(modulename);
+        appconfig.setFileParamsPy(formatPath(path, root=root, relative=False));
     return;
 
-def setConfigFilesAndFolders(**config):
+def setConfigFilesAndFolders(config: Dict[str, Any]):
     appconfig.setProjectTree(ProjectTree(**config));
     return;
