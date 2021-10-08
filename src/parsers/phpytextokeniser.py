@@ -39,12 +39,12 @@ def getLexer(mode: str = 'blocks') -> Lark:
     if not (mode in _grammar):
         _grammar[mode] = getGrammar('phpytex.lark');
     if not (mode in _lexer):
-        parser = 'earley'; # 'lalr', 'earley', 'cyk'
         _lexer[mode] = Lark(
             _grammar[mode],
             start=mode,
             regex=True,
-            parser=parser
+            parser='earley', # 'lalr', 'earley', 'cyk'
+            priority='invert', # auto (default), none, normal, invert
         );
     return _lexer[mode];
 
@@ -273,11 +273,10 @@ def processArgList(u: Tree) -> Tuple[List[str], Dict[str, Any]]:
         tokens = [];
         kwargs = dict();
         for child in children:
+            while isinstance(child, Tree) and not child.data in [ 'argoption_token', 'argoption_kwarg' ]:
+                child = child.children[0];
             grandchildren = filterSubExpr(child);
-            if child.data == 'argoption_token':
-                value = lexedToStr(grandchildren[0]);
-                tokens.append(value);
-            elif child.data == 'argoption_kwarg':
+            if child.data == 'argoption_kwarg':
                 key = lexedToStr(grandchildren[0]);
                 value = lexedToStr(grandchildren[1]);
                 try:
@@ -285,6 +284,9 @@ def processArgList(u: Tree) -> Tuple[List[str], Dict[str, Any]]:
                 except:
                     pass;
                 kwargs[key] = value;
+            elif child.data == 'argoption_token':
+                value = lexedToStr(grandchildren[0]);
+                tokens.append(value);
         return tokens, kwargs;
     raise Exception('Could not parse expression!');
 
