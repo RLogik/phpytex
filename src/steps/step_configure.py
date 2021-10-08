@@ -142,7 +142,8 @@ def setCompileConfig(
     appconfig.setFileStart(fileStart);
     appconfig.setFileOutput(fileOutput);
 
-    file = createNewFileName(dir=root, nameinit='phpytex_main.py', namescheme='phpytex_main_{}.py');
+    # file = createNewFileName(dir=root, nameinit='phpytex_transpiled.py', namescheme='phpytex_transpiled_{}.py');
+    file = 'phpytex_transpiled.py';
     appconfig.setFileTranspiled(formatPath(file, root=root, relative=False));
     return;
 
