@@ -14,7 +14,7 @@ There are many _(insert language here)_-to-LaTeX transpilers available.
 And many of these do all sorts of fancy things like incorporate lots of
 extra special syntax to embed plots, _etc._
 By contrast our transpiler is intentionally designed to be 'boring' (=sufficently general)!
-It has no built-in _'We can produce these cool graphics with this one command!'_<sup>[[1]](#footnote_1)</a></sup> selling point.
+It has no built-in _'We can produce these cool graphics with this one command!'_<sup>[1](#footnote_1)</a></sup> selling point.
 
 And neither—in our opinion—does it need to.
 
@@ -108,10 +108,10 @@ and see the [examples](./examples) subfolder for concrete examples.
 <br/>
 <br/>
 
-<tt>----------------</tt>
-<br/>
+----
+
 <div style='font-size:10pt'>
-<a name='footnote_1'>[1]</a> But incidentally, with phpytex one can do this and just about any such task.
+<a name='footnote_1'><b>[1]</b></a> But incidentally, with phpytex one can do this and just about any such task.
 The user simply has to program their own methods, say a python function <tt>makegraphics(...)</tt>
 in a code block or an importable script, and ensure this method takes desired inputs and
 <i>either</i> generates an image and returns suitable LaTeX command to include this,
