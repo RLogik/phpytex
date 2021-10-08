@@ -39,22 +39,25 @@ elif [ "$mode" == "run" ]; then
     else #elif [ "$lang" == "python" ]; then
         run_main $options;
     fi
+elif [ "$mode" == "examples" ]; then
+    run_create_examples;
 elif [ "$mode" == "explore" ]; then
     run_explore_console;
 else
     _log_error   "Invalid cli argument.";
     _cli_message "";
     _cli_message "  Call \033[1m./build.sh\033[0m with one of the commands";
-    _cli_message "    $( _help_cli_key_values      "--mode" "         " "setup" "dist" "run" "explore" )";
-    _cli_message "    $( _help_cli_key_values      "[--lang]" "       " "go" "python" )";
+    _cli_message "    $( _help_cli_key_values      "--mode" "          " "setup" "dist" "run" "examples" "explore" )";
+    _cli_message "    $( _help_cli_key_values      "[--lang]" "        " "go" "python" )";
     _cli_message "";
-    _cli_message "    $( _help_cli_key_description "--lang python" "  " "(default) runs option for the python source code" )";
-    _cli_message "    $( _help_cli_key_description "--lang go" "      " "runs option for the go source code" )";
+    _cli_message "    $( _help_cli_key_description "--lang python" "   " "(default) runs option for the python source code" )";
+    _cli_message "    $( _help_cli_key_description "--lang go" "       " "runs option for the go source code" )";
     _cli_message "";
-    _cli_message "    $( _help_cli_key_description "--mode setup" "   " "compiles programme" )";
-    _cli_message "    $( _help_cli_key_description "--mode dist" "    " "creates distribution artefact" )";
-    _cli_message "    $( _help_cli_key_description "--mode run" "     " "runs the programme" )";
-    _cli_message "    $( _help_cli_key_description "--mode explore" " " "opens the console (potentially in docker)" )";
+    _cli_message "    $( _help_cli_key_description "--mode setup" "    " "compiles programme" )";
+    _cli_message "    $( _help_cli_key_description "--mode dist" "     " "creates distribution artefact" )";
+    _cli_message "    $( _help_cli_key_description "--mode run" "      " "runs the programme" )";
+    _cli_message "    $( _help_cli_key_description "--mode examples" " " "builds the examples for the repository" )";
+    _cli_message "    $( _help_cli_key_description "--mode explore" "  " "opens the console (potentially in docker)" )";
     _cli_message "";
     exit 1;
 fi

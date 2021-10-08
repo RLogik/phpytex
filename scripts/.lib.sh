@@ -219,6 +219,29 @@ function run_create_artefact_go() {
     compile_go;
 }
 
+function  run_create_examples() {
+    local current_dir="$PWD";
+    local path;
+    local sandboxpath;
+    _log_info "CHECK IF ARTEFACT EXISTS";
+    ! [ -f dist/$NAME_OF_APP ] && _log_fail "First run \033[1mbuild --mode dist\033[0m.";
+    _log_info "Binary artefact exists.";
+    _log_info "CREATE EXAMPLES";
+    while read path; do
+        [ "$path" == "" ] && continue;
+        sandboxpath="$( echo "$path" | sed -E "s/^examples\/example_/examples\/expected_/g" )";
+        [ "$path" == "$sandboxpath" ] && _log_error "Could not create example for \033[1m$path\033[0m." && continue;
+        [ -d "$sandboxpath" ] && remove_dir "$sandboxpath";
+        [ -d "$sandboxpath" ] && _log_error "Could not clear the output folder \033[1m$sandboxpath\033[0m." && continue;
+        cp -r "$path/." "$sandboxpath";
+        pushd "$sandboxpath" >> $VERBOSE;
+            $current_dir/dist/$NAME_OF_APP run;
+        popd >> $VERBOSE;
+        # [ -f "$path" ] && remove_file "$path" >> $VERBOSE && continue;
+        # [ -d "$path" ] && rm -rf "$path" && continue;
+    done <<< $( find examples/example_* -mindepth 0 -maxdepth 0 2> $VERBOSE );
+}
+
 function run_main() {
     call_v_python src/main.py $@;
 }
