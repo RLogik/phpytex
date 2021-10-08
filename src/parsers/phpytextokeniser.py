@@ -12,8 +12,9 @@ from src.local.misc import *;
 from src.local.typing import *;
 
 from src.core.log import *;
-from src.core.utils import extractIndent;
+from src.core.utils import dedentIgnoreEmptyLines;
 from src.core.utils import escapeForPython;
+from src.core.utils import extractIndent;
 from src.core.utils import formatBlockUnindent;
 from src.core.utils import getAttribute;
 from src.core.utils import lengthOfWhiteSpace;
@@ -38,12 +39,12 @@ def getLexer(mode: str = 'blocks') -> Lark:
     if not (mode in _grammar):
         _grammar[mode] = getGrammar('phpytex.lark');
     if not (mode in _lexer):
-        parser = 'earley'; # 'lalr', 'earley', 'cyk'
         _lexer[mode] = Lark(
             _grammar[mode],
             start=mode,
             regex=True,
-            parser=parser
+            parser='earley', # 'lalr', 'earley', 'cyk'
+            priority='invert', # auto (default), none, normal, invert
         );
     return _lexer[mode];
 
@@ -205,7 +206,7 @@ def processBlockQuickCommand(u: Tree, textindent: str, indentation: IndentationT
 
 # see .lark file for regex pattern
 def processBlockCodeRegex(text: str, offset: str, indentation: IndentationTracker) -> TranspileBlock:
-    text = dedent(text);
+    text = dedentIgnoreEmptyLines(text);
     return parseCodeBlock(text, offset=offset, indentation=indentation);
 
 def processBlockCode(u: Tree, offset: str, indentation: IndentationTracker) -> TranspileBlock:
@@ -272,11 +273,10 @@ def processArgList(u: Tree) -> Tuple[List[str], Dict[str, Any]]:
         tokens = [];
         kwargs = dict();
         for child in children:
+            while isinstance(child, Tree) and not child.data in [ 'argoption_token', 'argoption_kwarg' ]:
+                child = child.children[0];
             grandchildren = filterSubExpr(child);
-            if child.data == 'argoption_token':
-                value = lexedToStr(grandchildren[0]);
-                tokens.append(value);
-            elif child.data == 'argoption_kwarg':
+            if child.data == 'argoption_kwarg':
                 key = lexedToStr(grandchildren[0]);
                 value = lexedToStr(grandchildren[1]);
                 try:
@@ -284,6 +284,9 @@ def processArgList(u: Tree) -> Tuple[List[str], Dict[str, Any]]:
                 except:
                     pass;
                 kwargs[key] = value;
+            elif child.data == 'argoption_token':
+                value = lexedToStr(grandchildren[0]);
+                tokens.append(value);
         return tokens, kwargs;
     raise Exception('Could not parse expression!');
 
@@ -294,7 +297,8 @@ def processArgList(u: Tree) -> Tuple[List[str], Dict[str, Any]]:
 def raiseLexError(lines: List[str], linepos: int, err: Exception):
     text_consumed = lines[:linepos];
     text_remaining = lines[linepos:];
-    message = [ 'At line \033[1m{}\033[0m the text could not be \033[1mtokenised\033[0m:'.format(linepos) ];
+    # NOTE: display linepos + 1, as documents start with 1 not 0
+    message = [ 'At line \033[1m{}\033[0m the text could not be \033[1mtokenised\033[0m:'.format(linepos+1) ];
     message.append('\033[1m--------------------------------\033[0m');
     message += [ '\033[2m{}\033[0m'.format(line) for line in text_consumed[-3:] ];
     message += [ '\033[91;1m{}\033[0m'.format(line) for line in text_remaining[:1] ];
@@ -307,7 +311,8 @@ def raiseParseError(lines: List[str], linepos1: int, linepos2: int, err: Excepti
     text_consumed = lines[:linepos1];
     text_block = lines[linepos1:linepos2];
     text_remaining = lines[linepos2:];
-    message = [ 'At lines \033[1m{}\033[0m-\033[1m{}\033[0m the text could not be \033[1mparsed\033[0m:'.format(linepos1, linepos2) ];
+    # NOTE: display linepos + 1, as documents start with 1 not 0
+    message = [ 'At lines \033[1m{}\033[0m-\033[1m{}\033[0m the text could not be \033[1mparsed\033[0m:'.format(linepos1+1, linepos2+1) ];
     message.append('\033[1m--------------------------------\033[0m');
     message += [ '\033[2m{}\033[0m'.format(line) for line in text_consumed[-3:] ];
     message += [ '\033[91;1m{}\033[0m'.format(line) for line in text_block ];

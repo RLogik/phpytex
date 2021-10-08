@@ -14,9 +14,8 @@ COMMENT:     /\%/
 NCOMMENT:    /[^\%\r\n]/
 LMETA:       /\<{3}/
 RMETA:       /\>{3}/
-NMETA:       /((?!(\<{3}|\>{3})).)+/
-// NMETANQUOTE: /((?!(\<{3}|\>{3}))[^"'\r\n])+/
-NMETANQUOTE: /(\'|\"|((?!(\<{3}|\>{3}))[^"'\r\n])+)+/
+NMETA:       /((?!(?:\<{3}|\>{3})).)+/
+NMETANQUOTE: /(?:((?!(?:\r\n|"|'|\\|\<{3}|\>{3})).)+|\\'|\\"|\\)+/
 COMMA:       /,/
 EMPTYLINE:   /^[^\r\n\S]*\r?\n/m
 SPACES:      /[^\r\n\S]+/
@@ -24,9 +23,9 @@ NOSPACES:    /\S+/
 // VARNAME:     /[\_\w]+/
 VARNAME:     /[\_\w\p{L}]+/
 TEXT:        /[^\r\n]+/
-TEXTTRIM:    /\S+([^\r\n]*\S|)/
-QUOTES:      /((?:'')*'|(?:"")*")([^'"\r\n\\]+|\\'|\\"|\\)([^'"\r\n\\]+|\\'|\\"|\\|((?!\1)['"])+)*\1/
-EMPTYQUOTES: /('+|"+){2}/
+DBLQUOTES:   /((?:"")*")(?!")(?:[^\r\n"\\]+|\\"|\\|(?!\1)"+)+\1/
+SGLQUOTES:   /((?:'')*')(?!')(?:[^\r\n'\\]+|\\'|\\|(?!\1)'+)+\1/
+EMPTYQUOTES: /(?:''|"")+/
 
 // ---------------- BASIC ---------------- //
 
@@ -35,37 +34,37 @@ indenttext: WHITESPACES? -> indenttext
 
 // text with nested but balanced quotation marks
 quotetext: quotetext_nonempty | quotetext_empty -> quotetext
-quotetext_nonempty.2: QUOTES
-quotetext_empty.1:    EMPTYQUOTES
+quotetext_nonempty.1000: DBLQUOTES | SGLQUOTES
+quotetext_empty.2000:    EMPTYQUOTES
 
 // text than contains no occurrences of >>> / <<< except inside quotes
 safetext: ( NMETANQUOTE | quotetext )+ -> safetext
 
 // mixed value/kwvalue dictionaries
 arglist: argoption ( WHITESPACES? COMMA WHITESPACES? argoption )* -> arglist
-argoption: argoption_key WHITESPACES? "=" WHITESPACES? argoption_value -> argoption_kwarg
-    | argoption_key                                                    -> argoption_token
-argoption_value.1: NMETANQUOTE                                         -> argoption_value
-    | quotetext                                                        -> argoption_value
-argoption_key.1: /[^,\s=]+/                                            -> argoption_key
+argoption: argoption_kwarg | argoption_token -> argoption
+argoption_kwarg.1000: argoption_key WHITESPACES? "=" WHITESPACES? argoption_value -> argoption_kwarg
+argoption_token.2000: argoption_key                                               -> argoption_token
+argoption_key: /[^,\s=]+/                                                         -> argoption_key
+argoption_value: quotetext | WORD | NUMBER                                        -> argoption_value
 
 // ---------------- BLOCKS ---------------- //
 
 blocks: (blockempty | block_nl)* block? -> blocks
 blockfeed: blockfeedone blockfeedrest?
-blockfeedone: blockempty // highest priority 300
+blockfeedone: blockempty // highest priority 100
     | block_nl           // priority 200
-    | block              // priority 100
-blockempty.300: EMPTYLINE   -> emptyline
+    | block              // priority 300
+blockempty.100: EMPTYLINE   -> emptyline
 blockfeedrest: /[\S\s]+/m   -> blockfeedrest
 block_nl.200: block NEWLINE -> block
-block.100: blockquick       -> block // highest priority = 40
-    | blockcode_regex       -> block // priority 30
-    | blockcomment          -> block // priority 20
-    | blockcontent          -> block // priority 10
+block.300: blockquick       -> block // highest priority = 310
+    | blockcode_regex       -> block // priority 320
+    | blockcomment          -> block // priority 330
+    | blockcontent          -> block // priority 340
 
 // BLOCK QUICK
-blockquick.40: indenttext LMETA WHITESPACES? quickinstruction WHITESPACES? ENDCODE? WHITESPACES? RMETA -> blockquick
+blockquick.310: indenttext LMETA WHITESPACES? quickinstruction WHITESPACES? ENDCODE? WHITESPACES? RMETA -> blockquick
 quickinstruction: "set"i WHITESPACES quickvariable WHITESPACES? "=" WHITESPACES? safetext -> quickglobalset
     | "global set"i WHITESPACES quickvariable WHITESPACES? "=" WHITESPACES? safetext      -> quickglobalset
     | "local set"i WHITESPACES quickvariable WHITESPACES? "=" WHITESPACES? safetext       -> quicklocalset
@@ -78,7 +77,7 @@ quickinstruction: "set"i WHITESPACES quickvariable WHITESPACES? "=" WHITESPACES?
 quickvariable: VARNAME -> quickvariable
 
 // BLOCK CODE AS REGEX
-?blockcode_regex.30: /^([^\S\r\n]*)\<{3}([^\S\r\n]*\S+)+(?<!(\>{3}))[^\S\r\n]*\r?\n(\1[^\r\n]*\r?\n)*?(\1\>{3})$/m -> blockcode_regex
+?blockcode_regex.320: /^([^\S\r\n]*)\<{3}([^\S\r\n]*\S+)+(?<!(\>{3}))[^\S\r\n]*\r?\n(?:\1[^\r\n]*\r?\n|[^\r\n\S]*\r?\n)*?(\1\>{3})$/m -> blockcode_regex
 
 // BLOCK CODE (separately lexed, after blockcode_regex recognised)
 blockcode: LMETA WHITESPACES? blockcode_args NEWLINE+ blockcode_inside NEWLINE+ RMETA -> blockcode
@@ -88,14 +87,14 @@ blockcode_args:   "{" WHITESPACES? arglist WHITESPACES? "}"  -> blockcode_args
     | arglist                                                -> blockcode_args
 
 // BLOCK COMMENT
-blockcomment.20: blockcomment_keep | blockcomment_simple   -> blockcomment
-blockcomment_keep.22:   SPACES? COMMENT COMMENT TEXT       -> blockcomment_keep
-blockcomment_simple.21: SPACES? COMMENT ( NCOMMENT TEXT )? -> blockcomment_simple
+blockcomment.330: blockcomment_keep | blockcomment_simple   -> blockcomment
+blockcomment_keep.331:   SPACES? COMMENT COMMENT TEXT       -> blockcomment_keep
+blockcomment_simple.332: SPACES? COMMENT ( NCOMMENT TEXT )? -> blockcomment_simple
 
 // BLOCK CONTENT
-blockcontent.10: ( textcontent | codeinline )+ -> blockcontent
-textcontent: NMETA+                                                    -> textcontent
-codeinline: LMETA WHITESPACES? codeoneline WHITESPACES? RMETA          -> codeinline
+blockcontent.340: ( textcontent | codeinline )+ -> blockcontent
+textcontent: NMETA                                                        -> textcontent
+codeinline: LMETA WHITESPACES? codeoneline WHITESPACES? RMETA             -> codeinline
     | LMETA WHITESPACES? NEWLINE codemultiline NEWLINE WHITESPACES? RMETA -> codeinline
-codeoneline.12:   safetext                                                -> codeoneline
-codemultiline.11: codeoneline ( NEWLINE+ codeoneline )*                   -> codemultiline
+codeoneline.341:   safetext                                                -> codeoneline
+codemultiline.342: codeoneline ( NEWLINE+ codeoneline )*                   -> codemultiline

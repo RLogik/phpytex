@@ -76,8 +76,8 @@ stamp:
     title:     &title The stages of artificial intelligence beyond human intelligence
     institute: Faculty of mathematics
 ################################################################################
-# ARTICLE PARAMETERS - (optional) defines global parameters.
-#                      Useful for managing complex document structures.
+# DOCUMENT PARAMETERS - (optional) defines global parameters.
+#                       Useful for managing complex document structures.
 ################################################################################
 parameters:
   file: src.parameters  # desired location of file (as python import).

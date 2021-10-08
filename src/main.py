@@ -8,7 +8,7 @@
 import os;
 import sys;
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)));
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))));
 
 from src.core.log import *;
 from src.core.utils import getCliArgs;
