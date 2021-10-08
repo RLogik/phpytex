@@ -64,6 +64,9 @@ def main():
     rootdir = ____phpytex_params____['rootdir'];
     os.chdir(rootdir);
 
+    ## set rng seed
+    ____reseed();
+
     ## transpile (python -> latex):
     {mainfct}();
 
@@ -112,7 +115,9 @@ def main():
 ## reseed-funktion:
 def ____reseed():
     global ____phpytex_params____;
-    random.seed(____phpytex_params____['seed']);
+    seed = ____phpytex_params____['seed'];
+    if isinstance(seed, int):
+        random.seed(seed);
     return True;
 
 ## record + print-to-latex:

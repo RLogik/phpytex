@@ -318,7 +318,7 @@ class TranspileDocuments(object):
             indentsymb = self.indentsymb
         );
 
-    def documentTree(self, seed: int) -> TranspileBlock:
+    def documentTree(self, seed: Union[int, None]) -> TranspileBlock:
         return TranspileBlock(
             kind       = 'text:comment',
             lines      = formatTextBlockAsList(
@@ -335,7 +335,7 @@ class TranspileDocuments(object):
                 %%
                 %% DOCUMENT-RANDOM-SEED: {}
                 %% ********************************************************************************
-                '''.format(seed)
+                '''.format(seed if isinstance(seed, int) else '---')
             ) + [ '' ],
             level      = 0,
             indentsymb = self.indentsymb,
