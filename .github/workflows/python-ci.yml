@@ -20,6 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       lang:     python
+      use_venv: false
       app_name: phpytex
     steps:
     - uses: actions/checkout@v2
@@ -40,10 +41,10 @@ jobs:
         chmod +x scripts/*.sh
     - name: Run setup
       run: |-
-        ./scripts/build.sh --lang ${{ env.lang }} --venv false --mode setup
+        ./scripts/build.sh --lang ${{ env.lang }} --venv ${{ env.use_venv }} --mode setup
     - name: Check if open source code works
       run: |-
-        ./scripts/build.sh --lang ${{ env.lang }} --mode run --options="version"
+        ./scripts/build.sh --lang ${{ env.lang }} --venv ${{ env.use_venv }} --mode run --options="version"
     - name: Check if artefact exists before creation
       run: |-
         ls dist/*;
