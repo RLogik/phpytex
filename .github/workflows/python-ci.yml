@@ -16,25 +16,25 @@ on:
         default:     'master'
         required:    true
 jobs:
+################################################################################################################################
+# Pipe for setup
+################################################################################################################################
   pipe-setup:
     runs-on: ubuntu-20.04
-    env: &env
+    env:
       lang:     python
       app_name: phpytex
     steps:
-    - &ref_gitcheckout
-      uses: actions/checkout@v2
+    - uses: actions/checkout@v2
       with:
         ref: ${{ github.event.inputs.branch }}
-    - &ref_setup_aptget
-      name: Install system requirements via apt-get
+    - name: Install system requirements via apt-get
       run: |-
         sudo apt-get install -y dos2unix
         sudo apt-get install -y apt-utils
         sudo apt-get install -y zip unzip xz-utils
         sudo apt-get clean
-    - &ref_chmod
-      name: Grant execution rights
+    - name: Grant execution rights
       run: |-
         chmod +x scripts/*.sh
     - # only do perform this in one job
@@ -54,29 +54,32 @@ jobs:
         path: |-
           build
           dist
-  # this block is on
-  pipe-test-get-artefacts:
-    runs-on: ubuntu-20.04
-    needs: pipe-setup
-    env:
-      <<: *env
-    if: '( false )' # prevent block from being executed as only serves as template
-    steps: &ref_initalise_runner
-      - <<: *ref_gitcheckout
-      - <<: *ref_setup_aptget
-      - <<: *ref_chmod
-      - &ref_download_artefacts
-        name: Download build artefacts
-        uses: actions/download-artifact@v2
-        with:
-          name: build_setup
+################################################################################################################################
+# Pipe for unit tests
+################################################################################################################################
   pipe-tests-unit:
     runs-on: ubuntu-20.04
     needs: pipe-setup
     env:
-      <<: *env
+      lang:     python
+      app_name: phpytex
     steps:
-      - <<: *ref_initalise_runner
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.inputs.branch }}
+      - name: Install system requirements via apt-get
+        run: |-
+          sudo apt-get install -y dos2unix
+          sudo apt-get install -y apt-utils
+          sudo apt-get install -y zip unzip xz-utils
+          sudo apt-get clean
+      - name: Grant execution rights
+        run: |-
+          chmod +x scripts/*.sh
+      - name: Download build artefacts
+        uses: actions/download-artifact@v2
+        with:
+          name: build_setup
       - name: Check if open source code works
         run: |-
           source scripts/.lib.sh && use_python_venv_true && activate_python_venv
@@ -88,13 +91,32 @@ jobs:
       - name: Run unit tests
         run: |-
           ./scripts/test.sh --lang ${{ env.lang }} --mode unit
+################################################################################################################################
+# Pipe for test cases
+################################################################################################################################
   pipe-tests-cases:
     runs-on: ubuntu-20.04
     needs: pipe-setup
     env:
-      <<: *env
+      lang:     python
+      app_name: phpytex
     steps:
-      - <<: *ref_initalise_runner
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.inputs.branch }}
+      - name: Install system requirements via apt-get
+        run: |-
+          sudo apt-get install -y dos2unix
+          sudo apt-get install -y apt-utils
+          sudo apt-get install -y zip unzip xz-utils
+          sudo apt-get clean
+      - name: Grant execution rights
+        run: |-
+          chmod +x scripts/*.sh
+      - name: Download build artefacts
+        uses: actions/download-artifact@v2
+        with:
+          name: build_setup
       - name: Check if programme as binary artefact works
         run: |-
           source scripts/.lib.sh && use_python_venv_true && activate_python_venv
