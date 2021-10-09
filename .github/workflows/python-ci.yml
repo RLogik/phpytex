@@ -7,7 +7,7 @@ jobs:
       lang:     python
       app_name: phpytex
       branch:   master
-    steps:
+    steps: #
     - uses: actions/checkout@v2
       with:
         ref: ${{ env.branch }}
