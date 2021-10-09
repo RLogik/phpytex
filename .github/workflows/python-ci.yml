@@ -1,0 +1,63 @@
+name: CI for python source
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      ## only need this if no other triggers are implemented
+      # trigger:
+      #   description: 'Set this to call the runner'
+      #   default:     'on'
+      #   required:    true
+      branch:
+        description: 'Which branch should be tested?'
+        default:     'master'
+        required:    true
+jobs:
+  build-python-dist:
+    runs-on: ubuntu-latest
+    env:
+      lang:     python
+      use_venv: false
+      app_name: phpytex
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.inputs.branch }}
+    - name: Install system requirements via apt-get
+      run: |-
+        sudo apt-get install -y dos2unix
+        sudo apt-get install -y apt-utils
+        sudo apt-get install -y zip unzip xz-utils
+        sudo apt-get clean
+    - name: Check what files exists
+      run: |-
+        pwd
+        ls
+    - name: Grant execution rights
+      run: |-
+        chmod +x scripts/*.sh
+    - name: Run setup
+      run: |-
+        ./scripts/build.sh --lang ${{ env.lang }} --venv ${{ env.use_venv }} --mode setup
+    - name: Check if open source code works
+      run: |-
+        ./scripts/build.sh --lang ${{ env.lang }} --venv ${{ env.use_venv }} --mode run --options \"version\"
+    - name: Check if artefact exists before creation
+      run: |-
+        ls dist/*;
+        [ -f dist/${{ env.app_name }} ] && echo "artefact exists";
+        ! [ -f dist/${{ env.app_name }} ] && echo "artefact does not exist, as expected";
+    - name: Create artefact
+      run: |-
+        ./scripts/build.sh --lang ${{ env.lang }} --mode dist
+    - name: Check if artefact exists
+      run: |-
+        ls dist/*;
+        ! [ -f dist/${{ env.app_name }} ] && echo "artefact does not exist!" && exit 1;
+        [ -f dist/${{ env.app_name }} ] && echo "artefact exists";
+    - name: Check if programme works
+      run: |-
+        dist/${{ env.app_name }} version;

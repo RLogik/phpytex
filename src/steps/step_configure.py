@@ -39,7 +39,7 @@ def step(fnameConfig: str):
     ## get main parts of config
     config_compile = getAttribute(config, 'compile', 'options', expectedtype=dict, default=None) \
                      or getAttribute(config, 'compile', expectedtype=dict, default={});
-    config_compile = preProcessCompileConfig(restrictDictionary(config, ['ignore']) | config_compile);
+    config_compile = preProcessCompileConfig({ **restrictDictionary(config, ['ignore']), **config_compile });
     config_stamp = getAttribute(config, 'stamp', expectedtype=dict, default={});
     config_parameters = getAttribute(config, 'parameters', expectedtype=dict, default={});
 

@@ -168,7 +168,7 @@ class TranspileDocuments(object):
         return '#####' if self.isAnon(path) else path;
 
     def evaluate(self, codevalue: str, document: TranspileDocument):
-        localvariables = self.variables | document.variables | {
+        localvariables = { **self.variables, **document.variables,
             '__ROOT__': os.path.abspath(document.root),
             '__DIR__': os.path.abspath(document.pathfolder),
         };
