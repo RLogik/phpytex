@@ -41,12 +41,27 @@ function call_go() {
 function install_requirements_go() {
     local path="$1";
     local cwd="$PWD";
+    local has_problems=false;
+    local problem_packages=();
+
     pushd src-go >> $VERBOSE;
         # go mod tidy; # <- use to detect unused packages in project
         remove_file "go.sum";
+
         _log_info "Add go requirements";
-        call_go get "$( cat "$cwd/$path" )";
+        dos_to_unix "$cwd/$path";
+        local line;
+        while read line; do
+            line="$( _trim_trailing_comments "$line" )";
+            [ "$line" == "" ] && continue;
+            _log_info "Run \033[92;1mGO GET\033[0m to install \033[93;1m$line\033[0m.";
+            ( call_go get "$line" 2> $VERBOSE ) && continue;
+            has_problems=true;
+            problem_packages+=( "$line" );
+        done <<< "$( cat "$cwd/$path" )";
     popd >> $VERBOSE
+
+    ( $has_problems ) && _log_fail "Something went wrong whilst using \033[92;1mPIP\033[0m to install: {\033[93;1m${problem_packages[*]}\033[0m}.";
 }
 
 function compile_go() {
@@ -122,7 +137,7 @@ function install_requirements_python() {
     while read line; do
         line="$( _trim_trailing_comments "$line" )";
         [ "$line" == "" ] && continue;
-        _log_info "Run \033[92;1mPIP\033[0m to install \033[93;1m$line\033[0m...";
+        _log_info "Run \033[92;1mPIP\033[0m to install \033[93;1m$line\033[0m.";
         ( call_pipinstall "$line" >> $VERBOSE ) && continue;
         has_problems=true;
         problem_packages+=( "$line" );
