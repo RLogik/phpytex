@@ -42,6 +42,7 @@ jobs:
       run: |
         ./scripts/build.sh --lang ${{ env.lang }} --venv true --mode setup
         ! [[ -d build ]] && echo "Local python environment not created!" && exit 1
+        [[ -d build ]] && echo "Local python environment successfully created"
     - name: Create binary artefact
       run: |
         ./scripts/build.sh --lang ${{ env.lang }} --mode dist
