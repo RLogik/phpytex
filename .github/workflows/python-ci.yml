@@ -47,6 +47,7 @@ jobs:
       run: |
         ./scripts/build.sh --lang ${{ env.lang }} --mode dist
         ! [[ -f dist/${{ env.app_name }} ]] && echo "Binary not created!" && exit 1
+        [[ -f dist/${{ env.app_name }} ]] && echo "Binary successfully created"
     - # upload build artefacts
       name: Upload local build
       uses: actions/upload-artifact@v2
@@ -86,9 +87,10 @@ jobs:
           source scripts/.lib.sh && use_python_venv_true && activate_python_venv
           python3 src/main.py help
           echo "----"
+          version="x.x.x";
           output="$( python3 src/main.py version )";
+          ! [[ "$output" == "$version" ]] && echo "output=$output=/=$version" && exit 1
           echo "$output";
-          ! [[ "$output" == "x.x.x" ]] && exit 1
       - name: Run unit tests
         run: |
           ./scripts/test.sh --lang ${{ env.lang }} --mode unit
@@ -123,9 +125,10 @@ jobs:
           source scripts/.lib.sh && use_python_venv_true && activate_python_venv
           dist/${{ env.app_name }} help
           echo "----"
+          version="$( cat dist/VERSION )";
           output="$( dist/${{ env.app_name }} version )";
+          ! [[ "$output" == "$version" ]] && echo "output=$output=/=$version" && exit 1
           echo "$output";
-          ! [[ "$output" == "x.x.x" ]] && exit 1
       - name: Run unit tests
         run: |
           ./scripts/test.sh --lang ${{ env.lang }} --mode cases
