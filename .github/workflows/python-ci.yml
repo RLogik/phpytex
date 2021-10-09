@@ -13,7 +13,7 @@ on:
       #   required:    true
       branch:
         description: 'Which branch should be tested?'
-        default:     'dev'
+        default:     'master'
         required:    true
 jobs:
   build-python-dist:
@@ -25,27 +25,38 @@ jobs:
     - uses: actions/checkout@v2
       with:
         ref: ${{ github.event.inputs.branch }}
-    - name: Check current path
-      run: pwd
+    - name: Install system requirements via apt-get
+      run: |-
+        sudo apt-get install -y dos2unix
+        sudo apt-get install -y apt-utils
+        sudo apt-get install -y zip unzip xz-utils
+        sudo apt-get clean
     - name: Check what files exists
-      run: ls
+      run: |-
+        pwd
+        ls
     - name: Grant execution rights
-      run: chmod +x scripts/*.sh
+      run: |-
+        chmod +x scripts/*.sh
     - name: Run setup
-      run: ./scripts/build.sh --lang ${{ env.lang }} --venv false --mode setup
+      run: |-
+        ./scripts/build.sh --lang ${{ env.lang }} --venv false --mode setup
     - name: Check if open source code works
-      run: ./scripts/build.sh --lang ${{ env.lang }} --mode run --options="version"
+      run: |-
+        ./scripts/build.sh --lang ${{ env.lang }} --mode run --options="version"
     - name: Check if artefact exists before creation
       run: |-
         ls dist/*;
         [ -f dist/${{ env.app_name }} ] && echo "artefact exists";
         ! [ -f dist/${{ env.app_name }} ] && echo "artefact does not exist, as expected";
     - name: Create artefact
-      run: ./scripts/build.sh --lang ${{ env.lang }} --mode dist
+      run: |-
+        ./scripts/build.sh --lang ${{ env.lang }} --mode dist
     - name: Check if artefact exists
       run: |-
         ls dist/*;
         ! [ -f dist/${{ env.app_name }} ] && echo "artefact does not exist!" && exit 1;
         [ -f dist/${{ env.app_name }} ] && echo "artefact exists";
     - name: Check if programme works
-      run: dist/${{ env.app_name }} version
+      run: |-
+        dist/${{ env.app_name }} version;
