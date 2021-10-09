@@ -1,33 +1,16 @@
 name: Create Release
-on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - main
-      - master
-  workflow_dispatch:
-    inputs:
-      ## only need this if no other triggers are implemented
-      # trigger:
-      #   description: 'Set this to call the runner'
-      #   default:     'on'
-      #   required:    true
-      branch:
-        description: 'Which branch should be tested?'
-        default:     'dev'
-        required:    true
+on: [ push ]
 jobs:
   build-python-dist:
     runs-on: ubuntu-latest
     env:
       lang:     python
       app_name: phpytex
+      branch:   master
     steps:
     - uses: actions/checkout@v2
       with:
-        ref: ${{ github.event.inputs.branch }}
+        ref: ${{ env.branch }}
     - name: Check current path
       run: pwd
     - name: Check what files exists
