@@ -44,7 +44,7 @@ jobs:
         ./scripts/build.sh --lang ${{ env.lang }} --venv ${{ env.use_venv }} --mode setup
     - name: Check if open source code works
       run: |-
-        ./scripts/build.sh --lang ${{ env.lang }} --venv ${{ env.use_venv }} --mode run --options="version"
+        ./scripts/build.sh --lang ${{ env.lang }} --venv ${{ env.use_venv }} --mode run --options \"version\"
     - name: Check if artefact exists before creation
       run: |-
         ls dist/*;

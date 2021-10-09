@@ -17,7 +17,7 @@ source scripts/.lib.sh;
 
 mode="$( get_one_kwarg_space "$SCRIPTARGS" "-+mode" "" )";
 lang="$( get_one_kwarg_space "$SCRIPTARGS" "-+lang" "python" )";
-options="$( get_kwarg "$SCRIPTARGS" "-+options" "" )";
+options="$( get_one_kwarg_space "$SCRIPTARGS" "-+options" "" )";
 option_venv="$( get_one_kwarg_space "$SCRIPTARGS" "-+venv" "true" )";
 ( $option_venv ) && use_python_venv_true || use_python_venv_false;
 
