@@ -21,6 +21,8 @@ export PYTHON_APP_PREFIX=\
 '''#!/usr/bin/env python3
 # -*- coding: utf-8 -*-'''
 export USE_VENV=false;
+export PATH_UTEST="test/unit";
+export UNITTEST_SCHEMA="test_*.py";
 
 ##############################################################################
 # AUXILIARY METHODS: Zip
@@ -276,11 +278,11 @@ function run_test_unit() {
     local verboseoption="";
     ( $asverbose ) && verboseoption="-v";
     _log_info "RUN UNITTESTS";
-    local output="$(call_v_utest            \
-        $verboseoption                      \
-        --top-level-directory "."           \
-        --start-directory "${PATH_TEST}"    \
-        --pattern "${UNITTEST_SCHEMA}" 2>&1 \
+    local output="$(call_v_utest              \
+        $verboseoption                        \
+        --top-level-directory "${PATH_UTEST}" \
+        --start-directory "${PATH_UTEST}"     \
+        --pattern "${UNITTEST_SCHEMA}" 2>&1   \
     )";
     _cli_message "$output";
     ( echo "$output" | grep -Eq "^[[:space:]]*(FAIL:|FAILED)" ) \
@@ -289,7 +291,7 @@ function run_test_unit() {
 }
 
 function run_test_unit_go() {
-    _log_fail "Unit tests not yet implemented for go.";
+    _log_warn "Unit tests not yet implemented for go.";
 }
 
 function run_test_cases() {
@@ -299,7 +301,7 @@ function run_test_cases() {
 }
 
 function run_test_cases_go() {
-    _log_fail "Case tests not yet implemented for go.";
+    _log_warn "Case tests not yet implemented for go.";
 }
 
 function run_clean_artefacts() {

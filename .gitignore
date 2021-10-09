@@ -45,6 +45,8 @@
 !/src-go/go.sum
 
 !/test
+!/test/unit
+!/test/unit/**
 !/test/cases
 !/test/cases/case*
 !/test/cases/case*/**/
