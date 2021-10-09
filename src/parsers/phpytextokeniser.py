@@ -190,21 +190,21 @@ def processBlockQuickCommand(u: Tree, textindent: str, indentation: IndentationT
         codevalue = stripEndOfCode(lexedToStr(children[1])).strip();
         parameters = dict(varname=varname, codevalue=codevalue);
         if typ == 'quickglobalset':
-            parameters = parameters | dict(scope='global');
+            parameters = { **parameters, **dict(scope='global') };
         elif typ == 'quicklocalset':
-            parameters = parameters | dict(scope='local');
+            parameters = { **parameters, **dict(scope='local') };
         return TranspileBlock(kind='code:set', level=indentation.level, indentsymb=indentation.symb, parameters=parameters);
     elif typ in [ 'quickinput', 'quickinput_anon', 'quickbib', 'quickbib_anon' ]:
         path = stripEndOfCode(lexedToStr(children[0]));
         parameters = dict(path=path, tab=textindent);
         if typ == 'quickinput':
-            parameters = parameters | dict(mode='input', anon=False);
+            parameters = { **parameters, **dict(mode='input', anon=False) };
         elif typ == 'quickinput_anon':
-            parameters = parameters | dict(mode='input', anon=True);
+            parameters = { **parameters, **dict(mode='input', anon=True) };
         elif typ == 'quickbib':
-            parameters = parameters | dict(mode='bib', anon=False);
+            parameters = { **parameters, **dict(mode='bib', anon=False) };
         elif typ == 'quickbib_anon':
-            parameters = parameters | dict(mode='bib', anon=True);
+            parameters = { **parameters, **dict(mode='bib', anon=True) };
         return TranspileBlock(kind='code:input', level=indentation.level, indentsymb=indentation.symb, parameters=parameters);
     elif typ == 'quickescape':
         indentation.level = 0;
