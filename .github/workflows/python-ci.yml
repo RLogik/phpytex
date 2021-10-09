@@ -25,47 +25,6 @@ jobs:
       lang:     python
       app_name: phpytex
     steps:
-    - uses: actions/checkout@v2
-      with:
-        ref: ${{ github.event.inputs.branch }}
-    - name: Install system requirements via apt-get
-      run: |
-        sudo apt-get install -y dos2unix
-        sudo apt-get install -y apt-utils
-        sudo apt-get install -y zip unzip xz-utils
-        sudo apt-get clean
-    - name: Grant execution rights
-      run: |
-        chmod +x scripts/*.sh
-    - # only do perform this in one job
-      name: Run setup
-      run: |
-        ./scripts/build.sh --lang ${{ env.lang }} --venv true --mode setup
-        ! [[ -d build ]] && echo "Local python environment not created!" && exit 1
-        [[ -d build ]] && echo "Local python environment successfully created"
-    - name: Create binary artefact
-      run: |
-        ./scripts/build.sh --lang ${{ env.lang }} --mode dist
-        ! [[ -f dist/${{ env.app_name }} ]] && echo "Binary not created!" && exit 1
-        [[ -f dist/${{ env.app_name }} ]] && echo "Binary successfully created"
-    - # upload build artefacts
-      name: Upload local build
-      uses: actions/upload-artifact@v2
-      with:
-        name: build_setup
-        path: |-
-          build
-          dist
-################################################################################################################################
-# Pipe for unit tests
-################################################################################################################################
-  pipe-tests-unit:
-    runs-on: ubuntu-20.04
-    needs: pipe-setup
-    env:
-      lang:     python
-      app_name: phpytex
-    steps:
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.event.inputs.branch }}
@@ -78,10 +37,51 @@ jobs:
       - name: Grant execution rights
         run: |
           chmod +x scripts/*.sh
-      - name: Download build artefacts
-        uses: actions/download-artifact@v2
-        with:
-          name: build_setup
+      - # only do perform this in one job
+        name: Run setup
+        run: |
+          ./scripts/build.sh --lang ${{ env.lang }} --venv true --mode setup
+          ! [[ -d build ]] && echo "Local python environment not created!" && exit 1
+          [[ -d build ]] && echo "Local python environment successfully created"
+      - name: Create binary artefact
+        run: |
+          ./scripts/build.sh --lang ${{ env.lang }} --mode dist
+          ! [[ -f dist/${{ env.app_name }} ]] && echo "Binary not created!" && exit 1
+          [[ -f dist/${{ env.app_name }} ]] && echo "Binary successfully created"
+    # - # upload build artefacts
+    #   name: Upload local build
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     name: build_setup
+    #     path: |-
+    #       build
+    #       dist
+################################################################################################################################
+# Pipe for unit tests
+################################################################################################################################
+  # pipe-tests-unit:
+  #   runs-on: ubuntu-20.04
+  #   needs: pipe-setup
+  #   env:
+  #     lang:     python
+  #     app_name: phpytex
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #       with:
+  #         ref: ${{ github.event.inputs.branch }}
+  #     - name: Install system requirements via apt-get
+  #       run: |
+  #         sudo apt-get install -y dos2unix
+  #         sudo apt-get install -y apt-utils
+  #         sudo apt-get install -y zip unzip xz-utils
+  #         sudo apt-get clean
+  #     - name: Grant execution rights
+  #       run: |
+  #         chmod +x scripts/*.sh
+  #     - name: Download build artefacts
+  #       uses: actions/download-artifact@v2
+  #       with:
+  #         name: build_setup
       - name: Check if open source code works
         run: |
           source scripts/.lib.sh && use_python_venv_true && activate_python_venv
@@ -97,29 +97,29 @@ jobs:
 ################################################################################################################################
 # Pipe for test cases
 ################################################################################################################################
-  pipe-tests-cases:
-    runs-on: ubuntu-20.04
-    needs: pipe-setup
-    env:
-      lang:     python
-      app_name: phpytex
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.inputs.branch }}
-      - name: Install system requirements via apt-get
-        run: |
-          sudo apt-get install -y dos2unix
-          sudo apt-get install -y apt-utils
-          sudo apt-get install -y zip unzip xz-utils
-          sudo apt-get clean
-      - name: Grant execution rights
-        run: |
-          chmod +x scripts/*.sh
-      - name: Download build artefacts
-        uses: actions/download-artifact@v2
-        with:
-          name: build_setup
+  # pipe-tests-cases:
+  #   runs-on: ubuntu-20.04
+  #   needs: pipe-setup
+  #   env:
+  #     lang:     python
+  #     app_name: phpytex
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #       with:
+  #         ref: ${{ github.event.inputs.branch }}
+  #     - name: Install system requirements via apt-get
+  #       run: |
+  #         sudo apt-get install -y dos2unix
+  #         sudo apt-get install -y apt-utils
+  #         sudo apt-get install -y zip unzip xz-utils
+  #         sudo apt-get clean
+  #     - name: Grant execution rights
+  #       run: |
+  #         chmod +x scripts/*.sh
+  #     - name: Download build artefacts
+  #       uses: actions/download-artifact@v2
+  #       with:
+  #         name: build_setup
       - name: Check if programme as binary artefact works
         run: |
           source scripts/.lib.sh && use_python_venv_true && activate_python_venv
