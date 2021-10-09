@@ -35,15 +35,6 @@ def setQuietMode(mode: bool):
     _quietmode = mode;
     return;
 
-def setLoggingState(state: str = 'out'):
-    global _logging_depth;
-    global _logging_prefix;
-    _logging_depth = 1 if (state == 'in') else 0;
-    _logging_prefix = '';
-    if _logging_depth > 0:
-        _logging_prefix = '>'*_logging_depth + ' ';
-    return;
-
 def restartTimer():
     global _tm;
     _tm.reset();
@@ -58,33 +49,34 @@ def timeElapsed() -> timedelta:
 # Logging
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def logGeneric(tag: str, *lines: Any, force: bool = False, tag_all: bool = True, file = sys.stdout):
+def logGeneric(tag: str, *lines: Any, file: io.TextIOWrapper, force: bool = False, tag_all: bool = True):
     if not force and _quietmode:
         return;
     tag = '' if tag == '' else tag + ' ';
+    file = file or sys.stdout;
     for line in lines:
         print('{}{}{}'.format(_logging_prefix, tag, line), file=file);
         if not tag_all:
             tag = '';
     return;
 
-def logPlain(*lines: Any, force: bool = False, file=sys.stdout):
-    logGeneric('', *lines, force=force, file=file);
+def logPlain(*lines: Any, force: bool = False, file: Any = None):
+    logGeneric('', *lines, force=force, file=file or sys.stdout);
 
-def logInfo(*lines: Any, force: bool = False, tag_all: bool = True, file=sys.stdout):
-    logGeneric('[\033[94;1mINFO\033[0m]', *lines, force=force, tag_all=tag_all, file=file);
+def logInfo(*lines: Any, force: bool = False, tag_all: bool = True, file: Any = None):
+    logGeneric('[\033[94;1mINFO\033[0m]', *lines, force=force, tag_all=tag_all, file=file or sys.stdout);
 
-def logDebug(*lines: Any, force: bool = False, tag_all: bool = True, file=sys.stdout):
-    logGeneric('[\033[96;1mDEBUG\033[0m]', *lines, force=force, tag_all=tag_all, file=file);
+def logDebug(*lines: Any, force: bool = False, tag_all: bool = True, file: Any = None):
+    logGeneric('[\033[96;1mDEBUG\033[0m]', *lines, force=force, tag_all=tag_all, file=file or sys.stdout);
 
-def logWarn(*lines: Any, force: bool = False, tag_all: bool = False, file=sys.stdout):
-    logGeneric('[\033[93;1mWARNING\033[0m]', *lines, force=force, tag_all=tag_all, file=file);
+def logWarn(*lines: Any, force: bool = False, tag_all: bool = False, file: Any = None):
+    logGeneric('[\033[93;1mWARNING\033[0m]', *lines, force=force, tag_all=tag_all, file=file or sys.stdout);
 
-def logError(*lines: Any, force: bool = False, tag_all: bool = False, file=sys.stdout):
-    logGeneric('[\033[91;1mERROR\033[0m]', *lines, force=force, tag_all=tag_all, file=file);
+def logError(*lines: Any, force: bool = False, tag_all: bool = False, file: Any = None):
+    logGeneric('[\033[91;1mERROR\033[0m]', *lines, force=force, tag_all=tag_all, file=file or sys.stderr);
 
-def logFatal(*lines: Any, force: bool = False, tag_all: bool = False, file=sys.stdout):
-    logGeneric('[\033[91;1mFATAL\033[0m]', *lines, force=force, tag_all=tag_all, file=file);
+def logFatal(*lines: Any, force: bool = False, tag_all: bool = False, file: Any = None):
+    logGeneric('[\033[91;1mFATAL\033[0m]', *lines, force=force, tag_all=tag_all, file=file or sys.stderr);
     exit(1);
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
