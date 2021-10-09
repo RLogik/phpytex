@@ -15,3 +15,5 @@ ME="scripts/clean.sh";
 source scripts/.lib.sh;
 
 run_clean_artefacts;
+
+exit 0;
