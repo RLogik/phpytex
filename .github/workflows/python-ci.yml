@@ -16,48 +16,93 @@ on:
         default:     'master'
         required:    true
 jobs:
-  build-python-dist:
-    runs-on: ubuntu-latest
-    env:
+  pipe-setup:
+    runs-on: ubuntu-20.04
+    env: &env
       lang:     python
-      use_venv: false
       app_name: phpytex
     steps:
-    - uses: actions/checkout@v2
+    - &ref_gitcheckout
+      uses: actions/checkout@v2
       with:
         ref: ${{ github.event.inputs.branch }}
-    - name: Install system requirements via apt-get
+    - &ref_setup_aptget
+      name: Install system requirements via apt-get
       run: |-
         sudo apt-get install -y dos2unix
         sudo apt-get install -y apt-utils
         sudo apt-get install -y zip unzip xz-utils
         sudo apt-get clean
-    - name: Check what files exists
-      run: |-
-        pwd
-        ls
-    - name: Grant execution rights
+    - &ref_chmod
+      name: Grant execution rights
       run: |-
         chmod +x scripts/*.sh
-    - name: Run setup
+    - # only do perform this in one job
+      name: Run setup
       run: |-
-        ./scripts/build.sh --lang ${{ env.lang }} --venv ${{ env.use_venv }} --mode setup
-    - name: Check if open source code works
-      run: |-
-        ./scripts/build.sh --lang ${{ env.lang }} --venv ${{ env.use_venv }} --mode run --options \"version\"
-    - name: Check if artefact exists before creation
-      run: |-
-        ls dist/*;
-        [ -f dist/${{ env.app_name }} ] && echo "artefact exists";
-        ! [ -f dist/${{ env.app_name }} ] && echo "artefact does not exist, as expected";
-    - name: Create artefact
+        ./scripts/build.sh --lang ${{ env.lang }} --venv true --mode setup
+        ! [[ -d build ]] && echo "Local python environment not created!" && exit 1
+    - name: Create binary artefact
       run: |-
         ./scripts/build.sh --lang ${{ env.lang }} --mode dist
-    - name: Check if artefact exists
-      run: |-
-        ls dist/*;
-        ! [ -f dist/${{ env.app_name }} ] && echo "artefact does not exist!" && exit 1;
-        [ -f dist/${{ env.app_name }} ] && echo "artefact exists";
-    - name: Check if programme works
-      run: |-
-        dist/${{ env.app_name }} version;
+        ! [[ -f dist/${{ env.app_name }} ]] && echo "Binary not created!" && exit 1
+    - # upload build artefacts
+      name: Upload local build
+      uses: actions/upload-artifact@v2
+      with:
+        name: build_setup
+        path: |-
+          build
+          dist
+  # this block is on
+  pipe-test-get-artefacts:
+    runs-on: ubuntu-20.04
+    needs: pipe-setup
+    env:
+      <<: *env
+    if: '( false )' # prevent block from being executed as only serves as template
+    steps: &ref_initalise_runner
+      - <<: *ref_gitcheckout
+      - <<: *ref_setup_aptget
+      - <<: *ref_chmod
+      - &ref_download_artefacts
+        name: Download build artefacts
+        uses: actions/download-artifact@v2
+        with:
+          name: build_setup
+  pipe-tests-unit:
+    runs-on: ubuntu-20.04
+    needs: pipe-setup
+    env:
+      <<: *env
+    steps:
+      - <<: *ref_initalise_runner
+      - name: Check if open source code works
+        run: |-
+          source scripts/.lib.sh && use_python_venv_true && activate_python_venv
+          python3 src/main.py help
+          echo "----"
+          output="$( python3 src/main.py version )";
+          echo "$output";
+          ! [[ "$output" == "x.x.x" ]] && exit 1
+      - name: Run unit tests
+        run: |-
+          ./scripts/test.sh --lang ${{ env.lang }} --mode unit
+  pipe-tests-cases:
+    runs-on: ubuntu-20.04
+    needs: pipe-setup
+    env:
+      <<: *env
+    steps:
+      - <<: *ref_initalise_runner
+      - name: Check if programme as binary artefact works
+        run: |-
+          source scripts/.lib.sh && use_python_venv_true && activate_python_venv
+          dist/${{ env.app_name }} help
+          echo "----"
+          output="$( dist/${{ env.app_name }} version )";
+          echo "$output";
+          ! [[ "$output" == "x.x.x" ]] && exit 1
+      - name: Run unit tests
+        run: |-
+          ./scripts/test.sh --lang ${{ env.lang }} --mode cases
