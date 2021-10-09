@@ -16,15 +16,21 @@ on:
         default:     'master'
         required:    true
 jobs:
-################################################################################################################################
-# Pipe for setup
-################################################################################################################################
-  pipe-setup:
+  pipe-qa:
     runs-on: ubuntu-20.04
     env:
       lang:     python
       app_name: phpytex
     steps:
+################################################################################################################################
+# Pipe for setup
+################################################################################################################################
+  # pipe-setup:
+  #   runs-on: ubuntu-20.04
+  #   env:
+  #     lang:     python
+  #     app_name: phpytex
+  #   steps:
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.event.inputs.branch }}
@@ -129,6 +135,6 @@ jobs:
           output="$( dist/${{ env.app_name }} version )";
           ! [[ "$output" == "$version" ]] && echo "output=$output=/=$version" && exit 1
           echo "$output";
-      - name: Run unit tests
+      - name: Run case tests
         run: |
           ./scripts/test.sh --lang ${{ env.lang }} --mode cases
