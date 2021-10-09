@@ -32,7 +32,17 @@
 ################################################################
 
 !/src
-!/src/**
+!/src/**/
+!/src/setup/templates/template_*
+!/src/**/*.lark
+!/src/**/*.py
+!/src/**/VERSION
+
+!/src-go
+!/src-go/**/
+!/src-go/**/*.go
+!/src-go/go.mod
+!/src-go/go.sum
 
 !/test
 !/test/cases
