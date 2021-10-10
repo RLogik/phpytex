@@ -72,9 +72,10 @@ function compile_go() {
     _log_info "Compile \033[1mmain.go\033[0m with \033[1mgolang\033[0m";
     remove_file "dist/$NAME_OF_APP";
     pushd "$path" >> $VERBOSE;
-        call_go build -o $cwd/dist/$NAME_OF_APP "main.go";
+        call_go build -o "$cwd/dist/$NAME_OF_APP" "main.go";
     popd >> $VERBOSE;
-    ! [ -f "dist/$NAME_OF_APP" ] && exit 1;
+    ! [ -f "dist/$NAME_OF_APP" ] && return 1;
+    return 0;
 }
 
 ##############################################################################
@@ -236,8 +237,9 @@ function run_create_artefact() {
     ## remove temp artefacts:
     remove_dir "$_temp";
     remove_file "dist/app.zip";
-    ! [ $success -eq 0 ] && exit 1;
+    ! [ $success -eq 0 ] && return 1;
     _log_info "Python artefact successfully created.";
+    return 0;
 }
 
 function run_create_artefact_go() {
@@ -250,9 +252,8 @@ function run_create_artefact_go() {
     success=$?;
     ## remove temp artefacts:
     remove_dir "$_temp";
-    _log_info "Status of success: $success.";
-    ! [ $success -eq 0 ] && exit 1;
-    _log_info "Go artefact successfully created.";
+    ! [ $success -eq 0 ] && return 1;
+    return 0;
 }
 
 function  run_create_examples() {
@@ -276,6 +277,7 @@ function  run_create_examples() {
         # [ -f "$path" ] && remove_file "$path" >> $VERBOSE && continue;
         # [ -d "$path" ] && rm -rf "$path" && continue;
     done <<< $( find examples/example_* -mindepth 0 -maxdepth 0 2> $VERBOSE );
+    return 0;
 }
 
 function run_main() {
@@ -307,6 +309,7 @@ function run_test_unit() {
     ( echo "$output" | grep -Eq "^[[:space:]]*(FAIL:|FAILED)" ) \
         && _log_fail "Unit tests failed!";
     _log_info "Unit tests successful!";
+    return 0;
 }
 
 function run_test_unit_go() {
