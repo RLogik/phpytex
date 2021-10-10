@@ -237,6 +237,7 @@ function run_create_artefact() {
     remove_dir "$_temp";
     remove_file "dist/app.zip";
     ! [ $success -eq 0 ] && exit 1;
+    _log_info "Python artefact successfully created.";
 }
 
 function run_create_artefact_go() {
@@ -249,7 +250,9 @@ function run_create_artefact_go() {
     success=$?;
     ## remove temp artefacts:
     remove_dir "$_temp";
+    _log_info "Status of success: $sucess.";
     ! [ $success -eq 0 ] && exit 1;
+    _log_info "Go artefact successfully created.";
 }
 
 function  run_create_examples() {
