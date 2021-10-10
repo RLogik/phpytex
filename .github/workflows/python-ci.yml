@@ -1,4 +1,4 @@
-name: CI for python source
+name: CI for python project
 on:
   pull_request:
     branches:
