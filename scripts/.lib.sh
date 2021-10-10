@@ -67,10 +67,11 @@ function install_requirements_go() {
 }
 
 function compile_go() {
-    _log_info "Compile \033[1mmain.go\033[0m with \033[1mgolang\033[0m";
+    local path="$1";
     local cwd="$PWD";
+    _log_info "Compile \033[1mmain.go\033[0m with \033[1mgolang\033[0m";
     remove_file "dist/$NAME_OF_APP";
-    pushd src-go >> $VERBOSE;
+    pushd "$path" >> $VERBOSE;
         call_go build -o $cwd/dist/$NAME_OF_APP "main.go";
     popd >> $VERBOSE;
     ! [ -f "dist/$NAME_OF_APP" ] && exit 1;
@@ -216,24 +217,39 @@ function run_setup_go() {
 
 function run_create_artefact() {
     local current_dir="$PWD";
+    local success;
     ## create temp artefacts:
     local _temp="$( create_temporary_dir "dist" )";
+
     copy_dir dir="src" from="." to="$_temp";
     copy_file file="VERSION" from="dist" to="${_temp}/src/setup";
     mv "${_temp}/src/__main__.py" "$_temp";
     ## zip source files to single file and make executable:
     pushd "$_temp" >> $VERBOSE;
-        create_zip_archive -o "$current_dir/dist/app.zip" * -x '*__pycache__/*' -x '*.DS_Store';
+        ( create_zip_archive -o "$current_dir/dist/app.zip" * -x '*__pycache__/*' -x '*.DS_Store' );
+        success=$?
     popd >> $VERBOSE;
-    echo  "$PYTHON_APP_PREFIX" | cat - dist/app.zip > dist/$NAME_OF_APP;
-    chmod +x "dist/$NAME_OF_APP";
+    if [ $success -eq 0 ]; then
+        echo  "$PYTHON_APP_PREFIX" | cat - dist/app.zip > dist/$NAME_OF_APP;
+        chmod +x "dist/$NAME_OF_APP";
+    fi
     ## remove temp artefacts:
     remove_dir "$_temp";
     remove_file "dist/app.zip";
+    ! [ $success -eq 0 ] && exit 1;
 }
 
 function run_create_artefact_go() {
-    compile_go;
+    local current_dir="$PWD";
+    local success;
+    ## create temp artefacts:
+    local _temp="$( create_temporary_dir "dist" )";
+    copy_dir dir="src-go" from="." to="$_temp";
+    ( compile_go "$_temp/src-go" );
+    success=$?;
+    ## remove temp artefacts:
+    remove_dir "$_temp";
+    ! [ $success -eq 0 ] && exit 1;
 }
 
 function  run_create_examples() {
@@ -264,7 +280,7 @@ function run_main() {
 }
 
 function run_main_go() {
-    compile_go;
+    compile_go "src-go";
     ./dist/$NAME_OF_APP $@;
 }
 
