@@ -23,15 +23,19 @@ jobs:
       ################################################################
       # SETUP
       ################################################################
-      - uses: actions/checkout@v2
+      - name: Setup Go
+        uses: actions/setup-go@v2
         with:
-          ref: ${{ github.event.inputs.branch }}
+          go-version: '1.16.5'
       - name: Install system requirements via apt-get
         run: |-
           sudo apt-get install -y dos2unix
           sudo apt-get install -y apt-utils
           sudo apt-get install -y zip unzip xz-utils
           sudo apt-get clean
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.inputs.branch }}
       - name: Grant execution rights
         run: |-
           chmod +x scripts/*.sh
@@ -48,21 +52,21 @@ jobs:
             exit 1
           fi
           echo "Binary successfully created"
-      ################################################################
-      # BASIC CHECKS
-      ################################################################
-      - name: Check if programm works (call 'help' flag)
-        run: |-
-          ${{ env.app_path }} help
-      - name: Check if programm works (call 'version' flag)
-        run: |-
-          version="$( cat dist/VERSION )"
-          output="$( ${{ env.app_path }} version )"
-          if ! [[ "$output" == "$version" ]]; then
-            echo "output=$output=/=$version"
-            exit 1
-          fi
-          echo "$output"
+      # ################################################################
+      # # BASIC CHECKS
+      # ################################################################
+      # - name: Check if programm works (call 'help' flag)
+      #   run: |-
+      #     ${{ env.app_path }} help
+      # - name: Check if programm works (call 'version' flag)
+      #   run: |-
+      #     version="$( cat dist/VERSION )"
+      #     output="$( ${{ env.app_path }} version )"
+      #     if ! [[ "$output" == "$version" ]]; then
+      #       echo "output=$output=/=$version"
+      #       exit 1
+      #     fi
+      #     echo "$output"
       ################################################################
       # UNIT TESTS
       ################################################################
