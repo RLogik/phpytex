@@ -26,7 +26,6 @@ jobs:
       - name: Install system requirements via apt-get
         run: |-
           sudo apt-get install -y dos2unix
-          sudo apt-get install -y apt-utils
           sudo apt-get install -y zip unzip xz-utils
           sudo apt-get clean
       - uses: actions/checkout@v2
