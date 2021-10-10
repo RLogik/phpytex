@@ -72,9 +72,11 @@ jobs:
           echo "$output"
       - name: Check if programm works (call 'help' flag)
         run: |-
+          source scripts/.lib.sh && use_python_venv_true && activate_python_venv
           ${{ env.app_path }} help
       - name: Check if programm works (call 'version' flag)
         run: |-
+          source scripts/.lib.sh && use_python_venv_true && activate_python_venv
           version="$( cat dist/VERSION )"
           output="$( ${{ env.app_path }} version )"
           if ! [[ "$output" == "$version" ]]; then
