@@ -34,9 +34,9 @@
 !/src
 !/src/**/
 !/src/setup/templates/template_*
+!/src/setup/VERSION
 !/src/**/*.lark
 !/src/**/*.py
-!/src/**/VERSION
 
 !/src-go
 !/src-go/**/
