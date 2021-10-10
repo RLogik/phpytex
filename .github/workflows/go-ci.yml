@@ -52,21 +52,21 @@ jobs:
             exit 1
           fi
           echo "Binary successfully created"
-      # ################################################################
-      # # BASIC CHECKS
-      # ################################################################
-      # - name: Check if programm works (call 'help' flag)
-      #   run: |-
-      #     ${{ env.app_path }} help
-      # - name: Check if programm works (call 'version' flag)
-      #   run: |-
-      #     version="$( cat dist/VERSION )"
-      #     output="$( ${{ env.app_path }} version )"
-      #     if ! [[ "$output" == "$version" ]]; then
-      #       echo "output=$output=/=$version"
-      #       exit 1
-      #     fi
-      #     echo "$output"
+      ################################################################
+      # BASIC CHECKS
+      ################################################################
+      - name: Check if programm works (call 'help' flag)
+        run: |-
+          ${{ env.app_path }} help
+      - name: Check if programm works (call 'version' flag)
+        run: |-
+          version="$( cat dist/VERSION )"
+          output="$( ${{ env.app_path }} version )"
+          if ! [[ "$output" == "$version" ]]; then
+            echo "output=$output=/=$version"
+            exit 1
+          fi
+          echo "$output"
       ################################################################
       # UNIT TESTS
       ################################################################
