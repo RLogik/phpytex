@@ -55,6 +55,7 @@ jobs:
         run: |-
           ${{ env.app_path }} help
       - name: Check if programm works (call 'version' flag)
+        run: |-
           version="$( cat dist/VERSION )"
           output="$( ${{ env.app_path }} version )"
           if ! [[ "$output" == "$version" ]]; then

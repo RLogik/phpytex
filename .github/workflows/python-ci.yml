@@ -61,6 +61,7 @@ jobs:
           python3 src/main.py help
           ${{ env.app_path }} help
       - name: Check if open source code works (call 'version' flag)
+        run: |-
           source scripts/.lib.sh && use_python_venv_true && activate_python_venv
           version_pattern="^[^\.[:space:]]+(\.[^\.[:space:]]+){2,}$";
           output="$( python3 src/main.py version )"
@@ -73,6 +74,7 @@ jobs:
         run: |-
           ${{ env.app_path }} help
       - name: Check if programm works (call 'version' flag)
+        run: |-
           version="$( cat dist/VERSION )"
           output="$( ${{ env.app_path }} version )"
           if ! [[ "$output" == "$version" ]]; then
