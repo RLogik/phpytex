@@ -250,7 +250,7 @@ function run_create_artefact_go() {
     success=$?;
     ## remove temp artefacts:
     remove_dir "$_temp";
-    _log_info "Status of success: $sucess.";
+    _log_info "Status of success: $success.";
     ! [ $success -eq 0 ] && exit 1;
     _log_info "Go artefact successfully created.";
 }
