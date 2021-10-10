@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       lang:     python
-      app_name: phpytex
+      app_path: dist/phpytex
     steps:
       ################################################################
       # SETUP
@@ -47,7 +47,7 @@ jobs:
       - name: Create binary artefact
         run: |-
           ./scripts/build.sh --lang ${{ env.lang }} --mode dist
-          if ! [[ -f dist/${{ env.app_name }} ]]; then
+          if ! [[ -f ${{ env.app_path }} ]]; then
             "Binary not created!"
             exit 1
           fi
