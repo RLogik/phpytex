@@ -1,5 +1,5 @@
 ## PIP + wheel for package installation
-pip==21.2.4
+pip==21.3
 wheel==0.36.1
 
 ## utility
