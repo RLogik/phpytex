@@ -17,12 +17,13 @@ env_from ".env" import REQUIREMENTS_PY     as PATH_REQ_PY;
 env_from ".env" import NAME_OF_APP;
 
 export CONFIGENV="data/.env";
+export PATH_PROJECT_PY="python";
+export PATH_PROJECT_GO="golang";
 export PYTHON_APP_PREFIX=\
 '''#!/usr/bin/env python3
 # -*- coding: utf-8 -*-'''
 export USE_VENV=false;
-export PATH_UTEST="test/unit";
-export UNITTEST_SCHEMA="test_*.py";
+export UNITTEST_SCHEMA_PY="test_*.py";
 
 ##############################################################################
 # AUXILIARY METHODS: Zip
@@ -46,7 +47,7 @@ function install_requirements_go() {
     local has_problems=false;
     local problem_packages=();
 
-    pushd src-go >> $VERBOSE;
+    pushd $PATH_PROJECT_GO/src >> $VERBOSE;
         # go mod tidy; # <- use to detect unused packages in project
         remove_file "go.sum";
 
@@ -71,7 +72,7 @@ function compile_go() {
     local cwd="$PWD";
     _log_info "Compile \033[1mmain.go\033[0m with \033[1mgolang\033[0m";
     remove_file "dist/$NAME_OF_APP";
-    pushd "$path" >> $VERBOSE;
+    pushd "$path/src" >> $VERBOSE;
         call_go build -o "$cwd/dist/$NAME_OF_APP" "main.go";
     popd >> $VERBOSE;
     ! [ -f "dist/$NAME_OF_APP" ] && return 1;
@@ -182,19 +183,23 @@ function install_requirements_aptget() {
 # AUXILIARY METHODS: CLEANING
 ##############################################################################
 
-function garbage_collection_build() {
-    clean_folder_contents "build";
+function garbage_collection_misc() {
+    clean_all_folders_of_pattern ".DS_Store";
 }
 
 function garbage_collection_python() {
-    clean_all_folders_of_pattern ".DS_Store";
+    clean_folder_contents "$PATH_PROJECT_PY/build";
     local path;
-    for path in "src" "test"; do
+    for path in "$PATH_PROJECT_PY"; do
         pushd "$path" >> $VERBOSE;
             # clean_all_files_of_pattern "*\.pyo";
             clean_all_folders_of_pattern "__pycache__";
         popd >> $VERBOSE;
     done
+}
+
+function garbage_collection_go {
+    _log_info "(Nothing to clean in go project)";
 }
 
 function garbage_collection_dist() {
@@ -207,9 +212,12 @@ function garbage_collection_dist() {
 
 function run_setup() {
     _log_info "RUN SETUP";
-    create_python_venv;
-    _log_info "Check and install missing requirements";
-    install_requirements_v_python "$PATH_REQ_PY";
+    local current_dir="$PWD";
+    pushd $PATH_PROJECT_PY >> $VERBOSE;
+        create_python_venv;
+        _log_info "Check and install missing requirements";
+        install_requirements_v_python "$current_dir/$PATH_REQ_PY";
+    popd >> VERBOSE;
 }
 
 function run_setup_go() {
@@ -222,7 +230,8 @@ function run_create_artefact() {
     ## create temp artefacts:
     local _temp="$( create_temporary_dir "dist" )";
 
-    copy_dir dir="src" from="." to="$_temp";
+    mkdir "$_temp/src"
+    cp -r "$PATH_PROJECT_PY/src/." "$_temp/src";
     copy_file file="VERSION" from="dist" to="${_temp}/src/setup";
     mv "${_temp}/src/__main__.py" "$_temp";
     ## zip source files to single file and make executable:
@@ -247,8 +256,8 @@ function run_create_artefact_go() {
     local success;
     ## create temp artefacts:
     local _temp="$( create_temporary_dir "dist" )";
-    copy_dir dir="src-go" from="." to="$_temp";
-    ( compile_go "$_temp/src-go" );
+    cp -r "$PATH_PROJECT_GO/." "$_temp";
+    ( compile_go "$_temp" );
     success=$?;
     ## remove temp artefacts:
     remove_dir "$_temp";
@@ -281,11 +290,13 @@ function  run_create_examples() {
 }
 
 function run_main() {
-    call_v_python src/main.py $@;
+    pushd $PATH_PROJECT_PY >> $VERBOSE;
+        call_v_python src/main.py $@;
+    popd >> $VERBOSE;
 }
 
 function run_main_go() {
-    compile_go "src-go";
+    compile_go "$PATH_PROJECT_GO";
     ./dist/$NAME_OF_APP $@;
 }
 
@@ -299,12 +310,14 @@ function run_test_unit() {
     local verboseoption="";
     ( $asverbose ) && verboseoption="-v";
     _log_info "RUN UNITTESTS";
-    local output="$(call_v_utest              \
-        $verboseoption                        \
-        --top-level-directory "${PATH_UTEST}" \
-        --start-directory "${PATH_UTEST}"     \
-        --pattern "${UNITTEST_SCHEMA}" 2>&1   \
-    )";
+    pushd $PATH_PROJECT_PY >> $VERBOSE;
+        local output="$(call_v_utest                \
+            $verboseoption                          \
+            --top-level-directory "test"            \
+            --start-directory "test"                \
+            --pattern "${UNITTEST_SCHEMA_PY}" 2>&1  \
+        )";
+    popd >> $VERBOSE;
     _cli_message "$output";
     ( echo "$output" | grep -Eq "^[[:space:]]*(FAIL:|FAILED)" ) \
         && _log_fail "Unit tests failed!";
@@ -318,8 +331,15 @@ function run_test_unit_go() {
 
 function run_test_cases() {
     local args="$@";
+    local current_dir="$PWD";
     _log_info "RUN TEST CASES";
-    call_v_python test/cases/main.py $args;
+    pushd $PATH_PROJECT_PY >> $VERBOSE;
+        call_v_python test/cases.py \
+            --dir "$current_dir" \
+            --app "$current_dir/dist/$NAME_OF_APP" \
+            --config "$current_dir/test/setup/config.yml" \
+            --cases $current_dir/test/cases $args;
+    popd >> $VERBOSE;
 }
 
 function run_test_cases_go() {
@@ -328,7 +348,8 @@ function run_test_cases_go() {
 
 function run_clean_artefacts() {
     _log_info "CLEAN ARTEFACTS";
-    garbage_collection_build;
+    garbage_collection_misc;
     garbage_collection_python;
+    garbage_collection_go;
     garbage_collection_dist;
 }
