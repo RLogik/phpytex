@@ -8,7 +8,7 @@
 import os;
 import sys;
 
-PATH_PROJECT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))));
+PATH_PROJECT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)));
 os.chdir(PATH_PROJECT);
 sys.path.insert(0, PATH_PROJECT);
 
@@ -27,26 +27,42 @@ from src.core.utils import readYamlFile;
 # GLOBAL VARIABLES
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-PATH_CASES:   str = 'test/cases';
+CONFIG = None;
+PATH_APP = None;
+PATH_CASES = None;
+PATH_CONFIG = None;
+PATH_DIR = None;
+PATH_SANDBOX = None;
 PATTERN_CASE: str = r'^(case|private_).*';
-PATH_CONFIG:  str = 'test/cases/setup/config.yml';
-PATH_SCRIPT:  str = os.path.join(PATH_PROJECT, 'src', 'main.py');
-PATH_SANDBOX: str = os.path.join(PATH_CASES, 'sandbox');
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MAIN PROCESS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def main(*tokens, **kwargs):
-    inspect = ( 'inspect' in tokens );
+def main(dir: str, app: str, config: str, cases: str, inspect: bool = False, **_):
+    global PATH_APP;
+    global PATH_CASES;
+    global PATH_CONFIG;
+    global PATH_DIR;
+    global PATH_SANDBOX;
 
-    config = StepGetConfig(PATH_CONFIG);
-    paths = getAttribute(config, 'cases', expectedtype=list, default=[]);
-    # cases = StepGetTestCases(PATH_CASES, PATTERN_CASE);
+    PATH_DIR = dir;
+    PATH_APP = app;
+    PATH_CONFIG = config;
+    PATH_CASES = cases;
+    PATH_SANDBOX = os.path.join(PATH_CASES, 'sandbox');
+
+    StepGetConfig(config);
+    paths = getAttribute(CONFIG, 'cases', expectedtype=list, default=[]);
     ClearSandbox(PATH_SANDBOX);
     for path in paths:
         logPlain('');
-        StepRunTestCase(path=path, sandboxpath=PATH_SANDBOX, phpytex_script=PATH_SCRIPT, inspect=inspect);
+        StepRunTestCase(
+            path        = os.path.join(PATH_CASES, path),
+            sandboxpath = PATH_SANDBOX,
+            app_path    = PATH_APP,
+            inspect     = inspect
+        );
         ClearSandbox(PATH_SANDBOX);
     return;
 
@@ -55,38 +71,28 @@ def main(*tokens, **kwargs):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def StepGetConfig(path_config: str) -> Dict[str, Any]:
-    return readYamlFile(path_config);
+    global CONFIG;
+    CONFIG = readYamlFile(path_config);
+    return;
 
 def ClearSandbox(sandboxpath: str):
     if os.path.isdir(sandboxpath):
         subprocess.run(['rm', '-rf', sandboxpath]);
     return;
 
-def StepGetTestCases(path_cases: str, pattern: str) -> List[str]:
-    cases = [];
-    for path in os.listdir(path_cases):
-        path_full = os.path.join(path_cases, path);
-        if not os.path.isdir(path_full):
-            continue;
-        if not re.match(pattern, path):
-            continue;
-        cases.append(path_full);
-    cases = sorted(cases);
-    return cases;
-
 def StepRunTestCase(
-    path:           str,
-    sandboxpath:    str,
-    phpytex_script: str,
-    inspect:        bool
+    path:        str,
+    sandboxpath: str,
+    app_path:    str,
+    inspect:     bool
 ):
     logInfo('START TEST CASE');
     logInfo('path = \033[1m{}\033[0m'.format(getRelPath(path)));
 
     shutil.copytree(src=path, dst=sandboxpath);
-    cmd = re.split(r'\s+', PythonCommand());
+    # cmd = re.split(r'\s+', PythonCommand());
     try:
-        pipeCall(*cmd, phpytex_script, 'run', cwd=sandboxpath);
+        pipeCall(app_path, 'run', cwd=sandboxpath);
     except:
         logFatal('Test case \033[1m{}\033[0m failed.'.format(getRelPath(path)));
 
@@ -101,7 +107,7 @@ def StepRunTestCase(
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def getRelPath(path: str) -> str:
-    return os.path.relpath(path, start=PATH_PROJECT);
+    return os.path.relpath(path, start=PATH_DIR);
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # EXECUTION
@@ -110,4 +116,4 @@ def getRelPath(path: str) -> str:
 if __name__ == '__main__':
     sys.tracebacklimit = 0;
     tokens, kwargs = getCliArgs(*sys.argv[1:]);
-    main(*tokens, **kwargs);
+    main(**kwargs, **{ token: True for token in tokens });

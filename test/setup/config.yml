@@ -1,0 +1,10 @@
+info:
+  title: Case tests
+  description: Config file to select which test cases will be carried out.
+cases:
+  - case_debug_simple
+  - case_debug_withtree
+  - case_no-compile_simple
+  - case_no-compile_withtree
+  - case_compile_simple
+  - case_compile_withtree
