@@ -31,30 +31,32 @@
 # PROJECT FILES
 ################################################################
 
-!/src
-!/src/**/
-!/src/setup/templates/template_*
-!/src/setup/VERSION
-!/src/**/*.lark
-!/src/**/*.py
+!/python
+!/python/src
+!/python/src/**/
+!/python/src/setup/templates/template_*
+!/python/src/setup/VERSION
+!/python/src/**/*.lark
+!/python/src/**/*.py
+!/python/test
+!/python/test/**
+!/python/test/unit/**
+!/python/test/**/*.py
 
-!/src-go
-!/src-go/**/
-!/src-go/**/*.go
-!/src-go/go.mod
-!/src-go/go.sum
+!/golang
+!/golang/**/
+!/golang/**/*.go
+!/golang/src/go.mod
+!/golang/src/go.sum
 
 !/test
-!/test/unit
-!/test/unit/**
+!/test/setup
+!/test/setup/config.yml
 !/test/cases
-!/test/cases/case*
-!/test/cases/case*/**/
-!/test/cases/setup
-!/test/unit
-!/test/**/*.py
-!/test/**/*.tex
-!/test/**/*.yml
+!/test/cases/case_*
+!/test/cases/case_*/**/
+!/test/cases/**/*.yml
+!/test/cases/**/*.tex
 
 !/examples
 
