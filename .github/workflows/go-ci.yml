@@ -17,8 +17,9 @@ jobs:
   pipe-qa:
     runs-on: ubuntu-20.04
     env:
-      lang:     go
-      app_path: dist/phpytex
+      lang:         go
+      app_path:     dist/phpytex
+      lang_version: 1.16.5 # not installed - see https://github.com/actions/virtual-environments/issues/1816
     steps:
       ################################################################
       # SETUP
@@ -26,7 +27,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: '1.16.5'
+          go-version: ${{ env.lang_version }}
       - name: Install system requirements via apt-get
         run: |-
           sudo apt-get install -y dos2unix

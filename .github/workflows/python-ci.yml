@@ -17,8 +17,9 @@ jobs:
   pipe-qa:
     runs-on: ubuntu-20.04
     env:
-      lang:     python
-      app_path: dist/phpytex
+      lang:         python
+      lang_version: 3.8.2 # installed - see https://github.com/actions/virtual-environments/issues/1816
+      app_path:     dist/phpytex
     steps:
       ################################################################
       # SETUP
@@ -56,14 +57,11 @@ jobs:
       ################################################################
       - name: Check if open source code works (call 'help' flag)
         run: |-
-          source scripts/.lib.sh && use_python_venv_true && activate_python_venv
-          python3 src/main.py help
-          ${{ env.app_path }} help
+          ./scripts/build.sh --lang ${{ env.plang }} --venv true --mode run help
       - name: Check if open source code works (call 'version' flag)
         run: |-
-          source scripts/.lib.sh && use_python_venv_true && activate_python_venv
-          version_pattern="^[^\.[:space:]]+(\.[^\.[:space:]]+){2,}$";
-          output="$( python3 src/main.py version )"
+          version_pattern="^[^\.[:space:]]+(\.[^\.[:space:]]+){2,}$"
+          output="$( ./scripts/build.sh --lang ${{ env.plang }} --venv true --mode run version )"
           if ! ( echo "$output" | grep -Eq "${version_pattern}" ); then
             echo "Output='$output', which does not match the pattern of a version!"
             exit 1
