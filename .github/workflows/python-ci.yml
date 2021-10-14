@@ -57,11 +57,11 @@ jobs:
       ################################################################
       - name: Check if open source code works (call 'help' flag)
         run: |-
-          ./scripts/build.sh --lang ${{ env.plang }} --venv true --mode run help
+          ./scripts/build.sh --lang ${{ env.plang }} --venv true --mode run --options \"help\"
       - name: Check if open source code works (call 'version' flag)
         run: |-
           version_pattern="^[^\.[:space:]]+(\.[^\.[:space:]]+){2,}$"
-          output="$( ./scripts/build.sh --lang ${{ env.plang }} --venv true --mode run version )"
+          output="$( ./scripts/build.sh --lang ${{ env.plang }} --venv true --mode run --options \"version\" )"
           if ! ( echo "$output" | grep -Eq "${version_pattern}" ); then
             echo "Output='$output', which does not match the pattern of a version!"
             exit 1
