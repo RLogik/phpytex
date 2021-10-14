@@ -39,7 +39,7 @@ jobs:
         name: Run setup
         run: |-
           ./scripts/build.sh --lang ${{ env.lang }} --venv true --mode setup
-          if ! [[ -d build ]]; then
+          if ! [[ -d python/build ]]; then
             echo "Local python environment not created!"
             exit 1
           fi
