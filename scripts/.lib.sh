@@ -47,7 +47,7 @@ function install_requirements_go() {
     local has_problems=false;
     local problem_packages=();
 
-    pushd $PATH_PROJECT_GO/src >> $VERBOSE;
+    pushd $PATH_PROJECT_GO >> $VERBOSE;
         # go mod tidy; # <- use to detect unused packages in project
         remove_file "go.sum";
 
@@ -72,7 +72,7 @@ function compile_go() {
     local cwd="$PWD";
     _log_info "Compile \033[1mmain.go\033[0m with \033[1mgolang\033[0m";
     remove_file "dist/$NAME_OF_APP";
-    pushd "$path/src" >> $VERBOSE;
+    pushd "$path" >> $VERBOSE;
         call_go build -o "$cwd/dist/$NAME_OF_APP" "main.go";
     popd >> $VERBOSE;
     ! [ -f "dist/$NAME_OF_APP" ] && return 1;
@@ -257,6 +257,7 @@ function run_create_artefact_go() {
     ## create temp artefacts:
     local _temp="$( create_temporary_dir "dist" )";
     cp -r "$PATH_PROJECT_GO/." "$_temp";
+    copy_file file="VERSION" from="dist" to="${_temp}/assets";
     ( compile_go "$_temp" );
     success=$?;
     ## remove temp artefacts:
