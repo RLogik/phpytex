@@ -15,6 +15,7 @@ source scripts/.lib.utils.sh;
 env_from ".env" import REQUIREMENTS_GO     as PATH_REQ_GO;
 env_from ".env" import REQUIREMENTS_PY     as PATH_REQ_PY;
 env_from ".env" import NAME_OF_APP;
+env_from ".env" import TEST_TIMEOUT;
 
 export CONFIGENV="data/.env";
 export PATH_PROJECT_PY="python";
@@ -308,26 +309,37 @@ function run_explore_console() {
 
 function run_test_unit() {
     local asverbose=$1;
-    local verboseoption="";
-    ( $asverbose ) && verboseoption="-v";
+    local verboseoption="-v";
+    local success=0;
+    ! ( $asverbose ) && verboseoption="";
     _log_info "RUN UNITTESTS";
     pushd $PATH_PROJECT_PY >> $VERBOSE;
-        local output="$(call_v_utest                \
+        ( call_v_utest                \
             $verboseoption                          \
             --top-level-directory "test"            \
             --start-directory "test"                \
             --pattern "${UNITTEST_SCHEMA_PY}" 2>&1  \
-        )";
+        );
+        success=$?;
     popd >> $VERBOSE;
-    _cli_message "$output";
-    ( echo "$output" | grep -Eq "^[[:space:]]*(FAIL:|FAILED)" ) \
-        && _log_fail "Unit tests failed!";
+    [ $success -eq 1 ] && _log_fail "Unit tests failed!";
     _log_info "Unit tests successful!";
     return 0;
 }
 
 function run_test_unit_go() {
-    _log_warn "Unit tests not yet implemented for go.";
+    local asverbose="$1";
+    local verboseoption="-v";
+    local success;
+    _log_info "RUN UNITTESTS";
+    ! ( $asverbose ) && verboseoption=""
+    pushd $PATH_PROJECT_GO >> $VERBOSE;
+        ( call_go test $verboseoption -timeout $TEST_TIMEOUT -count 1 -run "^Test[A-Z].*" "phpytex" "./..." );
+        success=$?;
+    popd >> $VERBOSE
+    [ $success -eq 1 ] && _log_fail "Unit tests failed!";
+    _log_info "Unit tests successful!";
+    return 0;
 }
 
 function run_test_cases() {
