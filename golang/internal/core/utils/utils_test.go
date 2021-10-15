@@ -5,6 +5,7 @@ package utils_test
  * ---------------------------------------------------------------- */
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -79,12 +80,20 @@ func TestDedentAndExpand(test *testing.T) {
 	var result string
 
 	text = `
-	This is a \033[1mbold text\033[0m
+		This is a \033[1mbold text\033[0m
 
 	This is a text in \033[91;1mred\033[0m.
 			This is indented (2 x '\\t').
 	This is not indented.
 	`
-	result = "\nThis is a \033[1mbold text\033[0m\n\nThis is a text in \033[91;1mred\033[0m.\n\t\tThis is indented (2 x '\\t').\nThis is not indented.\n"
+	result = strings.Join([]string{
+		"",
+		"\tThis is a \033[1mbold text\033[0m",
+		"",
+		"This is a text in \033[91;1mred\033[0m.",
+		"\t\tThis is indented (2 x '\\t').",
+		"This is not indented.",
+		"",
+	}, "\n")
 	assert.Equal(utils.DedentAndExpand(text), result)
 }
