@@ -5,11 +5,13 @@ import (
 	"os"
 
 	"phpytex/internal/core/utils"
-	"phpytex/internal/endpoints/ep_help"
-	"phpytex/internal/endpoints/ep_run"
-	"phpytex/internal/endpoints/ep_version"
-	"phpytex/internal/setup/appconfig"
+	"phpytex/internal/endpoints"
+	"phpytex/internal/setup"
 )
+
+/* ---------------------------------------------------------------- *
+ * GLOBAL VARIABLES
+ * ---------------------------------------------------------------- */
 
 var (
 	//go:embed assets/*
@@ -22,21 +24,25 @@ var (
 	}
 )
 
+/* ---------------------------------------------------------------- *
+ * METHOD main
+ * ---------------------------------------------------------------- */
+
 func main() {
-	appconfig.Res = res
-	appconfig.Assets = assets
+	setup.Res = res
+	setup.Assets = assets
 	cliArgs := os.Args[1:]
 	if utils.ArrayContains(cliArgs, "version") {
-		ep_version.Endpoint()
+		endpoints.Version()
 		return
 	} else if utils.ArrayContains(cliArgs, "help") {
-		ep_help.Endpoint()
+		endpoints.Help()
 		return
 	} else if utils.ArrayContains(cliArgs, "run") {
-		ep_run.Endpoint()
+		endpoints.Run()
 		return
 	} else {
-		ep_help.Endpoint()
+		endpoints.Help()
 		return
 	}
 }

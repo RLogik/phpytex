@@ -4,6 +4,10 @@ import (
 	"reflect"
 )
 
+/* ---------------------------------------------------------------- *
+ * METHOD array contains
+ * ---------------------------------------------------------------- */
+
 func ArrayContains(x interface{}, elem interface{}) bool {
 	xAsArray := reflect.ValueOf(x)
 	if xAsArray.Kind() == reflect.Slice {

@@ -10,6 +10,10 @@ import (
 	"github.com/slongfield/pyfmt"
 )
 
+/* ---------------------------------------------------------------- *
+ * METHOD format strings with dictionary substitution
+ * ---------------------------------------------------------------- */
+
 func FormatString(text string, args map[string]interface{}) string {
 	var s string
 	var err error
@@ -36,6 +40,10 @@ func FormatString(text string, args map[string]interface{}) string {
 	return s
 }
 */
+
+/* ---------------------------------------------------------------- *
+ * METHOD dedent textblock and expand escaped symbols
+ * ---------------------------------------------------------------- */
 
 func DedentAndExpand(text string) string {
 	var err error
