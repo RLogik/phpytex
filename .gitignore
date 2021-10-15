@@ -46,6 +46,8 @@
 !/golang
 !/golang/**/
 !/golang/**/*.go
+!/golang/assets/templates/template_*
+!/golang/assets/VERSION
 !/golang/src/go.mod
 !/golang/src/go.sum
 
