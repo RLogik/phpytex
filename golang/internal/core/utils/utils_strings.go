@@ -1,5 +1,9 @@
 package utils
 
+/* ---------------------------------------------------------------- *
+ * IMPORTS
+ * ---------------------------------------------------------------- */
+
 import (
 	"fmt"
 	"log"
@@ -32,6 +36,7 @@ import (
 	"bytes"
 	"html/template"
 )
+
 func FormatString(text string, args map[string]interface{}) string {
 	var buff bytes.Buffer
 	temp := template.New("")
