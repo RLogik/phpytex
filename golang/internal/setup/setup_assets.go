@@ -8,6 +8,7 @@ import (
 	"embed"
 	"fmt"
 	"log"
+	"strings"
 
 	"phpytex/internal/core/utils"
 )
@@ -41,7 +42,7 @@ func ReadAsset(key string) string {
  * ---------------------------------------------------------------- */
 
 func Version() string {
-	return ReadAsset("version")
+	return strings.Trim(ReadAsset("version"), "\n")
 }
 
 func Help() string {
