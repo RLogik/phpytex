@@ -45,18 +45,19 @@ func Run(fnameConfig string) {
 	`))
 	steps.Configure(fnameConfig)
 	// if appconfig.getOptionIgnore() {
-	// 	logging.LogInfo("\033[32;1m(PH(p)y)tex\033[0m transpilation will be skipped.");
-	// 	return;
+	// 	logging.LogInfo("\033[32;1m(PH(p)y)tex\033[0m transpilation will be skipped.")
+	// 	return
 	// }
-	// steps.Create();
-	// steps.Transpile();
+	// steps.Create()
+	// steps.Transpile()
 	// if appconfig.getOptionDebug() {
-	//     logging.LogInfo(utils.FormatString("The result of transpilation can be viewed in \033[1m{fnamePy}\033[0m",
-	// 	map[string]interface{}{
-	// 		"fnamePy": appconfig.getFileTranspiled(),
-	// 	}));
-	// 	return;
+	// 	logging.LogInfo(utils.FormatString(
+	// 		"The result of transpilation can be viewed in \033[1m{fnamePy}\033[0m",
+	// 		map[string]interface{}{
+	// 			"fnamePy": appconfig.getFileTranspiled(),
+	// 		}))
+	// 	return
 	// }
-	// steps.Compile();
-	// return;
+	// steps.Compile()
+	// return
 }

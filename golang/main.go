@@ -11,8 +11,7 @@ import (
 	"phpytex/internal/core/logging"
 	"phpytex/internal/endpoints"
 	"phpytex/internal/setup"
-
-	"github.com/akamensky/argparse"
+	"phpytex/internal/setup/appconfig"
 )
 
 /* ---------------------------------------------------------------- *
@@ -20,6 +19,7 @@ import (
  * ---------------------------------------------------------------- */
 
 var (
+	// !!! NOTE: do not remove the following "comment", as it is a preprocessing instruction !!!
 	//go:embed assets/*
 	res    embed.FS
 	assets = map[string]string{
@@ -28,6 +28,7 @@ var (
 		"pre":     "assets/templates/template_pre",
 		"post":    "assets/templates/template_post",
 	}
+	patternConfig = `^(|.*\.)(phpytex|phpycreate)\.(yml|yaml)$`
 )
 
 /* ---------------------------------------------------------------- *
@@ -35,56 +36,30 @@ var (
  * ---------------------------------------------------------------- */
 
 func main() {
+	// set assets
 	setup.Res = res
 	setup.Assets = assets
-	arguments := setParser(os.Args)
 
-	logging.SetQuietMode(*arguments.quiet)
+	// parse cli arguments
+	arguments := setup.ParseCli(os.Args)
 
-	if arguments.version.Happened() {
+	// initialise internal app config
+	appconfig.Init()
+	appconfig.SetPatternConfig(patternConfig)
+
+	logging.SetQuietMode(*arguments.Quiet)
+
+	if arguments.Version.Happened() {
 		endpoints.Version()
 		return
-	} else if arguments.help.Happened() {
+	} else if arguments.Help.Happened() {
 		endpoints.Help()
 		return
-	} else if arguments.run.Happened() {
-		endpoints.Run(*arguments.file)
+	} else if arguments.Run.Happened() {
+		endpoints.Run(*arguments.File)
 		return
 	} else {
 		endpoints.Help()
 		return
 	}
-}
-
-/* ---------------------------------------------------------------- *
- * PRIVATE METHODS
- * ---------------------------------------------------------------- */
-
-type cliArguments struct {
-	help    *argparse.Command
-	version *argparse.Command
-	run     *argparse.Command
-	quiet   *bool
-	file    *string
-}
-
-func setParser(cliArgs []string) cliArguments {
-	parser := argparse.NewParser("cli parser", "Reads options and flags from command line.")
-	arguments := cliArguments{
-		help:    parser.NewCommand("help", "Calls endpoint to display help."),
-		version: parser.NewCommand("version", "Calls endpoint to display version."),
-		run:     parser.NewCommand("run", "Calls endpoint to run transpiler."),
-		quiet: parser.Flag("q", "quiet", &argparse.Options{
-			Help:     "Runs the programme in quite mode.",
-			Required: false,
-			Default:  false,
-		}),
-		file: parser.String("", "file", &argparse.Options{
-			Help:     "Optional path to config file for run endpoint.",
-			Required: false,
-			Default:  "",
-		}),
-	}
-	parser.Parse(cliArgs)
-	return arguments
 }
