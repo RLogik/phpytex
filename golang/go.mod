@@ -3,6 +3,7 @@ module phpytex
 go 1.16
 
 require (
+	github.com/akamensky/argparse v1.3.1
 	github.com/joho/godotenv v1.3.0
 	github.com/lithammer/dedent v1.1.0
 	github.com/slongfield/pyfmt v0.0.0-20180124071345-020a7cb18bca

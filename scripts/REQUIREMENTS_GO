@@ -1,5 +1,7 @@
 github.com/joho/godotenv@v1.3.0
 github.com/lithammer/dedent
+github.com/akamensky/argparse
+# github.com/clagraff/argparse
 github.com/slongfield/pyfmt
 github.com/stretchr/testify
 golang.org/x/tools
