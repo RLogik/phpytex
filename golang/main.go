@@ -8,9 +8,11 @@ import (
 	"embed"
 	"os"
 
-	"phpytex/internal/core/utils"
+	"phpytex/internal/core/logging"
 	"phpytex/internal/endpoints"
 	"phpytex/internal/setup"
+
+	"github.com/akamensky/argparse"
 )
 
 /* ---------------------------------------------------------------- *
@@ -35,18 +37,54 @@ var (
 func main() {
 	setup.Res = res
 	setup.Assets = assets
-	cliArgs := os.Args[1:]
-	if utils.ArrayContains(cliArgs, "version") {
+	arguments := setParser(os.Args)
+
+	logging.SetQuietMode(*arguments.quiet)
+
+	if arguments.version.Happened() {
 		endpoints.Version()
 		return
-	} else if utils.ArrayContains(cliArgs, "help") {
+	} else if arguments.help.Happened() {
 		endpoints.Help()
 		return
-	} else if utils.ArrayContains(cliArgs, "run") {
-		endpoints.Run()
+	} else if arguments.run.Happened() {
+		endpoints.Run(*arguments.file)
 		return
 	} else {
 		endpoints.Help()
 		return
 	}
+}
+
+/* ---------------------------------------------------------------- *
+ * PRIVATE METHODS
+ * ---------------------------------------------------------------- */
+
+type cliArguments struct {
+	help    *argparse.Command
+	version *argparse.Command
+	run     *argparse.Command
+	quiet   *bool
+	file    *string
+}
+
+func setParser(cliArgs []string) cliArguments {
+	parser := argparse.NewParser("cli parser", "Reads options and flags from command line.")
+	arguments := cliArguments{
+		help:    parser.NewCommand("help", "Calls endpoint to display help."),
+		version: parser.NewCommand("version", "Calls endpoint to display version."),
+		run:     parser.NewCommand("run", "Calls endpoint to run transpiler."),
+		quiet: parser.Flag("q", "quiet", &argparse.Options{
+			Help:     "Runs the programme in quite mode.",
+			Required: false,
+			Default:  false,
+		}),
+		file: parser.String("", "file", &argparse.Options{
+			Help:     "Optional path to config file for run endpoint.",
+			Required: false,
+			Default:  "",
+		}),
+	}
+	parser.Parse(cliArgs)
+	return arguments
 }
