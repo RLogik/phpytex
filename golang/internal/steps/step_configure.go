@@ -5,9 +5,14 @@ package steps
  * ---------------------------------------------------------------- */
 
 import (
+	"fmt"
+	"io/ioutil"
 	"phpytex/internal/core/logging"
 	"phpytex/internal/core/utils"
+	"phpytex/internal/setup"
 	"phpytex/internal/setup/appconfig"
+
+	"gopkg.in/yaml.v3"
 )
 
 /* ---------------------------------------------------------------- *
@@ -17,8 +22,7 @@ import (
 func Configure(fnameConfig string) {
 	logging.LogInfo("READ CONFIG STARTED")
 	// get configuration file
-	// config =
-	getPhpytexConfig(fnameConfig)
+	config := getPhpytexConfig(fnameConfig)
 	// // get main parts of config
 	// config_compile = getAttribute(config, 'compile', 'options', expectedtype=dict, default=None) \
 	// 				 or getAttribute(config, 'compile', expectedtype=dict, default={});
@@ -39,7 +43,12 @@ func Configure(fnameConfig string) {
  * PRIVATE METHODS
  * ---------------------------------------------------------------- */
 
-func getPhpytexConfig(fnameConfig string) { //map[string]interface{} {
+func getPhpytexConfig(fnameConfig string) setup.PhpytexConfig {
+	var err error = nil
+	var config setup.PhpytexConfig
+	var contents []byte
+	config = setup.DefaultPhpytexConfig
+
 	if fnameConfig == "" {
 		config_files := utils.GetFilesByPattern(appconfig.GetPathRoot(), appconfig.GetPatternConfig())
 		if len(config_files) == 0 {
@@ -47,6 +56,19 @@ func getPhpytexConfig(fnameConfig string) { //map[string]interface{} {
 		}
 		fnameConfig = config_files[0]
 	}
-	// setupYamlReader();
-	// return readYamlFile(fnameConfig);
+	for true {
+		contents, err = ioutil.ReadFile(fnameConfig)
+		if err != nil {
+			break
+		}
+		err = yaml.Unmarshal(contents, &config)
+		if err != nil {
+			break
+		}
+		break
+	}
+	if err != nil {
+		logging.LogFatal(fmt.Sprintf("Could not read config file \033[1m%s\033[0mor its contents were invalid.", fnameConfig), err)
+	}
+	return config
 }
