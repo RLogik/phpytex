@@ -65,7 +65,7 @@ This will enable you to call `phpytex` within any project containing a `.phpytex
 
 - `phpytex` or `phpytex help` displays a message with the commands.
 - `phpytex version` displays in plain text the version number.
-- `phpytex run [file=<name of config file>]` runs the programme within a project using the named config file.
+- `phpytex run [-q] [--file=<name of config file>]` runs the programme within a project using the named config file.
   </br>
   If the `file` flag is left empty, the programme searches for the first yaml-file matching the pattern `*.(phpytex|phpycreate).(yml|yaml)` and uses this as the config file.
 

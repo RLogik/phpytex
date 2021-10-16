@@ -25,8 +25,8 @@ def endpoint():
 
         - To run the transpiler within a project, call one of:
 
-            phpytex \033[1mrun\033[0m
-            phpytex \033[1mrun\033[0m [\033[1mfile\033[0m=\033[2m<name of config file>\033[0m]
+            phpytex \033[1mrun\033[0m [\033[1m-q\033[0m]
+            phpytex \033[1mrun\033[0m [\033[1m-q\033[0m] [\033[1m--file\033[0m=\033[2m<name of config file>\033[0m]
 
           If the optional flag is left empty, the programme searches for the first yaml-file
           in the directory which matches
