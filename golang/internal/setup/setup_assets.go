@@ -41,13 +41,18 @@ func ReadAsset(key string) string {
  * METHODS templates
  * ---------------------------------------------------------------- */
 
-func Version() string {
-	return strings.Trim(ReadAsset("version"), "\n")
-}
-
 func Help() string {
 	contents := ReadAsset("help")
 	return utils.DedentAndExpand(contents)
+}
+
+func Logo() string {
+	contents := ReadAsset("logo")
+	return utils.DedentAndExpand(contents)
+}
+
+func Version() string {
+	return strings.Trim(ReadAsset("version"), "\n")
 }
 
 func TemplatePre(args map[string]interface{}) string {

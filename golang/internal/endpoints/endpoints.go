@@ -6,7 +6,6 @@ package endpoints
 
 import (
 	"phpytex/internal/core/logging"
-	"phpytex/internal/core/utils"
 	"phpytex/internal/setup"
 	"phpytex/internal/steps"
 )
@@ -28,6 +27,7 @@ func Help() {
 	logging.SetForce(true)
 	logging.LogPlain(
 		"",
+		setup.Logo(),
 		setup.Help(),
 		"",
 	)
@@ -38,11 +38,7 @@ func Help() {
  * ---------------------------------------------------------------- */
 
 func Run(fnameConfig string) {
-	logging.LogPlain(utils.DedentAndExpand(`
-		----------------------
-		|     \033[32;1m(PH(p)y)tex\033[0m    |
-		----------------------
-	`))
+	logging.LogPlain(setup.Logo())
 	steps.Configure(fnameConfig)
 	// if appconfig.getOptionIgnore() {
 	// 	logging.LogInfo("\033[32;1m(PH(p)y)tex\033[0m transpilation will be skipped.")
