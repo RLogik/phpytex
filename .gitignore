@@ -36,6 +36,8 @@
 !/python/src/**/
 !/python/src/setup/templates/template_*
 !/python/src/setup/VERSION
+!/python/src/setup/HELP
+!/python/src/setup/LOGO
 !/python/src/**/*.lark
 !/python/src/**/*.py
 !/python/test
@@ -49,6 +51,7 @@
 !/golang/assets/templates/template_*
 !/golang/assets/VERSION
 !/golang/assets/HELP
+!/golang/assets/LOGO
 !/golang/go.mod
 !/golang/go.sum
 
