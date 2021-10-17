@@ -9,6 +9,7 @@ import (
 	"io/fs"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"regexp"
 )
 
@@ -54,4 +55,45 @@ func GetFirstFileByPattern(path string, filepattern string) (string, error) {
 func CheckPathExists(path string) bool {
 	_, err := os.Stat(path)
 	return !os.IsNotExist(err)
+}
+
+/* ---------------------------------------------------------------- *
+ * METHOD format path
+ * ---------------------------------------------------------------- */
+
+func FormatPath(path string, root string, rel bool, options ...*string) (string, error) {
+	var err error
+	var (
+		ext          *string = nil
+		ext_if_empty *string = nil
+	)
+	var (
+		ext_  string
+		path_ string
+	)
+	if len(options) > 0 {
+		ext = options[0]
+	}
+	if len(options) > 1 {
+		ext_if_empty = options[1]
+	}
+	if filepath.IsAbs(path) {
+		if rel {
+			path, err = filepath.Rel(root, path)
+		}
+	} else {
+		if !rel {
+			path, err = filepath.Abs(filepath.Join(root, path))
+		}
+	}
+	if err == nil {
+		ext_ = filepath.Ext(path)
+		path_ = path[:len(path)-len(ext_)]
+		if ext != nil {
+			path = fmt.Sprintf("%[1]s%[2]s", path_, *ext)
+		} else if ext_if_empty != nil && ext_ == "" {
+			path = fmt.Sprintf("%[1]s%[2]s", path_, *ext_if_empty)
+		}
+	}
+	return path, err
 }

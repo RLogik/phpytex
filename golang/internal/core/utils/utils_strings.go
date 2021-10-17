@@ -69,7 +69,31 @@ func DedentAndExpand(text string) string {
 }
 
 /* ---------------------------------------------------------------- *
- * METHOD ansi methods
+ * METHODS metrics
+ * ---------------------------------------------------------------- */
+
+func LengthOfWhiteSpace(s string) int {
+	var char_ string
+	var n int = 0
+	for _, char := range s {
+		char_ = string(char)
+		if char_ == " " {
+			n += 1
+		} else if char_ == "\t" {
+			n = (n - n%8) + 8 // next tab stop
+		}
+	}
+	return n
+}
+
+func SizeOfIndent(s string, indentSymb string) int {
+	lenIndent := LengthOfWhiteSpace(s)
+	lenUnit := LengthOfWhiteSpace(indentSymb)
+	return int(float64(lenIndent) / float64(lenUnit))
+}
+
+/* ---------------------------------------------------------------- *
+ * METHODS ansi
  * ---------------------------------------------------------------- */
 
 func StripAnsi(text string) string {
