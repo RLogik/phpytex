@@ -10,24 +10,38 @@ package utils
  * METHOD convert basic types to pointers
  * ---------------------------------------------------------------- */
 
+/****
+ * NOTE: these cannot be replaced by inline variants, e.g.
+ *    var x string
+ *    var xx *string = &x
+ * as then the values are tied.
+ * These methods create addresses to clones of the original variables,
+ * and do not coincide with the addresses of the original variables.
+ ****/
+
 func StructToPtr(x struct{}) *struct{} {
-	return &x
+	var value = x
+	return &value
 }
 
 func InterfaceToPtr(x interface{}) *interface{} {
-	return &x
+	var value = x
+	return &value
 }
 
 func BoolToPtr(x bool) *bool {
-	return &x
+	var value = x
+	return &value
 }
 
 func StringToPtr(x string) *string {
-	return &x
+	var value = x
+	return &value
 }
 
 func IntToPtr(x int) *int {
-	return &x
+	var value = x
+	return &value
 }
 
 /* ---------------------------------------------------------------- *

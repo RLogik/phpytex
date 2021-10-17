@@ -9,10 +9,10 @@ import (
 	"os"
 
 	"phpytex/internal/core/logging"
-	"phpytex/internal/core/utils"
 	"phpytex/internal/endpoints"
 	"phpytex/internal/setup"
 	"phpytex/internal/setup/appconfig"
+	"phpytex/internal/setup/cli"
 )
 
 /* ---------------------------------------------------------------- *
@@ -30,7 +30,6 @@ var (
 		"pre":     "assets/templates/template_pre",
 		"post":    "assets/templates/template_post",
 	}
-	patternConfig = `^(|.*\.)(phpytex|phpycreate)\.(yml|yaml)$`
 )
 
 /* ---------------------------------------------------------------- *
@@ -38,32 +37,40 @@ var (
  * ---------------------------------------------------------------- */
 
 func main() {
+	var err error
+	var arguments *cli.Arguments
+
 	// set assets
 	setup.Res = res
 	setup.Assets = assets
 
 	// parse cli arguments
-	arguments := setup.ParseCli(os.Args)
+	arguments, err = cli.ParseCli(os.Args)
 
 	// initialise internal app config
-	appconfig.Init()
-	appconfig.SetPatternConfig(utils.StringToPtr(patternConfig))
+	if err == nil {
+		err = appconfig.Init()
+	}
 
 	// initialise logging options
-	logging.SetQuietMode(*arguments.Quiet)
-	logging.SetAnsiMode(arguments.ShowColour())
+	if err == nil {
+		logging.SetQuietMode(*arguments.Quiet)
+		logging.SetAnsiMode(arguments.ShowColour())
+	}
 
-	if arguments.Version.Happened() {
-		endpoints.Version()
-		return
-	} else if arguments.Help.Happened() {
-		endpoints.Help()
-		return
-	} else if arguments.Run.Happened() {
-		endpoints.Run(*arguments.File)
-		return
-	} else {
-		endpoints.Help()
-		return
+	if err == nil {
+		if arguments.Version.Happened() {
+			endpoints.Version()
+		} else if arguments.Help.Happened() {
+			endpoints.Help()
+		} else if arguments.Run.Happened() {
+			err = endpoints.Run(*arguments.File)
+		} else {
+			endpoints.Help()
+		}
+	}
+
+	if err != nil {
+		logging.LogFatal(err)
 	}
 }

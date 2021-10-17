@@ -8,114 +8,93 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
-	"phpytex/internal/core/logging"
-	"phpytex/internal/core/utils"
-	"phpytex/internal/setup"
-	"phpytex/internal/setup/appconfig"
 	"reflect"
 	"strings"
 
 	"gopkg.in/yaml.v3"
+
+	"phpytex/internal/core/logging"
+	"phpytex/internal/core/utils"
+	"phpytex/internal/setup/appconfig"
+	"phpytex/internal/setup/userconfig"
+	"phpytex/pkg/re"
 )
 
 /* ---------------------------------------------------------------- *
  * METHOD configure
  * ---------------------------------------------------------------- */
 
-func Configure(fnameConfig string) {
-	var config *setup.UserConfig
-	logging.LogInfo("READ CONFIG STARTED")
-	// get configuration file
-	config = &(setup.UserConfig{})
-	getPhpytexConfig(fnameConfig, config)
-	preProcessConfig(config)
+func Configure(fnameConfig string) error {
+	var err error
+	var config = &(userconfig.UserConfig{})
 
-	// set app config
-	setCompileConfig(config.Compile)
-	// setStampConfig(**toPythonKeysDict(config_stamp));
-	// setParamsConfig(**toPythonKeysDict(config_parameters));
-	// setConfigFilesAndFolders(toPythonKeysDict(config));
+	logging.LogInfo("READ CONFIG STARTED")
+
+	err = getUserConfig(fnameConfig, config)
+	if err != nil {
+		return fmt.Errorf(fmt.Sprintf("Could not read config file \033[1m%s\033[0mor its contents were invalid.", fnameConfig))
+	}
+
+	err = setHeaderConfig(config.Header)
+	if err != nil {
+		return err
+	}
+
+	err = setCompileConfig(config.Compile)
+	if err != nil {
+		return err
+	}
+
+	err = setStampConfig(config.Stamp)
+	if err != nil {
+		return err
+	}
+
+	err = setParamsConfig(config.Parameters)
+	if err != nil {
+		return err
+	}
+
+	setConfigFilesAndFolders(config.Tree)
 
 	logging.LogInfo("READ CONFIG COMPLETE")
+	return nil
 }
 
 /* ---------------------------------------------------------------- *
  * PRIVATE METHODS
  * ---------------------------------------------------------------- */
 
-func getPhpytexConfig(fnameConfig string, config *setup.UserConfig) {
-	var err error = nil
+func getUserConfig(fnameConfig string, config *userconfig.UserConfig) error {
+	var err error
 	var contents []byte
-	for true {
-		if fnameConfig == "" {
-			fnameConfig, err = utils.GetFirstFileByPattern(appconfig.GetPathRoot(), appconfig.GetPatternConfig())
-		}
-		if err != nil {
-			break
-		}
-		contents, err = ioutil.ReadFile(fnameConfig)
-		if err != nil {
-			break
-		}
-		err = yaml.Unmarshal(contents, config)
-		if err != nil {
-			break
-		}
-		break
+	if fnameConfig == "" {
+		fnameConfig, err = utils.GetFirstFileByPattern(appconfig.Parameters.PathRoot.GetValue(), appconfig.Parameters.PatternConfig.GetValue())
 	}
 	if err != nil {
-		logging.LogFatal(fmt.Sprintf("Could not read config file \033[1m%s\033[0mor its contents were invalid.", fnameConfig), err)
+		return err
 	}
-	return
+	contents, err = ioutil.ReadFile(fnameConfig)
+	if err != nil {
+		return err
+	}
+	err = yaml.Unmarshal(contents, config)
+	if err != nil {
+		return err
+	}
+	userconfig.HandleMissingSections(config)
+	userconfig.HandleBackwardsCompatibility(config)
+	userconfig.HandleMissingKeys(config)
+	return nil
 }
 
-// cleans up structure to handle backwards compatibility
-func preProcessConfig(config *setup.UserConfig) {
-	// flatten [compile -> options] ~~> [compile]:
-	if config.Compile.Options != nil {
-		config.Compile = *((*config).Compile.Options)
-		config.Compile.Options = nil
-	}
-	// [ignore] prioritise setting from: [header -> ignore], compile [option -> ignore]:
-	if config.Compile.Ignore != nil && config.Header.Ignore == nil {
-		config.Header.Ignore = utils.BoolToPtr(*config.Compile.Ignore)
-		config.Header.Ignore = nil
-	}
-	// [root] can be either [root] or [input]:
-	if config.Compile.Input != nil && config.Compile.Root == nil {
-		config.Compile.Root = utils.StringToPtr(*config.Compile.Input)
-		config.Compile.Input = nil
-	}
-	// [compile] can be either [compile] or [compile-latex]:
-	if config.Compile.CompileLatex != nil && config.Compile.Compile == nil {
-		config.Compile.Compile = utils.BoolToPtr(*config.Compile.CompileLatex)
-		config.Compile.CompileLatex = nil
-	}
-	// [show-tree] can be either [show-tree] or [show-structure]:
-	if config.Compile.ShowStructure != nil && config.Compile.ShowTree == nil {
-		config.Compile.ShowTree = utils.BoolToPtr(*config.Compile.ShowStructure)
-		config.Compile.ShowStructure = nil
-	}
-	// if [tree] option not used:
-	if (config.Files != nil || config.Folders != nil) && config.Tree == nil {
-		tree := setup.TreeConfig{
-			Files:   nil,
-			Folders: nil,
-		}
-		if config.Files != nil {
-			tree.Files = &(*config.Files)
-		}
-		if config.Folders != nil {
-			tree.Folders = &(*config.Folders)
-		}
-		config.Tree = &tree
-		config.Files = nil
-		config.Folders = nil
-	}
+func setHeaderConfig(config *userconfig.HeaderConfig) error {
+	appconfig.Parameters.OptionIgnore.SetValueFromPtr(config.Ignore)
+	return nil
 }
 
-func setCompileConfig(config setup.CompileConfig) {
-	var err error
+func setCompileConfig(config *userconfig.CompileConfig) error {
+	var err error = nil
 	var (
 		comments    interface{}
 		valueString string
@@ -127,24 +106,23 @@ func setCompileConfig(config setup.CompileConfig) {
 		spaces     int
 	)
 	var (
+		root       string
 		fileStart  string
 		fileOutput string
 		file       string
 	)
 
-	root := appconfig.GetPathRoot()
-	appconfig.SetOptionLegacy(config.Legacy)
-	appconfig.SetOptionIgnore(config.Ignore)
-	appconfig.SetOptionDebug(config.Debug)
-	appconfig.SetOptionCompileLatex(config.Compile)
-	appconfig.SetOptionInsertBib(config.InsertBib)
-	appconfig.SetOptionShowTree(config.ShowTree)
+	appconfig.Parameters.OptionLegacy.SetValueFromPtr(config.Legacy)
+	appconfig.Parameters.OptionDebug.SetValueFromPtr(config.Debug)
+	appconfig.Parameters.OptionCompileLatex.SetValueFromPtr(config.Compile)
+	appconfig.Parameters.OptionInsertBib.SetValueFromPtr(config.InsertBib)
+	appconfig.Parameters.OptionShowTree.SetValueFromPtr(config.ShowTree)
 
 	comments = *config.Comments
 	if reflect.TypeOf(comments).Kind() == reflect.String {
 		valueString = comments.(string)
-		valueBool1 = utils.ArrayContains([]string{"auto", "default"}, valueString)
-		valueBool2 = utils.ArrayContains([]string{"on", "default"}, valueString) || !utils.ArrayContains([]string{"off"}, valueString)
+		valueBool1 = re.Matches(`(?i)(^(auto|default)$)`, valueString)
+		valueBool2 = re.Matches(`(?i)(^(on|default)$)`, valueString) || !re.Matches(`(?i)(^(|off)$)`, valueString)
 	} else if reflect.TypeOf(comments).Kind() == reflect.Bool {
 		// NOTE: if boolean value used, then user wants all on or all off, thus [auto] = false
 		valueBool1 = false
@@ -153,53 +131,115 @@ func setCompileConfig(config setup.CompileConfig) {
 		valueBool1 = true
 		valueBool2 = true
 	}
-	appconfig.SetOptionCommentsAuto(utils.BoolToPtr(valueBool1))
-	appconfig.SetOptionCommentsOn(utils.BoolToPtr(valueBool2))
+	appconfig.Parameters.OptionCommentsAuto.SetValue(valueBool1)
+	appconfig.Parameters.OptionCommentsOn.SetValue(valueBool2)
 
-	appconfig.SetMaxLength(config.MaxLength)
-	appconfig.SetSeed(config.Seed)
+	appconfig.Parameters.MaxLength.SetValueFromPtr(config.MaxLength)
+	appconfig.Parameters.Seed.SetValueFromPtr(config.Seed)
 
-	if utils.PtrToBool(config.Tabs, false) {
-		appconfig.SetIndentCharacter(utils.StringToPtr("\t"))
-		appconfig.SetIndentCharacterRe(utils.StringToPtr(`\t`))
+	if *config.Tabs {
+		appconfig.Parameters.IndentCharacter.SetValue("\t")
+		appconfig.Parameters.IndentCharacterRe.SetValue(`\t`)
 	} else {
-		spaces = utils.PtrToInt(config.Spaces, 4)
+		spaces = *config.Spaces
 		indentSymb = strings.Repeat(" ", spaces)
-		appconfig.SetIndentCharacter(utils.StringToPtr(indentSymb))
-		appconfig.SetIndentCharacterRe(utils.StringToPtr(indentSymb))
+		appconfig.Parameters.IndentCharacter.SetValue(indentSymb)
+		appconfig.Parameters.IndentCharacterRe.SetValue(indentSymb)
 	}
-	indentSymb = appconfig.GetIndentCharacter()
+	indentSymb = appconfig.Parameters.IndentCharacter.GetValue()
 	if utils.LengthOfWhiteSpace(indentSymb) == 0 {
-		logging.LogFatal("Indentation symbol cannot be the empty string!")
+		return fmt.Errorf("Indentation symbol cannot be the empty string!")
 	}
 
-	appconfig.SetOffsetSymbol(config.Offset)
-	if utils.PtrToBool(config.Legacy, false) && config.Offset == nil {
-		appconfig.SetOffsetSymbol(utils.StringToPtr(indentSymb))
+	appconfig.Parameters.Offset.SetValueFromPtr(config.Offset)
+	if *config.Legacy && config.Offset == nil {
+		appconfig.Parameters.Offset.SetValue(indentSymb)
 	}
 
+	root = appconfig.Parameters.PathRoot.GetValue()
 	fileStart, err = utils.FormatPath(*config.Root, root, false)
 	if err != nil {
-		logging.LogFatal(fmt.Sprintf("Could not process input path \033[1m%[1]s\033[0m.", *config.Root))
+		return fmt.Errorf(fmt.Sprintf("Could not process input path \033[1m%[1]s\033[0m.", *config.Root))
 	}
 	fileOutput, err = utils.FormatPath(*config.Output, root, false, nil, utils.StringToPtr(".tex"))
 	if err != nil {
-		logging.LogFatal(fmt.Sprintf("Could not process output path \033[1m%[1]s\033[0m.", *config.Root))
+		return fmt.Errorf(fmt.Sprintf("Could not process output path \033[1m%[1]s\033[0m.", *config.Root))
 	}
 	if filepath.Dir(fileOutput) != root {
-		logging.LogFatal("The output file can only be set to be in the root directory!'")
+		return fmt.Errorf("The output file can only be set to be in the root directory!'")
 	}
 	if fileStart == fileOutput {
-		logging.LogFatal("The output and start ('root'-attribute in config) paths must be different!")
+		return fmt.Errorf("The output and start ('root'-attribute in config) paths must be different!")
 	}
 
-	appconfig.SetFileStart(utils.StringToPtr(fileStart))
-	appconfig.SetFileOutput(utils.StringToPtr(fileOutput))
+	appconfig.Parameters.FileStart.SetValue(fileStart)
+	appconfig.Parameters.FileOutput.SetValue(fileOutput)
 
 	file, err = utils.FormatPath("phpytex_transpiled.py", root, false)
 	if err != nil {
-		logging.LogFatal(err)
+		return err
 	}
-	appconfig.SetFileTranspiled(utils.StringToPtr(file))
-	return
+	appconfig.Parameters.FileTranspiled.SetValue(file)
+	return nil
+}
+
+func setStampConfig(config *userconfig.StampFileConfig) error {
+	var err error = nil
+	var (
+		root string
+		file string
+	)
+
+	appconfig.Parameters.WithFileStamp.SetValue(false)
+	if config != nil && config.Options == nil && len(*config.Options) == 0 {
+		root = appconfig.Parameters.PathRoot.GetValue()
+		file = *config.File
+		file, err = utils.FormatPath(file, root, false)
+		if err != nil {
+			return err
+		}
+		appconfig.Parameters.WithFileStamp.SetValue(true)
+		appconfig.Parameters.FileStamp.SetValue(file)
+		appconfig.Parameters.OptionOverwriteStamp.SetValueFromPtr(config.Overwrite)
+		appconfig.Parameters.DictionaryStamp = config.Options
+	}
+	return err
+}
+
+func setParamsConfig(config *userconfig.ParametersFileConfig) error {
+	var err error = nil
+	var (
+		root string
+	)
+	var (
+		modulename string
+		path       string
+	)
+
+	appconfig.Parameters.WithFileParamsPy.SetValue(false)
+	appconfig.Parameters.OptionOverwriteParams.SetValueFromPtr(config.Overwrite)
+	appconfig.Parameters.DictionaryParams = config.Options
+
+	root = appconfig.Parameters.PathRoot.GetValue()
+	if config != nil && config.Options == nil && len(*config.Options) == 0 {
+		modulename = utils.PtrToString(config.File, "")
+		if re.Matches(`^[^\.\s]*(\.[^\.\s]*)+$`, modulename) {
+			path = re.Sub(`([^\.]+)\.', r'\1/`, `\1/`, modulename) + ".py"
+		} else {
+			return fmt.Errorf("\033[1mparameters > file\033[0m option must by a python-like import path (relative to the root of the project).")
+		}
+		appconfig.Parameters.WithFileParamsPy.SetValue(true)
+		appconfig.Parameters.ImportParamsPy.SetValue(modulename)
+		path, err = utils.FormatPath(path, root, false)
+		if err != nil {
+			return err
+		}
+		appconfig.Parameters.FileParamsPy.SetValue(path)
+	}
+
+	return err
+}
+
+func setConfigFilesAndFolders(config *userconfig.TreeConfig) {
+	appconfig.Parameters.ProjectTree = config
 }

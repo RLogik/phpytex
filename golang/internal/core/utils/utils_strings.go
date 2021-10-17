@@ -7,12 +7,13 @@ package utils
 import (
 	"fmt"
 	"log"
-	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/lithammer/dedent"
 	"github.com/slongfield/pyfmt"
+
+	"phpytex/pkg/re"
 )
 
 /* ---------------------------------------------------------------- *
@@ -97,6 +98,5 @@ func SizeOfIndent(s string, indentSymb string) int {
  * ---------------------------------------------------------------- */
 
 func StripAnsi(text string) string {
-	re := regexp.MustCompile(`\x1b[^m]*m`)
-	return re.ReplaceAllString(text, "")
+	return re.Sub(`\x1b[^m]*m`, ``, text)
 }

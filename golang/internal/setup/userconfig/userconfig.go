@@ -1,6 +1,4 @@
-package setup
-
-import "phpytex/internal/core/utils"
+package userconfig
 
 /* ---------------------------------------------------------------- *
  * IMPORTS
@@ -45,52 +43,21 @@ type SpecialFileConfig struct {
 	Options   *(map[string]interface{}) `yaml:"options"`
 }
 
+type StampFileConfig SpecialFileConfig
+type ParametersFileConfig SpecialFileConfig
+
 type TreeConfig struct {
 	Files   *([]string)                 `yaml:"files"`
 	Folders *(map[string](*TreeConfig)) `yaml:"folders"`
 }
 
 type UserConfig struct {
-	Header     HeaderConfig
-	Compile    CompileConfig     `yaml:"compile"`
-	Stamp      SpecialFileConfig `yaml:"stamp"`
-	Parameters SpecialFileConfig `yaml:"parameters"`
-	Tree       *TreeConfig       `yaml:"tree"`
+	Header     *HeaderConfig
+	Compile    *CompileConfig        `yaml:"compile"`
+	Stamp      *StampFileConfig      `yaml:"stamp"`
+	Parameters *ParametersFileConfig `yaml:"parameters"`
+	Tree       *TreeConfig           `yaml:"tree"`
 	// need the following for backwards compatibility:
 	Files   *([]string)                 `yaml:"files"`
 	Folders *(map[string](*TreeConfig)) `yaml:"folders"`
-}
-
-/* ---------------------------------------------------------------- *
- * DEFAULTS
- * ---------------------------------------------------------------- */
-
-var DefaultHeaderConfig = HeaderConfig{
-	Ignore: utils.BoolToPtr(false),
-}
-
-var DefaultTreeConfig = TreeConfig{
-	Files:   &([]string{}),
-	Folders: &(map[string](*TreeConfig){}),
-}
-
-var DefaultCompileConfig = CompileConfig{
-	Ignore:    utils.BoolToPtr(false),
-	Output:    utils.StringToPtr("main.tex"),
-	Debug:     utils.BoolToPtr(false),
-	Compile:   utils.BoolToPtr(false),
-	InsertBib: utils.BoolToPtr(false),
-	Comments:  utils.InterfaceToPtr("auto"),
-	ShowTree:  utils.BoolToPtr(true),
-	MaxLength: utils.IntToPtr(10000),
-	Tabs:      utils.BoolToPtr(false),
-	Spaces:    utils.IntToPtr(4),
-}
-
-var DefaultPhpytexConfig = UserConfig{
-	Header:     HeaderConfig{},
-	Compile:    DefaultCompileConfig,
-	Stamp:      SpecialFileConfig{},
-	Parameters: SpecialFileConfig{},
-	Tree:       &TreeConfig{},
 }

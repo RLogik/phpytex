@@ -10,8 +10,23 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"regexp"
+
+	"phpytex/pkg/re"
 )
+
+/* ---------------------------------------------------------------- *
+ * METHOD working directory
+ * ---------------------------------------------------------------- */
+
+func GetCwd() (string, error) {
+	var cwd string
+	var err error
+	cwd, err = os.Getwd()
+	if err == nil {
+		cwd, err = filepath.Abs(cwd)
+	}
+	return cwd, err
+}
 
 /* ---------------------------------------------------------------- *
  * METHOD get files by pattern
@@ -21,14 +36,13 @@ func GetFilesByPattern(path string, filepattern string) ([]string, error) {
 	var err error
 	var files []fs.FileInfo
 	files_filtered := []string{}
-	regex := regexp.MustCompile(filepattern)
 	files, err = ioutil.ReadDir(path)
 	if err != nil {
 		return []string{}, err
 	}
 	for _, file := range files {
 		fname := file.Name()
-		if regex.MatchString(fname) {
+		if re.Matches(filepattern, fname) {
 			files_filtered = append(files_filtered, fname)
 		}
 	}

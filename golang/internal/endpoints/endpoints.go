@@ -7,6 +7,7 @@ package endpoints
 import (
 	"phpytex/internal/core/logging"
 	"phpytex/internal/setup"
+	"phpytex/internal/setup/appconfig"
 	"phpytex/internal/steps"
 )
 
@@ -37,23 +38,36 @@ func Help() {
  * METHOD run
  * ---------------------------------------------------------------- */
 
-func Run(fnameConfig string) {
+func Run(fnameConfig string) error {
+	var err error
 	logging.LogPlain(setup.Logo())
-	steps.Configure(fnameConfig)
-	// if appconfig.getOptionIgnore() {
-	// 	logging.LogInfo("\033[32;1m(PH(p)y)tex\033[0m transpilation will be skipped.")
-	// 	return
+	err = steps.Configure(fnameConfig)
+	if err != nil {
+		return err
+	}
+	if appconfig.Parameters.OptionIgnore.GetValue() {
+		logging.LogInfo("Transpilation will be skipped.")
+		return nil
+	}
+	err = steps.Create()
+	if err != nil {
+		return err
+	}
+	// err = steps.Transpile()
+	// if err != nil {
+	// 	return err
 	// }
-	// steps.Create()
-	// steps.Transpile()
-	// if appconfig.getOptionDebug() {
+	// if appconfig.Parameters.OptionDebug.GetValue() {
 	// 	logging.LogInfo(utils.FormatString(
 	// 		"The result of transpilation can be viewed in \033[1m{fnamePy}\033[0m",
 	// 		map[string]interface{}{
-	// 			"fnamePy": appconfig.getFileTranspiled(),
+	// 			"fnamePy": appconfig.Parameters.FileTranspiled.GetValue(),
 	// 		}))
-	// 	return
+	// 	return nil
 	// }
-	// steps.Compile()
-	// return
+	// err = steps.Compile()
+	// if err != nil {
+	// 	return err
+	// }
+	return nil
 }
