@@ -3,6 +3,8 @@ package logging
 import (
 	"fmt"
 	"os"
+
+	"phpytex/internal/core/utils"
 )
 
 /* ---------------------------------------------------------------- *
@@ -14,6 +16,7 @@ import (
  * ---------------------------------------------------------------- */
 
 var quietmode bool = false
+var ansimode bool = true
 var loggingPrefix string = ""
 var force bool = false
 var tagAll bool = false
@@ -24,6 +27,14 @@ func GetQuietMode() bool {
 
 func SetQuietMode(mode bool) {
 	quietmode = mode
+}
+
+func GetAnsiMode() bool {
+	return ansimode
+}
+
+func SetAnsiMode(mode bool) {
+	ansimode = mode
 }
 
 func GetForce() bool {
@@ -50,7 +61,11 @@ func logGeneric(tag string, lines ...interface{}) {
 		tag = tag + " "
 	}
 	for _, line := range lines {
-		fmt.Println(fmt.Sprintf("%[1]s%[2]s%[3]v", loggingPrefix, tag, line))
+		_line := fmt.Sprintf("%[1]s%[2]s%[3]v", loggingPrefix, tag, line)
+		if !ansimode {
+			_line = utils.StripAnsi(_line)
+		}
+		fmt.Println(_line)
 		if !tagAll {
 			tag = ""
 		}

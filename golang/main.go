@@ -24,6 +24,7 @@ var (
 	res    embed.FS
 	assets = map[string]string{
 		"version": "assets/VERSION",
+		"logo":    "assets/LOGO",
 		"help":    "assets/HELP",
 		"pre":     "assets/templates/template_pre",
 		"post":    "assets/templates/template_post",
@@ -47,7 +48,9 @@ func main() {
 	appconfig.Init()
 	appconfig.SetPatternConfig(patternConfig)
 
+	// initialise logging options
 	logging.SetQuietMode(*arguments.Quiet)
+	logging.SetAnsiMode(arguments.ShowColour())
 
 	if arguments.Version.Happened() {
 		endpoints.Version()
