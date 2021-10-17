@@ -7,6 +7,7 @@ package utils
 import (
 	"fmt"
 	"log"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -65,4 +66,13 @@ func DedentAndExpand(text string) string {
 		result = append(result, line)
 	}
 	return strings.Join(result, "\n")
+}
+
+/* ---------------------------------------------------------------- *
+ * METHOD ansi methods
+ * ---------------------------------------------------------------- */
+
+func StripAnsi(text string) string {
+	re := regexp.MustCompile(`\x1b[^m]*m`)
+	return re.ReplaceAllString(text, "")
 }
