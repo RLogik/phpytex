@@ -9,6 +9,7 @@ import (
 	"os"
 
 	"phpytex/internal/core/logging"
+	"phpytex/internal/core/utils"
 	"phpytex/internal/endpoints"
 	"phpytex/internal/setup"
 	"phpytex/internal/setup/appconfig"
@@ -46,7 +47,7 @@ func main() {
 
 	// initialise internal app config
 	appconfig.Init()
-	appconfig.SetPatternConfig(patternConfig)
+	appconfig.SetPatternConfig(utils.StringToPtr(patternConfig))
 
 	// initialise logging options
 	logging.SetQuietMode(*arguments.Quiet)

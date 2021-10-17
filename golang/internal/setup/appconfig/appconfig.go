@@ -88,200 +88,250 @@ func GetPatternConfig() string {
 	return pattern_config.GetValue()
 }
 
-func SetPatternConfig(x string) {
-	pattern_config.SetValue(x)
+func SetPatternConfig(x *string) {
+	if x != nil {
+		pattern_config.SetValue(*x)
+	}
 }
 
 func GetPathApp() string {
 	return path_app.GetValue()
 }
 
-func SetPathApp(x string) {
-	path_app.SetValue(x)
+func SetPathApp(x *string) {
+	if x != nil {
+		path_app.SetValue(*x)
+	}
 }
 
 func GetPathRoot() string {
 	return path_root.GetValue()
 }
 
-func SetPathRoot(x string) {
-	path_root.SetValue(x)
+func SetPathRoot(x *string) {
+	if x != nil {
+		path_root.SetValue(*x)
+	}
 }
 
 func GetFileStart() string {
 	return file_start.GetValue()
 }
 
-func SetFileStart(x string) {
-	file_start.SetValue(x)
+func SetFileStart(x *string) {
+	if x != nil {
+		file_start.SetValue(*x)
+	}
 }
 
 func GetFileTranspiled() string {
 	return file_transpiled.GetValue()
 }
 
-func SetFileTranspiled(x string) {
-	file_transpiled.SetValue(x)
+func SetFileTranspiled(x *string) {
+	if x != nil {
+		file_transpiled.SetValue(*x)
+	}
 }
 
 func GetFileOutput() string {
 	return file_output.GetValue()
 }
 
-func SetFileOutput(x string) {
-	file_output.SetValue(x)
+func SetFileOutput(x *string) {
+	if x != nil {
+		file_output.SetValue(*x)
+	}
 }
 
 func GetFileStamp() string {
 	return file_stamp.GetValue()
 }
 
-func SetFileStamp(x string) {
-	file_stamp.SetValue(x)
+func SetFileStamp(x *string) {
+	if x != nil {
+		file_stamp.SetValue(*x)
+	}
 }
 
 func GetWithFileStamp() bool {
 	return with_file_stamp.GetValue()
 }
 
-func SetWithFileStamp(x bool) {
-	with_file_stamp.SetValue(x)
+func SetWithFileStamp(x *bool) {
+	if x != nil {
+		with_file_stamp.SetValue(*x)
+	}
 }
 
 func GetFileParamsPy() string {
 	return file_params_py.GetValue()
 }
 
-func SetFileParamsPy(x string) {
-	file_params_py.SetValue(x)
+func SetFileParamsPy(x *string) {
+	if x != nil {
+		file_params_py.SetValue(*x)
+	}
 }
 
 func GetWithFileParamsPy() bool {
 	return with_file_params_py.GetValue()
 }
 
-func SetWithFileParamsPy(x bool) {
-	with_file_params_py.SetValue(x)
+func SetWithFileParamsPy(x *bool) {
+	if x != nil {
+		with_file_params_py.SetValue(*x)
+	}
 }
 
 func GetImportParamPy() string {
 	return import_param_py.GetValue()
 }
 
-func SetImportParamPy(x string) {
-	import_param_py.SetValue(x)
+func SetImportParamPy(x *string) {
+	if x != nil {
+		import_param_py.SetValue(*x)
+	}
 }
 
 func GetParamModuleName() string {
 	return param_module_name.GetValue()
 }
 
-func SetParamModuleName(x string) {
-	param_module_name.SetValue(x)
+func SetParamModuleName(x *string) {
+	if x != nil {
+		param_module_name.SetValue(*x)
+	}
 }
 
 func GetPythonPath() string {
 	return python_path.GetValue()
 }
 
-func SetPythonPath(x string) {
-	python_path.SetValue(x)
+func SetPythonPath(x *string) {
+	if x != nil {
+		python_path.SetValue(*x)
+	}
 }
 
 func GetOptionLegacy() bool {
 	return option_legacy.GetValue()
 }
 
-func SetOptionLegacy(x bool) {
-	option_legacy.SetValue(x)
+func SetOptionLegacy(x *bool) {
+	if x != nil {
+		option_legacy.SetValue(*x)
+	}
 }
 
 func GetOptionIgnore() bool {
 	return option_ignore.GetValue()
 }
 
-func SetOptionIgnore(x bool) {
-	option_ignore.SetValue(x)
+func SetOptionIgnore(x *bool) {
+	if x != nil {
+		option_ignore.SetValue(*x)
+	}
 }
 
 func GetOptionDebug() bool {
 	return option_debug.GetValue()
 }
 
-func SetOptionDebug(x bool) {
-	option_debug.SetValue(x)
+func SetOptionDebug(x *bool) {
+	if x != nil {
+		option_debug.SetValue(*x)
+	}
 }
 
 func GetOptionCompileLatex() bool {
 	return option_compile_latex.GetValue()
 }
 
-func SetOptionCompileLatex(x bool) {
-	option_compile_latex.SetValue(x)
+func SetOptionCompileLatex(x *bool) {
+	if x != nil {
+		option_compile_latex.SetValue(*x)
+	}
 }
 
 func GetOptionShowTree() bool {
 	return option_show_tree.GetValue()
 }
 
-func SetOptionShowTree(x bool) {
-	option_show_tree.SetValue(x)
+func SetOptionShowTree(x *bool) {
+	if x != nil {
+		option_show_tree.SetValue(*x)
+	}
 }
 
 func GetOptionCommentsAuto() bool {
 	return option_comments_auto.GetValue()
 }
 
-func SetOptionCommentsAuto(x bool) {
-	option_comments_auto.SetValue(x)
+func SetOptionCommentsAuto(x *bool) {
+	if x != nil {
+		option_comments_auto.SetValue(*x)
+	}
 }
 
 func GetOptionCommentsOn() bool {
 	return option_comments_on.GetValue()
 }
 
-func SetOptionCommentsOn(x bool) {
-	option_comments_on.SetValue(x)
+func SetOptionCommentsOn(x *bool) {
+	if x != nil {
+		option_comments_on.SetValue(*x)
+	}
 }
 
 func GetOptionInsertBib() bool {
 	return option_insert_bib.GetValue()
 }
 
-func SetOptionInsertBib(x bool) {
-	option_insert_bib.SetValue(x)
+func SetOptionInsertBib(x *bool) {
+	if x != nil {
+		option_insert_bib.SetValue(*x)
+	}
 }
 
 func GetOptionOverwriteStamp() bool {
 	return option_overwrite_stamp.GetValue()
 }
 
-func SetOptionOverwriteStamp(x bool) {
-	option_overwrite_stamp.SetValue(x)
+func SetOptionOverwriteStamp(x *bool) {
+	if x != nil {
+		option_overwrite_stamp.SetValue(*x)
+	}
 }
 
 func GetOptionOverwriteParams() bool {
 	return option_overwrite_params.GetValue()
 }
 
-func SetOptionOverwriteParams(x bool) {
-	option_overwrite_params.SetValue(x)
+func SetOptionOverwriteParams(x *bool) {
+	if x != nil {
+		option_overwrite_params.SetValue(*x)
+	}
 }
 
 func GetMaxLength() int {
 	return max_length.GetValue()
 }
 
-func SetMaxLength(x int) {
-	max_length.SetValue(x)
+func SetMaxLength(x *int) {
+	if x != nil {
+		max_length.SetValue(*x)
+	}
 }
 
 func GetSeed() int {
 	return seed.GetValue()
 }
 
-func SetSeed(x int) {
-	seed.SetValue(x)
+func SetSeed(x *int) {
+	if x != nil {
+		seed.SetValue(*x)
+	}
 }
 
 func ReSeed() {
@@ -295,30 +345,38 @@ func GetIndentCharacter() string {
 	return indent_character.GetValue()
 }
 
-func SetIndentCharacter(x string) {
-	indent_character.SetValue(x)
+func SetIndentCharacter(x *string) {
+	if x != nil {
+		indent_character.SetValue(*x)
+	}
 }
 
 func GetIndentCharacterRe() string {
 	return indent_character_re.GetValue()
 }
 
-func SetIndentCharacterRe(x string) {
-	indent_character_re.SetValue(x)
+func SetIndentCharacterRe(x *string) {
+	if x != nil {
+		indent_character_re.SetValue(*x)
+	}
 }
 
 func GetCensorSymbol() string {
 	return censor_symbol.GetValue()
 }
 
-func SetCensorSymbol(x string) {
-	censor_symbol.SetValue(x)
+func SetCensorSymbol(x *string) {
+	if x != nil {
+		censor_symbol.SetValue(*x)
+	}
 }
 
 func GetOffsetSymbol() string {
 	return offset_symbol.GetValue()
 }
 
-func SetOffsetSymbol(x string) {
-	offset_symbol.SetValue(x)
+func SetOffsetSymbol(x *string) {
+	if x != nil {
+		offset_symbol.SetValue(*x)
+	}
 }
