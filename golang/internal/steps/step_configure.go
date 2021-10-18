@@ -201,7 +201,7 @@ func setStampConfig(config *userconfig.StampFileConfig) error {
 		appconfig.Parameters.WithFileStamp.SetValue(true)
 		appconfig.Parameters.FileStamp.SetValue(file)
 		appconfig.Parameters.OptionOverwriteStamp.SetValueFromPtr(config.Overwrite)
-		appconfig.Parameters.DictionaryStamp = config.Options
+		appconfig.DictionaryStamp.SetValues(config.Options)
 	}
 	return err
 }
@@ -218,7 +218,7 @@ func setParamsConfig(config *userconfig.ParametersFileConfig) error {
 
 	appconfig.Parameters.WithFileParamsPy.SetValue(false)
 	appconfig.Parameters.OptionOverwriteParams.SetValueFromPtr(config.Overwrite)
-	appconfig.Parameters.DictionaryParams = config.Options
+	appconfig.DictionaryParams.SetValues(config.Options)
 
 	root = appconfig.Parameters.PathRoot.GetValue()
 	if config != nil && config.Options != nil && len(*config.Options) != 0 {
@@ -242,5 +242,5 @@ func setParamsConfig(config *userconfig.ParametersFileConfig) error {
 }
 
 func setConfigFilesAndFolders(config *userconfig.TreeConfig) {
-	appconfig.Parameters.ProjectTree = config
+	appconfig.ProjectTree = config
 }

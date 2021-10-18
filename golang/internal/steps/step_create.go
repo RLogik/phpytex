@@ -23,19 +23,25 @@ func Create() error {
 	var err error = nil
 	logging.LogInfo("CREATION STAGE STARTED.")
 	var root string = appconfig.Parameters.PathRoot.GetValue()
-	createFilesAndFolders(root, appconfig.Parameters.ProjectTree)
+	createFilesAndFolders(root, appconfig.ProjectTree)
 	if appconfig.Parameters.WithFileStamp.GetValue() {
-		createFileStamp(
+		err = createFileStamp(
 			appconfig.Parameters.FileStamp.GetValue(false),
 			appconfig.Parameters.OptionOverwriteStamp.GetValue(),
-			appconfig.Parameters.DictionaryStamp,
+			appconfig.DictionaryStamp.GetValues(),
 		)
 	}
+	if err != nil {
+		return err
+	}
 	if appconfig.Parameters.WithFileParamsPy.GetValue() {
-		// createParameters(appconfig.Parameters.DictionaryParams.GetValue());
+		err = createParameters(appconfig.DictionaryParams.GetValues())
+	}
+	if err != nil {
+		return err
 	}
 	logging.LogInfo("CREATION STAGE COMPLETE.")
-	return err
+	return nil
 }
 
 /* ---------------------------------------------------------------- *
@@ -75,56 +81,79 @@ func createFileStamp(path string, overwrite bool, options *map[string]interface{
 
 	var (
 		err    error
-		lines  string
+		text   string
 		border string
 	)
 
-	lines, err = utils.DisplayMapAsStamp(*options, "%% ", "  ", false, true, false, false)
+	text, err = utils.DisplayMapAsStamp(*options, "%% ", "  ", false, true, false, false)
 
 	if err != nil {
 		return err
 	}
 
-	if len(lines) > 0 {
+	if len(text) > 0 {
 		border = "%% " + strings.Repeat(`*`, 80)
-		lines = strings.Join([]string{border, lines, border}, "\n")
+		text = strings.Join([]string{border, text, border}, "\n")
 	}
-	err = utils.WriteTextFile(path, lines)
+	err = utils.WriteTextFile(path, text)
 
 	return err
 }
 
-// func createFileParameters(
-//     path: str,
-//     overwrite: bool,
-//     options: Dict[str, Any]
-// ) {
-//     if os.path.exists(path) and not overwrite:
-//         return;
-//     appconfig.setExportVars({});
-//     lines = [];
-//     for key, value in options.items():
-//         try:
-//             typ, codedvalue = convertToPythonString(value, indent=0, multiline=False);
-//             appconfig.setExportVarsKeyValue(key=key, value=value, codedvalue=codedvalue);
-//             lines.append('<<< global set {key} = {value}; >>>'.format(key = key, value = codedvalue));
-//         except:
-//             continue;
-//     if os.path.isfile(path) and not overwrite:
-//         return;
-//     writeTextFile(path=path, lines=lines);
-// }
+func createFileParameters(path string, overwrite bool, options *map[string]interface{}) error {
+	if (utils.CheckPathExists(path) && !overwrite) || options == nil {
+		return nil
+	}
+	var (
+		err        error
+		lines      []string
+		line       string
+		text       string
+		key        string
+		value      interface{}
+		codedvalue string
+	)
 
-// func createParameters(options: Dict[str, Any]) {
-//     appconfig.setExportVars({});
-//     lines = [];
-//     for key, value in options.items():
-//         try:
-//             typ, codedvalue = convertToPythonString(value, indent=0, multiline=False);
-//             appconfig.setExportVarsKeyValue(key=key, value=value, codedvalue=codedvalue);
-//         except:
-//             continue;
-// }
+	appconfig.ExportVariables.Init()
+	lines = []string{}
+	for key, value = range *options {
+		codedvalue, err = utils.ConvertToPythonString(value, 0, false, "    ")
+		if err != nil {
+			break
+		}
+		appconfig.ExportVariables.SetValue(key, []interface{}{value, codedvalue})
+		line = fmt.Sprintf(`<<< global set %[1]s = %[2]v; >>>`, key, codedvalue)
+		lines = append(lines, line)
+	}
+	text = strings.Join(lines, "\n")
+
+	err = utils.WriteTextFile(path, text)
+
+	return err
+}
+
+func createParameters(options *map[string]interface{}) error {
+	if options == nil {
+		return nil
+	}
+	var (
+		err        error
+		key        string
+		value      interface{}
+		codedvalue string
+	)
+
+	appconfig.ExportVariables.Init()
+	for key, value = range *options {
+		codedvalue, err = utils.ConvertToPythonString(value, 0, true, "    ")
+		if err != nil {
+			break
+		}
+		appconfig.ExportVariables.SetValue(key, []interface{}{value, codedvalue})
+	}
+
+	return err
+}
 
 /* ---------------------------------------------------------------- *
  * TERTIARY METHODS
