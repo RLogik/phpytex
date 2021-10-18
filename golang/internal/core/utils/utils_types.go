@@ -1,5 +1,7 @@
 package utils
 
+import "reflect"
+
 /* ---------------------------------------------------------------- *
  * IMPORTS
  * ---------------------------------------------------------------- */
@@ -67,4 +69,20 @@ func PtrToInt(p *int, Default int) int {
 		return *p
 	}
 	return Default
+}
+
+/* ---------------------------------------------------------------- *
+ * METHOD interface to (ptr to) array
+ * ---------------------------------------------------------------- */
+
+func InterfaceToArray(x interface{}) *[]interface{} {
+	if reflect.TypeOf(x).Kind() == reflect.Slice {
+		var xSlice []interface{} = []interface{}{}
+		var xConverted = reflect.ValueOf(x)
+		for i := 0; i < xConverted.Len(); i++ {
+			xSlice = append(xSlice, xConverted.Index(i).Interface())
+		}
+		return &xSlice
+	}
+	return nil
 }

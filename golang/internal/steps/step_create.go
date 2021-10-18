@@ -5,7 +5,14 @@ package steps
 * ---------------------------------------------------------------- */
 
 import (
+	"fmt"
+	"path/filepath"
+	"strings"
+
 	"phpytex/internal/core/logging"
+	"phpytex/internal/core/utils"
+	"phpytex/internal/setup/appconfig"
+	"phpytex/internal/setup/userconfig"
 )
 
 /* ---------------------------------------------------------------- *
@@ -15,71 +22,83 @@ import (
 func Create() error {
 	var err error = nil
 	logging.LogInfo("CREATION STAGE STARTED.")
-	// root = appconfig.getPathRoot();
-	// createFilesAndFolders(path=root, projectTree=appconfig.getProjectTree());
-	// if appconfig.getWithFileStamp():
-	//     createFileStamp(
-	//         path=appconfig.getFileStamp(rel=False),
-	//         overwrite=appconfig.getOptionOverwriteStamp(),
-	//         options=appconfig.getDictionaryStamp()
-	//     );
-	// if appconfig.getWithFileParamsPy():
-	//     createParameters(options=appconfig.getDictionaryParms());
+	var root string = appconfig.Parameters.PathRoot.GetValue()
+	createFilesAndFolders(root, appconfig.Parameters.ProjectTree)
+	if appconfig.Parameters.WithFileStamp.GetValue() {
+		createFileStamp(
+			appconfig.Parameters.FileStamp.GetValue(false),
+			appconfig.Parameters.OptionOverwriteStamp.GetValue(),
+			appconfig.Parameters.DictionaryStamp,
+		)
+	}
+	if appconfig.Parameters.WithFileParamsPy.GetValue() {
+		// createParameters(appconfig.Parameters.DictionaryParams.GetValue());
+	}
 	logging.LogInfo("CREATION STAGE COMPLETE.")
 	return err
 }
 
-// # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// # SECONDARY METHODS
-// # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/* ---------------------------------------------------------------- *
+ * SECONDARY METHODS
+ * ---------------------------------------------------------------- */
 
-// def createFilesAndFolders(path: str, projectTree: ProjectTree):
-//     for relpath in projectTree.directories():
-//         if not make_dir_if_not_exists(path=path, fname=relpath):
-//             raise FileExistsError('Could not create (sub)folder \033[1m{}\033[0m'.format(relpath));
-//     for relfname in projectTree.files():
-//         if not make_file_if_not_exists(path=path, fname=relfname):
-//             raise FileExistsError('Could not create file \033[1m{}\033[0m'.format(relfname));
-//     return;
+func createFilesAndFolders(path string, projectTree *userconfig.TreeConfig) error {
+	if projectTree == nil {
+		return nil
+	}
+	if projectTree.Files != nil {
+		for _, fname := range *projectTree.Files {
+			err := makeFileIfNotExists(path, fname)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	if projectTree.Folders != nil {
+		for relpath, _ := range *projectTree.Folders {
+			err := makeDirIfNotExists(path, relpath)
+			if err != nil {
+				return err
+			}
+		}
+		for relpath, tree := range *projectTree.Folders {
+			createFilesAndFolders(filepath.Join(path, relpath), tree)
+		}
+	}
+	return nil
+}
 
-// def createFileStamp(
+func createFileStamp(path string, overwrite bool, options *map[string]interface{}) error {
+	if (utils.CheckPathExists(path) && !overwrite) || options == nil {
+		return nil
+	}
+
+	var (
+		err    error
+		lines  string
+		border string
+	)
+
+	lines, err = utils.DisplayMapAsStamp(*options, "%% ", "  ", false, true, false, false)
+
+	if err != nil {
+		return err
+	}
+
+	if len(lines) > 0 {
+		border = "%% " + strings.Repeat(`*`, 80)
+		lines = strings.Join([]string{border, lines, border}, "\n")
+	}
+	err = utils.WriteTextFile(path, lines)
+
+	return err
+}
+
+// func createFileParameters(
 //     path: str,
 //     overwrite: bool,
 //     options: Dict[str, Any]
-// ):
-//     if os.path.exists(path) and not overwrite:
-//         return;
-//     lines = [];
-//     border = r'%% ' + '*'*80;
-//     max_tag_length = max([0] + [len(key) for key in options]);
-//     for key in options:
-//         value = options[key];
-//         tag = key.upper();
-//         line = r'%% ' + tag + r':';
-//         if isinstance(value, str):
-//             value = re.split('\n', str(value));
-//         elif isinstance(value, (int, float, bool)):
-//             value = [str(value)];
-//         if isinstance(value, list) and len(value) == 1:
-//             line += ' '*(1 + max_tag_length - len(tag)) + str(value[0]);
-//         elif isinstance(value, list) and len(value) > 1:
-//             indent = '\n' + r'%% ' + ' '*4;
-//             line_ = [''];
-//             line_ += [u for u in value if isinstance(u, str)];
-//             line += indent.join(line_);
-//         else:
-//             line += ' '*(1 + max_tag_length - len(tag)) + r'—';
-//         lines.append(line);
-//     if len(lines) > 0:
-//         lines = [border] + lines + [border];
-//     writeTextFile(path=path, lines=lines);
-//     return;
-
-// def createFileParameters(
-//     path: str,
-//     overwrite: bool,
-//     options: Dict[str, Any]
-// ):
+// ) {
 //     if os.path.exists(path) and not overwrite:
 //         return;
 //     appconfig.setExportVars({});
@@ -94,9 +113,9 @@ func Create() error {
 //     if os.path.isfile(path) and not overwrite:
 //         return;
 //     writeTextFile(path=path, lines=lines);
-//     return;
+// }
 
-// def createParameters(options: Dict[str, Any]):
+// func createParameters(options: Dict[str, Any]) {
 //     appconfig.setExportVars({});
 //     lines = [];
 //     for key, value in options.items():
@@ -105,28 +124,38 @@ func Create() error {
 //             appconfig.setExportVarsKeyValue(key=key, value=value, codedvalue=codedvalue);
 //         except:
 //             continue;
-//     return;
+// }
 
-// # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// # TERTIARY METHODS
-// # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/* ---------------------------------------------------------------- *
+ * TERTIARY METHODS
+ * ---------------------------------------------------------------- */
 
-// def make_file_if_not_exists(path: str, fname: str) -> bool:
-//     fname_full = os.path.join(path, fname);
-//     try:
-//         if not os.path.isfile(fname_full):
-//             logInfo('File \033[96;1m{}\033[0m will be created.'.format(fname));
-//             createFile(fname_full);
-//     except:
-//         pass;
-//     return os.path.isfile(fname_full);
+func makeFileIfNotExists(path string, fname string) error {
+	var err error = nil
+	var pathFull string
+	pathFull = filepath.Join(path, fname)
+	if utils.CheckPathExists(pathFull) {
+		if !utils.IsFile(pathFull) {
+			return fmt.Errorf("The path \033[96;1m%[1]s\033[0m already exists and cannot be made into a file.", pathFull)
+		}
+	} else {
+		logging.LogInfo(fmt.Sprintf("File \033[96;1m%[1]s\033[0m will be created.", fname))
+		err = utils.CreatePath(pathFull)
+	}
+	return err
+}
 
-// def make_dir_if_not_exists(path: str, fname: str) -> bool:
-//     fname_full = os.path.join(path, fname);
-//     try:
-//         if not os.path.isdir(fname_full):
-//             logInfo('Folder \033[96;1m{}\033[0m will be created.'.format(fname));
-//             createPath(path=fname_full);
-//     except:
-//         pass;
-//     return os.path.isdir(fname_full);
+func makeDirIfNotExists(path string, relpath string) error {
+	var err error = nil
+	var pathFull string
+	pathFull = filepath.Join(path, relpath)
+	if utils.CheckPathExists(pathFull) {
+		if !utils.IsDir(pathFull) {
+			return fmt.Errorf("The path \033[96;1m%[1]s\033[0m already exists and cannot be made into a directory.", pathFull)
+		}
+	} else {
+		logging.LogInfo(fmt.Sprintf("Folder \033[96;1m%[1]s\033[0m will be created.", relpath))
+		err = utils.CreatePath(pathFull)
+	}
+	return err
+}

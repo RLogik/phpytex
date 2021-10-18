@@ -50,7 +50,7 @@ func (c *ConfigString) SetValueFromPtr(x *string) {
 	}
 }
 
-func (c *ConfigString) HasValue() bool {
+func (c ConfigString) HasValue() bool {
 	return (c.value != nil)
 }
 
@@ -81,9 +81,36 @@ func (c *ConfigPath) SetValueFromPtr(x *string) {
 	}
 }
 
+func (c ConfigPath) HasValue() bool {
+	return (c.value != nil)
+}
+
+func (c ConfigPath) GetValue() string {
+	if c.value != nil {
+		return *(c.value)
+	}
+	raiseParameterError(c.Name)
+	return ""
+}
+
 /* ---------------------------------------------------------------- *
  * METHODS config file
  * ---------------------------------------------------------------- */
+
+func (c *ConfigFile) SetValue(x string) {
+	c.value = &x
+}
+
+func (c *ConfigFile) SetValueFromPtr(x *string) {
+	c.value = nil
+	if x != nil {
+		c.SetValue(*x)
+	}
+}
+
+func (c ConfigFile) HasValue() bool {
+	return (c.value != nil)
+}
 
 func (c ConfigFile) GetValue(rel bool) string {
 	var file string
@@ -122,7 +149,7 @@ func (c *ConfigBool) SetValueFromPtr(x *bool) {
 	}
 }
 
-func (c *ConfigBool) HasValue() bool {
+func (c ConfigBool) HasValue() bool {
 	return (c.value != nil)
 }
 
@@ -149,7 +176,7 @@ func (c *ConfigInt) SetValueFromPtr(x *int) {
 	}
 }
 
-func (c *ConfigInt) HasValue() bool {
+func (c ConfigInt) HasValue() bool {
 	return (c.value != nil)
 }
 

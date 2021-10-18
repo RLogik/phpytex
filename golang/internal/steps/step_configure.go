@@ -191,7 +191,7 @@ func setStampConfig(config *userconfig.StampFileConfig) error {
 	)
 
 	appconfig.Parameters.WithFileStamp.SetValue(false)
-	if config != nil && config.Options == nil && len(*config.Options) == 0 {
+	if config != nil && config.Options != nil && len(*config.Options) != 0 {
 		root = appconfig.Parameters.PathRoot.GetValue()
 		file = *config.File
 		file, err = utils.FormatPath(file, root, false)
@@ -221,10 +221,11 @@ func setParamsConfig(config *userconfig.ParametersFileConfig) error {
 	appconfig.Parameters.DictionaryParams = config.Options
 
 	root = appconfig.Parameters.PathRoot.GetValue()
-	if config != nil && config.Options == nil && len(*config.Options) == 0 {
+	if config != nil && config.Options != nil && len(*config.Options) != 0 {
 		modulename = utils.PtrToString(config.File, "")
 		if re.Matches(`^[^\.\s]*(\.[^\.\s]*)+$`, modulename) {
-			path = re.Sub(`([^\.]+)\.', r'\1/`, `\1/`, modulename) + ".py"
+			path = re.Sub(`([^\.]+)\.`, `$1/`, modulename)
+			path = path + ".py"
 		} else {
 			return fmt.Errorf("\033[1mparameters > file\033[0m option must by a python-like import path (relative to the root of the project).")
 		}

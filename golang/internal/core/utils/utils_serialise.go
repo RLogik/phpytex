@@ -4,10 +4,8 @@ package utils
  * IMPORTS
  * ---------------------------------------------------------------- */
 
-//
-
 /* ---------------------------------------------------------------- *
- * METHOD serialisation
+ * METHOD serialisation of basic types
  * ---------------------------------------------------------------- */
 
 func SerialiseBoolPtr(p *bool) interface{} {

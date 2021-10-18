@@ -14,14 +14,14 @@ import (
 
 type AppConfig struct {
 	PatternConfig     ConfigString
-	PathRoot          ConfigString
-	FileStart         ConfigString
-	FileTranspiled    ConfigString
-	FileOutput        ConfigString
+	PathRoot          ConfigPath
+	FileStart         ConfigFile
+	FileTranspiled    ConfigFile
+	FileOutput        ConfigFile
 	WithFileStamp     ConfigBool
-	FileStamp         ConfigString
+	FileStamp         ConfigFile
 	WithFileParamsPy  ConfigBool
-	FileParamsPy      ConfigString
+	FileParamsPy      ConfigFile
 	ImportParamsPy    ConfigString
 	ParamModuleName   ConfigString
 	PythonPath        ConfigString
@@ -50,14 +50,14 @@ type AppConfig struct {
 
 var Parameters AppConfig = AppConfig{
 	PatternConfig:     ConfigString{Name: "PatternConfig"},
-	PathRoot:          ConfigString{Name: "PathRoot"},
-	FileStart:         ConfigString{Name: "FileStart"},
-	FileTranspiled:    ConfigString{Name: "FileTranspiled"},
-	FileOutput:        ConfigString{Name: "FileOutput"},
+	PathRoot:          ConfigPath{Name: "PathRoot"},
+	FileStart:         ConfigFile{Name: "FileStart"},
+	FileTranspiled:    ConfigFile{Name: "FileTranspiled"},
+	FileOutput:        ConfigFile{Name: "FileOutput"},
 	WithFileStamp:     ConfigBool{Name: "WithFileStamp"},
-	FileStamp:         ConfigString{Name: "FileStamp"},
+	FileStamp:         ConfigFile{Name: "FileStamp"},
 	WithFileParamsPy:  ConfigBool{Name: "WithFileParamsPy"},
-	FileParamsPy:      ConfigString{Name: "FileParamsPy"},
+	FileParamsPy:      ConfigFile{Name: "FileParamsPy"},
 	ImportParamsPy:    ConfigString{Name: "ImportParamsPy"},
 	ParamModuleName:   ConfigString{Name: "ParamModuleName"},
 	PythonPath:        ConfigString{Name: "PythonPath"},

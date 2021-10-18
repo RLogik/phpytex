@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"phpytex/pkg/re"
 )
@@ -71,6 +72,16 @@ func CheckPathExists(path string) bool {
 	return !os.IsNotExist(err)
 }
 
+func IsFile(path string) bool {
+	mode, err := os.Stat(path)
+	return err == nil && !mode.Mode().IsRegular()
+}
+
+func IsDir(path string) bool {
+	mode, err := os.Stat(path)
+	return err == nil && mode.Mode().IsDir()
+}
+
 /* ---------------------------------------------------------------- *
  * METHOD format path
  * ---------------------------------------------------------------- */
@@ -110,4 +121,77 @@ func FormatPath(path string, root string, rel bool, options ...*string) (string,
 		}
 	}
 	return path, err
+}
+
+/* ---------------------------------------------------------------- *
+ * METHOD create paths/files
+ * ---------------------------------------------------------------- */
+
+func CreatePath(path string) error {
+	var err error = nil
+	cwd, _ := GetCwd()
+	if path == cwd || path == "" || path == "." {
+		return nil
+	}
+	if !CheckPathExists(path) {
+		err = os.Mkdir(path, 0644)
+	}
+	if err != nil || !CheckPathExists(path) {
+		return fmt.Errorf("Could not create or find path \033[93;1m%[1]s\033[0m!", path)
+	}
+	return nil
+}
+
+func CreateFile(path string) error {
+	var err error = nil
+	cwd, _ := GetCwd()
+	if path == cwd || path == "" || path == "." {
+		return nil
+	}
+	if !CheckPathExists(path) {
+		// pathlib.Path(path).mkdir(parents=True, exist_ok=True);
+		_, err = os.Create(path)
+	}
+	if err != nil || !CheckPathExists(path) {
+		return fmt.Errorf("Could not create or find file \033[93;1m%[1]s\033[0m!", path)
+	}
+	return nil
+}
+
+func WriteTextFile(path string, text string, options ...bool) error {
+	var err error
+	var forceCreatePath bool = GetArrayBoolValue(&options, 0, false)
+	var forceCreateEmptyLine bool = GetArrayBoolValue(&options, 1, true)
+	var (
+		lines []string
+		line  string
+		index int
+	)
+
+	if forceCreatePath {
+		err = CreatePath(filepath.Dir(path))
+		if err != nil {
+			return err
+		}
+	}
+
+	// deal with trailing lines
+	lines = re.Split(`\n`, text)
+	index = len(lines) - 1
+	for index > 0 {
+		line = strings.TrimSpace(lines[index])
+		if line != "" {
+			break
+		}
+		lines = lines[:index]
+		index--
+	}
+	if forceCreateEmptyLine {
+		lines = append(lines, "")
+	}
+	text = strings.Join(lines, "\n")
+
+	err = os.WriteFile(path, []byte(text), 0666)
+
+	return err
 }
