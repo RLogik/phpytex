@@ -17,18 +17,18 @@ import (
  * ---------------------------------------------------------------- */
 
 type ConfigString struct {
-	Name  string
-	value *string
+	Name string
+	Ptr  *string
 }
 
 type ConfigBool struct {
-	Name  string
-	value *bool
+	Name string
+	Ptr  *bool
 }
 
 type ConfigInt struct {
-	Name  string
-	value *int
+	Name string
+	Ptr  *int
 }
 
 type ConfigPath ConfigString
@@ -40,23 +40,23 @@ type ConfigFile ConfigString
  * ---------------------------------------------------------------- */
 
 func (c *ConfigString) SetValue(x string) {
-	c.value = &x
+	c.Ptr = &x
 }
 
 func (c *ConfigString) SetValueFromPtr(x *string) {
-	c.value = nil
+	c.Ptr = nil
 	if x != nil {
 		c.SetValue(*x)
 	}
 }
 
 func (c ConfigString) HasValue() bool {
-	return (c.value != nil)
+	return (c.Ptr != nil)
 }
 
 func (c ConfigString) GetValue() string {
-	if c.value != nil {
-		return *(c.value)
+	if c.Ptr != nil {
+		return *(c.Ptr)
 	}
 	raiseParameterError(c.Name)
 	return ""
@@ -68,26 +68,26 @@ func (c ConfigString) GetValue() string {
 
 func (c *ConfigPath) SetValue(x string) {
 	if utils.CheckPathExists(x) {
-		c.value = &x
+		c.Ptr = &x
 	} else {
 		logging.LogFatal("Cannot use \033[1m%[1]s\033[0m as path for parameter \033[1m%[2]s\033[0m", x, c.Name)
 	}
 }
 
 func (c *ConfigPath) SetValueFromPtr(x *string) {
-	c.value = nil
+	c.Ptr = nil
 	if x != nil {
 		c.SetValue(*x)
 	}
 }
 
 func (c ConfigPath) HasValue() bool {
-	return (c.value != nil)
+	return (c.Ptr != nil)
 }
 
 func (c ConfigPath) GetValue() string {
-	if c.value != nil {
-		return *(c.value)
+	if c.Ptr != nil {
+		return *(c.Ptr)
 	}
 	raiseParameterError(c.Name)
 	return ""
@@ -98,25 +98,25 @@ func (c ConfigPath) GetValue() string {
  * ---------------------------------------------------------------- */
 
 func (c *ConfigFile) SetValue(x string) {
-	c.value = &x
+	c.Ptr = &x
 }
 
 func (c *ConfigFile) SetValueFromPtr(x *string) {
-	c.value = nil
+	c.Ptr = nil
 	if x != nil {
 		c.SetValue(*x)
 	}
 }
 
 func (c ConfigFile) HasValue() bool {
-	return (c.value != nil)
+	return (c.Ptr != nil)
 }
 
 func (c ConfigFile) GetValue(rel bool) string {
 	var file string
 	var err error
-	if c.value != nil {
-		file = *(c.value)
+	if c.Ptr != nil {
+		file = *(c.Ptr)
 	} else {
 		raiseParameterError(c.Name)
 		return ""
@@ -139,23 +139,23 @@ func (c ConfigFile) GetValue(rel bool) string {
  * ---------------------------------------------------------------- */
 
 func (c *ConfigBool) SetValue(x bool) {
-	c.value = &x
+	c.Ptr = &x
 }
 
 func (c *ConfigBool) SetValueFromPtr(x *bool) {
-	c.value = nil
+	c.Ptr = nil
 	if x != nil {
 		c.SetValue(*x)
 	}
 }
 
 func (c ConfigBool) HasValue() bool {
-	return (c.value != nil)
+	return (c.Ptr != nil)
 }
 
 func (c ConfigBool) GetValue() bool {
-	if c.value != nil {
-		return *(c.value)
+	if c.Ptr != nil {
+		return *(c.Ptr)
 	}
 	raiseParameterError(c.Name)
 	return false
@@ -166,23 +166,23 @@ func (c ConfigBool) GetValue() bool {
  * ---------------------------------------------------------------- */
 
 func (c *ConfigInt) SetValue(x int) {
-	c.value = &x
+	c.Ptr = &x
 }
 
 func (c *ConfigInt) SetValueFromPtr(x *int) {
-	c.value = nil
+	c.Ptr = nil
 	if x != nil {
 		c.SetValue(*x)
 	}
 }
 
 func (c ConfigInt) HasValue() bool {
-	return (c.value != nil)
+	return (c.Ptr != nil)
 }
 
 func (c ConfigInt) GetValue() int {
-	if c.value != nil {
-		return *(c.value)
+	if c.Ptr != nil {
+		return *(c.Ptr)
 	}
 	raiseParameterError(c.Name)
 	return 0
@@ -193,5 +193,5 @@ func (c ConfigInt) GetValue() int {
  * ---------------------------------------------------------------- */
 
 func raiseParameterError(name string) {
-	logging.LogFatal(fmt.Sprintf("Neither a value nor default value of \033[1m%[1]s\033[0m has been set.", name))
+	logging.LogFatal(fmt.Sprintf("Neither a Ptr nor default Ptr of \033[1m%[1]s\033[0m has been set.", name))
 }

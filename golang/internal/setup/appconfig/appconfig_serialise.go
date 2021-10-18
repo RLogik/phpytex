@@ -13,38 +13,38 @@ import (
  * ---------------------------------------------------------------- */
 
 func (c *ConfigString) Serialise() interface{} {
-	if c == nil || c.value == nil {
+	if c == nil || c.Ptr == nil {
 		return nil
 	}
-	return *(c.value)
+	return *(c.Ptr)
 }
 
 func (c *ConfigBool) Serialise() interface{} {
-	if c == nil || c.value == nil {
+	if c == nil || c.Ptr == nil {
 		return nil
 	}
-	return *(c.value)
+	return *(c.Ptr)
 }
 
 func (c *ConfigInt) Serialise() interface{} {
-	if c == nil || c.value == nil {
+	if c == nil || c.Ptr == nil {
 		return nil
 	}
-	return *(c.value)
+	return *(c.Ptr)
 }
 
 func (c *ConfigPath) Serialise() interface{} {
-	if c == nil || c.value == nil {
+	if c == nil || c.Ptr == nil {
 		return nil
 	}
-	return *(c.value)
+	return *(c.Ptr)
 }
 
 func (c *ConfigFile) Serialise() interface{} {
-	if c == nil || c.value == nil {
+	if c == nil || c.Ptr == nil {
 		return nil
 	}
-	return *(c.value)
+	return *(c.Ptr)
 }
 
 /* ---------------------------------------------------------------- *
