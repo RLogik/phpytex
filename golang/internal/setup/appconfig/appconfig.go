@@ -6,6 +6,7 @@ package appconfig
 
 import (
 	"phpytex/internal/setup/userconfig"
+	"phpytex/internal/types"
 )
 
 /* ---------------------------------------------------------------- *
@@ -43,9 +44,6 @@ type AppConfig struct {
 	// stamp/param options
 	OptionOverwriteStamp  ConfigBool
 	OptionOverwriteParams ConfigBool
-	DictionaryStamp       *(map[string]interface{})
-	DictionaryParams      *(map[string]interface{})
-	ProjectTree           *userconfig.TreeConfig
 }
 
 var Parameters AppConfig = AppConfig{
@@ -79,6 +77,9 @@ var Parameters AppConfig = AppConfig{
 	// stamp/param options
 	OptionOverwriteStamp:  ConfigBool{Name: "OptionOverwriteStamp"},
 	OptionOverwriteParams: ConfigBool{Name: "OptionOverwriteParams"},
-	DictionaryStamp:       nil,
-	DictionaryParams:      nil,
 }
+
+var DictionaryStamp types.Dictionary
+var DictionaryParams types.Dictionary
+var ProjectTree *userconfig.TreeConfig
+var ExportVariables types.Dictionary

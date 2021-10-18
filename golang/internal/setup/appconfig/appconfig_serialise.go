@@ -87,15 +87,5 @@ func (config *AppConfig) Serialise() interface{} {
 		"Offset":                config.Offset.Serialise(),
 		"OptionOverwriteStamp":  config.OptionOverwriteStamp.Serialise(),
 		"OptionOverwriteParams": config.OptionOverwriteParams.Serialise(),
-		"DictionaryStamp":       serialisePointerToMap(config.DictionaryStamp),
-		"DictionaryParams":      serialisePointerToMap(config.DictionaryParams),
-		"ProjectTree":           config.ProjectTree.Serialise(),
 	}
-}
-
-func serialisePointerToMap(dictionary *map[string]interface{}) interface{} {
-	if dictionary == nil {
-		return nil
-	}
-	return *dictionary
 }
