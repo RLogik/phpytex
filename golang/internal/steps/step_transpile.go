@@ -10,6 +10,7 @@ import (
 
 	"phpytex/internal/core/logging"
 	"phpytex/internal/core/utils"
+	"phpytex/internal/parsers"
 	"phpytex/internal/setup"
 	"phpytex/internal/setup/appconfig"
 	"phpytex/internal/setup/templates"
@@ -168,99 +169,99 @@ func transpileDocument(
 	params types.TranspileCommentOptions,
 	chain []string,
 ) error {
-	// var (
-	// 	err         error
-	// 	subpath     string
-	// 	lines       []string
-	// 	depth       int
-	// 	indentSymb  string
-	// 	offset      string
-	// 	indentation types.IndentationTracker
-	// 	blocks      types.TranspileBlocks
-	// 	tokens      types.TranspileBlocks
-	// )
+	var (
+		err         error
+		subpath     string
+		text        string
+		depth       int
+		indentSymb  string
+		offset      string
+		indentation types.IndentationTracker
+		blocks      types.TranspileBlocks
+		tokens      []types.TranspileBlock
+	)
 
-	// if utils.ArrayContains(chain, path) {
-	// 	return fmt.Errorf("The document contains a cycle!")
-	// }
-	// lines, err = utils.ReadTextFile(path)
-	// if err != nil {
-	// 	return fmt.Errorf(`Could not find or read document \033[1m%[1]s\033[0m!`, path)
-	// }
-	// depth = len(chain)
-	// indentSymb = appconfig.Parameters.IndentCharacter.GetValue()
-	// offset = appconfig.Parameters.Offset.GetValue()
-	// indentation = types.IndentationTracker(
-	// 	indentSymb,
-	// 	appconfig.Parameters.IndentCharacterRe.GetValue(),
-	// )
+	if utils.ArrayContains(chain, path) {
+		return fmt.Errorf("The document contains a cycle!")
+	}
+	text, err = utils.ReadTextFile(path)
+	if err != nil {
+		return fmt.Errorf(`Could not find or read document \033[1m%[1]s\033[0m!`, path)
+	}
+	depth = len(chain)
+	indentSymb = appconfig.Parameters.IndentCharacter.GetValue()
+	offset = appconfig.Parameters.Offset.GetValue()
+	indentation = types.NewIndentationTracker(
+		indentSymb,
+		appconfig.Parameters.IndentCharacterRe.GetValue(),
+	)
 
-	// logging.LogPlain(displayTreeBranch(path, documents.IsAnon(path), depth))
+	logging.LogPlain(displayTreeBranch(path, documents.IsAnon(path), depth))
 
-	// if isPreamble {
-	// 	blocks = types.TranspileBlocks{}
-	// 	tokens, err = parsers.ParseText(lines, indentation, offset)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	for _, block := range tokens.GetBlocks() {
-	// 		if !(block.kind == "text:comment") {
-	// 			continue
-	// 		}
-	// 		blocks.Append(block)
-	// 	}
-	// 	blocks.Append(types.TranspileBlock{Kind: "text:empty"})
-	// 	documents.AddPreamble(name, blocks)
-	// } else {
-	// 	if utils.ArrayContains(documents.Paths, path) {
-	// 		return nil
-	// 	}
-	// 	// NOTE: need to do this first, in order to update anon-state
-	// 	documents.AddDocument(path)
-	// 	blocks = TranspileBlocks()
-	// 	if params.ShowTree {
-	// 		blocks.Append(documents.DocumentStamp(0, true))
-	// 	}
-	// 	tokens, err = parsers.ParseText(lines, indentation, offset)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	for _, block := range tokens.GetBlocks() {
-	// 		switch block.Kind {
-	// 		case "code:import":
-	// 			imports.Append(block)
-	// 			continue
-	// 		case "text:comment":
-	// 			if params.CommentsAuto {
-	// 				if !block.parameters.keep {
-	// 					continue
-	// 				}
-	// 			} else if !params.CommentsOn {
-	// 				continue
-	// 			}
-	// 		}
-	// 		blocks.Append(block)
-	// 	}
-	// 	if params.ShowTree {
-	// 		blocks.Append(documents.DocumentStamp(0, false))
-	// 	}
-	// 	documents.AddBlocks(path, blocks)
-	// 	for _, subpath = range documents.GetSubPaths(path) {
-	// 		err = transpileDocument(
-	// 			subpath,
-	// 			documents,
-	// 			imports,
-	// 			name,
-	// 			isPreamble,
-	// 			silent,
-	// 			params,
-	// 			append(chain, path),
-	// 		)
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 	}
-	// }
+	if isPreamble {
+		blocks = types.TranspileBlocks{}
+		tokens, err = parsers.ParseText(text, indentation, offset)
+		if err != nil {
+			return err
+		}
+		for _, block := range tokens {
+			if !(block.Kind == "text:comment") {
+				continue
+			}
+			blocks.Append(block)
+		}
+		blocks.Append(types.TranspileBlock{Kind: "text:empty"})
+		documents.AddPreamble(name, blocks)
+	} else {
+		if utils.ArrayContains(documents.GetPaths(), path) {
+			return nil
+		}
+		// NOTE: need to do this first, in order to update anon-state
+		documents.AddDocument(path)
+		blocks = types.TranspileBlocks{}
+		if params.ShowTree {
+			blocks.Append(documents.DocumentStamp(0, true))
+		}
+		tokens, err = parsers.ParseText(text, indentation, offset)
+		if err != nil {
+			return err
+		}
+		for _, block := range tokens {
+			switch block.Kind {
+			case "code:import":
+				imports.Append(block)
+				continue
+			case "text:comment":
+				if params.CommentsAuto {
+					if !block.Parameters.Keep {
+						continue
+					}
+				} else if !params.CommentsOn {
+					continue
+				}
+			}
+			blocks.Append(block)
+		}
+		if params.ShowTree {
+			blocks.Append(documents.DocumentStamp(0, false))
+		}
+		documents.AddBlocks(path, blocks)
+		for _, subpath = range documents.GetSubPaths(path) {
+			err = transpileDocument(
+				subpath,
+				documents,
+				imports,
+				name,
+				isPreamble,
+				silent,
+				params,
+				append(chain, path),
+			)
+			if err != nil {
+				return err
+			}
+		}
+	}
 
 	return nil
 }
