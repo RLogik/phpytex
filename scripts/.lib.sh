@@ -12,8 +12,9 @@ source scripts/.lib.utils.sh;
 # GLOBAL VARIABLES
 ##############################################################################
 
-env_from ".env" import REQUIREMENTS_GO     as PATH_REQ_GO;
-env_from ".env" import REQUIREMENTS_PY     as PATH_REQ_PY;
+env_from ".env" import REQUIREMENTS_GO           as PATH_REQ_GO;
+env_from ".env" import REQUIREMENTS_PY           as PATH_REQ_PY;
+env_from ".env" import REQUIREMENT_ANTLR_VERSION as ANTLR_VERSION;
 env_from ".env" import NAME_OF_APP;
 env_from ".env" import TEST_TIMEOUT;
 
@@ -32,6 +33,14 @@ export UNITTEST_SCHEMA_PY="test_*.py";
 
 function create_zip_archive() {
     zip -r $@;
+}
+
+##############################################################################
+# AUXILIARY METHODS: Java
+##############################################################################
+
+function call_java() {
+    java -jar $@;
 }
 
 ##############################################################################
@@ -71,10 +80,13 @@ function install_requirements_go() {
 function compile_go() {
     local path="$1";
     local cwd="$PWD";
+    pushd "$PATH_PROJECT_GO" >> $VERBOSE;
+        precompile_antlr_jar "Go";
+    popd >> $VERBOSE;
     _log_info "Compile \033[1mmain.go\033[0m with \033[1mgolang\033[0m";
     remove_file "dist/$NAME_OF_APP";
     pushd "$path" >> $VERBOSE;
-        call_go build -o "$cwd/dist/$NAME_OF_APP" "main.go";
+        # call_go build -o "$cwd/dist/$NAME_OF_APP" "main.go";
     popd >> $VERBOSE;
     ! [ -f "dist/$NAME_OF_APP" ] && return 1;
     return 0;
@@ -155,6 +167,43 @@ function install_requirements_python() {
 function install_requirements_v_python() { activate_python_venv && install_requirements_python $@; }
 
 ##############################################################################
+# AUXILIARY METHODS: ANLTR4
+##############################################################################
+
+function install_antlr_jar() {
+    local url="http://www.antlr.org/download/antlr-${ANTLR_VERSION}-complete.jar";
+    local path="assets/grammars";
+    local fname;
+    ( wget ${url} >> $VERBOSE 2> $VERBOSE ) || \
+        _log_fatal "The command \033[1;2mwget ${url}\033[0m could not be carried out.\n    Please download the \033[1mantlr*.jar\033[0m file manually and move to (golang)\033[1m${path}/antlr.jar\033[0m (including rename).";
+    while read fname; do
+        ( [ "$fname" == "" ] || ! [ -f "$fname" ] ) && continue;
+        _log_info "\033[92;1mANTLR\033[1m-${ANTLR_VERSION}\033[0m was downloaded and placed in \033[1m${path}/antlr.jar\033[0m.";
+        mv "$fname" "${path}/antlr.jar";
+        return 0;
+    done <<< "$( ls antlr*.jar 2> $VERBOSE )"
+    _log_fatal "Installation of \033[1mantlr-${ANTLR_VERSION}\033[0m failed.";
+}
+
+function precompile_antlr_jar() {
+    local lang="$1"; ## "Go"
+    local path="assets/grammars";
+    local fname;
+    local name;
+    _log_info "Precompile grammar";
+    ! [ -f "${path}/antlr.jar" ] && install_antlr_jar;
+    pushd "$path" >> $VERBOSE;
+        remove_dir_force ".antlr"; ## <- the folder .antlr may be automatically generated, but we do not need it
+        while read fname; do
+            ( [ "$fname" == "" ] || ! [ -f "$fname" ] ) && continue;
+            name="$( echo "$fname" | sed -E "s/^(.*)\.g4$/\1/g" )";
+            _log_info "Use \033[92;1mANTLR\033[0m to precompile grammar \033[1m${fname}\033[0m";
+            call_java antlr.jar -Dlanguage=$lang "$fname" -o "$name";
+        done <<< "$( ls *.g4 2> $VERBOSE )"
+    popd >> $VERBOSE;
+}
+
+##############################################################################
 # AUXILIARY METHODS: APT-GET
 ##############################################################################
 
@@ -200,7 +249,7 @@ function garbage_collection_python() {
 }
 
 function garbage_collection_go {
-    _log_info "(Nothing to clean in go project)";
+    clean_all_folders_of_pattern ".antlr";
 }
 
 function garbage_collection_dist() {
@@ -356,7 +405,17 @@ function run_test_cases() {
 }
 
 function run_test_cases_go() {
-    _log_warn "Case tests not yet implemented for go.";
+    local args="$@";
+    local current_dir="$PWD";
+    _log_info "RUN TEST CASES";
+    pushd $PATH_PROJECT_GO >> $VERBOSE;
+        # TODO: currently runs in python - change this to go!
+        call_v_python test/cases.py \
+            --dir "$current_dir" \
+            --app "$current_dir/dist/$NAME_OF_APP" \
+            --config "$current_dir/test/setup/config.yml" \
+            --cases $current_dir/test/cases $args;
+    popd >> $VERBOSE;
 }
 
 function run_clean_artefacts() {
