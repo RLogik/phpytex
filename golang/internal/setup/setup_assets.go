@@ -57,11 +57,11 @@ func Version() string {
 
 func TemplatePre(args map[string]interface{}) string {
 	contents := ReadAsset("pre")
-	return utils.FormatString(contents, args)
+	return utils.FormatPythonString(contents, args)
 }
 
 func TemplatePost() string {
 	emptyargs := map[string]interface{}{}
 	contents := ReadAsset("post")
-	return utils.FormatString(contents, emptyargs)
+	return utils.FormatPythonString(contents, emptyargs)
 }
