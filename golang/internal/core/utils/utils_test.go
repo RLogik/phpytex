@@ -40,25 +40,25 @@ func TestArrayContains(test *testing.T) {
  * TESTCASE strings
  * ---------------------------------------------------------------- */
 
-func TestFormatString(test *testing.T) {
+func TestFormatPythonString(test *testing.T) {
 	var assert = assert.New(test)
 
 	// simple
-	assert.Equal(utils.FormatString(`The value of {{{key}}} is {value}.`, map[string]interface{}{
+	assert.Equal(utils.FormatPythonString(`The value of {{{key}}} is {value}.`, map[string]interface{}{
 		"key":   "frequency",
 		"value": 2109.1,
 	}), `The value of {frequency} is 2109.1.`)
 
 	// brackets
-	assert.Equal(utils.FormatString(`This will be {unexpanded}.`, map[string]interface{}{
+	assert.Equal(utils.FormatPythonString(`This will be {unexpanded}.`, map[string]interface{}{
 		"unexpanded": "expanded",
 	}), `This will be expanded.`)
-	assert.Equal(utils.FormatString(`This remains {{unexpanded}}.`, map[string]interface{}{
+	assert.Equal(utils.FormatPythonString(`This remains {{unexpanded}}.`, map[string]interface{}{
 		"unexpandedkey": "expanded",
 	}), `This remains {unexpanded}.`)
 
 	// multiline
-	assert.Equal(utils.FormatString(`
+	assert.Equal(utils.FormatPythonString(`
 		Hello {name}!
 		Welcome to {place}!
 
