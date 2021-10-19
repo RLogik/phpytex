@@ -22,6 +22,14 @@ func (kw *Dictionary) Init() {
 	kw.values = nil
 }
 
+func (kw Dictionary) HasKey(key string) bool {
+	if kw.values == nil {
+		return false
+	}
+	_, ok := (*kw.values)[key]
+	return ok
+}
+
 func (kw Dictionary) GetValues() *(map[string]interface{}) {
 	return kw.values
 }

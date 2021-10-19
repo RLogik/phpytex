@@ -134,6 +134,10 @@ func (c ConfigFile) GetValue(rel bool) string {
 	return file
 }
 
+func (c ConfigFile) GetValueBase() string {
+	return filepath.Base(c.GetValue(false))
+}
+
 /* ---------------------------------------------------------------- *
  * METHODS config bool
  * ---------------------------------------------------------------- */
