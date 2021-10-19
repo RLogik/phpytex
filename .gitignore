@@ -54,6 +54,7 @@
 !/golang/assets/VERSION
 !/golang/assets/HELP
 !/golang/assets/LOGO
+/golang/internal/tokenisers/grammars/**/
 !/golang/go.mod
 !/golang/go.sum
 
