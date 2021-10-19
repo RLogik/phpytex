@@ -43,7 +43,6 @@ func FormatPythonString(text string, arguments map[string]interface{}) string {
 			arguments[key] = strings.Title(fmt.Sprintf(`%v`, value))
 		}
 	}
-	fmt.Println(arguments)
 	text, err = pyfmt.Fmt(text, arguments)
 	if err != nil {
 		log.Fatal(err)
