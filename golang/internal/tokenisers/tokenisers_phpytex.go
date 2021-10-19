@@ -1,4 +1,4 @@
-package parsers
+package tokenisers
 
 /* ---------------------------------------------------------------- *
  * IMPORTS

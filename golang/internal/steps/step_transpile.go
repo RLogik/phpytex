@@ -10,10 +10,10 @@ import (
 
 	"phpytex/internal/core/logging"
 	"phpytex/internal/core/utils"
-	"phpytex/internal/parsers"
 	"phpytex/internal/setup"
 	"phpytex/internal/setup/appconfig"
 	"phpytex/internal/setup/templates"
+	"phpytex/internal/tokenisers"
 	"phpytex/internal/types"
 )
 
@@ -200,7 +200,7 @@ func transpileDocument(
 
 	if isPreamble {
 		blocks = types.TranspileBlocks{}
-		tokens, err = parsers.ParseText(text, indentation, offset)
+		tokens, err = tokenisers.ParseText(text, indentation, offset)
 		if err != nil {
 			return err
 		}
@@ -222,7 +222,7 @@ func transpileDocument(
 		if params.ShowTree {
 			blocks.Append(documents.DocumentStamp(0, true))
 		}
-		tokens, err = parsers.ParseText(text, indentation, offset)
+		tokens, err = tokenisers.ParseText(text, indentation, offset)
 		if err != nil {
 			return err
 		}
