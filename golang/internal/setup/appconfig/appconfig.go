@@ -39,7 +39,7 @@ var Parameters types.AppConfig = types.AppConfig{
 	OptionInsertBib:    types.ConfigBool{Name: "OptionInsertBib"},
 	MaxLength:          types.ConfigInt{Name: "MaxLength"},
 	Seed:               types.ConfigInt{Name: "Seed"},
-	Offset:             types.ConfigString{Name: "OffsetSymbol"},
+	Offset:             types.ConfigString{Name: "Offset"},
 	// stamp/param options
 	OptionOverwriteStamp:  types.ConfigBool{Name: "OptionOverwriteStamp"},
 	OptionOverwriteParams: types.ConfigBool{Name: "OptionOverwriteParams"},
