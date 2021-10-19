@@ -158,6 +158,16 @@ func CreateFile(path string) error {
 	return nil
 }
 
+func ReadTextFile(path string) (string, error) {
+	var err error
+	var text []byte
+	text, err = os.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+	return string(text), nil
+}
+
 func WriteTextFile(path string, text string, options ...bool) error {
 	var err error
 	var forceCreatePath bool = GetArrayBoolValue(&options, 0, false)
