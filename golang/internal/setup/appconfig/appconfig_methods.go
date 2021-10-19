@@ -28,6 +28,7 @@ func Init() error {
 	Parameters.WithFileStamp.SetValue(false)
 	Parameters.WithFileParamsPy.SetValue(false)
 	Parameters.ParamModuleName.SetValue("MODULE_GLOBAL_PARAMS")
+	Parameters.PythonPath.SetValue(utils.PythonCommand())
 	Parameters.IndentCharacter.SetValue("    ")
 	Parameters.IndentCharacterRe.SetValue("    ")
 	Parameters.CensorSymbol.SetValue(("########"))
