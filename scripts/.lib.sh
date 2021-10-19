@@ -178,14 +178,14 @@ function install_antlr_jar() {
     local url="http://www.antlr.org/download/antlr-${}-complete.jar";
     local fname;
     ( wget ${url} >> $VERBOSE 2> $VERBOSE ) || \
-        _log_fatal "The command \033[1;2mwget ${url}\033[0m could not be carried out.\n    Please download the \033[1mantlr*.jar\033[0m file manually and move to (golang)\033[1m${pathAssets}/antlr.jar\033[0m (including rename).";
+        _log_fail "The command \033[1;2mwget ${url}\033[0m could not be carried out.\n    Please download the \033[1mantlr*.jar\033[0m file manually and move to (golang)\033[1m${pathAssets}/antlr.jar\033[0m (including rename).";
     while read fname; do
         ( [ "$fname" == "" ] || ! [ -f "$fname" ] ) && continue;
         _log_info "\033[92;1mANTLR\033[1m-${version}\033[0m was downloaded and placed in \033[1m${pathAssets}/antlr.jar\033[0m.";
         mv "$fname" "${pathAssets}/antlr.jar";
         return 0;
     done <<< "$( ls antlr*.jar 2> $VERBOSE )"
-    _log_fatal "Installation of \033[1mantlr-${version}\033[0m failed.";
+    _log_fail "Installation of \033[1mantlr-${version}\033[0m failed.";
 }
 
 function precompile_antlr_jar() {
@@ -194,8 +194,11 @@ function precompile_antlr_jar() {
     local version="$2";
     local pathAssets="$3"
     local pathInternal="$4"
+    local prog="${cwd}/${pathAssets}/antlr.jar"
+    local dir;
     local fname;
-    local name;
+    local pkgname;
+    local targetdir;
     local success=0;
     _log_info "Precompile grammar";
     ! [ -f "${pathAssets}/antlr.jar" ] && install_antlr_jar "${pathAssets}" "${version}";
@@ -203,11 +206,13 @@ function precompile_antlr_jar() {
         remove_dir_force ".antlr"; ## <- the folder .antlr may be automatically generated, but we do not need it
         while read fname; do
             ( [ "$fname" == "" ] || ! [ -f "$fname" ] ) && continue;
-            name="$( echo "$fname" | sed -E "s/^(.*)\.g4$/\1/g" )";
+            pkgname="$( echo "$fname" | sed -E "s/^(.*)\.[^\.]+$/\1/g" )";
             _log_info "Use \033[92;1mANTLR\033[0m to precompile grammar \033[1m${fname}\033[0m";
-            ( call_java antlr.jar -Dlanguage=$lang "$fname" -o "$name" ) || \
-                _log_fatal "Something went wrong when precompiling grammar \033[1m${fname}\033[0m!";
-            mv "$name" "${cwd}/${pathInternal}";
+            ( call_java "$prog" -Dlanguage=$lang "$fname" -o "$pkgname" -package "$pkgname" ) || \
+                _log_fail "Something went wrong when precompiling grammar \033[1m${fname}\033[0m!";
+            targetdir="${cwd}/${pathInternal}/${pkgname}";
+            remove_dir_force "${targetdir}";
+            mv "$pkgname" "${targetdir}";
         done <<< "$( ls *.g4 2> $VERBOSE )"
     popd >> $VERBOSE;
     return 0;
