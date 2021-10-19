@@ -50,6 +50,13 @@ func IntToPtr(x int) *int {
  * METHOD get value from ptr with default
  * ---------------------------------------------------------------- */
 
+func ExpandPtrToBool(p *bool) interface{} {
+	if p != nil {
+		return *p
+	}
+	return p
+}
+
 func PtrToBool(p *bool, Default bool) bool {
 	if p != nil {
 		return *p
@@ -57,11 +64,25 @@ func PtrToBool(p *bool, Default bool) bool {
 	return Default
 }
 
+func ExpandPtrToString(p *string) interface{} {
+	if p != nil {
+		return *p
+	}
+	return p
+}
+
 func PtrToString(p *string, Default string) string {
 	if p != nil {
 		return *p
 	}
 	return Default
+}
+
+func ExpandPtrToInt(p *int) interface{} {
+	if p != nil {
+		return *p
+	}
+	return p
 }
 
 func PtrToInt(p *int, Default int) int {

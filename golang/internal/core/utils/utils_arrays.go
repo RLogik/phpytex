@@ -37,6 +37,22 @@ func ArrayContains(x interface{}, elem interface{}) bool {
 // }
 
 /* ---------------------------------------------------------------- *
+ * METHOD array contains
+ * ---------------------------------------------------------------- */
+
+func UniqueListOfStrings(X []string) []string {
+	var ok bool
+	m := map[string]bool{}
+	X_unique := []string{}
+	for _, x := range X {
+		if _, ok = m[x]; !ok {
+			X_unique = append(X_unique, x)
+		}
+	}
+	return X_unique
+}
+
+/* ---------------------------------------------------------------- *
  * METHOD get value from array of unknown length
  * ---------------------------------------------------------------- */
 

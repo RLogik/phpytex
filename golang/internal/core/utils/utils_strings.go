@@ -7,6 +7,7 @@ package utils
 import (
 	"fmt"
 	"log"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -21,14 +22,33 @@ import (
  * METHOD format strings with dictionary substitution
  * ---------------------------------------------------------------- */
 
-func FormatString(text string, args map[string]interface{}) string {
-	var s string
-	var err error
-	s, err = pyfmt.Fmt(text, args)
+func FormatPythonString(text string, arguments map[string]interface{}) string {
+	var (
+		err      error
+		key      string
+		value    interface{}
+		kind     reflect.Kind
+		refValue reflect.Value
+	)
+	// force compatibility of expressions with python
+	for key, value = range arguments {
+		kind = reflect.TypeOf(value).Kind()
+		switch kind {
+		case reflect.Ptr:
+			refValue = reflect.ValueOf(value)
+			if refValue.IsNil() {
+				arguments[key] = "None"
+			}
+		case reflect.Bool:
+			arguments[key] = strings.Title(fmt.Sprintf(`%v`, value))
+		}
+	}
+	fmt.Println(arguments)
+	text, err = pyfmt.Fmt(text, arguments)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return s
+	return text
 }
 
 /*
@@ -53,6 +73,15 @@ func FormatString(text string, args map[string]interface{}) string {
  * METHOD dedent textblock and expand escaped symbols
  * ---------------------------------------------------------------- */
 
+func DedentIgnoreEmptyLines(text string) string {
+	return dedent.Dedent(text)
+}
+
+func DedentIgnoreFirstAndLast(text string) string {
+	text = re.Sub(`(?m)^\s*[\n\r]|[\n\r]\s*$`, ``, text)
+	return DedentIgnoreEmptyLines(text)
+}
+
 func DedentAndExpand(text string) string {
 	var err error
 	var result []string
@@ -68,6 +97,14 @@ func DedentAndExpand(text string) string {
 		result = append(result, line)
 	}
 	return strings.Join(result, "\n")
+}
+
+func FormatTextBlockAsList(text string, options ...bool) []string {
+	var unindent bool = GetArrayBoolValue(&options, 0, true)
+	if unindent {
+		text = DedentIgnoreFirstAndLast(text)
+	}
+	return re.Split(`\n`, text)
 }
 
 /* ---------------------------------------------------------------- *
@@ -137,7 +174,7 @@ func DisplayMapAsStamp(x map[string]interface{}, prefix string, tab string, opti
 	} else if lowerCase {
 		transformer = func(x string) string { return strings.ToLower(x) }
 	} else if titleCase {
-		transformer = func(x string) string { return strings.ToTitle(x) }
+		transformer = func(x string) string { return strings.Title(x) }
 	}
 
 	if !(alignKeys || upperCase || lowerCase || titleCase) {
