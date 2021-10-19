@@ -21,27 +21,27 @@ type AntlrTree struct {
  * METHODS for types
  * ---------------------------------------------------------------- */
 
-func (ant AntlrTree) getChildren() []AntlrTree {
-	var nodes = ant.Tree.GetChildren()
+func (self AntlrTree) GetChildren() []AntlrTree {
+	var nodes = self.Tree.GetChildren()
 	var subants = make([]AntlrTree, len(nodes))
 	for i, node := range nodes {
-		subants[i] = AntlrTree{Tree: node, Parser: ant.Parser}
+		subants[i] = AntlrTree{Tree: node, Parser: self.Parser}
 	}
 	return subants
 }
 
-func (ant AntlrTree) getLabel() string {
-	return antlr.TreesGetNodeText(ant.Tree, []string{}, *ant.Parser)
+func (self AntlrTree) GetLabel() string {
+	return antlr.TreesGetNodeText(self.Tree, []string{}, *self.Parser)
 }
 
-func (ant AntlrTree) getTextContent() string {
+func (self AntlrTree) GetTextContent() string {
 	var expr string = ""
-	var subants = ant.getChildren()
+	var subants = self.GetChildren()
 	if len(subants) == 0 {
-		return ant.getLabel()
+		return self.GetLabel()
 	}
 	for _, subant := range subants {
-		expr += subant.getTextContent()
+		expr += subant.GetTextContent()
 	}
 	return expr
 }
