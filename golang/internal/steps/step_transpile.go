@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"phpytex/internal/core/logging"
 	"phpytex/internal/core/utils"
+	"phpytex/internal/setup"
 	"phpytex/internal/setup/appconfig"
 	"phpytex/internal/setup/templates"
 	"phpytex/internal/types"
@@ -130,10 +131,8 @@ func Transpile() error {
 			globalvars = append(globalvars, name)
 		}
 	}
-	if documents.Variables != nil {
-		for _, name = range *documents.Variables {
-			globalvars = append(globalvars, name)
-		}
+	for _, name = range documents.GetVariables() {
+		globalvars = append(globalvars, name)
 	}
 	globalvars = utils.UniqueListOfStrings(globalvars)
 	err = createMetaCode(
@@ -165,6 +164,7 @@ func transpileDocument(
 	silent bool,
 	params types.TranspileCommentOptions,
 ) error {
+	// TODO
 	return nil
 }
 
@@ -173,7 +173,46 @@ func createImportFileParameters(
 	overwrite bool,
 	documents types.TranspileDocuments,
 ) error {
-	return nil
+	if utils.CheckPathExists(path) && !overwrite {
+		return nil
+	}
+	var (
+		err        error
+		lines      []string
+		text       string
+		line       string
+		name       string
+		obj        interface{}
+		valuePair  *[]interface{}
+		codedvalue interface{}
+	)
+	lines = utils.FormatTextBlockAsList(`
+		#!/usr/bin/env python3
+		# -*- coding: utf-8 -*-
+	`)
+	lines = append(lines, "")
+	if appconfig.ExportVariables.GetValues() != nil {
+		for name, obj = range *appconfig.ExportVariables.GetValues() {
+			valuePair = utils.InterfaceToArray(obj)
+			if valuePair == nil || len(*valuePair) != 2 {
+				continue
+			}
+			codedvalue = (*valuePair)[1]
+			line = fmt.Sprintf(`%[1]s = %[2]v;`, name, codedvalue)
+			lines = append(lines, line)
+		}
+	}
+	for _, name = range documents.GetVariables() {
+		if appconfig.ExportVariables.HasKey(name) {
+			continue
+		}
+		line = fmt.Sprintf(`%[1]s = None;`, name)
+		lines = append(lines, line)
+	}
+	lines = append(lines, "")
+	text = strings.Join(lines, "\n")
+	err = utils.WriteTextFile(path, text, true)
+	return err
 }
 
 func createMetaCode(
@@ -183,7 +222,30 @@ func createMetaCode(
 	globalvars []string,
 	seed *int,
 ) error {
-	return nil
+	var (
+		err  error
+		text string
+	)
+	text = setup.TemplatePre(map[string]interface{}{
+		"imports":      strings.Join(imports.GenerateCode(0), "\n"),
+		"rootDir":      appconfig.Parameters.PathRoot.GetValue(),
+		"outputFile":   appconfig.Parameters.FileOutput.GetValue(false),
+		"outputName":   appconfig.Parameters.FileOutput.GetValueBase(),
+		"insertBib":    appconfig.Parameters.OptionInsertBib.GetValue(),
+		"compileLatex": appconfig.Parameters.OptionCompileLatex.GetValue(),
+		"lengthMax":    appconfig.Parameters.MaxLength.GetValue(),
+		"seed":         utils.ExpandPtrToInt(seed),
+		"indentSymb":   appconfig.Parameters.IndentCharacter.GetValue(),
+		"censorSymb":   appconfig.Parameters.CensorSymbol.GetValue(),
+		"mainFct":      templates.FUNCTION_NAME_MAIN,
+	})
+	text += "\n"
+	text += "\n" + strings.Join(documents.GenerateCode(0, preambles, globalvars), "\n")
+	text += "\n"
+	text += "\n" + setup.TemplatePost()
+
+	err = utils.WriteTextFile(appconfig.Parameters.FileTranspiled.GetValue(false), text)
+	return err
 }
 
 /* ---------------------------------------------------------------- *
