@@ -7,26 +7,25 @@ package types
 //
 
 /* ---------------------------------------------------------------- *
- * TYPES
+ * METHOD display tree
  * ---------------------------------------------------------------- */
 
-type TranspileCommentOptions struct {
-	CommentsAuto bool
-	CommentsOn   bool
-	ShowTree     bool
-}
-
-type TranspileBlockParameters struct {
-	Keep bool
-}
-type TranspileBlock struct {
-	Kind       string
-	Content    string
-	Level      int
-	IndentSymb string
-	Parameters TranspileBlockParameters
+func (docs TranspileDocuments) DocumentTree(seed *int) TranspileBlock {
+	// TODO
+	return TranspileBlock{}
 }
 
 /* ---------------------------------------------------------------- *
- * METHODS
+ * METHOD generate code
  * ---------------------------------------------------------------- */
+
+func (docs TranspileDocuments) GenerateCode(
+	offset int, // 0
+	preambles []string, // []string{},
+	globalvars []string, // []string{},
+) []string {
+	var lines []string
+	lines = []string{}
+	// TODO
+	return lines
+}
