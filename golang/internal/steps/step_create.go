@@ -28,14 +28,14 @@ func Create() error {
 		err = createFileStamp(
 			appconfig.Parameters.FileStamp.GetValue(false),
 			appconfig.Parameters.OptionOverwriteStamp.GetValue(),
-			appconfig.DictionaryStamp.GetValues(),
+			appconfig.DictionaryStamp,
 		)
 	}
 	if err != nil {
 		return err
 	}
 	if appconfig.Parameters.WithFileParamsPy.GetValue() {
-		err = createParameters(appconfig.DictionaryParams.GetValues())
+		err = createParameters(appconfig.DictionaryParams)
 	}
 	if err != nil {
 		return err
@@ -74,8 +74,8 @@ func createFilesAndFolders(path string, projectTree *types.TreeConfig) error {
 	return nil
 }
 
-func createFileStamp(path string, overwrite bool, options *map[string]interface{}) error {
-	if (utils.CheckPathExists(path) && !overwrite) || options == nil {
+func createFileStamp(path string, overwrite bool, options types.Dictionary) error {
+	if (utils.CheckPathExists(path) && !overwrite) || options.GetValues() == nil {
 		return nil
 	}
 
@@ -85,7 +85,7 @@ func createFileStamp(path string, overwrite bool, options *map[string]interface{
 		border string
 	)
 
-	text, err = utils.DisplayMapAsStamp(*options, "%% ", "  ", false, true, false, false)
+	text, err = options.DisplayMapAsStamp("%% ", "  ", false, true, false, false)
 
 	if err != nil {
 		return err
@@ -100,8 +100,8 @@ func createFileStamp(path string, overwrite bool, options *map[string]interface{
 	return err
 }
 
-func createFileParameters(path string, overwrite bool, options *map[string]interface{}) error {
-	if (utils.CheckPathExists(path) && !overwrite) || options == nil {
+func createFileParameters(path string, overwrite bool, options types.Dictionary) error {
+	if (utils.CheckPathExists(path) && !overwrite) || options.GetValues() == nil {
 		return nil
 	}
 	var (
@@ -116,7 +116,7 @@ func createFileParameters(path string, overwrite bool, options *map[string]inter
 
 	appconfig.ExportVariables.Init()
 	lines = []string{}
-	for key, value = range *options {
+	for key, value = range *options.GetValues() {
 		codedvalue, err = utils.ConvertToPythonString(value, 0, false, "    ")
 		if err != nil {
 			break
@@ -132,8 +132,8 @@ func createFileParameters(path string, overwrite bool, options *map[string]inter
 	return err
 }
 
-func createParameters(options *map[string]interface{}) error {
-	if options == nil {
+func createParameters(options types.Dictionary) error {
+	if options.GetValues() == nil {
 		return nil
 	}
 	var (
@@ -144,7 +144,7 @@ func createParameters(options *map[string]interface{}) error {
 	)
 
 	appconfig.ExportVariables.Init()
-	for key, value = range *options {
+	for key, value = range *options.GetValues() {
 		codedvalue, err = utils.ConvertToPythonString(value, 0, true, "    ")
 		if err != nil {
 			break
