@@ -68,6 +68,7 @@ func Transpile() error {
 				CommentsAuto: false,
 				ShowTree:     false,
 			},
+			[]string{},
 		)
 	}
 
@@ -88,6 +89,7 @@ func Transpile() error {
 			CommentsAuto: appconfig.Parameters.OptionCommentsAuto.GetValue(),
 			ShowTree:     appconfig.Parameters.OptionShowTree.GetValue(),
 		},
+		[]string{},
 	)
 
 	if err != nil {
