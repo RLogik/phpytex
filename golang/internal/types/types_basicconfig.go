@@ -1,4 +1,4 @@
-package appconfig
+package types
 
 /* ---------------------------------------------------------------- *
  * IMPORTS
@@ -197,5 +197,5 @@ func (c ConfigInt) GetValue() int {
  * ---------------------------------------------------------------- */
 
 func raiseParameterError(name string) {
-	logging.LogFatal(fmt.Sprintf("Neither a Ptr nor default Ptr of \033[1m%[1]s\033[0m has been set.", name))
+	panic(fmt.Sprintf("Neither a Ptr nor default Ptr of \033[1m%[1]s\033[0m has been set.", name))
 }

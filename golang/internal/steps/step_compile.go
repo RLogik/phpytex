@@ -7,11 +7,12 @@ package steps
 import (
 	"fmt"
 	"os"
+	"strings"
+
 	"phpytex/internal/core/logging"
 	"phpytex/internal/core/utils"
 	"phpytex/internal/setup/appconfig"
 	"phpytex/pkg/re"
-	"strings"
 )
 
 /* ---------------------------------------------------------------- *

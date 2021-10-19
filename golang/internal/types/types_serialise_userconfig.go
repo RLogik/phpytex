@@ -1,4 +1,4 @@
-package userconfig
+package types
 
 /* ---------------------------------------------------------------- *
 * IMPORTS
@@ -6,7 +6,6 @@ package userconfig
 
 import (
 	"encoding/json"
-	"phpytex/internal/core/utils"
 )
 
 /* ---------------------------------------------------------------- *
@@ -51,19 +50,19 @@ func (config *CompileConfig) Serialise() interface{} {
 		return nil
 	}
 	return map[string]interface{}{
-		"Ignore":    utils.SerialiseBoolPtr(config.Ignore),
-		"Root":      utils.SerialiseStringPtr(config.Root),
-		"Output":    utils.SerialiseStringPtr(config.Output),
-		"Debug":     utils.SerialiseBoolPtr(config.Debug),
-		"Compile":   utils.SerialiseBoolPtr(config.Compile),
-		"InsertBib": utils.SerialiseBoolPtr(config.InsertBib),
-		"Comments":  utils.SerialiseInterfacePtr(config.Comments),
-		"ShowTree":  utils.SerialiseBoolPtr(config.ShowTree),
-		"MaxLength": utils.SerialiseIntPtr(config.MaxLength),
-		"Tabs":      utils.SerialiseBoolPtr(config.Tabs),
-		"Spaces":    utils.SerialiseIntPtr(config.Spaces),
-		"Seed":      utils.SerialiseIntPtr(config.Seed),
-		"Offset":    utils.SerialiseStringPtr(config.Offset),
+		"Ignore":    BoolPtr(config.Ignore),
+		"Root":      StringPtr(config.Root),
+		"Output":    StringPtr(config.Output),
+		"Debug":     BoolPtr(config.Debug),
+		"Compile":   BoolPtr(config.Compile),
+		"InsertBib": BoolPtr(config.InsertBib),
+		"Comments":  InterfacePtr(config.Comments),
+		"ShowTree":  BoolPtr(config.ShowTree),
+		"MaxLength": IntPtr(config.MaxLength),
+		"Tabs":      BoolPtr(config.Tabs),
+		"Spaces":    IntPtr(config.Spaces),
+		"Seed":      IntPtr(config.Seed),
+		"Offset":    StringPtr(config.Offset),
 	}
 }
 
@@ -76,8 +75,8 @@ func (config *StampFileConfig) Serialise() interface{} {
 		options = *config.Options
 	}
 	return map[string]interface{}{
-		"File":      utils.SerialiseStringPtr(config.File),
-		"Overwrite": utils.SerialiseBoolPtr(config.Overwrite),
+		"File":      StringPtr(config.File),
+		"Overwrite": BoolPtr(config.Overwrite),
 		"Options":   options,
 	}
 }
@@ -91,8 +90,8 @@ func (config *ParametersFileConfig) Serialise() interface{} {
 		options = *config.Options
 	}
 	return map[string]interface{}{
-		"File":      utils.SerialiseStringPtr(config.File),
-		"Overwrite": utils.SerialiseBoolPtr(config.Overwrite),
+		"File":      StringPtr(config.File),
+		"Overwrite": BoolPtr(config.Overwrite),
 		"Options":   options,
 	}
 }

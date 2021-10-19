@@ -12,7 +12,7 @@ import (
 	"phpytex/internal/core/logging"
 	"phpytex/internal/core/utils"
 	"phpytex/internal/setup/appconfig"
-	"phpytex/internal/setup/userconfig"
+	"phpytex/internal/types"
 )
 
 /* ---------------------------------------------------------------- *
@@ -48,7 +48,7 @@ func Create() error {
  * SECONDARY METHODS
  * ---------------------------------------------------------------- */
 
-func createFilesAndFolders(path string, projectTree *userconfig.TreeConfig) error {
+func createFilesAndFolders(path string, projectTree *types.TreeConfig) error {
 	if projectTree == nil {
 		return nil
 	}

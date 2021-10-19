@@ -17,6 +17,7 @@ import (
 	"phpytex/internal/core/utils"
 	"phpytex/internal/setup/appconfig"
 	"phpytex/internal/setup/userconfig"
+	"phpytex/internal/types"
 	"phpytex/pkg/re"
 )
 
@@ -26,7 +27,7 @@ import (
 
 func Configure(fnameConfig string) error {
 	var err error
-	var config = &(userconfig.UserConfig{})
+	var config = &(types.UserConfig{})
 
 	logging.LogInfo("READ CONFIG STARTED")
 
@@ -65,7 +66,7 @@ func Configure(fnameConfig string) error {
  * PRIVATE METHODS
  * ---------------------------------------------------------------- */
 
-func getUserConfig(fnameConfig string, config *userconfig.UserConfig) error {
+func getUserConfig(fnameConfig string, config *types.UserConfig) error {
 	var err error
 	var contents []byte
 	if fnameConfig == "" {
@@ -88,12 +89,12 @@ func getUserConfig(fnameConfig string, config *userconfig.UserConfig) error {
 	return nil
 }
 
-func setHeaderConfig(config *userconfig.HeaderConfig) error {
+func setHeaderConfig(config *types.HeaderConfig) error {
 	appconfig.Parameters.OptionIgnore.SetValueFromPtr(config.Ignore)
 	return nil
 }
 
-func setCompileConfig(config *userconfig.CompileConfig) error {
+func setCompileConfig(config *types.CompileConfig) error {
 	var err error = nil
 	var (
 		comments    interface{}
@@ -161,7 +162,7 @@ func setCompileConfig(config *userconfig.CompileConfig) error {
 	if err != nil {
 		return fmt.Errorf(fmt.Sprintf("Could not process input path \033[1m%[1]s\033[0m.", *config.Root))
 	}
-	fileOutput, err = utils.FormatPath(*config.Output, root, false, nil, utils.StringToPtr(".tex"))
+	fileOutput, err = utils.FormatPath(*config.Output, root, false, nil, types.StringToPtr(".tex"))
 	if err != nil {
 		return fmt.Errorf(fmt.Sprintf("Could not process output path \033[1m%[1]s\033[0m.", *config.Root))
 	}
@@ -183,7 +184,7 @@ func setCompileConfig(config *userconfig.CompileConfig) error {
 	return nil
 }
 
-func setStampConfig(config *userconfig.StampFileConfig) error {
+func setStampConfig(config *types.StampFileConfig) error {
 	var err error = nil
 	var (
 		root string
@@ -206,7 +207,7 @@ func setStampConfig(config *userconfig.StampFileConfig) error {
 	return err
 }
 
-func setParamsConfig(config *userconfig.ParametersFileConfig) error {
+func setParamsConfig(config *types.ParametersFileConfig) error {
 	var err error = nil
 	var (
 		root string
@@ -222,7 +223,7 @@ func setParamsConfig(config *userconfig.ParametersFileConfig) error {
 
 	root = appconfig.Parameters.PathRoot.GetValue()
 	if config != nil && config.Options != nil && len(*config.Options) != 0 {
-		modulename = utils.PtrToString(config.File, "")
+		modulename = types.PtrToString(config.File, "")
 		if re.Matches(`^[^\.\s]*(\.[^\.\s]*)+$`, modulename) {
 			path = re.Sub(`([^\.]+)\.`, `$1/`, modulename)
 			path = path + ".py"
@@ -241,6 +242,6 @@ func setParamsConfig(config *userconfig.ParametersFileConfig) error {
 	return err
 }
 
-func setConfigFilesAndFolders(config *userconfig.TreeConfig) {
+func setConfigFilesAndFolders(config *types.TreeConfig) {
 	appconfig.ProjectTree = config
 }

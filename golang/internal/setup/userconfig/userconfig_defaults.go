@@ -5,44 +5,45 @@ package userconfig
 * ---------------------------------------------------------------- */
 
 import (
-	"phpytex/internal/core/utils"
+	"phpytex/internal/types"
 )
 
 /* ---------------------------------------------------------------- *
  * DEFAULTS
  * ---------------------------------------------------------------- */
 
-var DefaultHeaderConfig = HeaderConfig{
-	Ignore: utils.BoolToPtr(false),
+var DefaultHeaderConfig = types.HeaderConfig{
+	Ignore: types.BoolToPtr(false),
 }
 
-var DefaultTreeConfig = TreeConfig{
+var DefaultTreeConfig = types.TreeConfig{
 	Files:   &([]string{}),
-	Folders: &(map[string](*TreeConfig){}),
+	Folders: &(map[string](*types.TreeConfig){}),
 }
 
-var DefaultCompileConfig = CompileConfig{
-	Ignore:   utils.BoolToPtr(false),
-	Comments: utils.InterfaceToPtr("auto"),
-	Tabs:     utils.BoolToPtr(false),
-	Spaces:   utils.IntToPtr(4),
-	Legacy:   utils.BoolToPtr(false),
+var DefaultCompileConfig = types.CompileConfig{
+	Ignore:   types.BoolToPtr(false),
+	Comments: types.InterfaceToPtr("auto"),
+	Tabs:     types.BoolToPtr(false),
+	Spaces:   types.IntToPtr(4),
+	Legacy:   types.BoolToPtr(false),
 	// NOTE: do not provide default offset, as need to check if user does not set this
 }
 
-var DefaultStampConfig = StampFileConfig{
-	Overwrite: utils.BoolToPtr(true),
-	File:      utils.StringToPtr("stamp.tex"),
+var DefaultStampConfig = types.StampFileConfig{
+	Overwrite: types.BoolToPtr(true),
+	File:      types.StringToPtr("stamp.tex"),
 }
 
-var DefaultParametersConfig = ParametersFileConfig{
-	Overwrite: utils.BoolToPtr(true),
+var DefaultParametersConfig = types.ParametersFileConfig{
+	Overwrite: types.BoolToPtr(true),
 }
 
-var DefaultUserConfig = UserConfig{
+var DefaultUserConfig = types.UserConfig{
 	Header:     &DefaultHeaderConfig,
 	Compile:    &DefaultCompileConfig,
 	Stamp:      &DefaultStampConfig,
 	Parameters: &DefaultParametersConfig,
-	Tree:       &TreeConfig{},
+	Tree:       &DefaultTreeConfig,
+	// Tree:       &types.TreeConfig{},
 }

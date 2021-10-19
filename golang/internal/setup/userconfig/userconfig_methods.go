@@ -5,7 +5,7 @@ package userconfig
 * ---------------------------------------------------------------- */
 
 import (
-	"phpytex/internal/core/utils"
+	"phpytex/internal/types"
 )
 
 /* ---------------------------------------------------------------- *
@@ -13,7 +13,7 @@ import (
  * ---------------------------------------------------------------- */
 
 // deals with missing main sections of config
-func HandleMissingSections(config *UserConfig) {
+func HandleMissingSections(config *types.UserConfig) {
 	if config.Header == nil {
 		config.Header = DefaultUserConfig.Header
 	}
@@ -23,11 +23,11 @@ func HandleMissingSections(config *UserConfig) {
 }
 
 // cleans up structure to handle backwards compatibility
-func HandleBackwardsCompatibility(config *UserConfig) {
+func HandleBackwardsCompatibility(config *types.UserConfig) {
 	// [ignore] prioritise setting from: [header -> ignore], compile [option -> ignore]:
 	var ignore bool
-	ignore = utils.PtrToBool(config.Header.Ignore, false) || utils.PtrToBool(config.Compile.Ignore, false)
-	config.Header.Ignore = utils.BoolToPtr(ignore)
+	ignore = types.PtrToBool(config.Header.Ignore, false) || types.PtrToBool(config.Compile.Ignore, false)
+	config.Header.Ignore = types.BoolToPtr(ignore)
 	config.Compile.Ignore = nil
 
 	// flatten [compile -> options] ~~> [compile]:
@@ -37,23 +37,23 @@ func HandleBackwardsCompatibility(config *UserConfig) {
 	}
 	// [root] can be either [root] or [input]:
 	if config.Compile.Input != nil && config.Compile.Root == nil {
-		config.Compile.Root = utils.StringToPtr(*config.Compile.Input)
+		config.Compile.Root = types.StringToPtr(*config.Compile.Input)
 		config.Compile.Input = nil
 	}
 	// [compile] can be either [compile] or [compile-latex]:
 	if config.Compile.CompileLatex != nil && config.Compile.Compile == nil {
-		config.Compile.Compile = utils.BoolToPtr(*config.Compile.CompileLatex)
+		config.Compile.Compile = types.BoolToPtr(*config.Compile.CompileLatex)
 		config.Compile.CompileLatex = nil
 	}
 	// [show-tree] can be either [show-tree] or [show-structure]:
 	if config.Compile.ShowStructure != nil && config.Compile.ShowTree == nil {
-		config.Compile.ShowTree = utils.BoolToPtr(*config.Compile.ShowStructure)
+		config.Compile.ShowTree = types.BoolToPtr(*config.Compile.ShowStructure)
 		config.Compile.ShowStructure = nil
 	}
 
 	// if [tree] option not used:
 	if config.Tree == nil {
-		tree := TreeConfig{
+		tree := types.TreeConfig{
 			Files:   nil,
 			Folders: nil,
 		}
@@ -70,7 +70,7 @@ func HandleBackwardsCompatibility(config *UserConfig) {
 }
 
 // cleans up structure to handle missing values
-func HandleMissingKeys(config *UserConfig) {
+func HandleMissingKeys(config *types.UserConfig) {
 	if config.Compile.Tabs == nil {
 		config.Compile.Tabs = DefaultUserConfig.Compile.Tabs
 	}

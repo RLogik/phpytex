@@ -13,6 +13,7 @@ import (
 	"phpytex/internal/setup"
 	"phpytex/internal/setup/appconfig"
 	"phpytex/internal/setup/cli"
+	"phpytex/internal/types"
 )
 
 /* ---------------------------------------------------------------- *
@@ -38,7 +39,7 @@ var (
 
 func main() {
 	var err error
-	var arguments *cli.Arguments
+	var arguments *types.CliArguments
 
 	// set assets
 	setup.Res = res

@@ -6,13 +6,14 @@ package steps
 
 import (
 	"fmt"
+	"strings"
+
 	"phpytex/internal/core/logging"
 	"phpytex/internal/core/utils"
 	"phpytex/internal/setup"
 	"phpytex/internal/setup/appconfig"
 	"phpytex/internal/setup/templates"
 	"phpytex/internal/types"
-	"strings"
 )
 
 /* ---------------------------------------------------------------- *
@@ -289,7 +290,7 @@ func createImportFileParameters(
 	lines = append(lines, "")
 	if appconfig.ExportVariables.GetValues() != nil {
 		for name, obj = range *appconfig.ExportVariables.GetValues() {
-			valuePair = utils.InterfaceToArray(obj)
+			valuePair = types.InterfaceToArray(obj)
 			if valuePair == nil || len(*valuePair) != 2 {
 				continue
 			}
@@ -330,7 +331,7 @@ func createMetaCode(
 		"insertBib":    appconfig.Parameters.OptionInsertBib.GetValue(),
 		"compileLatex": appconfig.Parameters.OptionCompileLatex.GetValue(),
 		"lengthMax":    appconfig.Parameters.MaxLength.GetValue(),
-		"seed":         utils.ExpandPtrToInt(seed),
+		"seed":         types.ExpandPtrToInt(seed),
 		"indentSymb":   appconfig.Parameters.IndentCharacter.GetValue(),
 		"censorSymb":   appconfig.Parameters.CensorSymbol.GetValue(),
 		"mainFct":      templates.FUNCTION_NAME_MAIN,

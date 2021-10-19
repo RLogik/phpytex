@@ -1,4 +1,4 @@
-package utils
+package types
 
 /* ---------------------------------------------------------------- *
  * IMPORTS
@@ -8,28 +8,28 @@ package utils
  * METHOD serialisation of basic types
  * ---------------------------------------------------------------- */
 
-func SerialiseBoolPtr(p *bool) interface{} {
+func BoolPtr(p *bool) interface{} {
 	if p == nil {
 		return nil
 	}
 	return *p
 }
 
-func SerialiseStringPtr(p *string) interface{} {
+func StringPtr(p *string) interface{} {
 	if p == nil {
 		return nil
 	}
 	return *p
 }
 
-func SerialiseIntPtr(p *int) interface{} {
+func IntPtr(p *int) interface{} {
 	if p == nil {
 		return nil
 	}
 	return *p
 }
 
-func SerialiseInterfacePtr(p *interface{}) interface{} {
+func InterfacePtr(p *interface{}) interface{} {
 	if p == nil {
 		return nil
 	}
