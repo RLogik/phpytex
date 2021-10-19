@@ -28,26 +28,26 @@ ____phpytex_params____ = dict(
         anon    = [ ],
         bib     = dict(),
     ),
-    rootdir        = '{root}',
-    output         = '{output}',
-    name           = '{name}',
-    compile_latex  = {compile_latex},
+    rootdir        = '{rootDir}',
+    output         = '{outputFile}',
+    name           = '{outputName}',
+    compile_latex  = {compileLatex},
     pdflatex       = [
         # '-interaction=scrollmode',
         # '-interaction=batchmode',
         '-interaction=errorstopmode',
         # '-interaction=nonstopmode',
     ],
-    insert_bib     = {insert_bib},
+    insert_bib     = {insertBib},
     bibtex         = [
     ],
     seed           = {seed},
     ctr_emptylines = 0,
     length         = 0,
-    length_max     = {length_max},
+    length_max     = {lengthMax},
     length_error   = False,
-    indentsymb     = '{indentsymb}',
-    censorsymb     = '{censorsymb}',
+    indent_symb    = '{indentSymb}',
+    censor_symb    = '{censorSymb}',
 );
 __FNAME__  = '<undefined>';
 __ROOT__   = '.';
@@ -71,7 +71,7 @@ def main():
     ____reseed();
 
     ## transpile (python -> latex):
-    {mainfct}();
+    {mainFct}();
 
     ## compile (latex -> pdf):
     if ____phpytex_params____['compile_latex']:
@@ -179,8 +179,8 @@ def ____printfilestamp(depth: int = 0, start: bool = True, anon: bool = False):
 
     anon = (anon or __ANON__);
     params = dict(
-        tab  = ____phpytex_params____['indentsymb'] * depth,
-        path = ____phpytex_params____['censorsymb'] if anon else __FNAME__,
+        tab  = ____phpytex_params____['indent_symb'] * depth,
+        path = ____phpytex_params____['censor_symb'] if anon else __FNAME__,
     );
     if start:
         ____print('{{tab}}%% ********************************************************************************'.format(**params), anon=anon);
