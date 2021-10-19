@@ -65,3 +65,7 @@ func TemplatePost() string {
 	contents := ReadAsset("post")
 	return utils.FormatPythonString(contents, emptyargs)
 }
+
+func GrammarPhpytex() string {
+	return ReadAsset("phpytex_grammar")
+}

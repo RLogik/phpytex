@@ -25,11 +25,12 @@ var (
 	//go:embed assets/*
 	res    embed.FS
 	assets = map[string]string{
-		"version": "assets/VERSION",
-		"logo":    "assets/LOGO",
-		"help":    "assets/HELP",
-		"pre":     "assets/templates/template_pre",
-		"post":    "assets/templates/template_post",
+		"version":         "assets/VERSION",
+		"logo":            "assets/LOGO",
+		"help":            "assets/HELP",
+		"pre":             "assets/templates/template_pre",
+		"post":            "assets/templates/template_post",
+		"phpytex_grammar": "assets/grammars/phpytex.g4",
 	}
 )
 
