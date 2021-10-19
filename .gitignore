@@ -49,6 +49,8 @@
 !/golang/**/
 !/golang/**/*.go
 !/golang/assets/templates/template_*
+!/golang/assets/grammars/*.g4
+/golang/assets/grammars/**/
 !/golang/assets/VERSION
 !/golang/assets/HELP
 !/golang/assets/LOGO
@@ -83,6 +85,7 @@
 /**/.DS_Store
 /**/__archive__*
 /**/sandbox
+/**/.antlr
 
 ################################################################
 # Git Keep
