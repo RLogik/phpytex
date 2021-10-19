@@ -88,7 +88,7 @@ function compile_go() {
     _log_info "Compile \033[1mmain.go\033[0m with \033[1mgolang\033[0m";
     remove_file "dist/$NAME_OF_APP";
     pushd "$path" >> $VERBOSE;
-        # call_go build -o "$cwd/dist/$NAME_OF_APP" "main.go";
+        call_go build -o "$cwd/dist/$NAME_OF_APP" "main.go";
     popd >> $VERBOSE;
     ! [ -f "dist/$NAME_OF_APP" ] && return 1;
     return 0;
