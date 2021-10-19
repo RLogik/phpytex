@@ -16,11 +16,15 @@ type TranspileCommentOptions struct {
 	ShowTree     bool
 }
 
+type TranspileBlockParameters struct {
+	Keep bool
+}
 type TranspileBlock struct {
 	Kind       string
 	Content    string
 	Level      int
 	IndentSymb string
+	Parameters TranspileBlockParameters
 }
 
 type TranspileBlocks struct {
