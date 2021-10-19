@@ -21,6 +21,8 @@ env_from ".env" import TEST_TIMEOUT;
 export CONFIGENV="data/.env";
 export PATH_PROJECT_PY="python";
 export PATH_PROJECT_GO="golang";
+export PATH_GO_ASSETS_GRAMMAR="assets/grammars";
+export PATH_GO_INTERNAL_GRAMMAR="internal/tokenisers/grammars";
 export PYTHON_APP_PREFIX=\
 '''#!/usr/bin/env python3
 # -*- coding: utf-8 -*-'''
@@ -81,7 +83,7 @@ function compile_go() {
     local path="$1";
     local cwd="$PWD";
     pushd "$PATH_PROJECT_GO" >> $VERBOSE;
-        precompile_antlr_jar "Go";
+        precompile_antlr_jar "Go" "${ANTLR_VERSION}" "${PATH_GO_ASSETS_GRAMMAR}" "${PATH_GO_INTERNAL_GRAMMAR}";
     popd >> $VERBOSE;
     _log_info "Compile \033[1mmain.go\033[0m with \033[1mgolang\033[0m";
     remove_file "dist/$NAME_OF_APP";
@@ -171,36 +173,44 @@ function install_requirements_v_python() { activate_python_venv && install_requi
 ##############################################################################
 
 function install_antlr_jar() {
-    local url="http://www.antlr.org/download/antlr-${ANTLR_VERSION}-complete.jar";
-    local path="assets/grammars";
+    local pathAssets="$1";
+    local version="$2";
+    local url="http://www.antlr.org/download/antlr-${}-complete.jar";
     local fname;
     ( wget ${url} >> $VERBOSE 2> $VERBOSE ) || \
-        _log_fatal "The command \033[1;2mwget ${url}\033[0m could not be carried out.\n    Please download the \033[1mantlr*.jar\033[0m file manually and move to (golang)\033[1m${path}/antlr.jar\033[0m (including rename).";
+        _log_fatal "The command \033[1;2mwget ${url}\033[0m could not be carried out.\n    Please download the \033[1mantlr*.jar\033[0m file manually and move to (golang)\033[1m${pathAssets}/antlr.jar\033[0m (including rename).";
     while read fname; do
         ( [ "$fname" == "" ] || ! [ -f "$fname" ] ) && continue;
-        _log_info "\033[92;1mANTLR\033[1m-${ANTLR_VERSION}\033[0m was downloaded and placed in \033[1m${path}/antlr.jar\033[0m.";
-        mv "$fname" "${path}/antlr.jar";
+        _log_info "\033[92;1mANTLR\033[1m-${version}\033[0m was downloaded and placed in \033[1m${pathAssets}/antlr.jar\033[0m.";
+        mv "$fname" "${pathAssets}/antlr.jar";
         return 0;
     done <<< "$( ls antlr*.jar 2> $VERBOSE )"
-    _log_fatal "Installation of \033[1mantlr-${ANTLR_VERSION}\033[0m failed.";
+    _log_fatal "Installation of \033[1mantlr-${version}\033[0m failed.";
 }
 
 function precompile_antlr_jar() {
-    local lang="$1"; ## "Go"
-    local path="assets/grammars";
+    local cwd="$PWD";
+    local lang="$1";
+    local version="$2";
+    local pathAssets="$3"
+    local pathInternal="$4"
     local fname;
     local name;
+    local success=0;
     _log_info "Precompile grammar";
-    ! [ -f "${path}/antlr.jar" ] && install_antlr_jar;
-    pushd "$path" >> $VERBOSE;
+    ! [ -f "${pathAssets}/antlr.jar" ] && install_antlr_jar "${pathAssets}" "${version}";
+    pushd "${pathAssets}" >> $VERBOSE;
         remove_dir_force ".antlr"; ## <- the folder .antlr may be automatically generated, but we do not need it
         while read fname; do
             ( [ "$fname" == "" ] || ! [ -f "$fname" ] ) && continue;
             name="$( echo "$fname" | sed -E "s/^(.*)\.g4$/\1/g" )";
             _log_info "Use \033[92;1mANTLR\033[0m to precompile grammar \033[1m${fname}\033[0m";
-            call_java antlr.jar -Dlanguage=$lang "$fname" -o "$name";
+            ( call_java antlr.jar -Dlanguage=$lang "$fname" -o "$name" ) || \
+                _log_fatal "Something went wrong when precompiling grammar \033[1m${fname}\033[0m!";
+            mv "$name" "${cwd}/${pathInternal}";
         done <<< "$( ls *.g4 2> $VERBOSE )"
     popd >> $VERBOSE;
+    return 0;
 }
 
 ##############################################################################
