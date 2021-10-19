@@ -43,8 +43,8 @@ func (c *ConfigString) SetValue(x string) {
 	c.Ptr = &x
 }
 
+// NOTE: only overrides if ptr not nil
 func (c *ConfigString) SetValueFromPtr(x *string) {
-	c.Ptr = nil
 	if x != nil {
 		c.SetValue(*x)
 	}
@@ -74,8 +74,8 @@ func (c *ConfigPath) SetValue(x string) {
 	}
 }
 
+// NOTE: only overrides if ptr not nil
 func (c *ConfigPath) SetValueFromPtr(x *string) {
-	c.Ptr = nil
 	if x != nil {
 		c.SetValue(*x)
 	}
@@ -101,8 +101,8 @@ func (c *ConfigFile) SetValue(x string) {
 	c.Ptr = &x
 }
 
+// NOTE: only overrides if ptr not nil
 func (c *ConfigFile) SetValueFromPtr(x *string) {
-	c.Ptr = nil
 	if x != nil {
 		c.SetValue(*x)
 	}
@@ -146,8 +146,8 @@ func (c *ConfigBool) SetValue(x bool) {
 	c.Ptr = &x
 }
 
+// NOTE: only overrides if ptr not nil
 func (c *ConfigBool) SetValueFromPtr(x *bool) {
-	c.Ptr = nil
 	if x != nil {
 		c.SetValue(*x)
 	}
@@ -173,8 +173,8 @@ func (c *ConfigInt) SetValue(x int) {
 	c.Ptr = &x
 }
 
+// NOTE: only overrides if ptr not nil
 func (c *ConfigInt) SetValueFromPtr(x *int) {
-	c.Ptr = nil
 	if x != nil {
 		c.SetValue(*x)
 	}
