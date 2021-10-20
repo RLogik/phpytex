@@ -96,9 +96,9 @@ function _cli_ask_expected_answer() {
         ## read in CLI_ANSWER character by character:
         CLI_ANSWER="";
         read_break_char=false;
-        while IFS= read -rN 1 symb; do
+        while IFS= read -rn 1 symb; do
             case "$symb" in
-                $'\04') read_break_char=true          ;&
+                $'\04') read_break_char=true          ;;
                 $'\n')  break                         ;;
                 *)      CLI_ANSWER="$CLI_ANSWER$symb" ;;
             esac
@@ -123,7 +123,7 @@ function _cli_ask_expected_answer_secure() {
         read_break_char=false;
         while IFS= read -rN 1 symb; do
             case "$symb" in
-                $'\04') read_break_char=true          ;&
+                $'\04') read_break_char=true          ;;
                 $'\n')  break                         ;;
                 *)      CLI_ANSWER="$CLI_ANSWER$symb" ;;
             esac

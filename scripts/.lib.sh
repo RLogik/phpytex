@@ -76,14 +76,15 @@ function install_requirements_go() {
         done <<< "$( cat "$cwd/$path" )";
     popd >> $VERBOSE
 
-    ( $has_problems ) && _log_fail "Something went wrong whilst using \033[92;1mPIP\033[0m to install: {\033[93;1m${problem_packages[*]}\033[0m}.";
+    ( $has_problems ) && _log_fail "Something went wrong whilst using \033[92;1mGO\033[0m to install: {\033[93;1m${problem_packages[*]}\033[0m}.";
 }
 
 function compile_go() {
-    local path="$1";
+    local force="$1";
+    local path="$2";
     local cwd="$PWD";
     pushd "$PATH_PROJECT_GO" >> $VERBOSE;
-        precompile_antlr_jar "Go" "${ANTLR_VERSION}" "${PATH_GO_ASSETS_GRAMMAR}" "${PATH_GO_INTERNAL_GRAMMAR}";
+        precompile_antlr_jar "$force" "Go" "${ANTLR_VERSION}" "${PATH_GO_ASSETS_GRAMMAR}" "${PATH_GO_INTERNAL_GRAMMAR}";
     popd >> $VERBOSE;
     _log_info "Compile \033[1mmain.go\033[0m with \033[1mgolang\033[0m";
     remove_file "dist/$NAME_OF_APP";
@@ -190,10 +191,11 @@ function install_antlr_jar() {
 
 function precompile_antlr_jar() {
     local cwd="$PWD";
-    local lang="$1";
-    local version="$2";
-    local pathAssets="$3"
-    local pathInternal="$4"
+    local force="$1";
+    local lang="$2";
+    local version="$3";
+    local pathAssets="$4"
+    local pathInternal="$5"
     local prog="${cwd}/${pathAssets}/antlr.jar"
     local dir;
     local fname;
@@ -206,12 +208,18 @@ function precompile_antlr_jar() {
         remove_dir_force ".antlr"; ## <- the folder .antlr may be automatically generated, but we do not need it
         while read fname; do
             ( [ "$fname" == "" ] || ! [ -f "$fname" ] ) && continue;
+            # determine package name from file and target directory in 'internal':
             pkgname="$( echo "$fname" | sed -E "s/^(.*)\.[^\.]+$/\1/g" )";
+            targetdir="${cwd}/${pathInternal}/${pkgname}";
+            # if force == false and directory already exists, skip:
+            ! ( $force ) && [ -d "$targetdir" ] && continue;
+            # otherwise, removed the target directory:
+            remove_dir_force "${targetdir}";
+            # generate files:
             _log_info "Use \033[92;1mANTLR\033[0m to precompile grammar \033[1m${fname}\033[0m";
             ( call_java "$prog" -Dlanguage=$lang "$fname" -o "$pkgname" -package "$pkgname" ) || \
                 _log_fail "Something went wrong when precompiling grammar \033[1m${fname}\033[0m!";
-            targetdir="${cwd}/${pathInternal}/${pkgname}";
-            remove_dir_force "${targetdir}";
+            # move generated files to target directory:
             mv "$pkgname" "${targetdir}";
         done <<< "$( ls *.g4 2> $VERBOSE )"
     popd >> $VERBOSE;
@@ -323,7 +331,7 @@ function run_create_artefact_go() {
     local _temp="$( create_temporary_dir "dist" )";
     cp -r "$PATH_PROJECT_GO/." "$_temp";
     copy_file file="VERSION" from="dist" to="${_temp}/assets";
-    ( compile_go "$_temp" );
+    ( compile_go true "$_temp" );
     success=$?;
     ## remove temp artefacts:
     remove_dir "$_temp";
@@ -362,7 +370,7 @@ function run_main() {
 }
 
 function run_main_go() {
-    compile_go "$PATH_PROJECT_GO";
+    compile_go false "$PATH_PROJECT_GO";
     ./dist/$NAME_OF_APP $@;
 }
 
