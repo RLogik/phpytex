@@ -16,11 +16,14 @@ import (
  * ---------------------------------------------------------------- */
 
 func ParseExpr(text string) types.AntlrTree {
-	var lexer = createLexer(text)
+	var stream = exprToStream(text)
+	var lexer = createLexer(stream)
 	var tokenStream = lexerToTokenStream(lexer)
-	var prs = grammarPhpytex.NewgrammarPhpytexParser(tokenStream)
-	var tree = prs.Start()
-	var ant = newAntlrTree(tree, prs)
+	var parser = grammarPhpytex.NewgrammarPhpytexParser(tokenStream)
+
+	var tree = parser.Start()
+	var ant = types.NewAntlrTree(tree, parser)
+
 	return ant
 }
 
@@ -28,19 +31,14 @@ func ParseExpr(text string) types.AntlrTree {
  * PRIVATE
  * ---------------------------------------------------------------- */
 
-func exprToStream(u string) *antlr.InputStream {
-	return antlr.NewInputStream(u)
+func exprToStream(text string) *antlr.InputStream {
+	return antlr.NewInputStream(text)
 }
 
-func createLexer(u string) antlr.Lexer {
-	stream := exprToStream(u)
+func createLexer(stream *antlr.InputStream) antlr.Lexer {
 	return grammarPhpytex.NewgrammarPhpytexLexer(stream)
 }
 
 func lexerToTokenStream(lexer antlr.Lexer) antlr.TokenStream {
 	return antlr.NewCommonTokenStream(lexer, antlr.TokenDefaultChannel)
-}
-
-func newAntlrTree(tree antlr.Tree, parser antlr.Parser) types.AntlrTree {
-	return types.AntlrTree{Tree: tree, Parser: &parser}
 }

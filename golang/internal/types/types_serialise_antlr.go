@@ -37,7 +37,7 @@ func (self AntlrTree) String() string {
 	var lines []string
 	ch = make(chan string)
 	wg.Add(1)
-	go self.stringify(0, "", "  ", " |__", wg, ch)
+	go self.stringify(0, "", "  ", "  ", wg, ch)
 	go (func() {
 		wg.Wait()
 		close(ch)
@@ -65,9 +65,9 @@ func (self AntlrTree) stringify(
 		indent += strings.Repeat(tab, depth-1) + branch
 	}
 	if self.Terminal {
-		line = fmt.Sprintf(`%[1]s %[2]s`, indent, PtrToString(self.Value, "<null>"))
+		line = fmt.Sprintf(`%[1]s- "%[2]s"`, indent, PtrToString(self.Value, "<null>"))
 	} else {
-		line = fmt.Sprintf(`%[1]s %[2]s:`, indent, self.Kind)
+		line = fmt.Sprintf(`%[1]s'%[2]s':`, indent, self.Kind)
 	}
 	ch <- line
 	for _, subtree := range self.GetChildren() {

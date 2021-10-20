@@ -39,9 +39,17 @@ func NewAntlrTree(tree antlr.Tree, parser antlr.Parser) AntlrTree {
 }
 
 func (self Ant) ToTree() AntlrTree {
-	var tree AntlrTree
+	var children []AntlrTree
+	var nodes []Ant
+
+	nodes = self.GetChildren()
+	children = make([]AntlrTree, len(nodes))
+	for i, subant := range nodes {
+		children[i] = subant.ToTree()
+	}
+
 	if self.IsTerminal() {
-		tree = AntlrTree{
+		return AntlrTree{
 			Terminal: true,
 			Kind:     "TERMINAL",
 			Value:    StringToPtr(self.GetText()),
@@ -49,24 +57,14 @@ func (self Ant) ToTree() AntlrTree {
 			children: nil,
 		}
 	} else {
-		tree = AntlrTree{
+		return AntlrTree{
 			Terminal: false,
 			Kind:     self.GetText(),
 			Value:    nil,
 			ant:      &self,
-			children: nil,
+			children: &children,
 		}
 	}
-	var children []AntlrTree
-	var nodes []Ant = self.GetChildren()
-	children = make([]AntlrTree, len(nodes))
-	for i, subant := range nodes {
-		children[i] = subant.ToTree()
-	}
-	if len(children) > 0 {
-		tree.children = &children
-	}
-	return tree
 }
 
 func (self Ant) GetChildren() []Ant {
