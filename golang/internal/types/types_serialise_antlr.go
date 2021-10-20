@@ -60,6 +60,7 @@ func (self AntlrTree) stringify(
 	defer wg.Done()
 	var indent string
 	var line string
+	var children = self.GetChildren()
 	indent = prefix
 	if depth > 0 {
 		indent += strings.Repeat(tab, depth-1) + branch
@@ -67,11 +68,11 @@ func (self AntlrTree) stringify(
 	if self.Terminal {
 		line = fmt.Sprintf(`%[1]s- "%[2]s"`, indent, PtrToString(self.Value, "<null>"))
 	} else {
-		line = fmt.Sprintf(`%[1]s'%[2]s':`, indent, self.Kind)
+		line = fmt.Sprintf(`%[1]s'%[2]s' (%[3]v):`, indent, self.Kind, len(*self.children))
 	}
 	ch <- line
-	for _, subtree := range self.GetChildren() {
-		wg.Add(1)
+	wg.Add(len(children)) // NOTE: do not wg.Add(1) inside loop
+	for _, subtree := range children {
 		go subtree.stringify(depth+1, prefix, tab, branch, wg, ch)
 	}
 }
