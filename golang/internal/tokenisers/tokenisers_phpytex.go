@@ -5,7 +5,6 @@ package tokenisers
  * ---------------------------------------------------------------- */
 
 import (
-	"fmt"
 	"strings"
 
 	"phpytex/internal/types"
@@ -22,25 +21,15 @@ var lexers map[string]interface{}
  * METHODS tokenisers
  * ---------------------------------------------------------------- */
 
-func getLexer(mode string) interface{} {
-	// if _, ok := grammars[mode]; !ok {
-	//     grammars[mode] = setup.GetGrammar();
-	// }
-	// if _, ok := lexers[mode]; !ok {
-	//     lexers[mode] = Lark(
-	//         grammars[mode],
-	//         mode,
-	//         True,
-	//         'earley', # 'lalr', 'earley', 'cyk'
-	//         'invert', # auto (default), none, normal, invert
-	//     );
-	// return lexers[mode];
-	return nil
+func getLexer(mode string) func(string) types.AntlrTree {
+	switch mode {
+	default:
+		return TokenisePhpytex
+	}
 }
 
-func tokeniseInput(mode string, text string) {
-	// u, err := getLexer(mode).parse(text)
-	// fmt.Errorf('Could not tokenise input as \033[1m{}\033[0m!'.format(mode));
+func tokeniseInput(mode string, text string) types.AntlrTree {
+	return getLexer(mode)(text)
 }
 
 /* ---------------------------------------------------------------- *
@@ -52,18 +41,19 @@ func ParseText(
 	indentation types.IndentationTracker,
 	offset string,
 ) ([]types.TranspileBlock, error) {
-	var err error = nil
-	var blocks []types.TranspileBlock
-
-	fmt.Println(text)
-
-	// TODO
 	if strings.TrimSpace(text) == "" {
 		return []types.TranspileBlock{}, nil
 	}
 
-	// tree = tokeniseInput("blocks", text)
-	// return lexedToBlocks(tree, offset, indentation)
+	tree := tokeniseInput("blocks", text)
+	return lexedToBlocks(tree, offset, indentation)
+}
 
-	return blocks, err
+func lexedToBlocks(
+	u types.AntlrTree,
+	offset string,
+	indentation types.IndentationTracker,
+) ([]types.TranspileBlock, error) {
+	// TODO
+	return []types.TranspileBlock{}, nil
 }
