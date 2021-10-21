@@ -7,7 +7,6 @@ package types
 import (
 	"fmt"
 	"strings"
-	"sync"
 )
 
 /* ---------------------------------------------------------------- *
@@ -32,20 +31,8 @@ func (self AntlrTree) Serialise() map[string]interface{} {
 }
 
 func (self AntlrTree) String() string {
-	var ch chan string
-	var wg *sync.WaitGroup = &sync.WaitGroup{}
 	var lines []string
-	ch = make(chan string)
-	wg.Add(1)
-	go self.stringify(0, "", "  ", "  ", wg, ch)
-	go (func() {
-		wg.Wait()
-		close(ch)
-	})()
-	lines = []string{}
-	for line := range ch {
-		lines = append(lines, line)
-	}
+	self.stringify(0, "", "  ", "  ", &lines)
 	return strings.Join(lines, "\n")
 }
 
@@ -54,10 +41,8 @@ func (self AntlrTree) stringify(
 	prefix string,
 	tab string,
 	branch string,
-	wg *sync.WaitGroup,
-	ch chan string,
+	lines *[]string,
 ) {
-	defer wg.Done()
 	var indent string
 	var line string
 	var children = self.GetChildren()
@@ -66,13 +51,12 @@ func (self AntlrTree) stringify(
 		indent += strings.Repeat(tab, depth-1) + branch
 	}
 	if self.Terminal {
-		line = fmt.Sprintf(`%[1]s- "%[2]s"`, indent, PtrToString(self.Value, "<null>"))
+		line = fmt.Sprintf(`%[1]s- "%[2]s"`, indent, PtrToString(self.Value, `null`))
 	} else {
-		line = fmt.Sprintf(`%[1]s'%[2]s' (%[3]v):`, indent, self.Kind, len(*self.children))
+		line = fmt.Sprintf(`%[1]s'%[2]s': # has %[3]v children`, indent, self.Kind, len(*self.children))
 	}
-	ch <- line
-	wg.Add(len(children)) // NOTE: do not wg.Add(1) inside loop
+	*lines = append(*lines, line)
 	for _, subtree := range children {
-		go subtree.stringify(depth+1, prefix, tab, branch, wg, ch)
+		subtree.stringify(depth+1, prefix, tab, branch, lines)
 	}
 }
