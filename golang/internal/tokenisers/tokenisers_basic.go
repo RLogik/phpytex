@@ -15,16 +15,16 @@ import (
  * METHODS
  * ---------------------------------------------------------------- */
 
-func ParseExpr(text string) types.AntlrTree {
+func TokenisePhpytex(text string) types.AntlrTree {
 	var stream = exprToStream(text)
 	var lexer = createLexer(stream)
 	var tokenStream = lexerToTokenStream(lexer)
 	var parser = grammarPhpytex.NewgrammarPhpytexParser(tokenStream)
 
-	var tree = parser.Start()
-	var ant = types.NewAntlrTree(tree, parser)
+	var t = parser.Start()
+	var tree = types.NewAntlrTree(t, parser)
 
-	return ant
+	return tree
 }
 
 /* ---------------------------------------------------------------- *
