@@ -1,6 +1,6 @@
 ## PIP + wheel for package installation
-pip==21.3
-wheel==0.36.1
+pip>=21.3
+wheel>=0.36.1
 
 ## utility
 pyyaml==5.4.1

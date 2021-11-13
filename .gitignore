@@ -21,7 +21,6 @@
 
 !/scripts
 !/scripts/*.sh
-!/scripts/REQUIREMENTS_*
 
 !/install
 !/install/installphpytex
@@ -44,6 +43,7 @@
 !/python/test/**
 !/python/test/unit/**
 !/python/test/**/*.py
+!/python/requirements
 
 !/golang
 !/golang/**/
@@ -57,6 +57,7 @@
 /golang/internal/tokenisers/grammars/**/
 !/golang/go.mod
 !/golang/go.sum
+!/golang/requirements
 
 !/test
 !/test/setup
