@@ -432,7 +432,6 @@ function run_test_cases_go() {
     local current_dir="$PWD";
     _log_info "RUN TEST CASES";
     pushd $PATH_PROJECT_GO >> $VERBOSE;
-        # TODO: currently runs in python - change this to go!
         call_v_python test/cases.py \
             --dir "$current_dir" \
             --app "$current_dir/dist/$NAME_OF_APP" \
