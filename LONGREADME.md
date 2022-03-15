@@ -4,7 +4,7 @@ This project contains versioned releases of the programme, which combines both o
 
 The old project files (unversioned) will be kept (for now) in the repository [RLogik/phpytex-old](https://github.com/RLogik/phpytex-old).
 
-This project currently uses `python==3.9.5`.
+This project currently uses `python==3.10.2`.
 
 **What is phpytex?** Simply put it's an augmented language and a transpiler for LaTeX.
 <br>
