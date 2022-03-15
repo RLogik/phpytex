@@ -76,7 +76,7 @@ func DedentIgnoreEmptyLines(text string) string {
 }
 
 func DedentIgnoreFirstAndLast(text string) string {
-	text = re.Sub(`(?m)^\s*[\n\r]|[\n\r]\s*$`, ``, text)
+	text = re.Sub(`^\s*[\n\r]|[\n\r]\s*$`, ``, text)
 	return DedentIgnoreEmptyLines(text)
 }
 

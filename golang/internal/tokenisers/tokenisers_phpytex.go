@@ -21,15 +21,8 @@ var lexers map[string]interface{}
  * METHODS tokenisers
  * ---------------------------------------------------------------- */
 
-func getLexer(mode string) func(string) types.AntlrTree {
-	switch mode {
-	default:
-		return TokenisePhpytex
-	}
-}
-
 func tokeniseInput(mode string, text string) types.AntlrTree {
-	return getLexer(mode)(text)
+	return TokenisePhpytex(mode, text)
 }
 
 /* ---------------------------------------------------------------- *

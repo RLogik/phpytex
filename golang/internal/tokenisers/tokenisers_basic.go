@@ -15,13 +15,20 @@ import (
  * METHODS
  * ---------------------------------------------------------------- */
 
-func TokenisePhpytex(text string) types.AntlrTree {
+func TokenisePhpytex(mode string, text string) types.AntlrTree {
 	var stream = exprToStream(text)
 	var lexer = createLexer(stream)
 	var tokenStream = lexerToTokenStream(lexer)
 	var parser = grammarPhpytex.NewgrammarPhpytexParser(tokenStream)
+	var t antlr.Tree
 
-	var t = parser.Start()
+	switch mode {
+	case "blocks":
+		t = parser.Blocks()
+	default:
+		t = parser.Blocks()
+	}
+
 	var tree = types.NewAntlrTree(t, parser)
 
 	return tree

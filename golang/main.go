@@ -6,13 +6,16 @@ package main
 
 import (
 	"embed"
+	"fmt"
 	"os"
 
 	"phpytex/internal/core/logging"
+	"phpytex/internal/core/utils"
 	"phpytex/internal/endpoints"
 	"phpytex/internal/setup"
 	"phpytex/internal/setup/appconfig"
 	"phpytex/internal/setup/cli"
+	"phpytex/internal/tokenisers"
 	"phpytex/internal/types"
 )
 
@@ -41,6 +44,20 @@ var (
 func main() {
 	var err error
 	var arguments *types.CliArguments
+
+	if true {
+		var text string
+		text, _ = utils.ReadTextFile("root.tex")
+		// text = utils.DedentIgnoreFirstAndLast(`
+		// 	apple
+		// 	1234
+		// `)
+		fmt.Println(text)
+		tree := tokenisers.TokenisePhpytex("blocks", text)
+		fmt.Println(tree)
+		os.Exit(0)
+		// tokenisers.ParseText(text, types.NewIndentationTracker("    ", "    "), "")
+	}
 
 	// set assets
 	setup.Res = res
