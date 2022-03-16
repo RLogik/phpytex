@@ -5,7 +5,11 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from src.local.typing import *;
+from typing import Any;
+from typing import Callable;
+from typing import Dict;
+from typing import List;
+
 from src.special.methods import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -21,98 +25,220 @@ __all__ = [
 # Class: LatexMacro
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-class LatexMacro:
-    name: str;
+class LatexMacro(object):
+    alias: str;
+    anon: bool;
     overwrite: bool;
     definition: str;
-    use: Callable[..., str];
+    usage: Callable[..., str];
+
+    def __init__(
+        self,
+        alias: str,
+        anon: bool,
+        usage: Callable[..., str],
+        definition: str = '',
+        overwrite: bool = False,
+    ):
+        self.alias = alias;
+        self.anon = anon;
+        self.overwrite = overwrite;
+        self.definition = definition;
+        self.usage = usage;
+        return;
 
     def clone(self):
-        m = LatexMacro();
-        for _ in ['name', 'overwrite', 'definition', 'use']:
-            if hasattr(self, _):
-                setattr(m, _, getattr(self, _));
-        return m;
+        return LatexMacro(
+            alias      = self.alias,
+            anon       = self.anon,
+            overwrite  = self.overwrite,
+            definition = self.definition,
+            usage      = self.usage,
+        );
+
+    def getDefinition(self) -> str:
+        return '' if self.anon else self.definition;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Class: LatexMacros
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-class LatexMacros:
-    __objects: Dict[str, LatexMacro];
-    definescheme: Callable[..., str];
-    usescheme:    Callable[..., Callable[..., str]];
+class LatexMacros(object):
+    _objects:         Dict[str, LatexMacro];
 
     def __init__(self):
-        self.__objects = dict();
-
-        ## create native LaTeX macro definition:
-        def definescheme(name: str, overwrite: bool = False, n: int = 0, contents: List[str] = [], **kwargs) -> str:
-            lines  = joinlines(contents, relax=True, percent=True);
-            opt    = dict(name=name, n=n, lines=lines);
-            cmd    = '\\providecommand{{\\{name}}}{{}}\n\\renewcommand*'.format(**opt) if overwrite else '\\newcommand*';
-            if n > 0:
-                return cmd + '{{\\{name}}}[{n}]{{{lines}}}'.format(**opt);
-            else:
-                return cmd + '{{\\{name}}}{{{lines}}}'.format(**opt);
-
-        ## create method to call native  LaTeX-macro:
-        def usescheme(name: str, n: int, keys: List[str], **kwargs) -> Callable[..., str]:
-            def __usescheme(*_args, **_kwargs) -> str:
-                values  = (list(_args) + ['' for _ in range(n)])[:n];
-                values += [(_kwargs[_key] if _key in _kwargs else '') for _key in keys];
-                values  = ''.join(['{{{}}}'.format(_val) for _val in values]);
-                return '\\{name}{args}'.format(name=name, args=values);
-            return __usescheme;
-
-        self.definescheme = definescheme;
-        self.usescheme    = usescheme;
+        self._objects = dict();
         pass;
 
     def __contains__(self, x):
-        return isinstance(x, str) and x in self.__objects;
+        return isinstance(x, str) and x in self._objects;
 
     def __iter__(self):
-        for alias in self.__objects:
-            yield alias, self.__objects[alias];
+        for alias in self._objects:
+            yield alias, self._objects[alias];
 
-    def __getitem__(self, alias: str) -> Callable[..., str]:
-        if alias in self.__objects:
-            return self.__objects[alias].use;
-        else:
-            raise AttributeError('LATEX macro \033[1m{}\033[0m not set.'.format(alias));
-
-    # def __getattr__(self, alias: str) -> Callable[..., str]:
     def get(self, alias: str) -> LatexMacro:
-        if not alias in self.__objects:
-            raise AttributeError('LATEX macro \033[1m{}\033[0m not set.'.format(alias));
-        return self.__objects[alias]
+        if self.__contains__(alias):
+            return self._objects[alias];
+        raise AttributeError('LATEX macro \033[1m{}\033[0m not set.'.format(alias));
+
+    def get_definition(self, alias: str) -> str:
+        return self.get(alias).getDefinition();
 
     def use(self, alias: str, *args, **kwargs) -> str:
-        return self.get(alias).use(*args, **kwargs);
+        return self.get(alias).usage(*args, **kwargs);
 
-    # Intention: should create explicit LaTeX definition. This can be customised.
-    def set(
+    def add(
         self,
         alias:     str,
-        name:      Union[str, None]   = None,
-        silent:    bool               = False, # True <--> implicit definition, i.e. no latex macro created.
-        overwrite: bool               = False, # True <--> if explicit latex macro exists, overwrite it.
-        n:         int                = 0,
-        keys:      List[str]          = [],
-        contents:  List[str]          = [],
-        use:       Callable[..., str] = lambda: ''
+        contents:  str,
+        n:         int       = 0,
+        keys:      List[str] = [],
+        overwrite: bool      = False,
+        multiline: bool      = True,
+        name:      Any       = None,
     ):
-        _ = LatexMacro();
-        _.name      = name if isinstance(name, str) else alias;
-        _.overwrite = overwrite;
+        '''
+        ## Create explicit LaTeX definition ##
 
-        if silent:
-            _.use        = use;
-        else:
-            _.definition = self.definescheme(name=name, overwrite=overwrite, n=n + len(keys), contents=contents);
-            _.use        = self.usescheme(name, n, keys);
+        @inputs
+        - `alias`     - how command should be referred to in python.
+        - `name`      - how command should be named to in LaTeX (defaults to alias, if not given).
+        - `overwrite` - <bool> force overwrite LaTeX definition if exists.
+        - `multiline` - <bool> whether LaTeX-command should allow par breaks.
+        - `n`         - number of unnamed arguments in macro
+        - `keys`      - named arguments in macro
+        - `contents`  - lines of content in explicit LaTeX deinition
 
-        self.__objects[alias] = _;
+        ## Example ##
+
+        ```py
+        macros = LatexMacros();
+        macros.add(alias='tree-stats', name='showTreeStats',
+            n=1, keys=['age', 'colour'],
+            contents=r"""
+            \\begin{#1}
+                \\item The tree is \\textit{age} years old.
+                \\item The tree is \\textit{colour}.
+            \\end{#1}
+            """,
+        );
+        ```
+        Calling
+        ```coffee
+        <<< macros.get_definition('tree-stats'); >>>
+        ```
+        displays
+        ```tex
+        \\providecommand{\\showTreeStats}{}
+        \\renewcommand{\\showTreeStats}[3]{%
+            \\begin{#1}\\relax%
+                \\item The tree is \\textit{#2} years old.\\relax%
+                \\item The tree is \\textit{#3}.\\relax%
+            \\end{#1}\\relax%
+        }
+        ```
+        in .tex files, and
+        ```coffee
+        <<< macros.use('tree-stats', 'itemize', colour='brown', age=387); >>>
+        ```
+        displays
+        ```tex
+        \\showTreeStats{itemize}{387}{brown}
+        ```
+        in .tex files.
+        '''
+        contents, n = anonymise_arguments(contents, n, keys);
+        ## create definition + usage:
+        name = name if isinstance(name, str) else alias;
+        definition = createMacroDefinition(name=name, overwrite=overwrite, multiline=multiline, n=n, contents=contents);
+        usage = createMacroUsage(name=name, n=n, keys=keys);
+        ## add new macro in dictionary:
+        self._objects[alias] = LatexMacro(
+            alias      = alias,
+            anon       = False,
+            overwrite  = overwrite,
+            usage      = usage,
+            definition = definition,
+        );
         return;
-    pass;
+
+    def add_anon(
+        self,
+        alias: str,
+        usage: Callable[..., str],
+    ):
+        '''
+        ## Create anonymous LaTeX definition ##
+
+        @inputs
+        - `alias` - how command should be referred to in python.
+        - `usage` - implicit method
+
+        ## Example ##
+
+        ```py
+        macros = LatexMacros();
+        macros.add_anon(alias='filter-limit',
+            usage = lambda F, var: \
+                r"\\mathop{{ \\mathcal{{{F}}}\\text{-}\\lim_{{{var}}}} }}".format(F=F, var=var)
+        );
+        ```
+        Using
+        ```coffee
+        <<< macros.getDefinition('filter-limit'); >>>
+        ```
+        displays an empty line in .tex files. And
+        ```coffee
+        <<< macros.use('filter-limit', var='n', F='G'); >>>
+        ```
+        displays
+        ```tex
+        \\mathop{ \\mathcal{G}\\text{-}\\lim_{n} }
+        ```
+        in .tex files.
+        '''
+        self._objects[alias] = LatexMacro(alias=alias, anon=True, usage=usage);
+        return;
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# AUXILIARY METHODS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def createMacroDefinition(
+    name:      str,
+    overwrite: bool,
+    multiline: bool,
+    n:         int,
+    contents:  str,
+) -> str:
+    '''
+    Creates native LaTeX macro definition.
+    '''
+    # split contents into lines and trim empty lines:
+    lines = join_lines(clean_lines(contents), relax=True, percent=True);
+    ## create latex command:
+    options = dict(
+        name  = name,
+        n     = n,
+        lines = lines,
+        multi = '' if multiline else '*',
+    );
+    if overwrite:
+        return dedentIgnoreFirstAndLast('''
+            \\providecommand{{\\{name}}}{{}}
+            \\renewcommand{multi}{{\\{name}}}[{n}]{{{lines}}}
+        ''').format(**options)
+    return dedentIgnoreFirstAndLast('''
+        \\newcommand{multi}{{\\{name}}}[{n}]{{{lines}}}
+    ''').format(**options);
+
+## creates usage to call an explicitly created LaTeX-macro:
+def createMacroUsage(name: str, n: int, keys: List[str]) -> Callable[..., str]:
+    '''
+    Creates usage function for explicitly defined LaTeX macro.
+    '''
+    def usage(*_, **__) -> str:
+        args_string = convert_args_to_latex_args_as_string(n=n, keys=keys, args=_, kwargs=__);
+        return '\\{name}{args}'.format(name=name, args=args_string);
+    return usage;
