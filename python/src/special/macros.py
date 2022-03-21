@@ -30,6 +30,7 @@ class LatexMacro(object):
     anon: bool;
     overwrite: bool;
     definition: str;
+    command: str;
     usage: Callable[..., str];
 
     def __init__(
@@ -39,12 +40,14 @@ class LatexMacro(object):
         usage: Callable[..., str],
         definition: str = '',
         overwrite: bool = False,
+        command: str = '',
     ):
         self.alias = alias;
         self.anon = anon;
         self.overwrite = overwrite;
         self.definition = definition;
         self.usage = usage;
+        self.command = command;
         return;
 
     def clone(self):
@@ -54,6 +57,7 @@ class LatexMacro(object):
             overwrite  = self.overwrite,
             definition = self.definition,
             usage      = self.usage,
+            command    = self.command,
         );
 
     def getDefinition(self) -> str:
@@ -87,6 +91,12 @@ class LatexMacros(object):
 
     def use(self, alias: str, *args, **kwargs) -> str:
         return self.get(alias).usage(*args, **kwargs);
+
+    def command(self, alias: str) -> str:
+        m = self.get(alias);
+        if m.anon:
+            raise Exception('LATEX macro \033[1m{}\033[0m is anonymous, thus has no native counterpart.'.format(alias));
+        return self.get(alias).command;
 
     def add(
         self,
@@ -148,17 +158,19 @@ class LatexMacros(object):
         ```
         in .tex files.
         '''
-        contents, n = anonymise_arguments(contents, n, keys);
+        contents, n_ = anonymise_arguments(contents, n, keys);
         ## create definition + usage:
         name = name if isinstance(name, str) else alias;
-        definition = createMacroDefinition(name=name, overwrite=overwrite, multiline=multiline, n=n, contents=contents);
+        definition = createMacroDefinition(name=name, overwrite=overwrite, multiline=multiline, n=n_, contents=contents);
         usage = createMacroUsage(name=name, n=n, keys=keys);
+        command = '\\{}'.format(name);
         ## add new macro in dictionary:
         self._objects[alias] = LatexMacro(
             alias      = alias,
             anon       = False,
             overwrite  = overwrite,
             usage      = usage,
+            command    = '\\{}'.format(name),
             definition = definition,
         );
         return;
@@ -233,7 +245,6 @@ def createMacroDefinition(
         \\newcommand{multi}{{\\{name}}}[{n}]{{{lines}}}
     ''').format(**options);
 
-## creates usage to call an explicitly created LaTeX-macro:
 def createMacroUsage(name: str, n: int, keys: List[str]) -> Callable[..., str]:
     '''
     Creates usage function for explicitly defined LaTeX macro.
