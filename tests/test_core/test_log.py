@@ -7,6 +7,7 @@
 
 import sys;
 import io;
+from pytest import mark;
 from unittest import TestCase;
 
 from src.core import log;

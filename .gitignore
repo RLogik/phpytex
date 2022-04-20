@@ -40,13 +40,8 @@
 !/src/**/*.py
 
 !/tests
-!/tests/unit
-!/tests/unit/**
-!/tests/cases
-!/tests/cases/case*
-!/tests/cases/case*/**/
-!/tests/cases/setup
-!/tests/unit
+!/tests/**/
+!/tests/cases/case_*/**
 !/tests/**/*.py
 !/tests/**/*.tex
 !/tests/**/*.yml

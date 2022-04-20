@@ -72,12 +72,12 @@ unit-tests:
 	@$(call create_folder_if_not_exists,logs)
 	@$(call create_file_if_not_exists,logs/debug.log)
 	@# for python unit tests:
-	@${PYTHON} -m pytest tests/unit --cache-clear --verbose -k test_
+	@${PYTHON} -m pytest --cache-clear --verbose -k test_
 	@cat logs/debug.log
 integration-tests:
-	@${PYTHON} tests/cases/main.py
+	@${PYTHON} tests/cases.py
 integration-tests-inspect:
-	@${PYTHON} tests/cases/main.py --options "inspect"
+	@${PYTHON} tests/cases.py --options "inspect"
 ################################
 # TARGETS: examples/demos
 ################################
@@ -96,10 +96,11 @@ check-system-requirements:
 # TARGETS: clean
 ################################
 clean:
-	@echo "All system artefacts will be force removed."
+	@echo "All system artefacts will be forcibly removed."
 	@$(call clean_all_files,.DS_Store)
-	@echo "All build artefacts will be force removed."
+	@echo "All test + build artefacts will be forcibly removed."
+	@$(call delete_if_folder_exists,logs)
+	@$(call delete_if_file_exists,dist/${ARTEFACT_NAME})
 	@$(call clean_all_folders,__pycache__)
 	@$(call clean_all_folders,.pytest_cache)
-	@$(call delete_if_file_exists,dist/${ARTEFACT_NAME})
 	@exit 0
