@@ -26,49 +26,79 @@ __all__ = [
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 class LatexMacro(object):
-    alias: str;
-    anon: bool;
-    overwrite: bool;
-    definition: str;
-    command: str;
-    usage: Callable[..., str];
+    _alias: str;
+    _anon: bool;
+    _overwrite: bool;
+    _definition: str;
+    _command: str;
+    _usage: Callable[..., str];
+    _got: bool;
 
     def __init__(
         self,
-        alias: str,
-        anon: bool,
-        usage: Callable[..., str],
+        alias:      str,
+        anon:       bool,
+        usage:      Callable[..., str],
         definition: str = '',
-        overwrite: bool = False,
-        command: str = '',
+        overwrite:  bool = False,
+        command:    str = '',
     ):
-        self.alias = alias;
-        self.anon = anon;
-        self.overwrite = overwrite;
-        self.definition = definition;
-        self.usage = usage;
-        self.command = command;
+        self._alias = alias;
+        self._anon = anon;
+        self._overwrite = overwrite;
+        self._definition = definition;
+        self._usage = usage;
+        self._command = command;
+        self._got = False;
         return;
 
-    def clone(self):
-        return LatexMacro(
-            alias      = self.alias,
-            anon       = self.anon,
-            overwrite  = self.overwrite,
-            definition = self.definition,
-            usage      = self.usage,
-            command    = self.command,
-        );
+    @property
+    def alias(self) -> str:
+        return self._alias;
 
-    def getDefinition(self) -> str:
-        return '' if self.anon else self.definition;
+    @property
+    def anon(self) -> bool:
+        return self._anon;
+
+    @property
+    def overwrite(self) -> bool:
+        return self._overwrite;
+
+    @property
+    def definition(self) -> str:
+        self._got = True;
+        return '' if self._anon else self._definition;
+
+    @property
+    def command(self) -> str:
+        return self._command;
+
+    @property
+    def usage(self) -> Callable[..., str]:
+        return self._usage;
+
+    @property
+    def got(self) -> bool:
+        return self._got;
+
+    def __copy__(self):
+        m = LatexMacro(
+            alias      = self._alias,
+            anon       = self._anon,
+            overwrite  = self._overwrite,
+            definition = self._definition,
+            usage      = self._usage,
+            command    = self._command,
+        );
+        m._got = self._got;
+        return m;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Class: LatexMacros
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 class LatexMacros(object):
-    _objects:         Dict[str, LatexMacro];
+    _objects: Dict[str, LatexMacro];
 
     def __init__(self):
         self._objects = dict();
@@ -87,7 +117,7 @@ class LatexMacros(object):
         raise AttributeError('LATEX macro \033[1m{}\033[0m not set.'.format(alias));
 
     def get_definition(self, alias: str) -> str:
-        return self.get(alias).getDefinition();
+        return self.get(alias).definition;
 
     def use(self, alias: str, *args, **kwargs) -> str:
         return self.get(alias).usage(*args, **kwargs);
@@ -96,7 +126,7 @@ class LatexMacros(object):
         m = self.get(alias);
         if m.anon:
             raise Exception('LATEX macro \033[1m{}\033[0m is anonymous, thus has no native counterpart.'.format(alias));
-        return self.get(alias).command;
+        return m.command;
 
     def add(
         self,
@@ -107,7 +137,7 @@ class LatexMacros(object):
         overwrite: bool      = False,
         multiline: bool      = True,
         name:      Any       = None,
-    ):
+    ) -> LatexMacro:
         '''
         ## Create explicit LaTeX definition ##
 
@@ -119,6 +149,9 @@ class LatexMacros(object):
         - `n`         - number of unnamed arguments in macro
         - `keys`      - named arguments in macro
         - `contents`  - lines of content in explicit LaTeX deinition
+
+        @returns
+        - `m` - the added LaTeX macro
 
         ## Example ##
 
@@ -173,19 +206,22 @@ class LatexMacros(object):
             command    = '\\{}'.format(name),
             definition = definition,
         );
-        return;
+        return self._objects[alias];
 
     def add_anon(
         self,
         alias: str,
         usage: Callable[..., str],
-    ):
+    ) -> LatexMacro:
         '''
         ## Create anonymous LaTeX definition ##
 
         @inputs
         - `alias` - how command should be referred to in python.
         - `usage` - implicit method
+
+        @returns
+        - `m` - the added LaTeX macro
 
         ## Example ##
 
@@ -211,7 +247,7 @@ class LatexMacros(object):
         in .tex files.
         '''
         self._objects[alias] = LatexMacro(alias=alias, anon=True, usage=usage);
-        return;
+        return self._objects[alias];
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # AUXILIARY METHODS

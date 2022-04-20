@@ -5,6 +5,7 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+from copy import copy;
 from typing import Any;
 from typing import Callable;
 from typing import Dict;
@@ -28,12 +29,14 @@ __all__ = [
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 class LatexEnvironment:
-    alias: str;
-    anon: bool;
-    overwrite: bool;
-    definition: str;
-    begin: LatexMacro;
-    end:   LatexMacro;
+    _alias: str;
+    _anon: bool;
+    _overwrite: bool;
+    _definition: str;
+    _command: str;
+    _begin: LatexMacro;
+    _end: LatexMacro;
+    _got: bool;
 
     def __init__(
         self,
@@ -43,27 +46,59 @@ class LatexEnvironment:
         end:        LatexMacro,
         definition: str  = '',
         overwrite:  bool = False,
+        command:    str = '',
     ):
-        self.alias = alias;
-        self.anon = anon;
-        self.overwrite = overwrite;
-        self.definition = definition;
-        self.begin = begin;
-        self.end = end;
+        self._alias = alias;
+        self._anon = anon;
+        self._overwrite = overwrite;
+        self._definition = definition;
+        self._begin = begin;
+        self._end = end;
+        self._command = command;
+        self._got = False;
         return;
 
-    def clone(self):
-        return LatexEnvironment(
-            alias      = self.alias,
-            anon       = self.anon,
-            overwrite  = self.overwrite,
-            definition = self.definition,
-            begin      = self.begin.clone(),
-            end        = self.end.clone(),
-        );
+    @property
+    def alias(self) -> str:
+        return self._alias;
 
-    def getDefinition(self) -> str:
-        return '' if self.anon else self.definition;
+    @property
+    def anon(self) -> bool:
+        return self._anon;
+
+    @property
+    def overwrite(self) -> bool:
+        return self._overwrite;
+
+    @property
+    def definition(self) -> str:
+        self._got = True;
+        return '' if self._anon else self._definition;
+
+    @property
+    def command(self) -> str:
+        return self._command;
+
+    @property
+    def begin(self) -> LatexMacro:
+        return self._begin;
+
+    @property
+    def end(self) ->   LatexMacro:
+        return self._end;
+
+    def __copy__(self):
+        e = LatexEnvironment(
+            alias      = self._alias,
+            anon       = self._anon,
+            overwrite  = self._overwrite,
+            definition = self._definition,
+            begin      = copy(self._begin),
+            end        = copy(self._end),
+            command    = self._command,
+        );
+        e._got = self._got;
+        return e;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Class: LatexEnvironments
@@ -101,6 +136,12 @@ class LatexEnvironments:
         self.storage.pop();
         return self.get(alias).end.usage();
 
+    def command(self, alias: str) -> str:
+        e = self.get(alias);
+        if e.anon:
+            raise Exception('LATEX environment \033[1m{}\033[0m is anonymous, thus has no native counterpart.'.format(alias));
+        return e.command;
+
     # Intention: should creates explicit LaTeX definition. This can be customised.
     def add(
         self,
@@ -112,7 +153,7 @@ class LatexEnvironments:
         overwrite:  bool      = False,
         multiline:  bool      = True,
         name:       Any       = None,
-    ):
+    ) -> LatexEnvironment:
         '''
         ## Create explicit LaTeX environment definition ##
 
@@ -127,6 +168,9 @@ class LatexEnvironments:
         - `end`       - lines of content in explicit LaTeX deinition for `\end{...}`
 
         NOTE: The `\end{...}`-command cannot take any arguments.
+
+        @returns
+        - `e` - the added LaTeX environment
 
         ## Example ##
 
@@ -189,9 +233,10 @@ class LatexEnvironments:
             overwrite  = overwrite,
             begin      = LatexMacro(alias=alias, anon=True, overwrite=False, usage=usage_begin),
             end        = LatexMacro(alias=alias, anon=True, overwrite=False, usage=usage_end),
+            command    = '\\{}'.format(name),
             definition = definition,
         );
-        return;
+        return self._objects[alias];
 
     # Intention: should creates explicit LaTeX definition. This can be customised.
     def add_anon(
@@ -199,13 +244,16 @@ class LatexEnvironments:
         alias: str,
         begin: Callable[..., str],
         end:   Callable[..., str],
-    ):
+    ) -> LatexEnvironment:
         '''
         ## Create anonymous LaTeX environment definition ##
 
         @inputs
         - `alias` - how command should be referred to in python.
         - `usage` - implicit method
+
+        @returns
+        - `e` - the added LaTeX environment
 
         ## Example ##
 
@@ -238,7 +286,7 @@ class LatexEnvironments:
         in .tex files.
         '''
         self._objects[alias] = LatexEnvironment(alias=alias, anon=True, begin=begin, end=end);
-        return;
+        return self._objects[alias];
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # AUXILIARY METHODS
