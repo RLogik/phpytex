@@ -194,13 +194,15 @@ def processBlockQuickCommand(u: Tree, textindent: str, indentation: IndentationT
         elif typ == 'quicklocalset':
             parameters = { **parameters, **dict(scope='local') };
         return TranspileBlock(kind='code:set', level=indentation.level, indentsymb=indentation.symb, parameters=parameters);
-    elif typ in [ 'quickinput', 'quickinput_anon', 'quickbib', 'quickbib_anon' ]:
+    elif typ in [ 'quickinput', 'quickinput_anon', 'quickinput_hide', 'quickbib', 'quickbib_anon' ]:
         path = stripEndOfCode(lexedToStr(children[0]));
         parameters = dict(path=path, tab=textindent);
         if typ == 'quickinput':
             parameters = { **parameters, **dict(mode='input', anon=False) };
         elif typ == 'quickinput_anon':
             parameters = { **parameters, **dict(mode='input', anon=True) };
+        elif typ == 'quickinput_hide':
+            parameters = { **parameters, **dict(mode='input', anon=True, hide=True) };
         elif typ == 'quickbib':
             parameters = { **parameters, **dict(mode='bib', anon=False) };
         elif typ == 'quickbib_anon':
