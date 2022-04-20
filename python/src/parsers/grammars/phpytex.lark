@@ -28,6 +28,8 @@ VARNAME:     /[\_\w\p{L}]+/
 TEXT:        /[^\r\n]+/
 DBLQUOTES:   /((?:"")*")(?!")(?:[^\r\n"\\]+|\\"|\\|(?!\1)"+)+\1/
 SGLQUOTES:   /((?:'')*')(?!')(?:[^\r\n'\\]+|\\'|\\|(?!\1)'+)+\1/
+DBLQUOTES_BROKEN: /((?:"")*")(?!")((?:.|\s)+?)(\1)/
+SGLQUOTES_BROKEN: /((?:'')*')(?!')((?:.|\s)+?)(\1)/
 EMPTYQUOTES: /(?:''|"")+/
 
 // ---------------- BASIC ---------------- //
@@ -36,12 +38,15 @@ EMPTYQUOTES: /(?:''|"")+/
 indenttext: WHITESPACES? -> indenttext
 
 // text with nested but balanced quotation marks
-quotetext: quotetext_nonempty | quotetext_empty -> quotetext
-quotetext_nonempty.1001: DBLQUOTES | SGLQUOTES
-quotetext_empty.1002:    EMPTYQUOTES
+quotetext: quotetext_empty | quotetext_nonempty -> quotetext
+quotetext_broken: quotetext_empty | quotetext_nonempty | quotetext_nonempty_broken -> quotetext_broken
+quotetext_empty.1003:           EMPTYQUOTES                         -> quotetext_empty
+quotetext_nonempty.1002:        DBLQUOTES | SGLQUOTES               -> quotetext_nonempty
+quotetext_nonempty_broken.1001: DBLQUOTES_BROKEN | SGLQUOTES_BROKEN -> quotetext_nonempty_broken
 
 // text than contains no occurrences of >>> / <<< except inside quotes
-safetext: ( NMETANQUOTE | quotetext )+ -> safetext
+safetext: ( NMETANQUOTE | quotetext )+
+safetext_broken: ( NMETANQUOTE | quotetext_broken )+
 
 // mixed value/kwvalue dictionaries
 arglist: argoption ( WHITESPACES? COMMA WHITESPACES? argoption )* -> arglist
@@ -89,7 +94,7 @@ codeinline: codeoneline_container | codemultiline_container                     
 codeoneline_container.331: LMETA WHITESPACES? codeoneline WHITESPACES? RMETA                     -> codeinline
 codemultiline_container.332: LMETA WHITESPACES? NEWLINE codemultiline NEWLINE WHITESPACES? RMETA -> codeinline
 codeoneline:   safetext                                                                          -> codeoneline
-codemultiline: codeoneline ( NEWLINE+ codeoneline )*                                             -> codemultiline
+codemultiline: safetext_broken ( NEWLINE+ safetext_broken )*                                     -> codemultiline
 
 // BLOCK QUICK (separately possibly lexed, after blockcontent recognised)
 blockquick: indenttext LMETA WHITESPACES? quickinstruction WHITESPACES? ENDCODE? WHITESPACES? RMETA -> blockquick
