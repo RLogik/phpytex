@@ -50,6 +50,8 @@
 !/tests/**/*.py
 !/tests/**/*.tex
 !/tests/**/*.yml
+# this file contains configuration settings for unit-tests
+!/pyproject.toml
 
 !/examples
 
@@ -67,6 +69,7 @@
 ################################################################
 
 /**/__pycache__
+/**/.pytest_cache
 /**/.DS_Store
 /**/__archive__*
 /**/sandbox
