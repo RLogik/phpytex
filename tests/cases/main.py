@@ -27,9 +27,9 @@ from src.core.utils import readYamlFile;
 # GLOBAL VARIABLES
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-PATH_CASES:   str = 'test/cases';
+PATH_CASES:   str = 'tests/cases';
 PATTERN_CASE: str = r'^(case|private_).*';
-PATH_CONFIG:  str = 'test/cases/setup/config.yml';
+PATH_CONFIG:  str = 'tests/cases/setup/config.yml';
 PATH_SCRIPT:  str = os.path.join(PATH_PROJECT, 'src', 'main.py');
 PATH_SANDBOX: str = os.path.join(PATH_CASES, 'sandbox');
 

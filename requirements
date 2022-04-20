@@ -1,0 +1,16 @@
+## PIP + wheel for package installation
+pip>=22.0.4
+wheel>=0.37.1
+
+## testing
+pytest>=7.1.1
+pytest-lazy-fixture>=0.6.3
+
+## utility
+pyyaml>=6.0
+typing>=3.7.4.3
+
+## other
+lark==1.1.2
+lark-parser==0.12.0
+lark-parser[regex]==0.12.0

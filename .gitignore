@@ -18,10 +18,10 @@
 !/LONGREADME.md
 !/ISSUES.md
 !/LICENSE
+!/requirements
 
 !/scripts
 !/scripts/*.sh
-!/scripts/REQUIREMENTS_*
 
 !/install
 !/install/installphpytex
@@ -38,23 +38,17 @@
 !/src/**/*.lark
 !/src/**/*.py
 
-!/src-go
-!/src-go/**/
-!/src-go/**/*.go
-!/src-go/go.mod
-!/src-go/go.sum
-
-!/test
-!/test/unit
-!/test/unit/**
-!/test/cases
-!/test/cases/case*
-!/test/cases/case*/**/
-!/test/cases/setup
-!/test/unit
-!/test/**/*.py
-!/test/**/*.tex
-!/test/**/*.yml
+!/tests
+!/tests/unit
+!/tests/unit/**
+!/tests/cases
+!/tests/cases/case*
+!/tests/cases/case*/**/
+!/tests/cases/setup
+!/tests/unit
+!/tests/**/*.py
+!/tests/**/*.tex
+!/tests/**/*.yml
 
 !/examples
 
