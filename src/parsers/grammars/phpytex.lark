@@ -98,6 +98,7 @@ quickinstruction: "set"i WHITESPACES quickvariable WHITESPACES? "=" WHITESPACES?
     | "local set"i WHITESPACES quickvariable WHITESPACES? "=" WHITESPACES? safetext       -> quicklocalset
     | "input"i WHITESPACES safetext                                                       -> quickinput
     | "input_anon"i WHITESPACES safetext                                                  -> quickinput_anon
+    | "input_hide"i WHITESPACES safetext                                                  -> quickinput_hide
     | ( "bibliography"i | "bib"i ) WHITESPACES safetext                                   -> quickbib
     | ( "bibliography_anon"i | "bib_anon"i ) WHITESPACES safetext                         -> quickbib_anon
     | ( "escape"i | "esc"i )                                                              -> quickescape
