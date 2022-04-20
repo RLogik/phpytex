@@ -231,6 +231,41 @@ def unique(X: List[Any]) -> List[Any]:
     return X_;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# METHODS: inheritance properties on graphs
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def inheritanceOnGraph(edges: List[Tuple[str, str]], hasProperty: Dict[str, bool]):
+    '''
+    @inputs:
+    - `edges` of a finite graph
+    - an abstract `hasProperty` dictionary, assigning to each node, if property holds
+
+    @returns:
+    copy of `hasProperty` wherein all descendants of nodes with property have property
+    '''
+    P = [];
+    for u, value in hasProperty.items():
+        if value:
+            P.append(u)
+    properties = { u: value for u, value in hasProperty.items() };
+    for u, v in edges:
+        if not (u in properties):
+            properties[u] = False;
+        if not (v in properties):
+            properties[v] = False;
+    # keep updating until stable:
+    while True:
+        changed = False;
+        for u, v in edges:
+            if u in P and not (v in P):
+                P.append(v);
+                properties[v] = True;
+                changed = True;
+        if not changed:
+            break;
+    return properties;
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # METHODS: yaml and config
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
