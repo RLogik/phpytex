@@ -38,7 +38,6 @@ PATH_SANDBOX: str = f'{PATH_CASES}/sandbox';
 
 def main(*tokens, **kwargs):
     inspect = ( 'inspect' in tokens );
-
     config = StepGetConfig(PATH_CONFIG);
     paths = getAttribute(config, 'cases', expectedtype=list, default=[]);
     # cases = StepGetTestCases(PATH_CASES, PATTERN_CASE);
@@ -77,7 +76,7 @@ def StepRunTestCase(
     path:           str,
     sandboxpath:    str,
     phpytex_script: str,
-    inspect:        bool
+    inspect:        bool,
 ):
     logInfo('START TEST CASE');
     logInfo('path = \033[1m{}\033[0m'.format(getRelPath(path)));
