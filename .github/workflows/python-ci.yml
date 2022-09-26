@@ -34,7 +34,7 @@ jobs:
       - name: Grant execution rights
         run: |-
           ls
-          ls scripts/*
+          ls scripts
           chmod +x scripts/*.sh
       - # only do perform this in one job
         name: Run setup
