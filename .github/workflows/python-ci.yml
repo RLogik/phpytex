@@ -31,11 +31,6 @@ jobs:
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.event.inputs.branch }}
-      - name: Grant execution rights
-        run: |-
-          ls
-          ls scripts
-          chmod +x scripts/*.sh
       - # only do perform this in one job
         name: Run setup
         run: |-
