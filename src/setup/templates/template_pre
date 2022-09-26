@@ -136,6 +136,7 @@ def ____reseed():
     seed = ____phpytex_params____['seed'];
     if isinstance(seed, int):
         random.seed(seed);
+        np.random.seed(seed);
     return True;
 
 ## record + print-to-latex:
