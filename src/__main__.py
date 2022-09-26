@@ -28,9 +28,9 @@ if __name__ == '__main__':
     sys.tracebacklimit = 0;
     setOpenSource(False);
     tokens, kwargs = getCliArgs(*sys.argv[1:]);
-    kwargs = { **dict(
-        file     = '',
-        pathApp  = os.path.dirname(os.path.abspath(__file__)),
-        pathRoot = os.getcwd(),
-    ), **kwargs };
-    enter(*tokens, **kwargs);
+    enter(*tokens, **{
+        'file':     '',
+        'pathApp':  os.path.dirname(os.path.abspath(__file__)),
+        'pathRoot': os.getcwd(),
+        **kwargs
+    });

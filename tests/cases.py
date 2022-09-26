@@ -8,9 +8,8 @@
 import os;
 import sys;
 
-PATH_PROJECT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))));
-os.chdir(PATH_PROJECT);
-sys.path.insert(0, PATH_PROJECT);
+os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'));
+sys.path.insert(0, os.getcwd());
 
 from src.local.misc import *;
 from src.local.system import *;
@@ -27,11 +26,11 @@ from src.core.utils import readYamlFile;
 # GLOBAL VARIABLES
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-PATH_CASES:   str = 'test/cases';
 PATTERN_CASE: str = r'^(case|private_).*';
-PATH_CONFIG:  str = 'test/cases/setup/config.yml';
-PATH_SCRIPT:  str = os.path.join(PATH_PROJECT, 'src', 'main.py');
-PATH_SANDBOX: str = os.path.join(PATH_CASES, 'sandbox');
+PATH_SCRIPT:  str = f'{os.getcwd()}/src/main.py';
+PATH_CASES:   str = f'{os.getcwd()}/tests/cases';
+PATH_CONFIG:  str = f'{PATH_CASES}/config.yml';
+PATH_SANDBOX: str = f'{PATH_CASES}/sandbox';
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MAIN PROCESS
@@ -39,7 +38,6 @@ PATH_SANDBOX: str = os.path.join(PATH_CASES, 'sandbox');
 
 def main(*tokens, **kwargs):
     inspect = ( 'inspect' in tokens );
-
     config = StepGetConfig(PATH_CONFIG);
     paths = getAttribute(config, 'cases', expectedtype=list, default=[]);
     # cases = StepGetTestCases(PATH_CASES, PATTERN_CASE);
@@ -78,7 +76,7 @@ def StepRunTestCase(
     path:           str,
     sandboxpath:    str,
     phpytex_script: str,
-    inspect:        bool
+    inspect:        bool,
 ):
     logInfo('START TEST CASE');
     logInfo('path = \033[1m{}\033[0m'.format(getRelPath(path)));
@@ -101,7 +99,7 @@ def StepRunTestCase(
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def getRelPath(path: str) -> str:
-    return os.path.relpath(path, start=PATH_PROJECT);
+    return os.path.relpath(path, start=os.getcwd());
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # EXECUTION

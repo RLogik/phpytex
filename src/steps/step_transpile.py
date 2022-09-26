@@ -144,8 +144,6 @@ def transpileDocument(
         pattern = appconfig.getIndentCharacterRe(),
     );
 
-    logPlain(displayTreeBranch(path=path, anon=documents.isAnon(path), depth=depth));
-
     if is_preamble:
         blocks = TranspileBlocks();
         for block in parseText(lines, indentation, offset=offset):
@@ -154,13 +152,18 @@ def transpileDocument(
             blocks.append(block);
         blocks.append(TranspileBlock(kind='text:empty'))
         documents.addPreamble(name=name, blocks=blocks);
+        logPlain(displayTreeBranch(path=path, anon=False, depth=depth));
     else:
         if path in documents.paths:
             return;
         documents.addDocument(path=path); ## NOTE: need to do this first, in order to update anon-state
+        anon = documents.isAnon(path=path);
+        hide = documents.isHidden(path=path);
         blocks = TranspileBlocks();
+        logPlain(displayTreeBranch(path=path, anon=anon, depth=depth));
+
         if params['show-tree']:
-            blocks.append(documents.documentStamp(depth=0, start=True));
+            blocks.append(documents.documentStamp(depth=0, start=True, anon=anon, hide=hide));
         for block in parseText(lines, indentation, offset=offset):
             if block.kind == 'code:import':
                 imports.append(block);
@@ -173,7 +176,8 @@ def transpileDocument(
                     continue;
             blocks.append(block);
         if params['show-tree']:
-            blocks.append(documents.documentStamp(depth=0, start=False));
+            blocks.append(documents.documentStamp(depth=0, start=False, anon=anon, hide=hide));
+
         documents.addBlocks(path=path, blocks=blocks);
         for subpath in documents.getSubPaths(path):
             transpileDocument(

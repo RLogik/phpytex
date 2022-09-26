@@ -27,6 +27,7 @@ class TranspileBlockParameters(object):
     mode:      str;
     scope:     str;
     anon:      bool;
+    hide:      bool;
     varname:   str;
     codevalue: str;
     keep:      bool;
@@ -39,6 +40,7 @@ class TranspileBlockParameters(object):
         mode:      str  = '',
         scope:     str  = '',
         anon:      bool = False,
+        hide:      bool = False,
         varname:   str  = '',
         codevalue: str  = '',
         keep:      bool = True,
@@ -50,6 +52,7 @@ class TranspileBlockParameters(object):
         self.mode      = mode;
         self.scope     = scope;
         self.anon      = anon;
+        self.hide      = hide;
         self.varname   = varname;
         self.codevalue = codevalue;
         self.keep      = keep;
@@ -63,6 +66,7 @@ class TranspileBlockParameters(object):
             mode      = self.mode,
             scope     = self.scope,
             anon      = self.anon,
+            hide      = self.hide,
             varname   = self.varname,
             codevalue = self.codevalue,
             keep      = self.keep,
@@ -119,35 +123,52 @@ class TranspileBlock(object):
     def tab(self, delta: int = 0) -> str:
         return self.indentsymb * (self.level + delta);
 
-    def generateCode(self, offset: int = 0) -> Generator[str, None, None]:
+    def generateCode(
+        self,
+        offset: int = 0,
+        anon: bool = False,
+        hide: bool = False,
+    ) -> Generator[str, None, None]:
         state = dict(level=self.level, indentsymb=self.indentsymb);
         self.level += offset;
         if self.kind == 'text:empty':
-            yield '{tab}____print(\'\');'.format(tab=self.tab());
+            yield '{tab}____print(\'\', anon={anon}, hide={hide});'.format(tab=self.tab(), anon=anon, hide=hide);
         elif self.kind in [ 'text', 'text:comment' ]:
             for line in self.content:
-                yield '{tab}____print(\'\'\'{expr}\'\'\');'.format(
+                yield '{tab}____print(\'\'\'{expr}\'\'\', anon={anon}, hide={hide});'.format(
                     tab  = self.tab(),
                     expr = escapeForPython(line, withformatting=False),
+                    anon = anon,
+                    hide = hide,
                 );
         elif self.kind == 'text:subst':
-            line = '{tab}____print(\'\'\'{expr}\'\'\'.format('.format(
-                tab  = self.tab(),
-                expr = '\n'.join(list(self.content)),
-            )
-            yield line + ('));' if len(self.subst) == 0 else '');
-            for key, value in self.subst.items():
-                level = value.level;
-                value_lines = formatBlockIndent(value.lines, indent=self.tab(2), unindent=True);
-                value_lines[0] = re.sub(r'^\s*(.*)$', r'\1', value_lines[0]);
-                yield '{tab}{key} = {value},'.format(
-                    tab = self.tab(1),
-                    key = key,
-                    value = '\n'.join(value_lines),
+            if len(self.subst) == 0:
+                yield '{tab}____print(\'\'\'{expr}\'\'\'.format(), anon={anon}, hide={hide});'.format(
+                    tab  = self.tab(),
+                    expr = '\n'.join(list(self.content)),
+                    anon = anon,
+                    hide = hide,
                 );
-                value.level = level;
-            if len(self.subst) > 0:
-                yield '{tab}));'.format(tab=self.tab());
+            else:
+                yield '{tab}____print(\'\'\'{expr}\'\'\'.format('.format(
+                    tab  = self.tab(),
+                    expr = '\n'.join(list(self.content)),
+                );
+                for key, value in self.subst.items():
+                    level = value.level;
+                    value_lines = formatBlockIndent(value.lines, indent=self.tab(2), unindent=True);
+                    value_lines[0] = re.sub(r'^\s*(.*)$', r'\1', value_lines[0]);
+                    yield '{tab}{key} = {value},'.format(
+                        tab = self.tab(1),
+                        key = key,
+                        value = '\n'.join(value_lines),
+                    );
+                    value.level = level;
+                yield '{tab}), anon={anon}, hide={hide});'.format(
+                    tab = self.tab(),
+                    anon = anon,
+                    hide = hide,
+                );
         elif self.kind in [ 'code', 'code:import', 'code:value']:
             yield from self.content;
         elif self.kind == 'code:set':
@@ -179,7 +200,12 @@ class TranspileBlocks(object):
     def append(self, block: TranspileBlock):
         self.blocks.append(block);
 
-    def generateCode(self, offset: int = 0) -> Generator[str, None, None]:
+    def generateCode(
+        self,
+        offset: int  = 0,
+        anon:   bool = False,
+        hide:   bool = False
+    ) -> Generator[str, None, None]:
         for block in self.blocks:
-            yield from block.generateCode(offset=offset);
+            yield from block.generateCode(offset=offset, anon=anon, hide=hide);
         return;

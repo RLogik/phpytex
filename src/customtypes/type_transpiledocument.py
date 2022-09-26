@@ -15,6 +15,7 @@ from src.core.log import *;
 from src.core.utils import formatTextBlockAsList;
 from src.core.utils import getAttribute;
 from src.core.utils import unique;
+from src.core.utils import inheritanceOnGraph;
 from src.customtypes.type_transpileblock import TranspileBlock;
 from src.customtypes.type_transpileblock import TranspileBlocks;
 
@@ -82,7 +83,8 @@ class TranspileDocument(list):
         self,
         offset:     int       = 0,
         globalvars: List[str] = [],
-        anon:       bool      = False
+        anon:       bool      = False,
+        hide:       bool      = False,
     ) -> Generator[str, None, None]:
         yield '{tab}# generate content from file \'{path}\''.format(
             tab  = self.tab(offset),
@@ -96,7 +98,7 @@ class TranspileDocument(list):
             kind = 'code',
             lines = [
                 'global {name};'.format(name=name)
-                for name in unique([ '__ROOT__', '__DIR__', '__FNAME__', '__ANON__', '__IGNORE__' ] + globalvars)
+                for name in unique([ '__ROOT__', '__DIR__', '__FNAME__', '__ANON__', '__HIDE__', '__IGNORE__' ] + globalvars)
                 if not name in [ '__STATE__' ]
             ] + [
                 '__ROOT__ = \'.\';'.format(),
@@ -104,12 +106,13 @@ class TranspileDocument(list):
                 '__FNAME__ = \'{path}\';'.format(path = self.path),
                 '__IGNORE__ = False;',
                 '__ANON__ = {};'.format(anon),
+                '__HIDE__ = {};'.format(hide),
                 '# Save current state locally. Use to restore state after importing subfiles.',
-                '__STATE__ = (__ROOT__, __DIR__, __FNAME__, __ANON__, __IGNORE__);',
+                '__STATE__ = (__ROOT__, __DIR__, __FNAME__, __ANON__, __HIDE__, __IGNORE__);',
             ]
-        ).generateCode(offset + 1);
+        ).generateCode(offset + 1, anon=False, hide=False);
         for block in self.blocks:
-            yield from block.generateCode(offset + 1);
+            yield from block.generateCode(offset + 1, anon=anon, hide=hide);
         yield '{tab}return;'.format(tab=self.tab(offset + 1));
         return;
 
@@ -127,6 +130,7 @@ class TranspileDocuments(object):
 
     paths:      List[str];
     anon:       Dict[str, bool];
+    hide:       Dict[str, bool];
     edges:      List[Tuple[str, str]];
     docEdges:   List[Tuple[str, str]];
 
@@ -147,6 +151,7 @@ class TranspileDocuments(object):
         self.variables = dict();
         self.preamble = dict();
         self.anon = dict();
+        self.hide = dict();
         self.schemes = schemes;
         return;
 
@@ -156,16 +161,40 @@ class TranspileDocuments(object):
     def tab(self, offset: int = 1) -> str:
         return self.indentsymb * offset;
 
+    def updateAnon(self, path: str, initial_value: bool = False):
+        '''
+        Updates anonymity-state, inherit `True`-value from predecessor nodes in document tree.
+
+        @inputs
+        - `path` - path to be added as node.
+        - `initial_value` - whether or not path is initially forced to be have anon state.
+
+        @returns
+        - updated `self.anon`
+        '''
+        self.anon = inheritanceOnGraph(self.edges, { path: initial_value, **self.anon });
+
+    def updateHidden(self, path: str, initial_value: bool = False):
+        '''
+        Updates hidden-state, inherit `True`-value from predecessor nodes in document tree.
+
+        @inputs
+        - `path` - path to be added as node.
+        - `initial_value` - whether or not path is initially forced to be have hidden state.
+
+        @returns
+        - updated `self.hide`
+        '''
+        self.hide = inheritanceOnGraph(self.edges, { path: initial_value, **self.hide });
+
     def isAnon(self, path: str) -> bool:
-        if (path in self.anon) and self.anon[path]:
-            return True;
-        for u, v in self.edges:
-            if v == path and (u in self.anon) and self.anon[u]:
-                return True;
-        return False;
+        return getAttribute(self.anon, path, expectedtype=bool, default=False);
+
+    def isHidden(self, path: str) -> bool:
+        return getAttribute(self.hide, path, expectedtype=bool, default=False);
 
     def displayPath(self, path: str) -> str:
-        return '#####' if self.isAnon(path) else path;
+        return '#####' if self.anon[path] else path;
 
     def evaluate(self, codevalue: str, document: TranspileDocument):
         localvariables = { **self.variables, **document.variables,
@@ -202,7 +231,8 @@ class TranspileDocuments(object):
             label      = self.getFunctionName(path)
         );
         self.documents[path] = document;
-        self.anon[path] = self.isAnon(path);
+        self.updateAnon(path);
+        self.updateHidden(path);
         return;
 
     def addPreamble(self, name: str, blocks: TranspileBlocks):
@@ -243,6 +273,7 @@ class TranspileDocuments(object):
                 ## extract block parameters:
                 _path      = block.parameters.path;
                 anon       = block.parameters.anon;
+                hide       = block.parameters.hide;
                 mode       = block.parameters.mode;
                 textindent = block.parameters.tab;
                 ## unpack path expression (potentially evaluate):
@@ -251,26 +282,27 @@ class TranspileDocuments(object):
                 except:
                     ## TODO: deal with error
                     logError('Could not evaluate \033[1m<<< {cmd} {path}\033[0m >>>\033[0m.'.format(
-                        cmd  = ('bibliography' if mode == 'bib' else 'input') + ('_anon' if anon else ''),
+                        cmd  = ('bibliography' if mode == 'bib' else 'input') \
+                                + ('_anon' if anon else ('_hide' if hide else '')),
                         path = _path,
                     ));
                     continue;
                 _path = document.relativisePath(_path);
                 ## add edge for the sake of display (regardless of whether input or bib mode):
                 self.docEdges.append((path, _path));
-                if not (_path in self.anon):
-                    self.anon[_path] = False;
-                self.anon[_path] = anon or self.anon[_path];
-                ## create phpytex-code blocks based on computed path:
                 if mode == 'input':
                     self.edges.append((path, _path));
+                self.updateAnon(_path, anon);
+                self.updateHidden(_path, hide);
+                ## create phpytex-code blocks based on computed path:
+                if mode == 'input':
                     document.append(TranspileBlock(kind='text:empty', **state)); # force empty line before input of file
                     document.append(TranspileBlock(
                         kind        = 'code',
                         lines       = [
                             '{label}(\'{path}\');'.format(label=self.schemes['file'], path=_path),
                             '# Restore state of current file:',
-                            '__ROOT__, __DIR__, __FNAME__, __ANON__, __IGNORE__ = __STATE__;',
+                            '__ROOT__, __DIR__, __FNAME__, __ANON__, __HIDE__, __IGNORE__ = __STATE__;',
                         ],
                         **state
                     ));
@@ -301,6 +333,8 @@ class TranspileDocuments(object):
         if not isinstance(path, str):
             depth = 0;
             children = self.getHeadPaths();
+        elif self.hide[path]:
+            return;
         else:
             anon = anon or getAttribute(self.anon, path, expectedtype=bool, default=False);
             yield '{prefix}{tab}{branchsymb} {path}'.format(
@@ -317,10 +351,10 @@ class TranspileDocuments(object):
             yield from self.documentStructurePretty(subpath, anon=anon, prefix=prefix, indentsymb=indentsymb, branchsymb=branchsymb, depth=depth);
         return;
 
-    def documentStamp(self, depth: int = 0, start: bool = True) -> TranspileBlock:
+    def documentStamp(self, depth: int, start: bool, anon: bool, hide: bool) -> TranspileBlock:
         return TranspileBlock(
             kind       = 'code',
-            content    = '____printfilestamp(depth={depth}, start={start});'.format(depth=depth, start=start),
+            content    = f'____printfilestamp(depth={depth}, start={start}, anon={anon}, hide={hide});',
             level      = 0,
             indentsymb = self.indentsymb
         );
@@ -352,7 +386,9 @@ class TranspileDocuments(object):
         self,
         offset:     int       = 0,
         preambles:  List[str] = [],
-        globalvars: List[str] = []
+        globalvars: List[str] = [],
+        anon:       bool      = False,
+        hide:       bool      = False,
     ) -> Generator[str, None, None]:
         ## generate universal reference function
         yield '{tab}# universal reference function for files'.format(tab=self.tab(offset));
@@ -384,13 +420,13 @@ class TranspileDocuments(object):
                 tab   = self.tab(offset),
                 label = '{label}_{name}'.format(label=self.schemes['pre'], name=name),
             );
-            yield from blocks.generateCode(offset=offset+1);
+            yield from blocks.generateCode(offset=offset+1, anon=False, hide=False);
             yield '{tab}return'.format(tab=self.tab(offset + 1));
 
         ## generate individual functions for documents
-        for document in self.documents.values():
+        for path, document in self.documents.items():
             yield '';
-            yield from document.generateCode(offset=offset, globalvars=globalvars, anon=self.isAnon(path));
+            yield from document.generateCode(offset=offset, globalvars=globalvars, anon=self.anon[path], hide=self.hide[path]);
 
         ## generate main function, which calls head functions first
         yield '';

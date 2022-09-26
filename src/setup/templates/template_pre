@@ -11,6 +11,7 @@ import os;
 import re;
 import random;
 import subprocess;
+import numpy as np;
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)));
 os.chdir(os.path.dirname(os.path.abspath(__file__)));
@@ -26,6 +27,7 @@ ____phpytex_params____ = dict(
     lines = dict(
         content = [ ],
         anon    = [ ],
+        hide    = [ ],
         bib     = dict(),
     ),
     rootdir        = '{root}',
@@ -53,6 +55,7 @@ __FNAME__  = '<undefined>';
 __ROOT__   = '.';
 __DIR__    = '.';
 __ANON__   = False;
+__HIDE__   = False;
 __IGNORE__ = False;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -62,6 +65,7 @@ __IGNORE__ = False;
 def main():
     global ____phpytex_params____;
     global __ANON__;
+    global __HIDE__;
     global __FNAME__;
 
     rootdir = ____phpytex_params____['rootdir'];
@@ -80,6 +84,7 @@ def main():
     ## rewrite contents of latex file:
     contents = ____phpytex_params____['lines']['content'];
     anon_indexes = ____phpytex_params____['lines']['anon'];
+    hide_indexes = ____phpytex_params____['lines']['hide'];
     bib = ____phpytex_params____['lines']['bib'];
     bibcontents = ____get_bib_data();
     ____cleardocument();
@@ -88,7 +93,8 @@ def main():
     for index, line in enumerate(contents):
         tab = re.sub(r'^(\s*)(.*)$', r'\1', line);
         anon = (index in anon_indexes);
-        if anon:
+        hide = (index in hide_indexes);
+        if hide:
             continue;
         sources = [
             (fname, src) for fname, (src, indexes) in bib.items()
@@ -102,11 +108,12 @@ def main():
             # Print lines, even if contents are empty.
             __FNAME__ = fname;
             __ANON__ = anon;
-            # ____printfilestamp(depth=0, start=True, anon=anon);
+            __HIDE__ = hide;
+            # ____printfilestamp(depth=0, start=True, anon=anon, hide=hide);
             with open(____phpytex_params____['output'], 'a') as fp:
                 for _line in bibcontents[src]:
                     print(tab + _line, file=fp);
-            # ____printfilestamp(depth=0, start=False, anon=anon);
+            # ____printfilestamp(depth=0, start=False, anon=anon, hide=hide);
             feed_buffer = [];
             continue;
         ## or print original line if non-empty:
@@ -130,6 +137,7 @@ def ____reseed():
     seed = ____phpytex_params____['seed'];
     if isinstance(seed, int):
         random.seed(seed);
+        np.random.seed(seed);
     return True;
 
 ## record + print-to-latex:
@@ -138,7 +146,7 @@ def ____cleardocument():
         fp.write('');
     return;
 
-def ____forceprint(s: str, anon: bool = False):
+def ____forceprint(s: str, anon: bool = False, hide: bool = False):
     global ____phpytex_params____;
 
     n = len(____phpytex_params____['lines']['content']);
@@ -148,12 +156,15 @@ def ____forceprint(s: str, anon: bool = False):
             ____phpytex_params____['lines']['content'].append(line);
             if anon:
                 ____phpytex_params____['lines']['anon'].append(n);
+            if hide:
+                ____phpytex_params____['lines']['hide'].append(n);
             n += 1;
     return;
 
-def ____print(s: str, anon: bool = False):
+def ____print(s: str, anon: bool = False, hide: bool = False):
     global ____phpytex_params____;
     global __ANON__;
+    global __HIDE__;
     global __IGNORE__;
 
     if __IGNORE__:
@@ -167,28 +178,31 @@ def ____print(s: str, anon: bool = False):
         return;
 
     anon = (anon or __ANON__);
+    hide = (hide or __HIDE__);
     ____phpytex_params____['length'] += 1;
     ____phpytex_params____['length_error'] = ____phpytex_params____['length_error'] or ( ____phpytex_params____['length'] > ____phpytex_params____['length_max'] );
-    ____forceprint(s, anon=anon);
+    ____forceprint(s, anon=anon, hide=hide);
     return;
 
-def ____printfilestamp(depth: int = 0, start: bool = True, anon: bool = False):
+def ____printfilestamp(depth: int, start: bool, anon: bool, hide: bool):
     global ____phpytex_params____;
     global __ANON__;
+    global __HIDE__;
     global __FNAME__;
 
     anon = (anon or __ANON__);
+    hide = (hide or __HIDE__);
     params = dict(
         tab  = ____phpytex_params____['indentsymb'] * depth,
         path = ____phpytex_params____['censorsymb'] if anon else __FNAME__,
     );
     if start:
-        ____print('{{tab}}%% ********************************************************************************'.format(**params), anon=anon);
-        ____print('{{tab}}%% FILE: {{path}}'.format(**params), anon=anon);
-        ____print('{{tab}}%% ********************************************************************************'.format(**params), anon=anon);
-        ____print('', anon=anon);
+        ____print('{{tab}}%% ********************************************************************************'.format(**params), anon=anon, hide=hide);
+        ____print('{{tab}}%% FILE: {{path}}'.format(**params), anon=anon, hide=hide);
+        ____print('{{tab}}%% ********************************************************************************'.format(**params), anon=anon, hide=hide);
+        ____print('', anon=anon, hide=hide);
     else:
-        ____print('{{tab}}%% ********** END OF FILE: {{path}} **********'.format(**params), anon=anon);
+        ____print('{{tab}}%% ********** END OF FILE: {{path}} **********'.format(**params), anon=anon, hide=hide);
     return;
 
 ## handling of bib:

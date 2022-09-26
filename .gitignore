@@ -14,14 +14,15 @@
 ################################################################
 
 !/.env
+!/Makefile
 !/README.md
 !/LONGREADME.md
 !/ISSUES.md
 !/LICENSE
+!/requirements
 
 !/scripts
 !/scripts/*.sh
-!/scripts/REQUIREMENTS_*
 
 !/install
 !/install/installphpytex
@@ -38,23 +39,14 @@
 !/src/**/*.lark
 !/src/**/*.py
 
-!/src-go
-!/src-go/**/
-!/src-go/**/*.go
-!/src-go/go.mod
-!/src-go/go.sum
-
-!/test
-!/test/unit
-!/test/unit/**
-!/test/cases
-!/test/cases/case*
-!/test/cases/case*/**/
-!/test/cases/setup
-!/test/unit
-!/test/**/*.py
-!/test/**/*.tex
-!/test/**/*.yml
+!/tests
+!/tests/**/
+!/tests/cases/case_*/**
+!/tests/**/*.py
+!/tests/**/*.tex
+!/tests/**/*.yml
+# this file contains configuration settings for unit-tests
+!/pyproject.toml
 
 !/examples
 
@@ -72,6 +64,7 @@
 ################################################################
 
 /**/__pycache__
+/**/.pytest_cache
 /**/.DS_Store
 /**/__archive__*
 /**/sandbox
