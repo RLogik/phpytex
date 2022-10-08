@@ -32,7 +32,7 @@ from src.setup.userconfig import setupYamlReader;
 # METHOD: step get config
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def step(fnameConfig: str):
+def step(fnameConfig: str, extra_parameters: dict):
     logInfo('READ CONFIG STARTED');
     ## get configuration file
     config = getPhpytexConfig(fnameConfig);
@@ -41,7 +41,8 @@ def step(fnameConfig: str):
                      or getAttribute(config, 'compile', expectedtype=dict, default={});
     config_compile = preProcessCompileConfig({ **restrictDictionary(config, ['ignore']), **config_compile });
     config_stamp = getAttribute(config, 'stamp', expectedtype=dict, default={});
-    config_parameters = getAttribute(config, 'parameters', expectedtype=dict, default={});
+    config_parameters: dict = getAttribute(config, 'parameters', expectedtype=dict, default={});
+    config_parameters['options'] = {**config_parameters.get('options', {}), **extra_parameters};
 
     ## set app config
     setCompileConfig(**config_compile);

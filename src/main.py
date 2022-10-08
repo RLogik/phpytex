@@ -10,6 +10,8 @@ import sys;
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))));
 
+import json;
+
 from src.core.log import *;
 from src.core.utils import getCliArgs;
 from src.setup import appconfig;
@@ -36,7 +38,13 @@ def enter(*tokens: str, file: str, pathApp: str, pathRoot: str, **kwargs: str):
     elif ('help' in tokens) or ('info' in tokens) or ('man' in tokens):
         endpoint_display_help();
     elif 'run' in tokens:
-        endpoint_run_phpytex(fnameConfig=file);
+        parameters = {};
+        if 'parameters' in kwargs:
+            try:
+                parameters = json.loads(kwargs['parameters']);
+            except:
+                pass;
+        endpoint_run_phpytex(fnameConfig=file, parameters=parameters);
     else:
         endpoint_display_help();
     return;
