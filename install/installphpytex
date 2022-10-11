@@ -36,8 +36,6 @@ function show_help() {
     echo -e "    \033[93m--help\033[0m     \033[2mDisplays this help information.\033[0m"                           >> $OUT;
     echo -e "    \033[93m--git\033[0m      \033[2mInstall from git artefacts, docker artefacts.\033[0m"             >> $OUT;
     echo -e "               \033[2mIf unused, attempts to link to local distribution.\033[0m";                      >> $OUT;
-    # echo -e "    \033[93m--no-venv\033[0m  \033[2mIf used, python packages may be installed to your system.\033[0m" >> $OUT;
-    # echo -e "               \033[2m(Not recommended. By default a virtual environment is used.)\033[0m";            >> $OUT;
     echo -e "    \033[93m--force\033[0m    \033[2mForces reinstall (depends if version already installed).\033[0m"  >> $OUT;
     echo -e "" >> $OUT;
     echo -e "" >> $OUT;
@@ -113,10 +111,8 @@ function build_phpytex_binary() {
     # see README.md in respository for details of installation:
     echo -e "[\033[94;1mINFO\033[0m] Build binary from distribution.";
     pushd $path >> $VERBOSE;
-        chmod +x scripts/*.sh;
-        # ./scripts/build.sh --venv $use_venv --mode setup;
-        ./scripts/build.sh --venv false --mode setup; # force usage of system python!
-        ./scripts/build.sh --mode dist;
+        make --always-make setup; # force usage of system python!
+        make --always-make build;
     popd >> $VERBOSE;
     ! [ -f "$path/dist/phpytex" ] && echo -e "[\033[91;1mERROR\033[0m] Generation of binary failed." >> $ERR && return 1;
 
@@ -156,9 +152,10 @@ function get_artefact_from_repo() {
     local urls=( "${url}/${tag}.tar.gz" "${url}/v${tag}.tar.gz" );
     local url_;
     for url_ in "${urls[@]}"; do
-        curl -L "${url_}" -o "${dest_temp}/${file}" 2> $VERBOSE >> $VERBOSE \
-            && tar -xzf "${dest_temp}/${file}" --directory "${dest_temp}" 2> $VERBOSE >> $VERBOSE \
-            && success=0 && break;
+        curl -L --proto '=https' --tlsv1.3 "${url_}" -o "${dest_temp}/${file}" \
+        && tar -xzf "${dest_temp}/${file}" --directory "${dest_temp}" \
+        && success=0 \
+        && break;
     done
     [ $success -eq 1 ] && echo -e "Tagname \033[1m${tag}\033[0m could not be found! Please refer to \033[94;1m${url_info}\033[0m for valid tag names." >> $ERR && rm -rf "${dest_temp}";
 
@@ -212,10 +209,8 @@ function require_folder() {
 function set_temporary_folder() {
     local name="tmp";
     local path;
-    local k=0;
-    while [[ -d "${name}_${k}" ]] || [[ -f "${name}_${k}" ]]; do k=$(( $k + 1 )); done;
-    path="${name}_${k}";
-    mkdir "$path" && echo "${path}";
+    path="$( mktemp -d -t "${name}_" )";
+    echo "${path}";
 }
 
 ##############################################################################
