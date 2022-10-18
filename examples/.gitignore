@@ -11,7 +11,7 @@
 !/expected_*
 !/example_*/**
 !/expected_*/**
-!/*/.phpytex.yml
+!/*/.phpytex.yaml
 !/*/**/*.tex
 !/*/**/*.py
 

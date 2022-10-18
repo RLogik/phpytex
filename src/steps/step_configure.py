@@ -5,9 +5,9 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from src.local.misc import *;
-from src.local.system import *;
-from src.local.typing import *;
+from src.thirdparty.misc import *;
+from src.thirdparty.system import *;
+from src.thirdparty.types import *;
 
 from src.core.log import *;
 from src.core.utils import createNewFileName;
@@ -57,7 +57,7 @@ def step(fnameConfig: str, extra_parameters: dict):
 # SECONDARY METHODS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def getPhpytexConfig(fnameConfig: str) -> Dict[str, Any]:
+def getPhpytexConfig(fnameConfig: str) -> dict[str, Any]:
     setupYamlReader();
     try:
         if not isinstance(fnameConfig, str) or fnameConfig == '':
@@ -69,7 +69,7 @@ def getPhpytexConfig(fnameConfig: str) -> Dict[str, Any]:
         raise Exception('Could not find or read any phpytex configuration files.');
     return readYamlFile(fnameConfig);
 
-def preProcessCompileConfig(config: Dict[str, Any]) -> Dict[str, Any]:
+def preProcessCompileConfig(config: dict[str, Any]) -> dict[str, Any]:
     return dict(
         ignore     = getAttribute(config, 'ignore', expectedtype=bool, default=False),
         legacy     = getAttribute(config, 'legacy', expectedtype=bool, default=False),
@@ -96,7 +96,7 @@ def setCompileConfig(
     debug:      bool,
     compile:    bool,
     insert_bib: bool,
-    comments:   Union[str, bool],
+    comments:   str | bool,
     show_tree:  bool,
     max_length: int,
     tabs:       bool,
@@ -151,7 +151,7 @@ def setCompileConfig(
 def setStampConfig(
     file: str = '',
     overwrite: bool = True,
-    options: Dict[str, Any] = dict()
+    options: dict[str, Any] = dict()
 ):
     root = appconfig.getPathRoot();
     if not isinstance(file, str) or file == '':
@@ -170,7 +170,7 @@ def setStampConfig(
 def setParamsConfig(
     file: str = '',
     overwrite: bool = True,
-    options: Dict[str, Any] = dict(),
+    options: dict[str, Any] = dict(),
 ):
     appconfig.setOptionOverwriteParams(overwrite);
     appconfig.setDictionaryParams(options);
@@ -193,6 +193,6 @@ def setParamsConfig(
         appconfig.setFileParamsPy(formatPath(path, root=root, relative=False));
     return;
 
-def setConfigFilesAndFolders(config: Dict[str, Any]):
+def setConfigFilesAndFolders(config: dict[str, Any]):
     appconfig.setProjectTree(ProjectTree(**config));
     return;

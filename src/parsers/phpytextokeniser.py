@@ -5,19 +5,14 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from src.local.config import *
-from src.local.encoding import *;
-from src.local.lexers import *;
-from src.local.misc import *;
-from src.local.typing import *;
+from src.thirdparty.config import *
+from src.thirdparty.logic import *;
+from src.thirdparty.misc import *;
+from src.thirdparty.types import *;
 
+from src.core.constants import *;
 from src.core.log import *;
-from src.core.utils import dedentIgnoreEmptyLines;
-from src.core.utils import escapeForPython;
-from src.core.utils import extractIndent;
-from src.core.utils import formatBlockUnindent;
-from src.core.utils import getAttribute;
-from src.core.utils import lengthOfWhiteSpace;
+from src.core.utils import *;
 from src.setup.methods import getGrammar;
 from src.customtypes.exports import *;
 from src.parsers.pythontokeniser import getIndentations;
@@ -26,8 +21,8 @@ from src.parsers.pythontokeniser import getIndentations;
 # GLOBAL CONSTANTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-_grammar: Dict[str, str] = dict();
-_lexer:   Dict[str, Lark] = dict();
+_grammar: dict[str, str] = dict();
+_lexer:   dict[str, Lark] = dict();
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # METHODS obtain lexer
@@ -108,7 +103,7 @@ def lexedToBlockFeed(text: str, offset: str, indentation: IndentationTracker) ->
             break;
     return;
 
-def lexedToBlocks(u: Tree, offset: str, indentation: IndentationTracker) -> Generator[TranspileBlock, None, None]:
+def lexedToBlocks(u: LarkTree, offset: str, indentation: IndentationTracker) -> Generator[TranspileBlock, None, None]:
     typ = u.data;
     children = filterSubExpr(u);
     if typ == 'blocks':
@@ -117,7 +112,7 @@ def lexedToBlocks(u: Tree, offset: str, indentation: IndentationTracker) -> Gene
         return;
     raise Exception('Could not parse expression!');
 
-def lexedToBlock(u: Tree, offset: str, indentation: IndentationTracker) -> TranspileBlock:
+def lexedToBlock(u: LarkTree, offset: str, indentation: IndentationTracker) -> TranspileBlock:
     typ = u.data;
     children = filterSubExpr(u);
     if typ == 'blockfeedone':
@@ -154,7 +149,7 @@ def lexedToBlock(u: Tree, offset: str, indentation: IndentationTracker) -> Trans
     raise Exception('Could not parse expression!');
 
 ## QUICK COMMAND
-def lexedToQuickBlock(u: Tree, indentation: IndentationTracker) -> TranspileBlock:
+def lexedToQuickBlock(u: LarkTree, indentation: IndentationTracker) -> TranspileBlock:
     typ = u.data;
     children = filterSubExpr(u);
     if typ == 'blockquick':
@@ -163,9 +158,9 @@ def lexedToQuickBlock(u: Tree, indentation: IndentationTracker) -> TranspileBloc
     raise Exception('Could not parse expression!');
 
 ## BLOCK PARSERS
-def processBlockContent(children: List[Tree], indentation: IndentationTracker) -> TranspileBlock:
+def processBlockContent(children: list[LarkTree], indentation: IndentationTracker) -> TranspileBlock:
     exprs = [];
-    subst: Dict[str, TranspileBlock] = dict();
+    subst: dict[str, TranspileBlock] = dict();
     i = 0;
     for child in children:
         if child.data == 'textcontent':
@@ -182,7 +177,7 @@ def processBlockContent(children: List[Tree], indentation: IndentationTracker) -
     block.subst = subst;
     return block;
 
-def processBlockQuickCommand(u: Tree, textindent: str, indentation: IndentationTracker) -> TranspileBlock:
+def processBlockQuickCommand(u: LarkTree, textindent: str, indentation: IndentationTracker) -> TranspileBlock:
     typ = u.data;
     children = filterSubExpr(u);
     if typ in [ 'quickglobalset', 'quicklocalset' ]:
@@ -223,7 +218,7 @@ def processBlockCodeRegex(text: str, offset: str, indentation: IndentationTracke
     text = dedentIgnoreEmptyLines(text);
     return parseCodeBlock(text, offset=offset, indentation=indentation);
 
-def processBlockCode(u: Tree, offset: str, indentation: IndentationTracker) -> TranspileBlock:
+def processBlockCode(u: LarkTree, offset: str, indentation: IndentationTracker) -> TranspileBlock:
     typ = u.data;
     children = filterSubExpr(u);
     if typ == 'blockcode':
@@ -259,7 +254,7 @@ def processBlockCode(u: Tree, offset: str, indentation: IndentationTracker) -> T
 
 ## MISCELLANEOUS PARSERS
 
-def processCodeInline(u: Tree, indentation: IndentationTracker) -> TranspileBlock:
+def processCodeInline(u: LarkTree, indentation: IndentationTracker) -> TranspileBlock:
     typ = u.data;
     children = filterSubExpr(u);
     indent = indentation.symb*indentation.level;
@@ -273,21 +268,21 @@ def processCodeInline(u: Tree, indentation: IndentationTracker) -> TranspileBloc
         return TranspileBlock(kind='code:value', lines=lines, level=indentation.level, indentsymb=indentation.symb);
     raise Exception('Could not parse expression!');
 
-def processBlockCodeArguments(u: Tree) -> Tuple[List[str], Dict[str, Any]]:
+def processBlockCodeArguments(u: LarkTree) -> tuple[list[str], dict[str, Any]]:
     typ = u.data;
     children = filterSubExpr(u);
     if typ == 'blockcode_args':
         return processArgList(children[0]);
     raise Exception('Could not parse expression!');
 
-def processArgList(u: Tree) -> Tuple[List[str], Dict[str, Any]]:
+def processArgList(u: LarkTree) -> tuple[list[str], dict[str, Any]]:
     typ = u.data;
     children = filterSubExpr(u);
     if typ == 'arglist':
         tokens = [];
         kwargs = dict();
         for child in children:
-            while isinstance(child, Tree) and not child.data in [ 'argoption_token', 'argoption_kwarg' ]:
+            while isinstance(child, LarkTree) and not child.data in [ 'argoption_token', 'argoption_kwarg' ]:
                 child = child.children[0];
             grandchildren = filterSubExpr(child);
             if child.data == 'argoption_kwarg':
@@ -308,7 +303,7 @@ def processArgList(u: Tree) -> Tuple[List[str], Dict[str, Any]]:
 # ERROR HANDLING METHODS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def raiseLexError(lines: List[str], linepos: int, err: Exception):
+def raiseLexError(lines: list[str], linepos: int, err: Exception):
     text_consumed = lines[:linepos];
     text_remaining = lines[linepos:];
     # NOTE: display linepos + 1, as documents start with 1 not 0
@@ -321,7 +316,7 @@ def raiseLexError(lines: List[str], linepos: int, err: Exception):
     message.append(str(err));
     logFatal(*message);
 
-def raiseParseError(lines: List[str], linepos1: int, linepos2: int, err: Exception):
+def raiseParseError(lines: list[str], linepos1: int, linepos2: int, err: Exception):
     text_consumed = lines[:linepos1];
     text_block = lines[linepos1:linepos2];
     text_remaining = lines[linepos2:];
@@ -339,19 +334,19 @@ def raiseParseError(lines: List[str], linepos1: int, linepos2: int, err: Excepti
 # AUXILIARY METHODS: filtration
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def lexedToStr(u: Union[str, Tree]) -> str:
+def lexedToStr(u: str | LarkTree) -> str:
     return u if isinstance(u, str) else ''.join([ lexedToStr(uu) for uu in u.children ]);
 
-def filterOutTypeNoncapture(u: Tree):
+def filterOutTypeNoncapture(u: LarkTree):
     return not (u.data == 'noncapture' or re.match(r'[A-Z]', u.data));
 
-def filterSubExpr(u: Tree) -> List[Tree]:
-    return [ uu for uu in u.children if isinstance(uu, Tree) and filterOutTypeNoncapture(uu) ];
+def filterSubExpr(u: LarkTree) -> list[LarkTree]:
+    return [ uu for uu in u.children if isinstance(uu, LarkTree) and filterOutTypeNoncapture(uu) ];
 
-def filterOutNoncapture(u: Tree) -> List[Union[str, Tree]]:
-    return [uu for uu in u.children if not isinstance(uu, Tree) or filterOutTypeNoncapture(uu) ];
+def filterOutNoncapture(u: LarkTree) -> list[str | LarkTree]:
+    return [uu for uu in u.children if not isinstance(uu, LarkTree) or filterOutTypeNoncapture(uu) ];
 
-def formatValue(lines: List[str], indent: str) -> List[str]:
+def formatValue(lines: list[str], indent: str) -> list[str]:
     if len(lines) == 0:
         return [];
     lines = formatBlockUnindent(lines, reference = indent);

@@ -11,9 +11,9 @@ import sys;
 os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'));
 sys.path.insert(0, os.getcwd());
 
-from src.local.misc import *;
-from src.local.system import *;
-from src.local.typing import *;
+from src.thirdparty.misc import *;
+from src.thirdparty.system import *;
+from src.thirdparty.types import *;
 
 from src.core.log import *;
 from src.core.utils import getAttribute;
@@ -29,7 +29,7 @@ from src.core.utils import readYamlFile;
 PATTERN_CASE: str = r'^(case|private_).*';
 PATH_SCRIPT:  str = f'{os.getcwd()}/src/main.py';
 PATH_CASES:   str = f'{os.getcwd()}/tests/cases';
-PATH_CONFIG:  str = f'{PATH_CASES}/config.yml';
+PATH_CONFIG:  str = f'{PATH_CASES}/config.yaml';
 PATH_SANDBOX: str = f'{PATH_CASES}/sandbox';
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -52,7 +52,7 @@ def main(*tokens, **kwargs):
 # SECONDARY PROCESSES
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def StepGetConfig(path_config: str) -> Dict[str, Any]:
+def StepGetConfig(path_config: str) -> dict[str, Any]:
     return readYamlFile(path_config);
 
 def ClearSandbox(sandboxpath: str):
@@ -60,7 +60,7 @@ def ClearSandbox(sandboxpath: str):
         subprocess.run(['rm', '-rf', sandboxpath]);
     return;
 
-def StepGetTestCases(path_cases: str, pattern: str) -> List[str]:
+def StepGetTestCases(path_cases: str, pattern: str) -> list[str]:
     cases = [];
     for path in os.listdir(path_cases):
         path_full = os.path.join(path_cases, path);

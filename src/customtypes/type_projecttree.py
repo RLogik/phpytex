@@ -7,8 +7,8 @@
 
 from __future__ import annotations;
 
-from src.local.system import *;
-from src.local.typing import *;
+from src.thirdparty.system import *;
+from src.thirdparty.types import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES
@@ -21,8 +21,8 @@ from src.local.typing import *;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 class ProjectTree(object):
-    _files: List[str];
-    _directories: Dict[str, ProjectTree];
+    _files: list[str];
+    _directories: dict[str, ProjectTree];
 
     def __init__(self, **kwargs):
         files = [];
@@ -57,7 +57,7 @@ class ProjectTree(object):
         return;
 
     @property
-    def representation(self) -> Dict[str, Any]:
+    def representation(self) -> dict[str, Any]:
         return dict(
             files=self._files,
             folders={ path: obj.representation for path, obj in self._directories.items() },

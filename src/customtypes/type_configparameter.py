@@ -7,7 +7,7 @@
 
 from __future__ import annotations;
 
-from src.local.typing import *;
+from src.thirdparty.types import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES

@@ -1,8 +1,59 @@
+[project]
+name = "phpytex"
+version = "1.4.0"
+description = "A transpiler that augments python and LaTeX and helps to manage larger projects"
+authors = [ "github.com/RLogik" ]
+maintainers = [ "github.com/RLogik" ]
+license = "MIT"
+readme = "README.md"
+python = "^3.10"
+homepage = "https://github.com/RLogik/phpytex"
+repository = "https://github.com/RLogik/phpytex"
+documentation = "https://github.com/RLogik/phpytex/README.md"
+keywords = [
+    "transpiler",
+    "python",
+    "latex",
+]
+# cf. https://pypi.org/classifiers
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: Unix",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+]
+
 [tool.pytest.ini_options]
 minversion = "7.1.1"
 testpaths = [
     "tests",
 ]
 python_files = [
-    "**/test_*.py",
+    "**/tests_*.py",
+]
+asyncio_mode = "auto"
+filterwarnings = [
+    "error",
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+]
+# NOTE: appends (not prepends) flags:
+addopts = [
+    "--order-dependencies",
+    "--order-group-scope=module",
+    "--cache-clear",
+    "--verbose",
+    "--maxfail=1",
+    "-k test_",
+    # NOTE: will be ignored, if --cov not used (e.g. integration tests):
+    "--no-cov-on-fail",
+    "--cov-report=term",
+    "--cov-config=.coveragerc",
+    # NOTE: for development purposes only:
+    # "-s", # verbose print/err capturing disabled
+    # "--capture=tee-sys", # verbose print/err capturing enabled
 ]

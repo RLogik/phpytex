@@ -1,0 +1,34 @@
+pip>=22.3
+wheel>=0.37.1
+
+## testing
+coverage[toml]>=6.4
+pytest>=7.1.1
+pytest-cov>=3.0.0
+pytest-lazy-fixture>=0.6.3
+pytest-order>=1.0.1
+testfixtures>=6.18.5
+
+# config
+lazy-load>=0.8.2
+pyyaml>=6.0
+dataclasses>=0.6
+pydantic>=1.9.0
+datamodel-code-generator>=0.13.0
+openapi-generator-cli>=4.3.1
+
+# misc
+pathlib>=1.0.1
+datetime>=4.7
+lorem>=0.1.1
+safetywrap>=1.5.0
+typing>=3.7.4.3
+typing_extensions>=3.10.0.2
+
+# parsing
+lark==1.1.2
+lark-parser==0.12.0
+lark-parser[regex]==0.12.0
+
+# for templates
+numpy>=1.23.4

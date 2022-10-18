@@ -5,9 +5,9 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from src.local.misc import *;
-from src.local.system import *;
-from src.local.typing import *;
+from src.thirdparty.misc import *;
+from src.thirdparty.system import *;
+from src.thirdparty.types import *;
 
 from src.core.log import *;
 from src.core.utils import createFile;
@@ -58,7 +58,7 @@ def createFilesAndFolders(path: str, projectTree: ProjectTree):
 def createFileStamp(
     path: str,
     overwrite: bool,
-    options: Dict[str, Any]
+    options: dict[str, Any]
 ):
     if os.path.exists(path) and not overwrite:
         return;
@@ -91,7 +91,7 @@ def createFileStamp(
 def createFileParameters(
     path: str,
     overwrite: bool,
-    options: Dict[str, Any]
+    options: dict[str, Any]
 ):
     if os.path.exists(path) and not overwrite:
         return;
@@ -109,7 +109,7 @@ def createFileParameters(
     writeTextFile(path=path, lines=lines);
     return;
 
-def createParameters(options: Dict[str, Any]):
+def createParameters(options: dict[str, Any]):
     appconfig.setExportVars({});
     lines = [];
     for key, value in options.items():

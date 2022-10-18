@@ -5,8 +5,8 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from src.local.misc import *;
-from src.local.typing import *;
+from src.thirdparty.misc import *;
+from src.thirdparty.types import *;
 
 from src.customtypes.exports import *;
 
@@ -19,7 +19,7 @@ def convertToPythonString(
     indent:     int  = 0,
     multiline:  bool = False,
     indentchar: str  = '    '
-) -> Tuple[Union[str, None], str]:
+) -> tuple[Optional[str], str]:
     typ = None;
     if isinstance(value, str):
         typ = 'str';

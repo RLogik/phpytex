@@ -5,13 +5,12 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from zipfile import ZipFile;
+from src.thirdparty.io import *;
+from src.thirdparty.misc import *;
+from src.thirdparty.system import *;
+from src.thirdparty.types import *;
 
-from src.local.encoding import *;
-from src.local.misc import *;
-from src.local.system import *;
-from src.local.typing import *;
-
+from src.core.constants import *;
 from src.core.utils import readTextFile;
 from src.setup import appconfig;
 

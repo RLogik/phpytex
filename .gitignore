@@ -2,31 +2,16 @@
 !/.gitignore
 
 ################################################################
-# GITHUB
-################################################################
-
-!/.github
-!/.github/workflows
-!/.github/**/*.yml
-
-################################################################
 # MAIN FOLDER
 ################################################################
 
-!/.env
-!/Makefile
 !/README.md
 !/LONGREADME.md
-!/ISSUES.md
 !/LICENSE
-!/requirements
-
-!/scripts
-!/scripts/*.sh
-
-!/install
-!/install/installphpytex
-!/install/README.md
+!/justfile
+!/requirements*
+!/.coveragerc
+!/pyproject.toml
 
 ################################################################
 # PROJECT FILES
@@ -44,14 +29,32 @@
 !/tests/cases/case_*/**
 !/tests/**/*.py
 !/tests/**/*.tex
-!/tests/**/*.yml
-# this file contains configuration settings for unit-tests
-!/pyproject.toml
+!/tests/**/*.yaml
 
 !/examples
 
+!/models
+!/models/*-schema.yaml
+!/models/README.md
+
+!/documentation
+!/documentation/*/
+!/documentation/*/Models/
+!/documentation/**/*.md
+
+!/tests
+!/tests/**/
+!/tests/**/*.py
+
+!/assets
+!/assets/template_*
+
 !/dist
 !/dist/VERSION
+
+!/install
+!/install/installphpytex
+!/install/README.md
 
 ################################################################
 # AUXLIARY

@@ -5,10 +5,10 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from src.local.config import *;
-from src.local.misc import *;
-from src.local.system import *;
-from src.local.typing import *;
+from src.thirdparty.config import *;
+from src.thirdparty.misc import *;
+from src.thirdparty.system import *;
+from src.thirdparty.types import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES
@@ -32,7 +32,7 @@ def PythonCommand() -> str:
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ## NOTE: subprocess.run is like subprocess.Popen but waits for result
-def pipeCall(*args: str, cwd = None, errormsg: str = '', fnameOut: Union[None, str] = None):
+def pipeCall(*args: str, cwd = None, errormsg: str = '', fnameOut: Optional[str] = None):
     cwd = cwd if isinstance(cwd, str) else os.getcwd();
     if fnameOut is None:
         result = subprocess.run(list(args), cwd=cwd)
@@ -63,11 +63,11 @@ def formatPath(path: str, root: str, relative: bool, ext: Any = None, ext_if_emp
         path = '{path}{ext}'.format(path=path_, ext=ext_if_empty);
     return path;
 
-def getFiles(path: str) -> List[Tuple[str, str]]:
+def getFiles(path: str) -> list[tuple[str, str]]:
     items = [(_, os.path.join(path, _)) for _ in os.listdir(path)];
     return [ (_, __) for _, __ in items if os.path.isfile(__)];
 
-def getFilesByPattern(path: str, filepattern: str) -> List[str]:
+def getFilesByPattern(path: str, filepattern: str) -> list[str]:
     regex = re.compile(filepattern);
     return [ __ for _, __ in getFiles(path) if regex.match(_) ];
 
@@ -109,7 +109,7 @@ def readTextFile(path: str) -> str:
 
 def writeTextFile(
     path: str,
-    lines: Union[str, List[str]],
+    lines: str | list[str],
     force_create_path: bool = False,
     force_create_empty_line: bool = True
 ):
@@ -130,7 +130,7 @@ def writeTextFile(
 # METHODS: cli
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def getCliArgs(*args: str) -> Tuple[List[str], Dict[str, Any]]:
+def getCliArgs(*args: str) -> tuple[list[str], dict[str, Any]]:
     tokens = [];
     kwargs = {};
     N = len(args);
@@ -184,11 +184,11 @@ def dedentIgnoreFirstAndLast(s: str) -> str:
     s = re.sub(r'^\s*[\n\r]|[\n\r]\s*$', '', s);
     return dedentIgnoreEmptyLines(s);
 
-def formatBlockUnindent(lines: List[str], reference: str) -> List[str]:
+def formatBlockUnindent(lines: list[str], reference: str) -> list[str]:
     s = dedentIgnoreEmptyLines('\n'.join([ reference + '.' ] + lines));
     return s.split('\n')[1:];
 
-def formatBlockIndent(lines: List[str], indent: str, unindent: bool = True) -> List[str]:
+def formatBlockIndent(lines: list[str], indent: str, unindent: bool = True) -> list[str]:
     if unindent:
         s = dedentIgnoreEmptyLines('\n'.join(lines));
         lines = s.split('\n');
@@ -197,7 +197,7 @@ def formatBlockIndent(lines: List[str], indent: str, unindent: bool = True) -> L
 def formatTextBlock(s: str) -> str:
     return dedentIgnoreFirstAndLast(s);
 
-def formatTextBlockAsList(s: str, unindent: bool = True) -> List[str]:
+def formatTextBlockAsList(s: str, unindent: bool = True) -> list[str]:
     return re.split(r'\n', dedentIgnoreFirstAndLast(s) if unindent else s);
 
 def extractIndent(s: str) -> str:
@@ -222,7 +222,7 @@ def sizeOfIndent(s: str, indentsymb: str) -> int:
 # METHODS: array methods
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def unique(X: List[Any]) -> List[Any]:
+def unique(X: list[Any]) -> list[Any]:
     X_ = [];
     for el in X:
         if el in X_:
@@ -234,7 +234,7 @@ def unique(X: List[Any]) -> List[Any]:
 # METHODS: inheritance properties on graphs
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def inheritanceOnGraph(edges: List[Tuple[str, str]], hasProperty: Dict[str, bool]):
+def inheritanceOnGraph(edges: list[tuple[str, str]], hasProperty: dict[str, bool]):
     '''
     @inputs:
     - `edges` of a finite graph
@@ -271,28 +271,28 @@ def inheritanceOnGraph(edges: List[Tuple[str, str]], hasProperty: Dict[str, bool
 
 def readYamlFile(path: str) -> dict:
     with open(path, 'r') as fp:
-        spec = load(fp, Loader=FullLoader);
+        spec = yaml_load(fp, Loader=yaml_FullLoader);
         if not isinstance(spec, dict):
             raise ValueError('Config is not a dictionary object!');
     return spec;
 
-def restrictDictionary(x: Dict[str, Any], keys: List[str]) -> dict:
+def restrictDictionary(x: dict[str, Any], keys: list[str]) -> dict:
     return { key: value for key, value in x.items() if key in keys };
 
 def toPythonKeys(key: str) -> str:
     return re.sub(r'-', r'_', key);
 
-def toPythonKeysDict(obj: Dict[str, Any]) -> Dict[str, Any]:
+def toPythonKeysDict(obj: dict[str, Any]) -> dict[str, Any]:
     return { toPythonKeys(key): value for key, value in obj.items() };
 
-def getAttributeIgnoreError(obj: Any, *keys: Union[str, int], expectedtype: Union[Type, Tuple[Type]] = Any, default: Any = None):
+def getAttributeIgnoreError(obj: Any, *keys: str | int, expectedtype: Type | tuple[Type] = Any, default: Any = None):
     try:
         value = getAttribute(obj, *keys, expectedtype=expectedtype, default=default);
     except:
         value = default;
     return value;
 
-def getAttribute(obj: Any, *keys: Union[str, int, List[Union[str, int]]], expectedtype: Union[Type, Tuple[Type]] = Any, default: Any = None) -> Any:
+def getAttribute(obj: Any, *keys: str | int | list[str | int], expectedtype: Type | tuple[Type] = Any, default: Any = None) -> Any:
     if len(keys) == 0:
         return obj;
     nextkey = keys[0];

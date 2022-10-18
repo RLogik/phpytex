@@ -17,15 +17,18 @@ This can be demonstrated in the cases in the [examples](./examples) subfolder.
 Each case contains a set of initial files and a counterpart folder with the outputs.
 
 ## Getting started ##
+
 ### System requirements ###
 
 - Bash (windows users may install [git/bash for windows](https://gitforwindows.org))
-- Python 3 (currently developed under python 3.9.5)
+- [Python >=3.10.x](https://www.python.org/downloads)
+- The [Justfile tool](https://github.com/casey/just#installation)
+  (windows users may need [Chocolatey](https://chocolatey.org/install) to install this).
 
 ### Installation ###
 
 Follow the instructions in [install/README.md](./install/README.md).
-This will enable you to call `phpytex` within any project containing a `.phpytex.yml` config file.
+This will enable you to call `phpytex` within any project containing a `.phpytex.yaml` config file.
 
 ### Usage - quick start ###
 
@@ -33,11 +36,12 @@ This will enable you to call `phpytex` within any project containing a `.phpytex
 - `phpytex version` displays in plain text the version number.
 - `phpytex run [file=<name of config file>]` runs the programme within a project using the named config file.
   </br>
-  If the `file` flag is left empty, the programme searches for the first yaml-file matching the pattern `*.(phpytex|phpycreate).(yml|yaml)` and uses this as the config file.
+  If the `file` flag is left empty, the programme searches for the first yaml-file matching the pattern
+  `*.phpytex.ya?ml` and uses this as the config file.
 
 ### Set up of config file ###
 
-To use phpytex, a `.phpytex.yml` file is required in the (root of) the project folder.
+To use phpytex, a `.phpytex.yaml` file is required in the (root of) the project folder.
 This should contain 4 parts with the following structure:
 
 ```yaml

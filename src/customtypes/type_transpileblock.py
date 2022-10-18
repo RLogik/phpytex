@@ -7,8 +7,8 @@
 
 from __future__ import annotations;
 
-from src.local.misc import *;
-from src.local.typing import *;
+from src.thirdparty.misc import *;
+from src.thirdparty.types import *;
 
 from src.core.utils import escapeForPython;
 from src.core.utils import formatBlockIndent;
@@ -61,7 +61,7 @@ class TranspileBlockParameters(object):
         self.tab       = tab;
         return;
 
-    def asDict(self) -> Dict[str, Any]:
+    def asDict(self) -> dict[str, Any]:
         return dict(
             mode      = self.mode,
             scope     = self.scope,
@@ -83,19 +83,19 @@ class TranspileBlockParameters(object):
 class TranspileBlock(object):
     kind: str;
     _content: str;
-    lines: List[str];
+    lines: list[str];
     level: int;
     indentsymb: str;
     parameters: TranspileBlockParameters;
-    subst: Dict[str, TranspileBlock];
+    subst: dict[str, TranspileBlock];
 
     def __init__(self,
         kind:        str,
         content:     Any            = None,
-        lines:       List[str]      = [],
+        lines:       list[str]      = [],
         level: int            = 0,
         indentsymb:  str            = '    ',
-        parameters:  Dict[str, Any] = dict(),
+        parameters:  dict[str, Any] = dict(),
         **_
     ):
         self.lines = lines;
@@ -184,9 +184,9 @@ class TranspileBlock(object):
         return;
 
 class TranspileBlocks(object):
-    blocks: List[TranspileBlock];
+    blocks: list[TranspileBlock];
 
-    def __init__(self, blocks: List[TranspileBlock] = []):
+    def __init__(self, blocks: list[TranspileBlock] = []):
         self.blocks = blocks[:];
 
     def __len__(self) -> int:

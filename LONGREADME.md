@@ -4,7 +4,7 @@ This project contains versioned releases of the programme, which combines both o
 
 The old project files (unversioned) will be kept (for now) in the repository [RLogik/phpytex-old](https://github.com/RLogik/phpytex-old).
 
-This project currently uses `python==3.9.5`.
+This project currently uses `python>=3.10.x`.
 
 **What is phpytex?** Simply put it's an augmented language and a transpiler for LaTeX.
 <br>
@@ -60,18 +60,18 @@ In 2019, I continued to improve phpytex, but simply overwrote my changes. I arti
 ## <a name="setup">INSTALLATION</a> ##
 
 Follow the instructions in [install/README.md](./install/README.md).
-This will enable you to call `phpytex` within any project containing a `.phpytex.yml` config file.
+This will enable you to call `phpytex` within any project containing a `.phpytex.yaml` config file.
 ## <a name="usage-short">USAGE - QUICK START</a> ##
 
 - `phpytex` or `phpytex help` displays a message with the commands.
 - `phpytex version` displays in plain text the version number.
 - `phpytex run [file=<name of config file>]` runs the programme within a project using the named config file.
   </br>
-  If the `file` flag is left empty, the programme searches for the first yaml-file matching the pattern `*.(phpytex|phpycreate).(yml|yaml)` and uses this as the config file.
+  If the `file` flag is left empty, the programme searches for the first yaml-file matching the pattern `*.(phpytex|phpycreate).ya?ml` and uses this as the config file.
 
 ### <a name="usage-short_config">Set up of config file</a> ###
 
-To use phpytex, a `.phpytex.yml` file is required in the (root of) the project folder.
+To use phpytex, a `.phpytex.yaml` file is required in the (root of) the project folder.
 This should contain 4 parts with the following structure:
 
 ```yaml

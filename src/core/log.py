@@ -5,12 +5,10 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from src.local.io import *;
-from src.local.misc import *;
-from src.local.system import *;
-from src.local.typing import *;
-
-from datetime import timedelta;
+from src.thirdparty.io import *;
+from src.thirdparty.misc import *;
+from src.thirdparty.system import *;
+from src.thirdparty.types import *;
 
 from src.core.timer import *;
 
@@ -83,7 +81,7 @@ def logFatal(*lines: Any, force: bool = False, tag_all: bool = False, file: Any 
 # User Input
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def askUserInput(message: str, expectedformat: Callable) -> Union[str, None]:
+def askUserInput(message: str, expectedformat: Callable) -> Optional[str]:
     answer = None;
     while True:
         try:
@@ -102,12 +100,12 @@ def askUserInput(message: str, expectedformat: Callable) -> Union[str, None]:
             break;
     return answer;
 
-def askSecureUserInput(message: str, expectedformat: Callable) -> Union[str, None]:
+def askSecureUserInput(message: str, expectedformat: Callable) -> Optional[str]:
     answer = None;
     while True:
         try:
             ## TODO: zeige **** ohne Zeilenumbruch an.
-            answer = getpass.getpass('{}{}'.format(_logging_prefix, message), stream=None);
+            answer = getpass('{}{}'.format(_logging_prefix, message), stream=None);
         ## Capture Meta+C:
         except KeyboardInterrupt:
             logPlain('');

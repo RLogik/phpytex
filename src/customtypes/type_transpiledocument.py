@@ -7,9 +7,9 @@
 
 from __future__ import annotations;
 
-from src.local.misc import *;
-from src.local.system import *;
-from src.local.typing import *;
+from src.thirdparty.misc import *;
+from src.thirdparty.system import *;
+from src.thirdparty.types import *;
 
 from src.core.log import *;
 from src.core.utils import formatTextBlockAsList;
@@ -35,7 +35,7 @@ class TranspileDocument(list):
     path: str;
     pathfolder: str;
     blocks: TranspileBlocks;
-    variables: Dict[str, Any];
+    variables: dict[str, Any];
     indentsymb: str;
 
     def __init__(
@@ -44,7 +44,7 @@ class TranspileDocument(list):
         path: str,
         label: str,
         indentsymb: str,
-        variables: Dict[str, Any] = dict()
+        variables: dict[str, Any] = dict()
     ):
         self.root = root;
         self.pathfolder = os.path.dirname(path) or '.';
@@ -82,7 +82,7 @@ class TranspileDocument(list):
     def generateCode(
         self,
         offset:     int       = 0,
-        globalvars: List[str] = [],
+        globalvars: list[str] = [],
         anon:       bool      = False,
         hide:       bool      = False,
     ) -> Generator[str, None, None]:
@@ -123,24 +123,24 @@ class TranspileDocument(list):
 class TranspileDocuments(object):
     root:       str;
     indentsymb: str;
-    preamble:   Dict[str, TranspileBlocks];
-    documents:  Dict[str, TranspileDocument];
-    variables:  Dict[str, Any];
-    schemes:    Dict[str, str];
+    preamble:   dict[str, TranspileBlocks];
+    documents:  dict[str, TranspileDocument];
+    variables:  dict[str, Any];
+    schemes:    dict[str, str];
 
-    paths:      List[str];
-    anon:       Dict[str, bool];
-    hide:       Dict[str, bool];
-    edges:      List[Tuple[str, str]];
-    docEdges:   List[Tuple[str, str]];
+    paths:      list[str];
+    anon:       dict[str, bool];
+    hide:       dict[str, bool];
+    edges:      list[tuple[str, str]];
+    docEdges:   list[tuple[str, str]];
 
-    variables:  List[str];
+    variables:  list[str];
 
     def __init__(
         self,
         root: str,
         indentsymb: str,
-        schemes:    Dict[str, str] = dict()
+        schemes:    dict[str, str] = dict()
     ):
         self.root = root;
         self.indentsymb = indentsymb;
@@ -211,13 +211,13 @@ class TranspileDocuments(object):
         index = self.paths.index(path);
         return '{label}_{index}'.format(label=self.schemes['file'], index=index);
 
-    def getHeadPaths(self) -> List[str]:
+    def getHeadPaths(self) -> list[str]:
         degreeIn = { path: 0 for path in self.paths };
         for u, v in self.edges:
             degreeIn[v] = degreeIn[v] + 1 if v in degreeIn else 0;
         return [ path for path in self.paths if degreeIn[path] == 0 ];
 
-    def getSubPaths(self, path: str) -> List[str]:
+    def getSubPaths(self, path: str) -> list[str]:
         return [ __ for _, __ in self.edges if _ == path ];
 
     def addDocument(self, path: str):
@@ -359,7 +359,7 @@ class TranspileDocuments(object):
             indentsymb = self.indentsymb
         );
 
-    def documentTree(self, seed: Union[int, None]) -> TranspileBlock:
+    def documentTree(self, seed: Optional[int]) -> TranspileBlock:
         return TranspileBlock(
             kind       = 'text:comment',
             lines      = formatTextBlockAsList(
@@ -385,8 +385,8 @@ class TranspileDocuments(object):
     def generateCode(
         self,
         offset:     int       = 0,
-        preambles:  List[str] = [],
-        globalvars: List[str] = [],
+        preambles:  list[str] = [],
+        globalvars: list[str] = [],
         anon:       bool      = False,
         hide:       bool      = False,
     ) -> Generator[str, None, None]:

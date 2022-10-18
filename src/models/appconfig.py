@@ -7,9 +7,9 @@
 
 from __future__ import annotations;
 
-from src.local.system import *;
-from src.local.maths import *;
-from src.local.typing import *;
+from src.thirdparty.system import *;
+from src.thirdparty.maths import *;
+from src.thirdparty.types import *;
 
 from src.core.utils import PythonCommand;
 from src.core.utils import getFullPath;
@@ -19,7 +19,7 @@ from src.customtypes.exports import *;
 # GLOBAL VARIABLES
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-_config_parameters: Dict[str, ConfigParameter] = {
+_config_parameters: dict[str, ConfigParameter] = {
     'pattern_config':          ConfigParameter[str]('patternConfig'),
     'path_app':                ConfigParameter[str]('pathApp'),
     'path_root':               ConfigParameter[str]('pathRoot'),
@@ -53,14 +53,14 @@ _config_parameters: Dict[str, ConfigParameter] = {
     'offset_symbol':           ConfigParameter[str]('offsetSymbol').setValue(''),
 };
 
-_dictionary_stamp: Dict[str, Any] = dict();
-_dictionary_params: Dict[str, Any] = dict();
+_dictionary_stamp: dict[str, Any] = dict();
+_dictionary_params: dict[str, Any] = dict();
 _project_tree: ProjectTree = ProjectTree();
-_export_vars:         Dict[str, Tuple[Any, str]] = dict();
-_includes:            List[str] = [];
-_precompile_lines:    List[Tuple[int, Any, str]] = [];
-_document_structure:  List[str];
-_list_of_imports:     List[str];
+_export_vars:         dict[str, tuple[Any, str]] = dict();
+_includes:            list[str] = [];
+_precompile_lines:    list[tuple[int, Any, str]] = [];
+_document_structure:  list[str];
+_list_of_imports:     list[str];
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # METHODS: get/set
@@ -338,18 +338,18 @@ def setOffsetSymbol(value: str):
     _config_parameters['offset_symbol'].value = value;
     return;
 
-def getDictionaryStamp() -> Dict[str, Any]:
+def getDictionaryStamp() -> dict[str, Any]:
     return _dictionary_stamp;
 
-def setDictionaryStamp(value: Dict[str, Any]):
+def setDictionaryStamp(value: dict[str, Any]):
     global _dictionary_stamp;
     _dictionary_stamp = value;
     return;
 
-def getDictionaryParms() -> Dict[str, Any]:
+def getDictionaryParms() -> dict[str, Any]:
     return _dictionary_params;
 
-def setDictionaryParams(value: Dict[str, Any]):
+def setDictionaryParams(value: dict[str, Any]):
     global _dictionary_params;
     _dictionary_params = value;
     return;
@@ -362,10 +362,10 @@ def setProjectTree(value: ProjectTree):
     _project_tree = value;
     return;
 
-def getExportVars() -> Dict[str, Tuple[Any, str]]:
+def getExportVars() -> dict[str, tuple[Any, str]]:
     return _export_vars;
 
-def setExportVars(value: Dict[str, Tuple[Any, str]]):
+def setExportVars(value: dict[str, tuple[Any, str]]):
     global _export_vars;
     _export_vars = value;
     return;
@@ -375,34 +375,34 @@ def setExportVarsKeyValue(key: str, value: Any, codedvalue: str):
     _export_vars[key] = (value, codedvalue);
     return;
 
-def getIncludes() -> List[str]:
+def getIncludes() -> list[str]:
     return _includes;
 
-def setIncludes(value: List[str]):
+def setIncludes(value: list[str]):
     global _includes;
     _includes = value;
     return;
 
-def getPrecompileLines() -> List[Tuple[int, Any, str]]:
+def getPrecompileLines() -> list[tuple[int, Any, str]]:
     return _precompile_lines;
 
-def setPrecompileLines(value: List[Tuple[int, Any, str]]):
+def setPrecompileLines(value: list[tuple[int, Any, str]]):
     global _precompile_lines;
     _precompile_lines = value;
     return;
 
-def getDocumentStructure() -> List[str]:
+def getDocumentStructure() -> list[str]:
     return _document_structure;
 
-def setDocumentStructure(value: List[str]):
+def setDocumentStructure(value: list[str]):
     global _document_structure;
     _document_structure = value;
     return;
 
-def getListOfImports() -> List[str]:
+def getListOfImports() -> list[str]:
     return _list_of_imports;
 
-def setListOfImports(value: List[str]):
+def setListOfImports(value: list[str]):
     global _list_of_imports;
     _list_of_imports = value;
     return;

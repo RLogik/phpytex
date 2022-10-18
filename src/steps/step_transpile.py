@@ -5,8 +5,8 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from src.local.maths import *;
-from src.local.typing import *;
+from src.thirdparty.maths import *;
+from src.thirdparty.types import *;
 
 from src.core.log import *;
 from src.core.utils import formatTextBlockAsList;
@@ -122,11 +122,11 @@ def transpileDocument(
     path:         str,
     documents:    TranspileDocuments,
     imports:      TranspileBlocks,
-    chain:        List[str]          = [],
+    chain:        list[str]          = [],
     name:         str                = '',
     is_preamble:  bool               = False,
     silent:       bool               = False,
-    params:       Dict[str, bool]    = dict()
+    params:       dict[str, bool]    = dict()
 ):
     if path in chain:
         logError('The document contains a cycle!');
@@ -218,9 +218,9 @@ def createImportFileParameters(
 def createmetacode(
     documents:  TranspileDocuments,
     imports:    TranspileBlocks,
-    preambles:  List[str],
-    globalvars: List[str],
-    seed:       Union[int, None]
+    preambles:  list[str],
+    globalvars: list[str],
+    seed:       Optional[int]
 ):
     _lines_pre = getTemplatePhpytexLinesPre();
     _lines_post = getTemplatePhpytexLinesPost();

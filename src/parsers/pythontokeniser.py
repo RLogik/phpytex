@@ -5,12 +5,11 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from src.local.encoding import *;
-from src.local.io import *;
-from src.local.typing import *;
+from src.thirdparty.io import *;
+from src.thirdparty.types import *;
+from src.thirdparty.logic import *;
 
-import tokenize;
-
+from src.core.constants import *;
 from src.core.log import *;
 from src.core.utils import extractIndent;
 from src.core.utils import sizeOfIndent;
@@ -29,7 +28,7 @@ from src.core.utils import sizeOfIndent;
 # NOTE: recursively yields the required level of indentation _after_ each lines
 # E.g. lines ending in ':' command a +1 indentation level.
 ########
-def getIndentations(codelines: List[str], indentsymb: str = '    ', encoding: str = ENCODING_UTF8) -> List[str]:
+def getIndentations(codelines: list[str], indentsymb: str = '    ', encoding: str = ENCODING_UTF8) -> list[str]:
     indents = [];
     tokengroup = [];
     ## pad code lines, to allow for interrupted blocks that start off with positive indents:
@@ -72,13 +71,13 @@ def tokenisePythonCode(code: str, encoding: str = ENCODING_UTF8) -> Generator[to
     return tokenize.tokenize(readlineObj);
 
 # detects if line ends in ':' (works even if line actually ends in comment or split )
-def groupEndsInColon(tokengroup: List[tokenize.TokenInfo]) -> bool:
+def groupEndsInColon(tokengroup: list[tokenize.TokenInfo]) -> bool:
     if len(tokengroup) > 0:
         token = tokengroup[-1];
         return token.type == tokenize.OP and token.string == ':';
     return False;
 
-def getIndentationOfTokenGroup(tokengroup: List[tokenize.TokenInfo]):
+def getIndentationOfTokenGroup(tokengroup: list[tokenize.TokenInfo]):
     for token in tokengroup:
         if token.type in [ tokenize.INDENT, tokenize.DEDENT ]:
             line = token.line.rstrip();

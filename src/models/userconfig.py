@@ -5,10 +5,7 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from yaml import add_constructor;
-from yaml import load;
-from yaml import Loader;
-from yaml import FullLoader;
+from src.thirdparty.config import *;
 
 from src.core.utils import getAttribute;
 from src.customtypes.exports import *;
@@ -18,7 +15,7 @@ from src.customtypes.exports import *;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def setupYamlReader():
-    def not_constructor(loader: Loader, node) -> bool:
+    def not_constructor(loader: yaml_Loader, node) -> bool:
         value = loader.construct_sequence(node, deep=True);
         try:
             expr = not value[0];
@@ -26,7 +23,7 @@ def setupYamlReader():
             expr = False;
         return expr;
 
-    def key_constructor(loader: Loader, node):
+    def key_constructor(loader: yaml_Loader, node):
         value = loader.construct_sequence(node, deep=True);
         try:
             obj = value[0];
@@ -35,7 +32,7 @@ def setupYamlReader():
         except:
             return None;
 
-    def join_constructor(loader: Loader, node):
+    def join_constructor(loader: yaml_Loader, node):
         values = loader.construct_sequence(node, deep=True);
         try:
             sep, parts = str(values[0]), [str(_) for _ in values[1]];
@@ -43,7 +40,7 @@ def setupYamlReader():
         except:
             return '';
 
-    def eval_constructor(loader: Loader, node):
+    def eval_constructor(loader: yaml_Loader, node):
         value = loader.construct_sequence(node, deep=True);
         try:
             expr = value[0];

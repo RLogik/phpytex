@@ -13,7 +13,7 @@ from unittest import TestCase;
 from unittest.mock import MagicMock;
 from unittest.mock import patch;
 
-from src.local.typing import *;
+from src.thirdparty.types import *;
 from src.graphs.graph import *;
 from src.graphs.tarjan import *;
 
