@@ -21,7 +21,6 @@
 !/src/**/
 !/src/setup/templates/template_*
 !/src/setup/VERSION
-!/src/**/*.lark
 !/src/**/*.py
 
 !/tests
@@ -47,6 +46,7 @@
 !/tests/**/*.py
 
 !/assets
+!/assets/*.lark
 !/assets/template_*
 
 !/dist
