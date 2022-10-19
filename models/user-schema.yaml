@@ -10,41 +10,145 @@ paths: {}
 components:
   schemas:
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # Config
+    # UserConfig
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     UserConfig:
       description: |-
         Model for all parts of the user config file.
       type: object
       properties:
-        info:
-          $ref: "#/components/schemas/Info"
-        options:
-          $ref: "#/components/schemas/AppOptions"
+        compile:
+          $ref: "#/components/schemas/UserCompileOptions"
+        stamp:
+          $ref: "#/components/schemas/UserStampOptions"
+        parameters:
+          $ref: "#/components/schemas/UserParameterOptions"
+        files:
+          type: array
+          items:
+            type: string
+            pattern: '^[^\\\/]*\.[^\\\/]+$'
+          default: []
+        folders:
+          # $ref: "#/components/schemas/DataTypeFolders"
+          type: object
+          default: {}
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # Info
+    # User Compile options
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Info:
+    UserCompileOptions:
       description: |-
-        Contains meta data about project.
+        Options for compilation.
       type: object
       required:
-        - title
-        - description
-        - author
+        - root
+        - output
       properties:
-        title:
+        root:
           type: string
-        description:
+        output:
           type: string
-        author:
-          type: string
+        debug:
+          type: boolean
+          default: false
+        compile-latex:
+          type: boolean
+          default: false
+        show-structure:
+          type: boolean
+          default: true
+        comments:
+          $ref: "#/components/schemas/EnumCommentsOption"
+        insert-bib:
+          type: boolean
+          default: false
+        max-length:
+          description: Prevents transpiler from creating overlarge files
+          type: integer
+        seed:
+          type: integer
+        tabs:
+          type: boolean
+          default: false
+        spaces:
+          type: integer
+          default: 4
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # App Options
+    # User Compile options
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    AppOptions:
+    UserStampOptions:
       description: |-
-        Options pertaining to the rudimentary setup of the app.
+        Options for comment stamp to be placed at top of transpiled .tex file.
       type: object
-      required: []
-      properties: {}
+      required:
+        - file
+      properties:
+        file:
+          type: string
+          pattern: '^[^\\\/]*\.[^\\\/]+$'
+        overwrite:
+          type: boolean
+          default: true
+        options:
+          type: object
+          default: {}
+      additionalProperties: false
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # User Parameter options
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    UserParameterOptions:
+      description: |-
+        Options for comment stamp to be placed at top of transpiled .tex file.
+      type: object
+      required:
+        - file
+      properties:
+        file:
+          type: string
+          pattern: '^[\w\_]+(\.[\w\_]+)*$'
+        overwrite:
+          type: boolean
+          default: true
+        options:
+          type: object
+          additionalProperties: true
+          default: {}
+      additionalProperties: false
+    # # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # # DATA TYPE Folder
+    # # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # # FIXME: does not work under `datamodel-codegen` v 0.13.2
+    # DataTypeFolders:
+    #   description: |-
+    #     Allow for the recursive definition of a folder structure.
+    #   type: object
+    #   default: {}
+    #   # FIXME: here is the issue - works in Swagger, but not with datamodel-codegen:
+    #   additionalProperties:
+    #     $ref: "#/components/schemas/DataTypeFolder"
+    # DataTypeFolder:
+    #   description: |-
+    #     Allow for the recursive definition of a folder structure.
+    #   type: object
+    #   properties:
+    #     files:
+    #       type: array
+    #       items:
+    #         type: string
+    #         pattern: '^[^\\\/]*\.[^\\\/]+$'
+    #       default: []
+    #     folders:
+    #       $ref: "#/components/schemas/DataTypeFolders"
+    #   additionalProperties: false
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # ENUM Comments Options
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    EnumCommentsOption:
+      description: |-
+        An enumeration of possible options for comments
+      type: string
+      enum:
+        - 'auto'
+        - 'on'
+        - 'off'
+      default: auto

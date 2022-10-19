@@ -9,9 +9,9 @@ from src.thirdparty.misc import *;
 from src.thirdparty.system import *;
 from src.thirdparty.types import *;
 
+from src.setup import *;
 from src.core.log import *;
 from src.core.utils import pipeCall;
-from src.setup import appconfig;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES

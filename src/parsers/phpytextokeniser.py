@@ -10,10 +10,10 @@ from src.thirdparty.logic import *;
 from src.thirdparty.misc import *;
 from src.thirdparty.types import *;
 
+from src.setup import *;
 from src.core.constants import *;
 from src.core.log import *;
 from src.core.utils import *;
-from src.setup.methods import getGrammar;
 from src.customtypes.exports import *;
 from src.parsers.pythontokeniser import getIndentations;
 
@@ -32,7 +32,7 @@ def getLexer(mode: str = 'blocks') -> Lark:
     global _grammar;
     global _lexer;
     if not (mode in _grammar):
-        _grammar[mode] = getGrammar('phpytex.lark');
+        _grammar[mode] = get_grammar('phpytex.lark');
     if not (mode in _lexer):
         _lexer[mode] = Lark(
             _grammar[mode],

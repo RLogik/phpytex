@@ -1,0 +1,111 @@
+openapi: 3.0.3
+info:
+  version: x.y.z
+  title: Schemata for app config
+  description: |-
+    Schemata for app internal configuration.
+servers:
+  - url: "."
+paths: {}
+components:
+  schemas:
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Config
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ConfigParameters:
+      description: |-
+        Internal application configuration
+      type: object
+      properties:
+        files:
+          description: Options pertaining to files and paths
+          $ref: "#/components/schemas/FileOptions"
+        compilation:
+          description: Options for compilation
+          $ref: "#/components/schemas/CompileOptions"
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # File options
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    FileOptions:
+      description: |-
+        Options for compilation.
+      type: object
+      properties:
+        pattern-config:
+          type: string
+        path-app:
+          type: string
+        path-root:
+          type: string
+        file-start:
+          type: string
+        file-transpiled:
+          type: string
+        file-output:
+          type: string
+        file-stamp:
+          type: string
+        with-file-stamp:
+          type: boolean
+          default: false
+        file-params-py:
+          type: string
+        with-file-params-py:
+          type: boolean
+          default: false
+        import-param-py:
+          type: string
+        param-module-name:
+          type: string
+          default: 'MODULE_GLOBAL_PARAMS'
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Compile options
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    CompileOptions:
+      description: |-
+        Options for compilation.
+      type: object
+      properties:
+        ignore:
+          type: boolean
+          default: false
+        debug:
+          type: boolean
+          default: false
+        compile-latex:
+          type: boolean
+          default: false
+        show-tree:
+          type: boolean
+          default: true
+        comments-auto:
+          type: boolean
+          default: true
+        comments-on:
+          type: boolean
+          default: true
+        insert-bib:
+          type: boolean
+          default: false
+        overwrite-stamp:
+          type: boolean
+          default: true
+        overwrite-params:
+          type: boolean
+          default: true
+        max-length:
+          description: Prevents transpiler from creating overlarge files
+          type: integer
+          default: 10000
+        seed:
+          type: integer
+        indent-character:
+          type: string
+        indent-character-re:
+          type: string
+        censor-symbol:
+          type: string
+          default: '########'
+        offset-symbol:
+          type: string
+          default: ''

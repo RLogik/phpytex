@@ -8,16 +8,13 @@
 from src.thirdparty.maths import *;
 from src.thirdparty.types import *;
 
+from src.setup import *;
 from src.core.log import *;
 from src.core.utils import formatTextBlockAsList;
 from src.core.utils import readTextFile;
 from src.core.utils import unique;
 from src.core.utils import writeTextFile;
 from src.customtypes.exports import *;
-from src.setup import appconfig;
-from src.setup.methods import getTemplatePhpytexLinesPre;
-from src.setup.methods import getTemplatePhpytexLinesPost;
-from src.setup.templates.exports import *;
 from src.parsers.phpytextokeniser import parseText;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -44,9 +41,9 @@ def step():
         root       = root,
         indentsymb = indentsymb,
         schemes    = dict(
-            file = FUNCTION_NAME_FILE,
-            main = FUNCTION_NAME_MAIN,
-            pre  = FUNCTION_NAME_PRE
+            file = config.FUNCTION_NAME_FILE,
+            main = config.FUNCTION_NAME_MAIN,
+            pre  = config.FUNCTION_NAME_PRE
         )
     );
 
@@ -222,8 +219,8 @@ def createmetacode(
     globalvars: list[str],
     seed:       Optional[int]
 ):
-    _lines_pre = getTemplatePhpytexLinesPre();
-    _lines_post = getTemplatePhpytexLinesPost();
+    _lines_pre = get_template_phpytex_lines_pre();
+    _lines_post = get_template_phpytex_lines_post();
     lines = [];
     lines += formatTextBlockAsList(
         _lines_pre.format(
@@ -237,7 +234,7 @@ def createmetacode(
             seed          = seed,
             indentsymb    = appconfig.getIndentCharacter(),
             censorsymb    = appconfig.getCensorSymbol(),
-            mainfct       = FUNCTION_NAME_MAIN,
+            mainfct       = config.FUNCTION_NAME_MAIN,
         )
     );
     lines.append('');

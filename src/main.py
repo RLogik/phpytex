@@ -10,11 +10,11 @@ import sys;
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))));
 
-import json;
+from src.thirdparty.config import *;
 
+from src.setup import *;
 from src.core.log import *;
 from src.core.utils import getCliArgs;
-from src.setup import appconfig;
 from src.endpoints.exports import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -55,6 +55,7 @@ def enter(*tokens: str, file: str, pathApp: str, pathRoot: str, **kwargs: str):
 
 if __name__ == '__main__':
     sys.tracebacklimit = 0;
+    open_source(True);
     tokens, kwargs = getCliArgs(*sys.argv[1:]);
     enter(*tokens, **{
         'file':     '',

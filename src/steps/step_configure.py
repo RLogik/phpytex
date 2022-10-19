@@ -9,6 +9,7 @@ from src.thirdparty.misc import *;
 from src.thirdparty.system import *;
 from src.thirdparty.types import *;
 
+from src.setup import *;
 from src.core.log import *;
 from src.core.utils import createNewFileName;
 from src.core.utils import formatPath;
@@ -19,7 +20,6 @@ from src.core.utils import readYamlFile;
 from src.core.utils import restrictDictionary;
 from src.core.utils import toPythonKeysDict;
 from src.customtypes.exports import ProjectTree;
-from src.setup import appconfig;
 from src.setup.userconfig import setupYamlReader;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -72,7 +72,6 @@ def getPhpytexConfig(fnameConfig: str) -> dict[str, Any]:
 def preProcessCompileConfig(config: dict[str, Any]) -> dict[str, Any]:
     return dict(
         ignore     = getAttribute(config, 'ignore', expectedtype=bool, default=False),
-        legacy     = getAttribute(config, 'legacy', expectedtype=bool, default=False),
         startfile  = getAttribute(config, ['root', 'input'], expectedtype=str),
         outputfile = getAttribute(config, 'output', expectedtype=str, default='main.tex'),
         debug      = getAttribute(config, 'debug', expectedtype=bool, default=False),
@@ -90,7 +89,6 @@ def preProcessCompileConfig(config: dict[str, Any]) -> dict[str, Any]:
 
 def setCompileConfig(
     ignore:     bool,
-    legacy:     bool,
     startfile:  str,
     outputfile: str,
     debug:      bool,
@@ -105,7 +103,6 @@ def setCompileConfig(
     offset:     str
 ):
     root = appconfig.getPathRoot();
-    appconfig.setOptionLegacy(legacy);
     appconfig.setOptionIgnore(ignore);
     appconfig.setOptionDebug(debug);
     appconfig.setOptionCompileLatex(compile);
@@ -131,8 +128,6 @@ def setCompileConfig(
     indentsymb = appconfig.getIndentCharacter();
     if lengthOfWhiteSpace(indentsymb) == 0:
         raise AttributeError('Indentation symbol cannot be the empty string!');
-    if legacy:
-        appconfig.setOffsetSymbol(indentsymb);
 
     fileStart = formatPath(startfile, root=root, relative=False);
     fileOutput = formatPath(outputfile, root=root, relative=False, ext_if_empty='.tex');

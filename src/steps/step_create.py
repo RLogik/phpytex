@@ -9,12 +9,12 @@ from src.thirdparty.misc import *;
 from src.thirdparty.system import *;
 from src.thirdparty.types import *;
 
+from src.setup import *;
 from src.core.log import *;
 from src.core.utils import createFile;
 from src.core.utils import createPath;
 from src.core.utils import writeTextFile;
 from src.customtypes.exports import ProjectTree;
-from src.setup import appconfig;
 from src.parsers.methods import convertToPythonString;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

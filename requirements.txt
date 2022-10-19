@@ -14,7 +14,7 @@ lazy-load>=0.8.2
 pyyaml>=6.0
 dataclasses>=0.6
 pydantic>=1.9.0
-datamodel-code-generator>=0.13.0
+datamodel-code-generator>=0.13.2
 openapi-generator-cli>=4.3.1
 
 # misc

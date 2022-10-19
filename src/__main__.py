@@ -16,8 +16,8 @@ import sys;
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)));
 
-from src.core.utils import getCliArgs;
-from src.setup.methods import setOpenSource;
+from src.setup import *;
+from src.core.utils import *;
 from src.main import enter;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -26,7 +26,7 @@ from src.main import enter;
 
 if __name__ == '__main__':
     sys.tracebacklimit = 0;
-    setOpenSource(False);
+    open_source(False);
     tokens, kwargs = getCliArgs(*sys.argv[1:]);
     enter(*tokens, **{
         'file':     '',
