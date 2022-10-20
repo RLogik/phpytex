@@ -87,10 +87,11 @@ _generate-models path name:
         --encoding "UTF-8" \
         --disable-timestamp \
         --use-schema-description \
+        --set-default-enum-member \
         --allow-population-by-field-name \
         --snake-case-field \
         --strict-nullable \
-        --target-python-version 3.9 \
+        --target-python-version 3.10 \
         --input {{path}}/{{name}}-schema.yaml \
         --output {{path}}/generated/{{name}}.py
 

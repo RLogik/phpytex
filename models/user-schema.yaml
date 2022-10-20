@@ -30,9 +30,11 @@ components:
             pattern: '^[^\\\/]*\.[^\\\/]+$'
           default: []
         folders:
-          # $ref: "#/components/schemas/DataTypeFolders"
           type: object
+          additionalProperties:
+            $ref: "#/components/schemas/DataTypeFolder"
           default: {}
+      additionalProperties: true
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # User Compile options
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -114,32 +116,26 @@ components:
           additionalProperties: true
           default: {}
       additionalProperties: false
-    # # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # # DATA TYPE Folder
-    # # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # # FIXME: does not work under `datamodel-codegen` v 0.13.2
-    # DataTypeFolders:
-    #   description: |-
-    #     Allow for the recursive definition of a folder structure.
-    #   type: object
-    #   default: {}
-    #   # FIXME: here is the issue - works in Swagger, but not with datamodel-codegen:
-    #   additionalProperties:
-    #     $ref: "#/components/schemas/DataTypeFolder"
-    # DataTypeFolder:
-    #   description: |-
-    #     Allow for the recursive definition of a folder structure.
-    #   type: object
-    #   properties:
-    #     files:
-    #       type: array
-    #       items:
-    #         type: string
-    #         pattern: '^[^\\\/]*\.[^\\\/]+$'
-    #       default: []
-    #     folders:
-    #       $ref: "#/components/schemas/DataTypeFolders"
-    #   additionalProperties: false
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # DATA TYPE Folder
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    DataTypeFolder:
+      description: |-
+        Allow for the recursive definition of a folder structure.
+      type: object
+      properties:
+        files:
+          type: array
+          items:
+            type: string
+            pattern: '^[^\\\/]*\.[^\\\/]+$'
+          default: []
+        folders:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/DataTypeFolder"
+          default: {}
+      additionalProperties: false
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # ENUM Comments Options
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
