@@ -209,7 +209,7 @@ function require_folder() {
 function set_temporary_folder() {
     local name="tmp";
     local path;
-    path="$( mktemp -d -t "${name}_" )";
+    path="$( mktemp -d -t "${name}_XXXXX" )";
     echo "${path}";
 }
 
