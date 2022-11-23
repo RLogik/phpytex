@@ -11,7 +11,6 @@
 
 SCRIPTARGS="$@";
 FLAGS=( "$@" );
-OUT="/dev/stdout";
 ERR="/dev/stderr";
 VERBOSE="/dev/null";
 LOCALDIST=".phpytex";
@@ -23,48 +22,48 @@ APPNAME="phpytex";
 
 # Show help
 function show_help() {
-    echo -e "" >> $OUT;
-    echo -e "Usage guide for \033[92;1mphpytex\033[0m installer"; >> $OUT
-    echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"; >> $OUT
-    echo -e "" >> $OUT;
-    echo -e "    \033[1minstallphpytex\033[0m \033[2mflags\033[0m \033[1mTAG\033[0m" >> $OUT;
-    echo -e "" >> $OUT;
-    echo -e "  Required Arguments:" >> $OUT;
-    echo -e "    \033[93mTAG\033[0m        \033[2mTag name of distribution (cf. https://github.com/RLogik/phpytex/releases).\033[0m" >> $OUT;
-    echo -e "" >> $OUT;
-    echo -e "  Flag options:" >> $OUT;
-    echo -e "    \033[93m--help\033[0m     \033[2mDisplays this help information.\033[0m"                           >> $OUT;
-    echo -e "    \033[93m--git\033[0m      \033[2mInstall from git artefacts, docker artefacts.\033[0m"             >> $OUT;
-    echo -e "               \033[2mIf unused, attempts to link to local distribution.\033[0m";                      >> $OUT;
-    echo -e "    \033[93m--force\033[0m    \033[2mForces reinstall (depends if version already installed).\033[0m"  >> $OUT;
-    echo -e "" >> $OUT;
-    echo -e "" >> $OUT;
-    echo -e "  NOTES:" >> $OUT;
-    echo -e "    1. The installation process involves installing python packages to your current environment."             >> $OUT;
-    echo -e "    2. Ensure to add \033[1m${HOME}/${LOCALDIST}/bin\033[0m to your PATH variable."                           >> $OUT;
-    echo -e "       To permanently set this add the line"                                                                  >> $OUT;
-    echo -e "" >> $OUT;
-    echo -e "         \033[94mexport PATH=\"\$HOME/${LOCALDIST}/bin:\$PATH\";\033[0m"                                      >> $OUT
-    echo -e "" >> $OUT;
-    echo -e "       to \033[1m${HOME}/.bash_profile\033[0m or call"                                                        >> $OUT;
-    echo -e "" >> $OUT;
-    echo -e "         \033[94mecho \"export PATH=\\\"\$HOME/${LOCALDIST}/bin:\$PATH\\\";\" >> \$HOME/.bash_profile\033[0m" >> $OUT;
-    echo -e "" >> $OUT;
+    echo -e "";
+    echo -e "Usage guide for \x1b[92;1mphpytex\x1b[0m installer";
+    echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+    echo -e "";
+    echo -e "    \x1b[1minstallphpytex\x1b[0m \x1b[2mflags\x1b[0m \x1b[1mTAG\x1b[0m";
+    echo -e "";
+    echo -e "  Required Arguments:";
+    echo -e "    \x1b[93mTAG\x1b[0m        \x1b[2mTag name of distribution (cf. https://github.com/RLogik/phpytex/releases).\x1b[0m";
+    echo -e "";
+    echo -e "  Flag options:";
+    echo -e "    \x1b[93m--help\x1b[0m     \x1b[2mDisplays this help information.\x1b[0m";
+    echo -e "    \x1b[93m--git\x1b[0m      \x1b[2mInstall from git artefacts, docker artefacts.\x1b[0m";
+    echo -e "               \x1b[2mIf unused, attempts to link to local distribution.\x1b[0m";
+    echo -e "    \x1b[93m--force\x1b[0m    \x1b[2mForces reinstall (depends if version already installed).\x1b[0m";
+    echo -e "";
+    echo -e "";
+    echo -e "  NOTES:";
+    echo -e "    1. The installation process involves installing python packages to your current environment.";
+    echo -e "    2. Ensure to add \x1b[1m\$HOME/${LOCALDIST}/bin\x1b[0m to your PATH variable.";
+    echo -e "       To permanently set this add the line";
+    echo -e "";
+    echo -e "         \x1b[94mexport PATH=\"\$HOME/${LOCALDIST}/bin:\$PATH\";\x1b[0m";
+    echo -e "";
+    echo -e "       to \x1b[1m${HOME}/.bash_profile\x1b[0m or call";
+    echo -e "";
+    echo -e "         \x1b[94mecho \"export PATH=\\\"\$HOME/${LOCALDIST}/bin:\$PATH\\\";\" >> \$HOME/.bash_profile\x1b[0m";
+    echo -e "";
 }
 
 function show_distributions() {
     local dist=( $( ls $HOME/$LOCALDIST/. | grep -E "(^|^v)[[:digit:]]" ) );
     local numdist=${#dist[@]};
     if [ $numdist -gt 0 ]; then
-        echo -e "[\033[94;1mINFO\033[0m] Local distribution \033[1m${HOME}/${LOCALDIST}\033[0m currently contains the following version/s of \033[92;1mphpytex\033[0m:" >> $OUT;
+        echo -e "[\x1b[94;1mINFO\x1b[0m] Local distribution \x1b[1m${HOME}/${LOCALDIST}\x1b[0m currently contains the following version/s of \x1b[92;1mphpytex\x1b[0m:";
         local tag;
         for tag in ${dist[@]}; do
             echo -e "       - ${tag}";
         done
-        echo -e "[\033[94;1mINFO\033[0m] Call \033[92minstallphpytex \033[1mTAG\033[0m to link locally installed versions to the \033[92;1mphpytex\033[0m command."         >> $OUT;
+        echo -e "[\x1b[94;1mINFO\x1b[0m] Call \x1b[92minstallphpytex \x1b[1mTAG\x1b[0m to link locally installed versions to the \x1b[92;1mphpytex\x1b[0m command.";
     else
-        echo -e "[\033[94;1mINFO\033[0m] Local distribution \033[1m${HOME}/${LOCALDIST}\033[0m currently contains no version/s of \033[92;1mphpytex\033[0m." >> $OUT;
-        echo -e "[\033[94;1mINFO\033[0m] Call \033[92minstallphpytex --git \033[1mTAG\033[0m to install a version of \033[92;1mphpytex\033[0m locally." >> $OUT;
+        echo -e "[\x1b[94;1mINFO\x1b[0m] Local distribution \x1b[1m${HOME}/${LOCALDIST}\x1b[0m currently contains no version/s of \x1b[92;1mphpytex\x1b[0m.";
+        echo -e "[\x1b[94;1mINFO\x1b[0m] Call \x1b[92minstallphpytex --git \x1b[1mTAG\x1b[0m to install a version of \x1b[92;1mphpytex\x1b[0m locally.";
     fi
 }
 
@@ -80,7 +79,7 @@ function create_local_copy() {
     local tag="$4";
     local homepath="$HOME/$LOCALDIST/$tag";
 
-    ! [ -d "$HOME" ] && echo -e "[\033[91;1mERROR\033[0m] Could not access the home directory <\033[1m${HOME}\033[0m>." >> $ERR && return 1;
+    ! [ -d "$HOME" ] && echo -e "[\x1b[91;1mERROR\x1b[0m] Could not access the home directory <\x1b[1m${HOME}\x1b[0m>." >> $ERR && return 1;
     require_folder "$HOME/$LOCALDIST" || return 1;
 
     # determine whether to overwrite existing installation:
@@ -88,7 +87,7 @@ function create_local_copy() {
         if ( $force ); then
             rm -rf "$HOME/$LOCALDIST/$tag";
         else
-            cli_ask_expect "Do you wish to overwrite existing installation of \033[92;1mphpytex\033[0m:\033[1m${tag}\033[0m in \033[1m${homepath}\033[0m? (y/n) " \
+            cli_ask_expect "Do you wish to overwrite existing installation of \x1b[92;1mphpytex\x1b[0m:\x1b[1m${tag}\x1b[0m in \x1b[1m${homepath}\x1b[0m? (y/n) " \
                 "^(y|n)$";
             [ "$answer" == "y" ] && rm -rf "$HOME/$LOCALDIST/$tag";
         fi
@@ -109,14 +108,14 @@ function build_phpytex_binary() {
     local path="$2";
 
     # see README.md in respository for details of installation:
-    echo -e "[\033[94;1mINFO\033[0m] Build binary from distribution.";
+    echo -e "[\x1b[94;1mINFO\x1b[0m] Build binary from distribution.";
     pushd $path >> $VERBOSE;
         make --always-make setup; # force usage of system python!
         make --always-make build;
     popd >> $VERBOSE;
-    ! [ -f "$path/dist/phpytex" ] && echo -e "[\033[91;1mERROR\033[0m] Generation of binary failed." >> $ERR && return 1;
+    ! [ -f "$path/dist/phpytex" ] && echo -e "[\x1b[91;1mERROR\x1b[0m] Generation of binary failed." >> $ERR && return 1;
 
-    echo -e "[\033[94;1mINFO\033[0m] Generation successful." >> $OUT;
+    echo -e "[\x1b[94;1mINFO\x1b[0m] Generation successful.";
     return 0;
 }
 
@@ -126,18 +125,18 @@ function link_command_to_distribution() {
     local path="$HOME/$LOCALDIST/$tag";
     local folder="$HOME/$LOCALDIST/bin";
 
-    ! [ -d "$path" ] && echo -e "[\033[91;1mERROR\033[0m] Invalid value for \033[1mTAG\033[0m." >> $ERR && return 1;
+    ! [ -d "$path" ] && echo -e "[\x1b[91;1mERROR\x1b[0m] Invalid value for \x1b[1mTAG\x1b[0m." >> $ERR && return 1;
     [ -d "$folder" ] && rm -rf "$folder";
     require_folder "$folder" || return 1;
     cp "${path}/dist/${APPNAME}" "$HOME/$LOCALDIST/bin";
-    echo -e "[\033[94;1mINFO\033[0m] Linked \033[1mphpytex\033[0m command to \033[1m${path}/dist/phpytex\033[0m:";
+    echo -e "[\x1b[94;1mINFO\x1b[0m] Linked \x1b[1mphpytex\x1b[0m command to \x1b[1m${path}/dist/phpytex\x1b[0m:";
     return 0;
 }
 
 # Obtain artefact from Git repository
 function get_artefact_from_repo() {
     local url_info="https://github.com/RLogik/phpytex/releases";
-    !( check_curl && check_tar ) && echo -e "You need \033[1mcurl\033[0m and \033[1mtar\033[0m in order to be able to use this command." >> $ERR && exit 1;
+    !( check_curl && check_tar ) && echo -e "You need \x1b[1mcurl\x1b[0m and \x1b[1mtar\x1b[0m in order to be able to use this command." >> $ERR && exit 1;
     local force=$1;
     local use_venv=$2;
     local tag="$3";
@@ -148,7 +147,7 @@ function get_artefact_from_repo() {
     local dest_temp="$( set_temporary_folder )";
 
     # Download zip archive from repository:
-    echo -e "[\033[94;1mINFO\033[0m] Download artefact from git repository.";
+    echo -e "[\x1b[94;1mINFO\x1b[0m] Download artefact from git repository.";
     local urls=( "${url}/${tag}.tar.gz" "${url}/v${tag}.tar.gz" );
     local url_;
     for url_ in "${urls[@]}"; do
@@ -157,7 +156,7 @@ function get_artefact_from_repo() {
         && success=0 \
         && break;
     done
-    [ $success -eq 1 ] && echo -e "Tagname \033[1m${tag}\033[0m could not be found! Please refer to \033[94;1m${url_info}\033[0m for valid tag names." >> $ERR && rm -rf "${dest_temp}";
+    [ $success -eq 1 ] && echo -e "Tagname \x1b[1m${tag}\x1b[0m could not be found! Please refer to \x1b[94;1m${url_info}\x1b[0m for valid tag names." >> $ERR && rm -rf "${dest_temp}";
 
     # extract file name
     local path="$( ls -d ${dest_temp}/*/ 2> $VERBOSE | head -1 | sed -E "s/\/$//" )";
@@ -182,7 +181,7 @@ function cli_ask_expect() {
     patternanswer="$2";
     answer="";
     while ( true ); do
-        echo -ne "$msg" >> $OUT && read answer;
+        echo -ne "$msg" && read answer;
         ( echo "$answer" | grep -Eq "$patternanswer" ) && break;
     done
 }
@@ -201,7 +200,7 @@ function check_tar() { ( tar --version >> $VERBOSE 2> $VERBOSE ) && return 0 || 
 function require_folder() {
     local folder="$1";
     ! [ -d "$folder" ] && mkdir "$folder";
-    ! [ -d "$folder" ] && echo -e "[\033[91;1mERROR\033[0m] Could not find or create <\033[1m${folder}\033[0m>." >> $ERR && return 1;
+    ! [ -d "$folder" ] && echo -e "[\x1b[91;1mERROR\x1b[0m] Could not find or create <\x1b[1m${folder}\x1b[0m>." >> $ERR && return 1;
     return 0;
 }
 
@@ -230,7 +229,7 @@ if ( has_arg "$SCRIPTARGS" "-+(help|man|info)" ); then
     exit 0;
 elif [ "$TAG" == "" ]; then
     echo -e "" >> $ERR;
-    echo -e "[\033[91mERROR\033[0m] \033[1m{TAG}\033[0m argument cannot be empty!" >> $ERR;
+    echo -e "[\x1b[91mERROR\x1b[0m] \x1b[1m{TAG}\x1b[0m argument cannot be empty!" >> $ERR;
     show_help;
     exit 1;
 elif ( $flag_git ); then
