@@ -20,7 +20,7 @@ from src.core.utils import readYamlFile;
 from src.core.utils import restrictDictionary;
 from src.core.utils import toPythonKeysDict;
 from src.customtypes.exports import ProjectTree;
-from src.setup.userconfig import setupYamlReader;
+# from src.setup.userconfig import setupYamlReader;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES
@@ -33,7 +33,7 @@ from src.setup.userconfig import setupYamlReader;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def step(fnameConfig: str, extra_parameters: dict):
-    logInfo('READ CONFIG STARTED');
+    log_info('READ CONFIG STARTED');
     ## get configuration file
     config = getPhpytexConfig(fnameConfig);
     ## get main parts of config
@@ -50,7 +50,7 @@ def step(fnameConfig: str, extra_parameters: dict):
     setParamsConfig(**toPythonKeysDict(config_parameters));
     setConfigFilesAndFolders(toPythonKeysDict(config));
 
-    logInfo('READ CONFIG COMPLETE');
+    log_info('READ CONFIG COMPLETE');
     return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -175,7 +175,7 @@ def setParamsConfig(
     if re.match(r'^[^\.\s]*(\.[^\.\s]*)+$', file):
         path = re.sub(r'([^\.]+)\.', r'\1/', file) + '.py';
     else:
-        logWarn('\033[1mparameters > file\033[0m option must by a python-like import path (relative to the root of the project).');
+        log_warn('\033[1mparameters > file\033[0m option must by a python-like import path (relative to the root of the project).');
         path = 'parameters.py';
         path = os.path.relpath(path, root);
     modulename = re.sub(r'\/', '.', os.path.splitext(path)[0]);

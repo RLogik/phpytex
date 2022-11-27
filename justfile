@@ -204,7 +204,10 @@ dist:
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 run:
-    @{{PYTHON}} src/main.py
+    @{{PYTHON}} src/app.py run \
+        --debug \
+        --file "test this out.yaml" \
+        --parameters "{\"name\": 57}";
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # TARGETS: tests

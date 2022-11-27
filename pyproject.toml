@@ -28,7 +28,7 @@ classifiers = [
 ]
 
 [tool.pytest.ini_options]
-minversion = "7.1.1"
+minversion = "7.2.0"
 testpaths = [
     "tests",
 ]

@@ -1,4 +1,4 @@
-# (PH(p)y)TeX - Longer README #
+# `(PH(p)y)TeX` - Longer README #
 
 This project contains versioned releases of the programme, which combines both original programmes.
 
@@ -11,7 +11,7 @@ This project currently uses `python>=3.10.x`.
 Key features
 
 - You can augment your tex/LaTeX files with **python** code.
-- Some commands are inspired by PHP, hence the name.
+- Some (very few!) commands were inspired by PHP, hence the (unfortunate) name.
 - There are generally on the market place 2 kinds of code + LaTeX fusions:
   - ones that are written entirely in the programming language;
   - ones like markdown, Rmd, pandocs, _etc._ which allow a hybrid, but require everything to be written in one file.

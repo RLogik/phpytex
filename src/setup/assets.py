@@ -5,6 +5,8 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+from src.thirdparty.code import *;
+
 from src.setup import config;
 from src.setup.methods import *;
 
@@ -23,14 +25,18 @@ __all__ = [
 # METHODS: get app config
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+@make_lazy
 def get_version() -> str:
     return read_asset(config.PATH_TO_VERSION).strip();
 
+@make_lazy
 def get_grammar(fname: str) -> str:
     return read_asset(config.PATH_TO_GRAMMAR);
 
+@make_lazy
 def get_template_phpytex_lines_pre() -> str:
     return read_asset(config.PATH_TO_TEMPLATE_PRE);
 
+@make_lazy
 def get_template_phpytex_lines_post() -> str:
     return read_asset(config.PATH_TO_TEMPLATE_POST);

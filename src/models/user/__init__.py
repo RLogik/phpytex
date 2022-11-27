@@ -12,7 +12,10 @@ from models.generated.user import *;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 __all__ = [
-    'FileOptions',
-    'CompileOptions',
-    'ConfigParameters',
+    'DataTypeFolder',
+    'EnumCommentsOption',
+    'UserCompileOptions',
+    'UserConfig',
+    'UserParameterOptions',
+    'UserStampOptions',
 ];

@@ -6,11 +6,11 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 from src.thirdparty.maths import *;
+from src.thirdparty.misc import *;
 from src.thirdparty.types import *;
 
 from src.setup import *;
 from src.core.log import *;
-from src.core.utils import formatTextBlockAsList;
 from src.core.utils import readTextFile;
 from src.core.utils import unique;
 from src.core.utils import writeTextFile;
@@ -28,7 +28,7 @@ from src.parsers.phpytextokeniser import parseText;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def step():
-    logInfo('TRANSPILATION (phpytex -> python) STARTED.');
+    log_info('TRANSPILATION (phpytex -> python) STARTED.');
     root = appconfig.getPathRoot();
     indentsymb = appconfig.getIndentCharacter();
     seed = appconfig.getSeed() if appconfig.hasSeed() else None;
@@ -68,7 +68,7 @@ def step():
         imports     = imports,
         name        = '',
         is_preamble = False,
-        silent      = getQuietMode(),
+        silent      = get_quiet_mode(),
         params      = {
             'comm':      appconfig.getOptionCommentsOn(),
             'comm-auto': appconfig.getOptionCommentsAuto(),
@@ -108,7 +108,7 @@ def step():
         globalvars = globalvars,
         seed       = seed
     );
-    logInfo('TRANSPILATION (phpytex -> python) COMPLETE.');
+    log_info('TRANSPILATION (phpytex -> python) COMPLETE.');
     return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -126,12 +126,12 @@ def transpileDocument(
     params:       dict[str, bool]    = dict()
 ):
     if path in chain:
-        logError('The document contains a cycle!');
+        log_error('The document contains a cycle!');
         return;
     try:
         lines = readTextFile(path);
     except:
-        logError('Could not find or read document \033[1m{path}\033[0m!'.format(path = path));
+        log_error('Could not find or read document \033[1m{path}\033[0m!'.format(path = path));
         return;
     depth = len(chain);
     indentsymb = appconfig.getIndentCharacter();
@@ -149,7 +149,7 @@ def transpileDocument(
             blocks.append(block);
         blocks.append(TranspileBlock(kind='text:empty'))
         documents.addPreamble(name=name, blocks=blocks);
-        logPlain(displayTreeBranch(path=path, anon=False, depth=depth));
+        log_plain(displayTreeBranch(path=path, anon=False, depth=depth));
     else:
         if path in documents.paths:
             return;
@@ -157,7 +157,7 @@ def transpileDocument(
         anon = documents.isAnon(path=path);
         hide = documents.isHidden(path=path);
         blocks = TranspileBlocks();
-        logPlain(displayTreeBranch(path=path, anon=anon, depth=depth));
+        log_plain(displayTreeBranch(path=path, anon=anon, depth=depth));
 
         if params['show-tree']:
             blocks.append(documents.documentStamp(depth=0, start=True, anon=anon, hide=hide));
@@ -194,7 +194,7 @@ def createImportFileParameters(
 ):
     if os.path.exists(path) and not overwrite:
         return;
-    lines = formatTextBlockAsList(
+    lines = dedent_as_list(
         '''
         #!/usr/bin/env python3
         # -*- coding: utf-8 -*-
@@ -222,7 +222,7 @@ def createmetacode(
     _lines_pre = get_template_phpytex_lines_pre();
     _lines_post = get_template_phpytex_lines_post();
     lines = [];
-    lines += formatTextBlockAsList(
+    lines += dedent_as_list(
         _lines_pre.format(
             imports       = '\n'.join(imports.generateCode()),
             root          = appconfig.getPathRoot(),
@@ -240,7 +240,7 @@ def createmetacode(
     lines.append('');
     lines += documents.generateCode(offset=0, preambles=preambles, globalvars=globalvars);
     lines.append('');
-    lines += formatTextBlockAsList(
+    lines += dedent_as_list(
         _lines_post.format()
     );
     writeTextFile(appconfig.getFileTranspiled(rel=False), lines);

@@ -16,6 +16,9 @@ components:
       description: |-
         Internal application configuration
       type: object
+      required:
+        - files
+        - compile
       properties:
         files:
           description: Options pertaining to files and paths
@@ -23,6 +26,7 @@ components:
         compilation:
           description: Options for compilation
           $ref: "#/components/schemas/CompileOptions"
+      additionalProperties: false
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # File options
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -30,9 +34,16 @@ components:
       description: |-
         Options for compilation.
       type: object
+      required:
+        - path-app
+        - path-root
+        - file-start
+        - file-transpiled
+        - file-output
       properties:
         pattern-config:
           type: string
+          default: '^(|.*\.)phpytex\.ya?ml$'
         path-app:
           type: string
         path-root:
@@ -43,16 +54,17 @@ components:
           type: string
         file-output:
           type: string
+        # optional:
         file-stamp:
           type: string
-        with-file-stamp:
-          type: boolean
-          default: false
+        # with-file-stamp:
+        #   type: boolean
+        #   default: false
         file-params-py:
           type: string
-        with-file-params-py:
-          type: boolean
-          default: false
+        # with-file-params-py:
+        #   type: boolean
+        #   default: false
         import-param-py:
           type: string
         param-module-name:
@@ -101,8 +113,10 @@ components:
           type: integer
         indent-character:
           type: string
+          default: '    '
         indent-character-re:
           type: string
+          default: '    '
         censor-symbol:
           type: string
           default: '########'

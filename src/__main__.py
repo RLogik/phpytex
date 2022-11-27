@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)));
 
 from src.setup import *;
 from src.core.utils import *;
-from src.main import enter;
+from app import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # EXECUTION
@@ -26,11 +26,9 @@ from src.main import enter;
 
 if __name__ == '__main__':
     sys.tracebacklimit = 0;
+    check_python_version();
+    args = get_arguments_from_cli(*sys.argv[1:]);
     open_source(False);
-    tokens, kwargs = getCliArgs(*sys.argv[1:]);
-    enter(*tokens, **{
-        'file':     '',
-        'pathApp':  os.path.dirname(os.path.abspath(__file__)),
-        'pathRoot': os.getcwd(),
-        **kwargs
-    });
+    path_root = os.getcwd();
+    path_app = os.path.dirname(os.path.abspath(__file__));
+    enter(path_root=path_root, path_app=path_app, args=args);

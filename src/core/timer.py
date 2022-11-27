@@ -11,7 +11,7 @@ from src.thirdparty.misc import *;
 # METHOD
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class Timer(object):
-    _timeelapsed: timedelta;
+    _time_elapsed: timedelta;
     _timecurrent: datetime;
 
     def __init__(self):
@@ -28,15 +28,15 @@ class Timer(object):
         t0 = self._timecurrent;
         t1 = datetime.now();
         self._timecurrent = t1;
-        self._timeelapsed += (t1 -  t0);
+        self._time_elapsed += (t1 -  t0);
         return self;
 
     def reset(self):
         t = datetime.now();
-        self._timeelapsed = t - t;
+        self._time_elapsed = t - t;
         self._timecurrent = t;
         return self;
 
     @property
     def elapsed(self) -> timedelta:
-        return self._timeelapsed;
+        return self._time_elapsed;

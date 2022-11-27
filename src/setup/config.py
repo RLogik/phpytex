@@ -14,16 +14,38 @@ from src.models.config import *;
 from src.core.utils import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# EXPORTS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+__all__ = [
+    'APP_CONFIG',
+    'FILE_OPTIONS',
+    'COMPILE_OPTIONS',
+];
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # CONSTANTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 FUNCTION_NAME_MAIN = '____phpytex_main';
 FUNCTION_NAME_FILE = '____phpytex_generate_file';
 FUNCTION_NAME_PRE  = '____phpytex_generate_pre';
-PATH_TO_VERSION       = 'assets/VERSION';
-PATH_TO_TEMPLATE_PRE  = 'assets/template_pre';
-PATH_TO_TEMPLATE_POST = 'assets/template_post';
-PATH_TO_GRAMMAR       = 'assets/phpytex.lark';
+
+@dataclass
+class AssetPaths():
+    version: str = field();
+    template_pre: str = field();
+    template_post: str = field();
+    grammar: str = field();
+    config: str = field();
+
+PATHS = AssetPaths(
+    version = 'assets/VERSION',
+    template_pre = 'assets/template_pre',
+    template_post = 'assets/template_post',
+    grammar = 'assets/phpytex.lark',
+    config = 'assets/config.yaml'
+);
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # LAZY LOADED RESOURCES
@@ -31,24 +53,14 @@ PATH_TO_GRAMMAR       = 'assets/phpytex.lark';
 
 # extract from data assets + app configuration
 
-def load_assets_config() -> Config: # pragma: no cover
-    with open(PATH_ASSETS_CONFIG, 'r') as fp:
-        assets = yaml_to_js_dictionary(yaml_load(fp, Loader=yaml_FullLoader), deep=True);
-        assert isinstance(assets, dict);
-        return Config(**assets);
-
-def load_assets_languages(default: str) -> TranslatedTexts: # pragma: no cover
-    with open(PATH_ASSETS_LANGUAGE, 'r') as fp:
+def load_assets_config() -> ConfigParameters: # pragma: no cover
+    with open(PATHS.config, 'r') as fp:
         assets = yaml_load(fp, Loader=yaml_FullLoader);
         assert isinstance(assets, dict);
-        return TranslatedTexts(assets=assets, on_missing=ON_MISSING, default=default);
+        return ConfigParameters(**assets);
 
 # use lazy loaing to ensure that values only loaded (once) when used
-CONFIG = lazy(load_assets_config);
-OPTIONS = lazy(lambda x: x.app_options, CONFIG);
-COMMANDS = lazy(lambda x: Commands(x.commands), CONFIG);
-LANGUAGE_CODES = lazy(lambda x: LanguagePatterns(x.language_codes), CONFIG);
-SUPPORTED_LANGUAGES = lazy(lambda x: x.keys, LANGUAGE_CODES);
-DEFAULT_LANGUAGE = lazy(lambda x: x.default_language, OPTIONS);
-
-TRANSLATIONS = lazy(load_assets_languages, default=DEFAULT_LANGUAGE);
+APP_CONFIG: ConfigParameters = lazy(load_assets_config);
+FILE_OPTIONS: FileOptions = lazy(lambda x: x.files, APP_CONFIG);
+COMPILE_OPTIONS: CompileOptions = lazy(lambda x: x.compilation, APP_CONFIG);
+# GRAMMAR = lazy

@@ -11,6 +11,40 @@ from src.thirdparty.system import *;
 from src.thirdparty.types import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# EXPORTS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+__all__ = [
+    'isLinux',
+    'PythonCommand',
+    'pipeCall',
+    'getFullPath',
+    'formatPath',
+    'getFiles',
+    'getFilesByPattern',
+    'createNewPathName',
+    'createNewFileName',
+    'createPath',
+    'createFile',
+    'readTextFile',
+    'writeTextFile',
+    'escapeForPython',
+    'dedentIgnoreEmptyLines',
+    'formatBlockUnindent',
+    'formatBlockIndent',
+    'extractIndent',
+    'lengthOfWhiteSpace',
+    'sizeOfIndent',
+    'unique',
+    'inheritanceOnGraph',
+    'readYamlFile',
+    'restrictDictionary',
+    'toPythonKeys',
+    'toPythonKeysDict',
+    'getAttribute',
+];
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -126,34 +160,6 @@ def writeTextFile(
         fp.write('\n'.join(_lines));
     return;
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# METHODS: cli
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-def getCliArgs(*args: str) -> tuple[list[str], dict[str, Any]]:
-    tokens = [];
-    kwargs = {};
-    N = len(args);
-    indexes = [ i for i, arg in enumerate(args) if re.match(r'^\-+', arg) ];
-    notindexes = [ i for i, _ in enumerate(args) if not (i in indexes) ];
-    i = 0;
-    while i < N:
-        if i in indexes and i+1 in notindexes:
-            key = re.sub(r'^\-*', '', args[i]).lower();
-            value = args[i+1];
-            kwargs[key] = value;
-            i += 2;
-            continue;
-        m = re.match(r'^-*(.*?)\=(.*)$', args[i]);
-        if m:
-            key = re.sub(r'^\-*', '', m.group(1)).lower();
-            value = m.group(2);
-            kwargs[key] = value;
-        else:
-            arg = re.sub(r'^\-*', '', args[i]).lower();
-            tokens.append(arg);
-        i += 1;
-    return tokens, kwargs;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # METHODS: string
@@ -176,14 +182,6 @@ def escapeForPython(s: str, withformatting: bool = False) -> str:
 def dedentIgnoreEmptyLines(s: str) -> str:
     return dedent(s);
 
-def dedentRelativeTo(s: str, reference: str) -> str:
-    lines = formatBlockUnindent(lines=s.split('\n'), reference=reference);
-    return '\n'.join(lines);
-
-def dedentIgnoreFirstAndLast(s: str) -> str:
-    s = re.sub(r'^\s*[\n\r]|[\n\r]\s*$', '', s);
-    return dedentIgnoreEmptyLines(s);
-
 def formatBlockUnindent(lines: list[str], reference: str) -> list[str]:
     s = dedentIgnoreEmptyLines('\n'.join([ reference + '.' ] + lines));
     return s.split('\n')[1:];
@@ -193,12 +191,6 @@ def formatBlockIndent(lines: list[str], indent: str, unindent: bool = True) -> l
         s = dedentIgnoreEmptyLines('\n'.join(lines));
         lines = s.split('\n');
     return [ indent + line for line in lines ];
-
-def formatTextBlock(s: str) -> str:
-    return dedentIgnoreFirstAndLast(s);
-
-def formatTextBlockAsList(s: str, unindent: bool = True) -> list[str]:
-    return re.split(r'\n', dedentIgnoreFirstAndLast(s) if unindent else s);
 
 def extractIndent(s: str) -> str:
     return re.sub(r'^(\s*).*$', r'\1', s);
@@ -284,13 +276,6 @@ def toPythonKeys(key: str) -> str:
 
 def toPythonKeysDict(obj: dict[str, Any]) -> dict[str, Any]:
     return { toPythonKeys(key): value for key, value in obj.items() };
-
-def getAttributeIgnoreError(obj: Any, *keys: str | int, expectedtype: Type | tuple[Type] = Any, default: Any = None):
-    try:
-        value = getAttribute(obj, *keys, expectedtype=expectedtype, default=default);
-    except:
-        value = default;
-    return value;
 
 def getAttribute(obj: Any, *keys: str | int | list[str | int], expectedtype: Type | tuple[Type] = Any, default: Any = None) -> Any:
     if len(keys) == 0:

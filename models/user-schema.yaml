@@ -48,8 +48,10 @@ components:
       properties:
         root:
           type: string
+          pattern: '^[^\\\/]*\.[^\\\/]+$'
         output:
           type: string
+          pattern: '^[^\\\/]*\.[^\\\/]+$'
         debug:
           type: boolean
           default: false
@@ -61,6 +63,8 @@ components:
           default: true
         comments:
           $ref: "#/components/schemas/EnumCommentsOption"
+          # will be overwritten by enum default
+          default: null
         insert-bib:
           type: boolean
           default: false

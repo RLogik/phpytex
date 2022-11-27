@@ -24,13 +24,13 @@ from src.core.utils import pipeCall;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def step():
-    logInfo('CONVERSION (python -> latex [+ latex -> pdf]) STARTED.');
+    log_info('CONVERSION (python -> latex [+ latex -> pdf]) STARTED.');
     fnamePy = appconfig.getFileTranspiled(rel=True);
     fnameLatex = appconfig.getFileOutput(rel=True);
     execTranspiledCode(fnamePy=fnamePy, fnameLatex=fnameLatex);
-    logInfo('CONVERSION (python -> latex) COMPLETE.');
+    log_info('CONVERSION (python -> latex) COMPLETE.');
     if appconfig.getOptionCompileLatex():
-        logInfo('CONVERSION (latex -> pdf) COMPLETE.');
+        log_info('CONVERSION (latex -> pdf) COMPLETE.');
     return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -40,11 +40,11 @@ def step():
 def execTranspiledCode(fnamePy: str, fnameLatex: str):
     try:
         cmd = re.split(r'\s+', appconfig.getPythonPath());
-        logInfo('CALL < \033[94;1m{}\033[0m >'.format(' '.join(cmd + [fnamePy])));
+        log_info('CALL < \033[94;1m{}\033[0m >'.format(' '.join(cmd + [fnamePy])));
         pipeCall(*cmd, fnamePy);
         os.remove(fnamePy);
     except:
-        logFatal(
+        log_fatal(
             'An error occurred during (python -> latex -> pdf) conversion.',
             '  - Consult the error logs and the script \033[1m{path}\033[0m for more information.'.format(path=fnamePy),
             '  - Partial output may also be found in \033[1m{path}\033[0m.'.format(path=fnameLatex)

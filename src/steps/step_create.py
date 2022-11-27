@@ -28,7 +28,7 @@ from src.parsers.methods import convertToPythonString;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def step():
-    logInfo('CREATION STAGE STARTED.');
+    log_info('CREATION STAGE STARTED.');
     root = appconfig.getPathRoot();
     createFilesAndFolders(path=root, projectTree=appconfig.getProjectTree());
     if appconfig.getWithFileStamp():
@@ -39,7 +39,7 @@ def step():
         );
     if appconfig.getWithFileParamsPy():
         createParameters(options=appconfig.getDictionaryParms());
-    logInfo('CREATION STAGE COMPLETE.');
+    log_info('CREATION STAGE COMPLETE.');
     return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -128,7 +128,7 @@ def make_file_if_not_exists(path: str, fname: str) -> bool:
     fname_full = os.path.join(path, fname);
     try:
         if not os.path.isfile(fname_full):
-            logInfo('File \033[96;1m{}\033[0m will be created.'.format(fname));
+            log_info('File \033[96;1m{}\033[0m will be created.'.format(fname));
             createFile(fname_full);
     except:
         pass;
@@ -138,7 +138,7 @@ def make_dir_if_not_exists(path: str, fname: str) -> bool:
     fname_full = os.path.join(path, fname);
     try:
         if not os.path.isdir(fname_full):
-            logInfo('Folder \033[96;1m{}\033[0m will be created.'.format(fname));
+            log_info('Folder \033[96;1m{}\033[0m will be created.'.format(fname));
             createPath(path=fname_full);
     except:
         pass;

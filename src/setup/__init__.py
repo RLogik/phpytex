@@ -8,6 +8,7 @@
 from src.setup import config;
 from src.setup.assets import *;
 from src.setup.methods import *;
+from src.setup.cli import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # EXPORTS
@@ -15,9 +16,12 @@ from src.setup.methods import *;
 
 __all__ = [
     'config',
-    'get_version',
+    'display_help',
+    'display_usage',
+    'get_arguments_from_cli',
     'get_grammar',
-    'get_template_phpytex_lines_pre',
     'get_template_phpytex_lines_post',
+    'get_template_phpytex_lines_pre',
+    'get_version',
     'open_source',
 ];

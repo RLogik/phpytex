@@ -10,7 +10,7 @@ from src.thirdparty.misc import *;
 from src.thirdparty.system import *;
 from src.thirdparty.types import *;
 
-from src.setup import appconfig;
+from src.models.config import *;
 from src.core.constants import *;
 from src.core.utils import *;
 
@@ -19,7 +19,7 @@ from src.core.utils import *;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 __all__ = [
-    'open_source'
+    'open_source',
     'read_asset',
 ];
 
@@ -39,8 +39,12 @@ def open_source(value: bool = True):
     _opensource = value;
     return;
 
-def read_asset(path: str, encoding: str = ENCODING_UTF8) -> str:
+def read_asset(
+    path: str,
+    app_config: ConfigParameters,
+    encoding: str = ENCODING_UTF8,
+) -> str:
     if _opensource:
-        return readTextFile(os.path.join(appconfig.getPathApp(), path));
-    with ZipFile(appconfig.getPathApp(), 'r') as archive:
+        return readTextFile(os.path.join(app_config.getPathApp(), path));
+    with ZipFile(app_config.getPathApp(), 'r') as archive:
         return archive.read(path).decode(encoding);

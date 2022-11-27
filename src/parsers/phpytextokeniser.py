@@ -314,7 +314,7 @@ def raiseLexError(lines: list[str], linepos: int, err: Exception):
     message += [ '\033[2m{}\033[0m'.format(line) for line in text_remaining[1:3] ];
     message.append('\033[1m--------------------------------\033[0m');
     message.append(str(err));
-    logFatal(*message);
+    log_fatal(*message);
 
 def raiseParseError(lines: list[str], linepos1: int, linepos2: int, err: Exception):
     text_consumed = lines[:linepos1];
@@ -328,7 +328,7 @@ def raiseParseError(lines: list[str], linepos1: int, linepos2: int, err: Excepti
     message += [ '\033[2m{}\033[0m'.format(line) for line in text_remaining[:3] ];
     message.append('\033[1m--------------------------------\033[0m');
     message.append(str(err));
-    logFatal(*message);
+    log_fatal(*message);
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # AUXILIARY METHODS: filtration

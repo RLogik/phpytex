@@ -12,7 +12,6 @@ from src.thirdparty.system import *;
 from src.thirdparty.types import *;
 
 from src.core.log import *;
-from src.core.utils import formatTextBlockAsList;
 from src.core.utils import getAttribute;
 from src.core.utils import unique;
 from src.core.utils import inheritanceOnGraph;
@@ -258,7 +257,7 @@ class TranspileDocuments(object):
                     value = self.evaluate(codevalue, document=document);
                 except:
                     ## TODO: deal with error
-                    logError('Could not evaluate \033[1m<<< {scope} set {varname} = {codevalue} >>>\033[0m.'.format(
+                    log_error('Could not evaluate \033[1m<<< {scope} set {varname} = {codevalue} >>>\033[0m.'.format(
                         scope   = scope,
                         varname = varname,
                         codevalue = codevalue,
@@ -281,7 +280,7 @@ class TranspileDocuments(object):
                     _path = self.evaluate(_path, document=document);
                 except:
                     ## TODO: deal with error
-                    logError('Could not evaluate \033[1m<<< {cmd} {path}\033[0m >>>\033[0m.'.format(
+                    log_error('Could not evaluate \033[1m<<< {cmd} {path}\033[0m >>>\033[0m.'.format(
                         cmd  = ('bibliography' if mode == 'bib' else 'input') \
                                 + ('_anon' if anon else ('_hide' if hide else '')),
                         path = _path,
@@ -362,7 +361,7 @@ class TranspileDocuments(object):
     def documentTree(self, seed: Optional[int]) -> TranspileBlock:
         return TranspileBlock(
             kind       = 'text:comment',
-            lines      = formatTextBlockAsList(
+            lines      = dedent_as_list(
                 '''
                 %% ********************************************************************************
                 %% DOCUMENT STRUCTURE:
@@ -371,7 +370,7 @@ class TranspileDocuments(object):
                 '''
             ) \
             + list(self.documentStructurePretty(prefix='%% ')) \
-            + formatTextBlockAsList(
+            + dedent_as_list(
                 '''
                 %%
                 %% DOCUMENT-RANDOM-SEED: {}

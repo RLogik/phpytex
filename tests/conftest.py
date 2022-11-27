@@ -5,8 +5,9 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from unittest import TestCase;
-from pytest import fixture;
+from tests.thirdparty.unit import *;
+from src.thirdparty.types import *;
+from src.core.log import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # CONSTANTS
@@ -18,14 +19,14 @@ from pytest import fixture;
 # FIXTURES
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-@fixture(scope='module')
-def test():
+@fixture(scope='module', autouse=True)
+def test() -> TestCase:
     return TestCase();
 
-@fixture(scope='module')
-def debug():
-    def log(*lines: str):
-        with open('logs/debug.log', 'a') as fp:
-            for line in lines:
-                print(line, end='\n', file=fp);
-    return log;
+@fixture(scope='module', autouse=True)
+def debug() -> Callable[..., None]:
+    '''
+    Fixture for development purposes only.
+    Logs to file 'logs/debug.log'.
+    '''
+    return log_dev;
