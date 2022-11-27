@@ -5,74 +5,114 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+from src.thirdparty.logic import *;
 from src.thirdparty.misc import *;
-from src.thirdparty.types import *;
-
-from src.customtypes.exports import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# METHOD convert variable to python string
+# EXPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def convertToPythonString(
-    value:      Any,
-    indent:     int  = 0,
-    multiline:  bool = False,
-    indentchar: str  = '    '
-) -> tuple[Optional[str], str]:
-    typ = None;
-    if isinstance(value, str):
-        typ = 'str';
-        lines = re.split(r'\n', value);
-        if len(lines) > 1:
-            sep = "\n{}".format(indentchar*indent) if multiline else r"+'\n'+";
-            return typ, sep.join(["r'{}'".format(_) for _ in lines]);
-        return typ, "r'{}'".format(value);
-    elif isinstance(value, (int, float, bool, EvalType)) or value is None:
-        if isinstance(value, int):
-            typ = 'int';
-        elif isinstance(value, float):
-            typ = 'float';
-        elif isinstance(value, bool):
-            typ = 'bool';
-        return typ, str(value);
-    elif isinstance(value, tuple):
-        typ = 'tuple';
-        values = [convertToPythonString(value=_, indent=indent+1, multiline=multiline)[1] for _ in value];
-        if multiline and len(values) > 1:
-            sep0 = "\n{}".format(indentchar*indent);
-            sep1 = "\n{}".format(indentchar*(indent+1));
-            return typ, '[' +  sep1 \
-                + (',' + sep1).join(values) + ',' \
-                + sep0 + ']';
-        return typ, '({})'.format(', '.join(values));
-    elif isinstance(value, list):
-        typ = 'list';
-        sepFirst = sepComma = sepFinal = '';
-        if multiline and len(value) > 1:
-            sepFirst = '\n{}'.format(indentchar*(indent+1));
-            sepComma = '\n{}'.format(indentchar*(indent+1));
-            sepFinal = ',\n{}'.format(indentchar*indent);
-        return typ, '[{sepFirst}{contents}{sepFinal}]'.format(
-            sepFirst = sepFirst,
-            contents = (',' + sepComma).join([ convertToPythonString(x, indent=indent+1, multiline=multiline)[1] for x in value ]),
-            sepFinal = sepFinal,
-        );
-    elif isinstance(value, dict):
-        typ = 'dict';
-        sepFirst = sepComma = sepFinal = '';
-        if multiline and len(value) > 1:
-            sepFirst = '\n{}'.format(indentchar*(indent+1));
-            sepComma = '\n{}'.format(indentchar*(indent+1));
-            sepFinal = ',\n{}'.format(indentchar*indent);
-        return typ, '{{{sepFirst}{contents}{sepFinal}}}'.format(
-            sepFirst = sepFirst,
-            contents = (',' + sepComma).join([
-                "'{key}': {value}".format(
-                    key   = key,
-                    value = convertToPythonString(x, indent=indent+1, multiline=multiline)[1],
-                ) for key, x in value.items()
-            ]),
-            sepFinal = sepFinal,
-        );
-    raise Exception('Could not evaluated value as string');
+__all__ = [
+    'tokenise_input',
+    'lexed_to_string',
+    'prune_tree',
+    'collapse_tree',
+    'sub_expressions',
+];
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# CONSTANTS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# local usage only
+_lexer: dict[tuple[str, str], Lark] = dict();
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# METHODS obtain lexer
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def tokenise_input(
+    grammar_name: str,
+    grammar: str,
+    start_token: str,
+    text: str,
+) -> LarkTree:
+    '''
+    General method to token text via a grammar.
+
+    @inputs
+    - `grammar_name` - <string> unique name of the grammar (as internal identifier)
+    - `grammar`      - <string> contents of \*.lark file
+    - `start_token`  - <string> the token to start parsing the input with (a lowercase name from the \*.lark file)
+    - `text`         - <string> text to be tokenised via the grammar.
+
+    @returns
+    A Lark-Tree object with the tokens, if the text is valid according to the grammar.
+    Otherwise raises Error.
+    '''
+    global _lexer;
+    try:
+        if not ((grammar_name, start_token) in _lexer):
+            _lexer[(grammar_name, start_token)] = Lark(
+                grammar,
+                start = start_token,
+                regex = True,
+                # options: 'lalr', 'earley', 'cyk'
+                parser = 'earley',
+                # options:  auto (default), none, normal, invert
+                priority = 'invert',
+            );
+        lexer = _lexer[(grammar_name, start_token)];
+        tree = lexer.parse(text);
+        return tree;
+    except:
+        raise Exception(f'Could not tokenise input as \x1b[1m{start_token}\x1b[0m in the grammar \x1b[1m{grammar_name}\x1b[0m!');
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# METHODS filtration and conversion
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def lexed_to_string(u: str | LarkTree) -> str:
+    '''
+    Recursively collapse token to string.
+    '''
+    if isinstance(u, str):
+        return u;
+    return ''.join([ lexed_to_string(uu) for uu in u.children ]);
+
+def prune_tree(u: LarkTree, recursive: bool = False) -> LarkTree:
+    '''
+    Filter out rules tagged by force with 'noncapture'.
+    Filter out TERMINAL rules.
+    '''
+    children = [];
+    for child in u.children:
+        if not isinstance(child, LarkTree):
+            children.append(child);
+            continue;
+        if child.data == 'noncapture':
+            continue;
+        if recursive:
+            child = prune_tree(child, recursive=True);
+        children.append(child);
+    return LarkTree(data=u.data, children=children, meta=u.meta)
+
+def collapse_tree(u: LarkTree, recursive: bool = False) -> LarkTree:
+    '''
+    Flattens out rules tagged by force with 'collapse'.
+    '''
+    children = [];
+    for child in u.children:
+        if not isinstance(child, LarkTree):
+            children.append(child);
+            continue;
+        if recursive:
+            child = collapse_tree(child, recursive=True);
+        if child.data == 'collapse':
+            children += child.children;
+        else:
+            children.append(child);
+    return LarkTree(data=u.data, children=children, meta=u.meta);
+
+def sub_expressions(u: LarkTree) -> list[LarkTree]:
+    return [ child for child in u.children if isinstance(child, LarkTree) ];

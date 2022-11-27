@@ -11,11 +11,9 @@ from src.thirdparty.types import *;
 
 from src.setup import *;
 from src.core.log import *;
-from src.core.utils import readTextFile;
-from src.core.utils import unique;
-from src.core.utils import writeTextFile;
-from src.customtypes.exports import *;
-from src.parsers.phpytextokeniser import parseText;
+from src.core.utils import *;
+from src.models.internal import *;
+from src.parsers import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES

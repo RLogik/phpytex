@@ -15,7 +15,7 @@ from src.thirdparty.system import *;
 
 from src.setup import *;
 from src.core.log import *;
-from src.models.cli import *;
+from src.models.internal import *;
 from src.endpoints import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

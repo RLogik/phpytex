@@ -6,6 +6,7 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 from models.generated.user import *;
+from src.models.user.projecttree import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # EXPORTS
@@ -14,6 +15,7 @@ from models.generated.user import *;
 __all__ = [
     'DataTypeFolder',
     'EnumCommentsOption',
+    'ProjectTree',
     'UserCompileOptions',
     'UserConfig',
     'UserParameterOptions',

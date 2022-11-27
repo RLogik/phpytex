@@ -5,13 +5,16 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+from src.thirdparty.code import *;
 from src.thirdparty.types import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# GLOBAL VARIABLES
+# EXORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#
+__all__ = [
+    'EvalType',
+];
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # CLASS EvalType for usage with yaml
@@ -27,17 +30,8 @@ class EvalMetaType(type):
         except:
             return False;
 
+@dataclass
 class EvalType(metaclass=EvalMetaType):
-    __expr: str = str(None);
-
-    def __init__(self, expr):
-        if isinstance(expr, str):
-            self.__expr = expr;
-        return;
-
-    @property
-    def expr(self):
-        return self.__expr;
-
+    expr: str = field(default=str(None));
     def __str__(self) -> str:
         return self.expr;

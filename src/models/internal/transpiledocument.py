@@ -15,14 +15,16 @@ from src.core.log import *;
 from src.core.utils import getAttribute;
 from src.core.utils import unique;
 from src.core.utils import inheritanceOnGraph;
-from src.customtypes.type_transpileblock import TranspileBlock;
-from src.customtypes.type_transpileblock import TranspileBlocks;
+from src.models.internal.transpileblock import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# GLOBAL VARIABLES
+# EXORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#
+__all__ = [
+    'TranspileDocument',
+    'TranspileDocuments',
+];
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # CLASS transpile document

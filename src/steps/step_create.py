@@ -11,11 +11,10 @@ from src.thirdparty.types import *;
 
 from src.setup import *;
 from src.core.log import *;
-from src.core.utils import createFile;
-from src.core.utils import createPath;
-from src.core.utils import writeTextFile;
-from src.customtypes.exports import ProjectTree;
-from src.parsers.methods import convertToPythonString;
+from src.core.utils import *;
+from src.models.internal import *;
+from src.models.user import *;
+from src.parsers import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GLOBAL VARIABLES
@@ -47,10 +46,10 @@ def step():
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def createFilesAndFolders(path: str, projectTree: ProjectTree):
-    for relpath in projectTree.directories():
+    for relpath in projectTree.get_directories():
         if not make_dir_if_not_exists(path=path, fname=relpath):
             raise FileExistsError('Could not create (sub)folder \033[1m{}\033[0m'.format(relpath));
-    for relfname in projectTree.files():
+    for relfname in projectTree.get_files():
         if not make_file_if_not_exists(path=path, fname=relfname):
             raise FileExistsError('Could not create file \033[1m{}\033[0m'.format(relfname));
     return;
@@ -99,7 +98,7 @@ def createFileParameters(
     lines = [];
     for key, value in options.items():
         try:
-            typ, codedvalue = convertToPythonString(value, indent=0, multiline=False);
+            codedvalue = convert_to_python_string(value);
             appconfig.setExportVarsKeyValue(key=key, value=value, codedvalue=codedvalue);
             lines.append('<<< global set {key} = {value}; >>>'.format(key = key, value = codedvalue));
         except:
@@ -114,7 +113,7 @@ def createParameters(options: dict[str, Any]):
     lines = [];
     for key, value in options.items():
         try:
-            typ, codedvalue = convertToPythonString(value, indent=0, multiline=False);
+            codedvalue = convert_to_python_string(value);
             appconfig.setExportVarsKeyValue(key=key, value=value, codedvalue=codedvalue);
         except:
             continue;

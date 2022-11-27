@@ -11,7 +11,7 @@ from src.thirdparty.types import *;
 
 from src.core.log import *;
 from src.core.utils import *;
-from src.models.cli import *;
+from src.models.internal import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # EXPORTS
