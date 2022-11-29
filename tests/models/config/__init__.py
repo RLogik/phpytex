@@ -5,14 +5,14 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from models.generated.config import *;
+from models_tests.generated.config import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # EXPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 __all__ = [
-    'ProgrammeConfig',
-    'FileOptions',
-    'CompileOptions',
+    'TestCase',
+    'TestProgrammeConfig',
+    'TestProgrammePaths',
 ];

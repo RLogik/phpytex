@@ -5,7 +5,8 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from src.setup.cli import *;
+from tests.endpoints.ep_display_help import *;
+from tests.endpoints.ep_cases import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # EXPORTS
@@ -13,14 +14,5 @@ from src.setup.cli import *;
 
 __all__ = [
     'endpoint_display_help',
+    'endpoint_test_case',
 ];
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ENDPOINT display help
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-def endpoint_display_help():
-    print('');
-    display_help();
-    print('');
-    return;

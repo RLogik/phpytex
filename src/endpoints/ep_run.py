@@ -10,18 +10,27 @@ from src.thirdparty.misc import *;
 from src.setup import *;
 from src.core.log import *;
 from src.core.utils import *;
-from src.steps.exports import *;
+from src.steps import *;
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# EXPORTS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+__all__ = [
+    'endpoint_run',
+];
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ENDPOINT run phpytex
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def endpoint(fnameConfig: str, parameters: dict, **_):
+def endpoint_run(fnameConfig: str, parameters: dict, **_):
     log_plain(dedent('''
         ----------------------
         |     \033[32;1m(PH(p)y)tex\033[0m    |
         ----------------------
     '''));
+    return;
     step_configure(fnameConfig=fnameConfig, extra_parameters=parameters);
     if appconfig.getOptionIgnore():
         log_info('\033[32;1m(PH(p)y)tex\033[0m transpilation will be skipped.');

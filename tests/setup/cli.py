@@ -99,6 +99,5 @@ def get_argument_parser() -> argparse.ArgumentParser:
         parser.add_argument('--quiet', action='store_true', default=False, help='Hide all but the most important console messages during transpilation.');
         parser.add_argument('--debug', action='store_true', default=False, help='Display debugging (for development only).');
         parser.add_argument('--colour', action='store_true', default=True, help='(Under construction) Whether to display messages with special terminal fonts.');
-        parser.add_argument('--file',   nargs='?', type=str, help='(string) Path to config file (default is .phytex.yaml).');
-        parser.add_argument('--parameters',   nargs='?', type=str, help='(json) On-the-fly definition of paramaters to override parameters > options from config file.');
+        parser.add_argument('--inspect', action='store_true', default=False, help='Pause at end of test case before removing result.');
     return parser;

@@ -1,0 +1,67 @@
+openapi: 3.0.3
+info:
+  version: x.y.z
+  title: Schemata for test config
+  description: |-
+    Schemata for configuration of tests.
+servers:
+  - url: "."
+paths: {}
+components:
+  schemas:
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Structure of tests config file
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    TestProgrammeConfig:
+      description: |-
+        Configuration for automatic testing.
+      type: object
+      required:
+        - cases
+      properties:
+        paths:
+          $ref: "#/components/schemas/TestProgrammePaths"
+        cases:
+          description: List of test cases.
+          type: array
+          items:
+            $ref: "#/components/schemas/TestCase"
+      additionalProperties: false
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Test programme paths
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    TestProgrammePaths:
+      description: |-
+        Paths for setup.
+      type: object
+      required:
+        - app
+        - cases
+      properties:
+        app:
+          description: Path to application.
+          type: string
+          pattern: '^[^\\\/]+([\\\/][^\\\/]+)*\.[^\\\/]+$'
+        cases:
+          description: Path to test cases (scenarios).
+          type: string
+          pattern: '^[^\\\/]+([\\\/][^\\\/]+)*$'
+        sandbox:
+          description: Path to sandbox for temporary execution of tests on scenarios.
+          type: string
+          pattern: '^[^\\\/]+([\\\/][^\\\/]+)*$'
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Information about test case
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    TestCase:
+      description: |-
+        Configuration of test case.
+      type: object
+      required:
+        - path
+      properties:
+        path:
+          description: Path to test scenario.
+          type: string
+          pattern: '^[^\\\/]+([\\\/][^\\\/]+)*$'
+      additionalProperties: false

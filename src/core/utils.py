@@ -15,8 +15,9 @@ from src.thirdparty.types import *;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 __all__ = [
-    'isLinux',
-    'PythonCommand',
+    'is_linux',
+    'python_command',
+    'python_command_split',
     'pipeCall',
     'getFullPath',
     'formatPath',
@@ -54,12 +55,15 @@ __all__ = [
 # METHOD os sensitive commands
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def isLinux() -> bool:
+def is_linux() -> bool:
     # return not ( os.name == 'nt' );
     return not ( platform.system().lower() == 'windows' );
 
-def PythonCommand() -> str:
-    return 'python3' if isLinux() else 'py -3';
+def python_command_split() -> list[str]:
+    return ['python3'] if is_linux() else ['py', '-3'];
+
+def python_command() -> str:
+    return ' '.join(python_command_split());
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # METHODS: io

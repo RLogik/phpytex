@@ -12,7 +12,7 @@ components:
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Config
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    ConfigParameters:
+    ProgrammeConfig:
       description: |-
         Internal application configuration
       type: object
@@ -23,7 +23,7 @@ components:
         files:
           description: Options pertaining to files and paths
           $ref: "#/components/schemas/FileOptions"
-        compilation:
+        compile:
           description: Options for compilation
           $ref: "#/components/schemas/CompileOptions"
       additionalProperties: false

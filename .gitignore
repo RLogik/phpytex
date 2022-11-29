@@ -22,28 +22,27 @@
 !/src/setup/templates/template_*
 !/src/setup/VERSION
 !/src/**/*.py
-
-!/tests
-!/tests/**/
-!/tests/cases/case_*/**
-!/tests/**/*.py
-!/tests/**/*.tex
-!/tests/**/*.yaml
+!/src/config.yaml
 
 !/examples
 
-!/models
-!/models/*-schema.yaml
-!/models/README.md
+!/models*
+!/models*/*-schema.yaml
+!/models*/README.md
 
 !/documentation
-!/documentation/*/
-!/documentation/*/Models/
+!/documentation/**/
 !/documentation/**/*.md
 
 !/tests
 !/tests/**/
 !/tests/**/*.py
+!/tests/config.yaml
+/tests/cases/**
+!/tests/cases/case_*/
+!/tests/cases/case_*/**/*.py
+!/tests/cases/case_*/**/*.tex
+!/tests/cases/case_*/**/*.yaml
 
 !/assets
 !/assets/*.lark

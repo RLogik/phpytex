@@ -41,7 +41,7 @@ def open_source(value: bool = True):
 
 def read_asset(
     path: str,
-    app_config: ConfigParameters,
+    app_config: ProgrammeConfig,
     encoding: str = ENCODING_UTF8,
 ) -> str:
     if _opensource:

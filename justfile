@@ -117,30 +117,32 @@ build-requirements:
     @{{PYTHON}} -m pip install --disable-pip-version-check -r requirements.txt
 build-models:
     @echo "Generate data models from schemata."
-    @just _delete-if-folder-exists "models/generated"
-    @just _create-folder-if-not-exists "models/generated"
-    @- just _build-models-recursively
-_build-models-recursively:
+    @- just _build-models-recursively "models"
+    @- just _build-models-recursively "models_tests"
+_build-models-recursively models_path:
     #!/usr/bin/env bash
+    just _delete-if-folder-exists "{{models_path}}/generated"
+    just _create-folder-if-not-exists "{{models_path}}/generated"
     while read path; do
         if [[ "${path}" == "" ]]; then continue; fi
-        name="$( echo """${path}""" | sed -E """s/^models\/(.*)-schema\.yaml$/\1/g""")";
-        just _generate-models "models" "$name";
-    done <<< "$( ls -f models/*-schema.yaml )";
+        name="$( echo """${path}""" | sed -E """s/^{{models_path}}\/(.*)-schema\.yaml$/\1/g""")";
+        just _generate-models "{{models_path}}" "$name";
+    done <<< "$( ls -f {{models_path}}/*-schema.yaml )";
 build-documentation:
     @echo "Generate documentations data models from schemata."
     @just _delete-if-folder-exists "documentation"
     @just _create-folder-if-not-exists "documentation"
-    @- just _build-documentation-recursively
+    @- just _build-documentation-recursively "models" "documentation/app"
+    @- just _build-documentation-recursively "models_tests" "documentation/tests"
     @- just _clean-all-files "." ".openapi-generator*"
     @- just _clean-all-folders "." ".openapi-generator*"
-_build-documentation-recursively:
+_build-documentation-recursively models_path documentation_path:
     #!/usr/bin/env bash
     while read path; do
         if [[ "${path}" == "" ]]; then continue; fi
-        name="$( echo """${path}""" | sed -E """s/^models\/(.*)-schema\.yaml$/\1/g""")";
-        just _generate-models-documentation "models" "documentation" "$name";
-    done <<< "$( ls -f models/*-schema.yaml )";
+        name="$( echo """${path}""" | sed -E """s/^{{models_path}}\/(.*)-schema\.yaml$/\1/g""")";
+        just _generate-models-documentation "{{models_path}}" "{{documentation_path}}" "$name";
+    done <<< "$( ls -f {{models_path}}/*-schema.yaml )";
 build-examples:
     #!/usr/bin/env bash
     echo "CREATE EXAMPLES";
@@ -230,9 +232,9 @@ tests-unit-logs:
     @- just tests-unit
     @just _display-logs
 tests-integration:
-	@${PYTHON} tests/cases.py
+	@{{PYTHON}} tests/cases.py run
 tests-integration-inspect:
-	@${PYTHON} tests/cases.py --options "inspect"
+	@{{PYTHON}} tests/cases.py run --inspect
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # TARGETS: qa

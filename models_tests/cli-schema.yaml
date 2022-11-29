@@ -1,0 +1,47 @@
+openapi: 3.0.3
+info:
+  version: x.y.z
+  title: Schemata for CLI arguments
+  description: |-
+    Schemata for CLI arguments internal configuration.
+servers:
+  - url: "."
+paths: {}
+components:
+  schemas:
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Arguments
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ProgrammeArguments:
+      description: |-
+        Structure of CLI arguments.
+      type: object
+      properties:
+        mode:
+          $ref: "#/components/schemas/EnumProgrammeMode"
+          # will be overwritten by enum default
+          default: null
+        quiet:
+          type: boolean
+          default: true
+        debug:
+          type: boolean
+          default: false
+        colour:
+          type: boolean
+          default: true
+        inspect:
+          type: boolean
+          default: true
+      additionalProperties: false
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # ENUM Mode
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    EnumProgrammeMode:
+      description: |-
+        An enumeration of possible options for mode
+      type: string
+      enum:
+        - 'help'
+        - 'run'
+      default: 'help'

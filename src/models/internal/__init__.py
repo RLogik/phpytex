@@ -5,8 +5,6 @@
 # EXPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from models.generated.cli import *;
-
 from src.models.internal.configparameter import *;
 from src.models.internal.eval import *;
 from src.models.internal.indentationtracker import *;
@@ -19,10 +17,8 @@ from src.models.internal.transpiledocument import *;
 
 __all__ = [
     'ConfigParameter',
-    'EnumProgrammeMode',
     'EvalType',
     'IndentationTracker',
-    'ProgrammeArguments',
     'TranspileBlock',
     'TranspileBlockParameters',
     'TranspileBlocks',
