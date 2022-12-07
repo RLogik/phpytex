@@ -27,16 +27,16 @@ __all__ = [
 
 @make_lazy
 def get_version() -> str:
-    return read_asset(config.PATH_TO_VERSION).strip();
+    return read_asset(config.ASSET_PATHS.version).strip();
 
 @make_lazy
 def get_grammar(fname: str) -> str:
-    return read_asset(config.PATH_TO_GRAMMAR);
+    return read_asset(config.ASSET_PATHS.grammar);
 
 @make_lazy
 def get_template_phpytex_lines_pre() -> str:
-    return read_asset(config.PATH_TO_TEMPLATE_PRE);
+    return read_asset(config.ASSET_PATHS.template_pre);
 
 @make_lazy
 def get_template_phpytex_lines_post() -> str:
-    return read_asset(config.PATH_TO_TEMPLATE_POST);
+    return read_asset(config.ASSET_PATHS.template_post);

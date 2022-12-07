@@ -5,6 +5,8 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+import src.paths;
+
 from src.thirdparty.io import *;
 from src.thirdparty.misc import *;
 from src.thirdparty.system import *;
@@ -19,32 +21,49 @@ from src.core.utils import *;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 __all__ = [
-    'open_source',
+    'set_open_source',
+    'is_open_source',
     'read_asset',
 ];
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# VARIABLES / CONSTANTS
+# VARIABLES
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # local usage
 _opensource: bool = True;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# METHODS
+# METHODS - open source
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def open_source(value: bool = True):
+def set_open_source(mode: bool):
+    '''
+    Sets mode of application.
+
+    - If `mode = True`, then viewed as code basis (open).
+    - If `mode = False`, then viewed as zip archive.
+    '''
     global _opensource;
-    _opensource = value;
+    _opensource = mode;
     return;
+
+def is_open_source() -> bool:
+    return _opensource;
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# METHODS read asset
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def read_asset(
     path: str,
-    app_config: ProgrammeConfig,
     encoding: str = ENCODING_UTF8,
 ) -> str:
-    if _opensource:
-        return readTextFile(os.path.join(app_config.getPathApp(), path));
-    with ZipFile(app_config.getPathApp(), 'r') as archive:
-        return archive.read(path).decode(encoding);
+    '''
+    Reads asset.
+    '''
+    if is_open_source():
+        return read_text_file(os.path.join(src.paths.app, path));
+    else:
+        with ZipFile(src.paths.app, 'r') as archive:
+            return archive.read(path).decode(encoding);

@@ -5,6 +5,8 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+import src.paths;
+
 from src.thirdparty.maths import *;
 from src.thirdparty.misc import *;
 from src.thirdparty.types import *;
@@ -16,18 +18,19 @@ from src.models.internal import *;
 from src.parsers import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# GLOBAL VARIABLES
+# EXPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#
+__all__ = [
+    'step_transpile',
+];
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # METHOD: step transpile phpytex to python
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def step():
+def step_transpile():
     log_info('TRANSPILATION (phpytex -> python) STARTED.');
-    root = appconfig.getPathRoot();
     indentsymb = appconfig.getIndentCharacter();
     seed = appconfig.getSeed() if appconfig.hasSeed() else None;
 
@@ -36,7 +39,7 @@ def step():
     preambles = [];
     imports = TranspileBlocks();
     documents = TranspileDocuments(
-        root       = root,
+        root       = src.paths.wd,
         indentsymb = indentsymb,
         schemes    = dict(
             file = config.FUNCTION_NAME_FILE,
@@ -127,7 +130,7 @@ def transpileDocument(
         log_error('The document contains a cycle!');
         return;
     try:
-        lines = readTextFile(path);
+        lines = read_text_file(path);
     except:
         log_error('Could not find or read document \033[1m{path}\033[0m!'.format(path = path));
         return;
@@ -207,7 +210,7 @@ def createImportFileParameters(
             continue;
         lines.append('{name} = None;'.format(name=name));
     lines.append('');
-    writeTextFile(path=path, lines=lines, force_create_path=True);
+    write_text_file(path=path, lines=lines, force_create_path=True);
     return;
 
 def createmetacode(
@@ -223,7 +226,7 @@ def createmetacode(
     lines += dedent_as_list(
         _lines_pre.format(
             imports       = '\n'.join(imports.generateCode()),
-            root          = appconfig.getPathRoot(),
+            root          = src.paths.wd,
             output        = appconfig.getFileOutput(rel=False),
             name          = appconfig.getFileOutputBase(),
             insert_bib    = appconfig.getOptionInsertBib(),
@@ -241,7 +244,7 @@ def createmetacode(
     lines += dedent_as_list(
         _lines_post.format()
     );
-    writeTextFile(appconfig.getFileTranspiled(rel=False), lines);
+    write_text_file(appconfig.getFileTranspiled(rel=False), lines);
     return;
 
 def displayTreeBranch(

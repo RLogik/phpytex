@@ -23,16 +23,20 @@ components:
           default: null
         quiet:
           type: boolean
-          default: true
+          default: false
         debug:
           type: boolean
           default: false
-        colour:
+        plain:
           type: boolean
-          default: true
+          default: false
         file:
           type: string
         parameters:
+          type: string
+        compile:
+          type: string
+        stamp:
           type: string
       additionalProperties: false
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -46,4 +50,5 @@ components:
         - 'version'
         - 'help'
         - 'run'
+        - 'setup'
       default: 'help'

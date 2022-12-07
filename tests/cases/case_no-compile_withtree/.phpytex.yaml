@@ -5,17 +5,18 @@ output-name: paper
 # COMPILE OPTIONS
 ################################################################################
 compile:
-  root:       root.tex
-  output:     main.tex
-  debug:      true
-  compile:    false
-  insert-bib: true
-  comments:   auto
-  show-tree:  true
-  max-length: 10000
-  tabs:       false
-  spaces:     4
-  seed:       81004467
+  options:
+    root:       root.tex
+    output:     main.tex
+    debug:      false
+    compile:    false
+    insert-bib: true
+    comments:   auto
+    show-tree:  true
+    max-length: 10000
+    tabs:       false
+    spaces:     4
+    seed:       81004467
 ################################################################################
 # STAMP OPTIONS
 ################################################################################
@@ -61,6 +62,8 @@ folders:
       - title.tex
       - abstract.tex
   body:
+    files:
+      - index.tex
     folders:
       part-one:
         files:

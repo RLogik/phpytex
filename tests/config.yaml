@@ -1,7 +1,7 @@
 paths:
-  app: 'src/app.py'
-  cases: 'tests/cases'
-  sandbox: 'tests/cases/sandbox'
+  logging: 'logs/debug.log'
+  path-cases: 'tests/cases'
+  path-sandbox: 'tests/cases/sandbox'
 cases:
   - path: tests/cases/case_debug_simple
   - path: tests/cases/case_debug_withtree

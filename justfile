@@ -12,10 +12,11 @@ menu:
 # VARIABLES
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+PATH_ROOT := justfile_directory()
+CURRENT_DIR := invocation_directory()
 PYTHON := if os_family() == "windows" { "py -3" } else { "python3" }
 GEN_MODELS := "datamodel-codegen"
 GEN_MODELS_DOCUMENTATION := "openapi-generator"
-PATH_REPO := justfile_directory()
 NAME_OF_APP := "phpytex"
 PYTHON_APP_PREFIX := "#!/usr/bin/env python3\n-*- coding: utf-8 -*-"
 
@@ -97,9 +98,31 @@ _generate-models path name:
 
 _generate-models-documentation path_schema path_docs name:
     @- {{GEN_MODELS_DOCUMENTATION}} generate \
+        --skip-validate-spec \
         --input-spec {{path_schema}}/{{name}}-schema.yaml \
         --generator-name markdown \
         --output "{{path_docs}}/{{name}}"
+
+_build-models-recursively models_path:
+    #!/usr/bin/env bash
+    just _delete-if-folder-exists "{{models_path}}/generated"
+    just _create-folder-if-not-exists "{{models_path}}/generated"
+    just _create-file-if-not-exists "{{models_path}}/generated/__init__.py"
+    while read path; do
+        if [[ "${path}" == "" ]]; then continue; fi
+        path="${path##*/}";
+        name="$( echo """${path}""" | sed -E """s/^(.*)-schema\.yaml$/\1/g""")";
+        just _generate-models "{{models_path}}" "$name";
+    done <<< "$( ls -f {{models_path}}/*-schema.yaml )";
+
+_build-documentation-recursively models_path documentation_path:
+    #!/usr/bin/env bash
+    while read path; do
+        if [[ "${path}" == "" ]]; then continue; fi
+        path="${path##*/}";
+        name="$( echo """${path}""" | sed -E """s/^(.*)-schema\.yaml$/\1/g""")";
+        just _generate-models-documentation "{{models_path}}" "{{documentation_path}}" "$name";
+    done <<< "$( ls -f {{models_path}}/*-schema.yaml )";
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # TARGETS
@@ -117,32 +140,16 @@ build-requirements:
     @{{PYTHON}} -m pip install --disable-pip-version-check -r requirements.txt
 build-models:
     @echo "Generate data models from schemata."
-    @- just _build-models-recursively "models"
-    @- just _build-models-recursively "models_tests"
-_build-models-recursively models_path:
-    #!/usr/bin/env bash
-    just _delete-if-folder-exists "{{models_path}}/generated"
-    just _create-folder-if-not-exists "{{models_path}}/generated"
-    while read path; do
-        if [[ "${path}" == "" ]]; then continue; fi
-        name="$( echo """${path}""" | sed -E """s/^{{models_path}}\/(.*)-schema\.yaml$/\1/g""")";
-        just _generate-models "{{models_path}}" "$name";
-    done <<< "$( ls -f {{models_path}}/*-schema.yaml )";
+    @- just _build-models-recursively "src/models"
+    @- just _build-models-recursively "tests/models"
 build-documentation:
     @echo "Generate documentations data models from schemata."
     @just _delete-if-folder-exists "documentation"
     @just _create-folder-if-not-exists "documentation"
-    @- just _build-documentation-recursively "models" "documentation/app"
-    @- just _build-documentation-recursively "models_tests" "documentation/tests"
+    @- just _build-documentation-recursively "src/models" "documentation/app"
+    @- just _build-documentation-recursively "tests/models" "documentation/tests"
     @- just _clean-all-files "." ".openapi-generator*"
     @- just _clean-all-folders "." ".openapi-generator*"
-_build-documentation-recursively models_path documentation_path:
-    #!/usr/bin/env bash
-    while read path; do
-        if [[ "${path}" == "" ]]; then continue; fi
-        name="$( echo """${path}""" | sed -E """s/^{{models_path}}\/(.*)-schema\.yaml$/\1/g""")";
-        just _generate-models-documentation "{{models_path}}" "{{documentation_path}}" "$name";
-    done <<< "$( ls -f {{models_path}}/*-schema.yaml )";
 build-examples:
     #!/usr/bin/env bash
     echo "CREATE EXAMPLES";
@@ -154,7 +161,7 @@ build-examples:
         echo "${sandboxpath}"
         cp -r "${path}/." "${sandboxpath}";
         pushd "${sandboxpath}" >> /dev/null;
-            {{PATH_REPO}}/dist/{{NAME_OF_APP}} run;
+            {{PATH_ROOT}}/dist/{{NAME_OF_APP}} run;
         popd >> /dev/null;
     done <<< $( ls -d examples/example_* 2> /dev/null );
 build-artefact:
@@ -169,14 +176,14 @@ build-artefact:
     cp -r "assets" "${_temp}";
     mkdir -p "${_temp}/dist"
     cp "dist/VERSION" "${_temp}/dist";
-    mkdir -p "${_temp}/models"
-    cp -r "models/generated" "${_temp}/models";
     mv "${_temp}/src/__main__.py" "$_temp";
+    rm "${_temp}/src/paths.py";
+    mv "${_temp}/src/__paths__.py" "${_temp}/src/paths.py";
 
     # zip source files to single file and make executable:
     success=1;
     pushd "$_temp" >> /dev/null
-        zip -r -o "{{PATH_REPO}}/dist/app.zip" * -x '*__pycache__/*' -x '*.DS_Store' 2> /dev/null;
+        zip -r -o "{{PATH_ROOT}}/dist/app.zip" * -x '*__pycache__/*' -x '*.DS_Store' 2> /dev/null;
         success=$?;
     popd >> /dev/null
     if [[ ${success} -eq 0 ]]; then
@@ -215,7 +222,9 @@ run:
 # TARGETS: tests
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-tests: tests-unit tests-integration
+tests:
+    @- just tests-unit
+    @- just tests-integration
 tests-logs:
     @just _create-logs
     @- just tests
@@ -232,9 +241,9 @@ tests-unit-logs:
     @- just tests-unit
     @just _display-logs
 tests-integration:
-	@{{PYTHON}} tests/cases.py run
+	@{{PYTHON}} tests/main.py run --quiet --plain
 tests-integration-inspect:
-	@{{PYTHON}} tests/cases.py run --inspect
+	@{{PYTHON}} tests/main.py run --inspect
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # TARGETS: qa

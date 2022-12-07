@@ -36,16 +36,19 @@ PATH_SANDBOX: str = f'{PATH_CASES}/sandbox';
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def enter(args: ProgrammeArguments):
-    set_ansi_mode(args.colour);
+    # set logging level, plain mode, quiet mode:
     set_debug_mode(args.debug);
+    set_plain_mode(args.plain);
     set_quiet_mode(args.quiet);
+    set_logging_level();
 
+    # choose subprogramme:
     match args.mode:
+        case EnumProgrammeMode.help:
+            endpoint_display_help();
         case EnumProgrammeMode.run:
             for case in tests_config.CASES:
                 endpoint_test_case(case=case, inspect=args.inspect);
-        case EnumProgrammeMode.help:
-            endpoint_display_help();
         case _:
             display_usage();
     return;
@@ -55,5 +58,6 @@ def enter(args: ProgrammeArguments):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 if __name__ == '__main__':
+    # sys.tracebacklimit = 0;
     args = get_arguments_from_cli(*sys.argv[1:]);
-    enter(args);
+    enter(args=args);

@@ -23,12 +23,10 @@
 !/src/setup/VERSION
 !/src/**/*.py
 !/src/config.yaml
+/src/models/generated
+!/src/models/*-schema.yaml
 
 !/examples
-
-!/models*
-!/models*/*-schema.yaml
-!/models*/README.md
 
 !/documentation
 !/documentation/**/
@@ -43,6 +41,8 @@
 !/tests/cases/case_*/**/*.py
 !/tests/cases/case_*/**/*.tex
 !/tests/cases/case_*/**/*.yaml
+/tests/models/generated
+!/tests/models/*-schema.yaml
 
 !/assets
 !/assets/*.lark
@@ -70,6 +70,7 @@
 /**/.DS_Store
 /**/__archive__*
 /**/sandbox
+/**/.vscode
 
 ################################################################
 # Git Keep

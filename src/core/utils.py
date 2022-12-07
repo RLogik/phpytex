@@ -21,14 +21,14 @@ __all__ = [
     'pipeCall',
     'getFullPath',
     'formatPath',
-    'getFiles',
-    'getFilesByPattern',
+    'get_files',
+    'get_files_by_pattern',
     'createNewPathName',
     'createNewFileName',
     'createPath',
     'createFile',
-    'readTextFile',
-    'writeTextFile',
+    'read_text_file',
+    'write_text_file',
     'escapeForPython',
     'dedentIgnoreEmptyLines',
     'formatBlockUnindent',
@@ -101,13 +101,13 @@ def formatPath(path: str, root: str, relative: bool, ext: Any = None, ext_if_emp
         path = '{path}{ext}'.format(path=path_, ext=ext_if_empty);
     return path;
 
-def getFiles(path: str) -> list[tuple[str, str]]:
+def get_files(path: str) -> list[tuple[str, str]]:
     items = [(_, os.path.join(path, _)) for _ in os.listdir(path)];
     return [ (_, __) for _, __ in items if os.path.isfile(__)];
 
-def getFilesByPattern(path: str, filepattern: str) -> list[str]:
-    regex = re.compile(filepattern);
-    return [ __ for _, __ in getFiles(path) if regex.match(_) ];
+def get_files_by_pattern(path: str, pattern: str) -> list[str]:
+    regex = re.compile(pattern);
+    return [ __ for _, __ in get_files(path) if regex.match(_) ];
 
 def createNewPathName(dir: str, nameinit: str = 'tmp', namescheme: str = 'tmp_{}') -> str:
     path = os.path.join(dir, nameinit);
@@ -141,11 +141,11 @@ def createFile(path: str):
         raise FileExistsError('Could not create or find path \033[93;1m{}\033[0m!'.format(path));
     return;
 
-def readTextFile(path: str) -> str:
+def read_text_file(path: str) -> str:
     with open(path, 'r') as fp:
         return ''.join(fp.readlines());
 
-def writeTextFile(
+def write_text_file(
     path: str,
     lines: str | list[str],
     force_create_path: bool = False,

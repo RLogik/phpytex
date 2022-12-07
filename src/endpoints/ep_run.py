@@ -6,6 +6,7 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 from src.thirdparty.misc import *;
+from src.thirdparty.types import *;
 
 from src.setup import *;
 from src.core.log import *;
@@ -24,21 +25,31 @@ __all__ = [
 # ENDPOINT run phpytex
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def endpoint_run(fnameConfig: str, parameters: dict, **_):
-    log_plain(dedent('''
-        ----------------------
+def endpoint_run(
+    file_config: Optional[str] = None,
+    options_parameters: Optional[dict] = None,
+    options_compile: Optional[dict] = None,
+    options_stamp: Optional[dict] = None,
+):
+    '''
+    Runs transpiler
+    '''
+    log_info(dedent('''\n
+        +--------------------+
         |     \033[32;1m(PH(p)y)tex\033[0m    |
-        ----------------------
+        +--------------------+
     '''));
+    user_config = step_configure(
+        file_config = file_config,
+        options_parameters = options_parameters,
+        options_compile = options_compile,
+        options_stamp = options_stamp,
+    );
+    step_create(user_config=user_config);
     return;
-    step_configure(fnameConfig=fnameConfig, extra_parameters=parameters);
-    if appconfig.getOptionIgnore():
-        log_info('\033[32;1m(PH(p)y)tex\033[0m transpilation will be skipped.');
-        return;
-    step_create();
     step_transpile();
-    if appconfig.getOptionDebug():
-        log_info('The result of transpilation can be viewed in \033[1m{fnamePy}\033[0m'.format(fnamePy=appconfig.getFileTranspiled()));
+    if user_config.compile.debug:
+        log_info(f'The result of transpilation can be viewed in \033[1m{config.PATHS.file_transpiled}\033[0m');
         return;
     step_compile();
     return;

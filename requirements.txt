@@ -2,7 +2,7 @@ pip>=22.3
 wheel>=0.38.4
 
 # testing
-coverage[toml]>=6.4
+coverage[toml]>=6.5.0
 pytest>=7.2.0
 pytest-cov>=3.0.0
 pytest-lazy-fixture>=0.6.3
@@ -11,9 +11,6 @@ testfixtures>=6.18.5
 
 # system
 pathlib>=1.0.1
-
-# code
-lazy_load
 
 # config
 argparse>=1.4.0
@@ -31,10 +28,9 @@ pendulum>=2.1.2
 lorem>=0.1.1
 safetywrap>=1.5.0
 typing>=3.7.4.3
-typing_extensions>=3.10.0.2
 
 # parsing
-lark==1.1.2
+lark==1.1.4
 lark-parser==0.12.0
 regex>=2022.10.31
 

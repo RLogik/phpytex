@@ -38,19 +38,12 @@ PYTHON_VERSION_MINIMUM = (3, 10);
 # MAIN PROCESS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def enter(
-    path_root: str,
-    path_app:  str,
-    args: ProgrammeArguments,
-):
-    # set paths:
-    config.FILE_OPTIONS.path_app = path_app;
-    config.FILE_OPTIONS.path_root = path_root;
-
-    # set logging level, colour, quiet mode:
-    set_ansi_mode(args.colour);
+def enter(args: ProgrammeArguments):
+    # set logging level, plain mode, quiet mode:
     set_debug_mode(args.debug);
     set_quiet_mode(args.quiet);
+    set_plain_mode(args.plain);
+    set_logging_level();
 
     # choose subprogramme:
     match args.mode:
@@ -59,8 +52,14 @@ def enter(
         case EnumProgrammeMode.help:
             endpoint_display_help();
         case EnumProgrammeMode.run:
-            parameters = json_load_safe(args.parameters);
-            endpoint_run_phpytex(fnameConfig=args.file, parameters=parameters);
+            endpoint_run(
+                file_config = args.file,
+                options_parameters = None if args.parameters is None else json_load_safe(args.parameters),
+                options_compile = None if args.compile is None else json_load_safe(args.compile),
+                options_stamp = None if args.stamp is None else json_load_safe(args.stamp),
+            );
+        case EnumProgrammeMode.setup:
+            endpoint_setup();
         case _:
             display_usage();
     return;
@@ -84,7 +83,5 @@ if __name__ == '__main__':
     # sys.tracebacklimit = 0;
     check_python_version();
     args = get_arguments_from_cli(*sys.argv[1:]);
-    open_source(True);
-    path_root = os.getcwd();
-    path_app = os.path.dirname(os.path.dirname(os.path.abspath(__file__)));
-    enter(path_root=path_root, path_app=path_app, args=args);
+    set_open_source(True);
+    enter(args=args);

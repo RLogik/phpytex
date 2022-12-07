@@ -19,8 +19,8 @@ from typing import Optional;
 
 T = TypeVar('T');
 
-def ansi_formatting(
-    use: Optional[bool] = None,
+def plain_formatting(
+    strip: bool = False,
     factory: Optional[Callable[[], bool]] = None,
 ):
     '''
@@ -28,8 +28,7 @@ def ansi_formatting(
     so that string arguments are optionally stripped of ansi characters.
 
     @inputs
-    - `use` - optional <boolean> if `true`, ansi characters will be kept;
-      if `false`, ansi characters will be stripped.
+    - `plain` - optional <boolean> if `true`, ansi characters will be stripped.
     - `factory` - optional <() -> boolean> if set, obtains boolean value from method called dynamically.
     '''
     def dec(method: Callable[..., T]) -> Callable[..., T]:
@@ -38,11 +37,7 @@ def ansi_formatting(
         '''
         @wraps(method)
         def wrapped_method(*texts: str) -> T:
-            option = (
-                True if factory is None
-                else factory()
-            ) if use is None else use;
-            if option == False:
+            if strip or (False if factory is None else factory()):
                 texts = [ re.sub(r'\x1b[^m]*m', '', text) for text in texts];
             return method(*texts);
         return wrapped_method;
@@ -53,7 +48,7 @@ def ansi_formatting(
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 __all__ = [
-    'ansi_formatting',
+    'plain_formatting',
     'logging',
     'LogRecord',
 ];

@@ -7,6 +7,23 @@ info:
 servers:
   - url: "."
 paths: {}
+definitions:
+    FileString: &file_string
+      description: Data type for a string to be the base name of a file.
+      type: string
+      pattern: '^[^\\\/]*\.[^\\\/]+$'
+    PathToFileString: &path_to_file_string
+      description: Data type for a string to be a path to a file.
+      type: string
+      pattern: '^[^\\\/]+([\\\/][^\\\/]+)*\.[^\\\/]+$'
+    PathToDirString: &path_to_dir_string
+      description: Data type for a string to be a path to a directory.
+      type: string
+      pattern: '^[^\\\/]+([\\\/][^\\\/]+)*$'
+    PythonImportString: &python_import_string
+      description: Data type for a string to constitute an import 'path' in python.
+      type: string
+      pattern: '^[\w\_]+(\.[\w\_]+)*$'
 components:
   schemas:
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -20,9 +37,9 @@ components:
         - files
         - compile
       properties:
-        files:
+        paths:
           description: Options pertaining to files and paths
-          $ref: "#/components/schemas/FileOptions"
+          $ref: "#/components/schemas/ProgrammePaths"
         compile:
           description: Options for compilation
           $ref: "#/components/schemas/CompileOptions"
@@ -30,43 +47,48 @@ components:
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # File options
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    FileOptions:
+    ProgrammePaths:
       description: |-
-        Options for compilation.
+        Options pertaining to files and paths.
       type: object
       required:
-        - path-app
-        - path-root
-        - file-start
+        - logging
+        - file-config
         - file-transpiled
-        - file-output
       properties:
+        logging:
+          <<: *path_to_file_string
+          description: Path to file for logging (dev mode only).
+        file-config:
+          <<: *file_string
+          description: Filename for user config.
         pattern-config:
           type: string
           default: '^(|.*\.)phpytex\.ya?ml$'
-        path-app:
-          type: string
-        path-root:
-          type: string
-        file-start:
-          type: string
         file-transpiled:
-          type: string
+          <<: *path_to_file_string
+          description: File path for intermediate transpilation (python stage).
+        file-start:
+          <<: *path_to_file_string
+          description: File path for starting point for transpilation.
+          default: ''
         file-output:
-          type: string
+          <<: *path_to_file_string
+          description: File path for final transpilation (latex stage).
+          default: ''
         # optional:
         file-stamp:
-          type: string
+          <<: *path_to_file_string
         # with-file-stamp:
         #   type: boolean
         #   default: false
         file-params-py:
-          type: string
+          <<: *path_to_file_string
         # with-file-params-py:
         #   type: boolean
         #   default: false
         import-param-py:
-          type: string
+          <<: *python_import_string
         param-module-name:
           type: string
           default: 'MODULE_GLOBAL_PARAMS'

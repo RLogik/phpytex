@@ -1,7 +1,5 @@
-files:
-  path-app: ''
-  path-root: ''
-  file-start: root.tex
-  file-transpiled: transpiled_phpytex.py
-  file-output: main.tex
+paths:
+  logging: 'logs/debug.log'
+  file-config: '.phpytex.yaml'
+  file-transpiled: 'transpiled_phpytex.py'
 compile: {}

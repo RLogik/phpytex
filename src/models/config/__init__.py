@@ -5,7 +5,7 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from models.generated.config import *;
+from src.models.generated.config import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # EXPORTS
@@ -13,6 +13,6 @@ from models.generated.config import *;
 
 __all__ = [
     'ProgrammeConfig',
-    'FileOptions',
+    'ProgrammePaths',
     'CompileOptions',
 ];

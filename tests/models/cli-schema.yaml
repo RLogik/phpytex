@@ -23,16 +23,16 @@ components:
           default: null
         quiet:
           type: boolean
-          default: true
+          default: false
         debug:
           type: boolean
           default: false
-        colour:
+        plain:
           type: boolean
-          default: true
+          default: false
         inspect:
           type: boolean
-          default: true
+          default: false
       additionalProperties: false
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # ENUM Mode

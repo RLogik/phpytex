@@ -5,6 +5,8 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+import src.paths;
+
 from src.thirdparty.misc import *;
 from src.thirdparty.system import *;
 from src.thirdparty.types import *;
@@ -17,27 +19,36 @@ from src.models.user import *;
 from src.parsers import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# GLOBAL VARIABLES
+# EXPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#
+__all__ = [
+    'step_create',
+];
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # METHOD: step create
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def step():
+def step_create(user_config: UserConfig):
     log_info('CREATION STAGE STARTED.');
-    root = appconfig.getPathRoot();
-    createFilesAndFolders(path=root, projectTree=appconfig.getProjectTree());
-    if appconfig.getWithFileStamp():
-        createFileStamp(
-            path=appconfig.getFileStamp(rel=False),
-            overwrite=appconfig.getOptionOverwriteStamp(),
-            options=appconfig.getDictionaryStamp()
+
+    generate_tree(
+        path = src.paths.wd,
+        files = user_config.files,
+        folders = user_config.folders,
+    );
+
+    if user_config.stamp is not None:
+        create_file_stamp(
+            path = user_config.stamp.file,
+            overwrite = user_config.stamp.overwrite,
+            options = user_config.stamp.options,
         );
-    if appconfig.getWithFileParamsPy():
-        createParameters(options=appconfig.getDictionaryParms());
+
+    if user_config.parameters is not None:
+        create_parameters(options=user_config.parameters.options);
+
     log_info('CREATION STAGE COMPLETE.');
     return;
 
@@ -45,16 +56,21 @@ def step():
 # SECONDARY METHODS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def createFilesAndFolders(path: str, projectTree: ProjectTree):
-    for relpath in projectTree.get_directories():
-        if not make_dir_if_not_exists(path=path, fname=relpath):
-            raise FileExistsError('Could not create (sub)folder \033[1m{}\033[0m'.format(relpath));
-    for relfname in projectTree.get_files():
-        if not make_file_if_not_exists(path=path, fname=relfname):
-            raise FileExistsError('Could not create file \033[1m{}\033[0m'.format(relfname));
+def generate_tree(path: str, files: list[str], folders: dict[str, DataTypeFolder]):
+    # create all files at current level:
+    for name in files:
+        log_info(f'File \033[96;1m{name}\033[0m will be created.');
+        create_file_if_not_exists(path=os.path.join(path, name));
+    # create all folders at current level:
+    for name, object in folders.items():
+        log_info(f'Directory \033[96;1m{name}\033[0m will be created.');
+        create_dir_if_not_exists(path=os.path.join(path, name));
+    # create recursively handle subfolders:
+    for name, object in folders.items():
+        generate_tree(path=os.path.join(path, name), files=object.files, folders=object.folders);
     return;
 
-def createFileStamp(
+def create_file_stamp(
     path: str,
     overwrite: bool,
     options: dict[str, Any]
@@ -84,61 +100,36 @@ def createFileStamp(
         lines.append(line);
     if len(lines) > 0:
         lines = [border] + lines + [border];
-    writeTextFile(path=path, lines=lines);
+    write_text_file(path=path, lines=lines);
     return;
 
-def createFileParameters(
-    path: str,
-    overwrite: bool,
-    options: dict[str, Any]
-):
-    if os.path.exists(path) and not overwrite:
-        return;
-    appconfig.setExportVars({});
-    lines = [];
-    for key, value in options.items():
-        try:
-            codedvalue = convert_to_python_string(value);
-            appconfig.setExportVarsKeyValue(key=key, value=value, codedvalue=codedvalue);
-            lines.append('<<< global set {key} = {value}; >>>'.format(key = key, value = codedvalue));
-        except:
-            continue;
-    if os.path.isfile(path) and not overwrite:
-        return;
-    writeTextFile(path=path, lines=lines);
+def create_parameters(options: dict[str, Any]):
+    # config.set_export_vars({});
+    # for key, value in options.items():
+    #     try:
+    #         codedvalue = convert_to_python_string(value);
+    #         config.set_export_vars_key_value(key=key, value=value, codedvalue=codedvalue);
+    #     except:
+    #         continue;
     return;
 
-def createParameters(options: dict[str, Any]):
-    appconfig.setExportVars({});
-    lines = [];
-    for key, value in options.items():
-        try:
-            codedvalue = convert_to_python_string(value);
-            appconfig.setExportVarsKeyValue(key=key, value=value, codedvalue=codedvalue);
-        except:
-            continue;
-    return;
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# TERTIARY METHODS
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-def make_file_if_not_exists(path: str, fname: str) -> bool:
-    fname_full = os.path.join(path, fname);
-    try:
-        if not os.path.isfile(fname_full):
-            log_info('File \033[96;1m{}\033[0m will be created.'.format(fname));
-            createFile(fname_full);
-    except:
-        pass;
-    return os.path.isfile(fname_full);
-
-def make_dir_if_not_exists(path: str, fname: str) -> bool:
-    fname_full = os.path.join(path, fname);
-    try:
-        if not os.path.isdir(fname_full):
-            log_info('Folder \033[96;1m{}\033[0m will be created.'.format(fname));
-            createPath(path=fname_full);
-    except:
-        pass;
-    return os.path.isdir(fname_full);
+# def create_file_parameters(
+#     path: str,
+#     overwrite: bool,
+#     options: dict[str, Any]
+# ):
+#     if os.path.exists(path) and not overwrite:
+#         return;
+#     config.set_export_vars({});
+#     lines = [];
+#     for key, value in options.items():
+#         try:
+#             codedvalue = convert_to_python_string(value);
+#             config.set_export_vars_key_value(key=key, value=value, codedvalue=codedvalue);
+#             lines.append('<<< global set {key} = {value}; >>>'.format(key = key, value = codedvalue));
+#         except:
+#             continue;
+#     if os.path.isfile(path) and not overwrite:
+#         return;
+#     write_text_file(path=path, lines=lines);
+#     return;

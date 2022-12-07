@@ -80,10 +80,9 @@ def get_argument_parser() -> argparse.ArgumentParser:
     global parser;
     if not isinstance(parser, argparse.ArgumentParser):
         parser = argparse.ArgumentParser(
-            prog='code/main.py',
+            prog='tests/cases.py',
             description=dedent('''
-            Phpytex:
-            A transpiler that converts python augmented LaTeX into pure python then pure LaTeX.
+            An interface to run the test cases.
             '''),
             formatter_class=argparse.RawTextHelpFormatter,
         );
@@ -93,11 +92,11 @@ def get_argument_parser() -> argparse.ArgumentParser:
             help=dedent('''
             - help:     Display this help.
             - version:  Display version.
-            - run:      Run the Phpytex transpiler.
+            - run:      Run the test cases.
             '''),
         );
         parser.add_argument('--quiet', action='store_true', default=False, help='Hide all but the most important console messages during transpilation.');
         parser.add_argument('--debug', action='store_true', default=False, help='Display debugging (for development only).');
-        parser.add_argument('--colour', action='store_true', default=True, help='(Under construction) Whether to display messages with special terminal fonts.');
+        parser.add_argument('--plain', action='store_true', default=False, help='If set, console logging will be performed without special terminal fonts.');
         parser.add_argument('--inspect', action='store_true', default=False, help='Pause at end of test case before removing result.');
     return parser;

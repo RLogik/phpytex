@@ -8,6 +8,7 @@
 from src.endpoints.ep_display_version import *;
 from src.endpoints.ep_display_help import *;
 from src.endpoints.ep_run import *;
+from src.endpoints.ep_setup import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # EXPORTS
@@ -17,4 +18,5 @@ __all__ = [
     'endpoint_display_version',
     'endpoint_display_help',
     'endpoint_run',
+    'endpoint_setup',
 ];

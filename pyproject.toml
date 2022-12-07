@@ -1,59 +1,110 @@
 [project]
-name = "phpytex"
-version = "1.4.0"
-description = "A transpiler that augments python and LaTeX and helps to manage larger projects"
-authors = [ "github.com/RLogik" ]
-maintainers = [ "github.com/RLogik" ]
-license = "MIT"
-readme = "README.md"
-python = "^3.10"
-homepage = "https://github.com/RLogik/phpytex"
-repository = "https://github.com/RLogik/phpytex"
-documentation = "https://github.com/RLogik/phpytex/README.md"
+name = 'phpytex'
+version = '1.5.0'
+description = 'A transpiler that augments python and LaTeX and helps to manage larger projects'
+authors = [
+    { name = 'RLogik', email='RLogik@noreply.users.github.com', web='https://github.com/RLogik' },
+]
+maintainers = [
+    { name = 'RLogik', email='RLogik@noreply.users.github.com', web='https://github.com/RLogik' },
+]
+license = { file = 'LICENCE' }
+readme = 'README.md'
+homepage = 'https://github.com/RLogik/phpytex'
+repository = 'https://github.com/RLogik/phpytex'
+documentation = 'https://github.com/RLogik/phpytex/README.md'
 keywords = [
-    "transpiler",
-    "python",
-    "latex",
+    'transpiler',
+    'python',
+    'latex',
 ]
 # cf. https://pypi.org/classifiers
 classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Environment :: Console",
-    "Intended Audience :: Developers",
-    "Operating System :: Unix",
-    "Programming Language :: Python",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.10",
+    'Development Status :: 3 - Alpha',
+    'Environment :: Console',
+    'Intended Audience :: Developers',
+    'Operating System :: Unix',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3 :: Only',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+]
+# NOTE: cf. requirements.txt
+# NOTE do not use == in pyproject.toml only in requirements.txt
+dependencies = [
+    'pip>=22.3',
+    'wheel>=0.38.4',
+    # system
+    'pathlib>=1.0.1',
+    # config
+    'argparse>=1.4.0',
+    'lazy-load>=0.8.2',
+    'pyyaml>=6.0',
+    'dataclasses>=0.6',
+    'pydantic>=1.10.2',
+    'datamodel-code-generator>=0.14.0',
+    'openapi-generator-cli>=4.3.1',
+    # misc
+    'pathlib>=1.0.1',
+    'datetime>=4.7',
+    'pendulum>=2.1.2',
+    'lorem>=0.1.1',
+    'safetywrap>=1.5.0',
+    'typing>=3.7.4.3',
+    # parsing
+    'lark>=1.1.4',
+    'lark-parser[regex]>=0.12.0',
+    # for templates
+    'numpy>=1.23.5',
+]
+
+[project.optional-dependencies]
+# NOTE: cf. requirements.txt
+# Currently no way to have one source of truth.
+test = [
+    'coverage[toml]>=6.5.0',
+    'pytest>=7.2.0',
+    'pytest-cov>=3.0.0',
+    'pytest-lazy-fixture>=0.6.3',
+    'pytest-order>=1.0.1',
+    'testfixtures>=6.18.5',
+]
+dev = [
+    # NOTE: depends on name of project!
+    'phpytex[test]',
+    # further modules
+    'datamodel-code-generator>=0.14.0',
+    'openapi-generator-cli>=4.3.1',
 ]
 
 [tool.pytest.ini_options]
-minversion = "7.2.0"
+minversion = '7.2.0'
 testpaths = [
-    "tests",
+    'tests',
 ]
 python_files = [
-    "**/tests_*.py",
+    '**/tests_*.py',
 ]
-asyncio_mode = "auto"
+asyncio_mode = 'auto'
 filterwarnings = [
-    "error",
-    "ignore::UserWarning",
-    "ignore::DeprecationWarning",
+    'error',
+    'ignore::UserWarning',
+    'ignore::DeprecationWarning',
 ]
 # NOTE: appends (not prepends) flags:
 addopts = [
-    "--order-dependencies",
-    "--order-group-scope=module",
-    "--cache-clear",
-    "--verbose",
-    "--maxfail=1",
-    "-k test_",
+    '--order-dependencies',
+    '--order-group-scope=module',
+    '--cache-clear',
+    '--verbose',
+    '--maxfail=1',
+    '-k test_',
     # NOTE: will be ignored, if --cov not used (e.g. integration tests):
-    "--no-cov-on-fail",
-    "--cov-report=term",
-    "--cov-config=.coveragerc",
+    '--no-cov-on-fail',
+    '--cov-report=term',
+    '--cov-config=.coveragerc',
     # NOTE: for development purposes only:
-    # "-s", # verbose print/err capturing disabled
-    # "--capture=tee-sys", # verbose print/err capturing enabled
+    # '-s', # verbose print/err capturing disabled
+    # '--capture=tee-sys', # verbose print/err capturing enabled
 ]

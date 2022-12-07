@@ -11,7 +11,7 @@ from src.thirdparty.types import *;
 
 from src.core.log import *;
 from src.core.utils import *;
-from tests.models.cli import *;
+from src.models.cli import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # EXPORTS
@@ -80,7 +80,6 @@ def get_argument_parser() -> argparse.ArgumentParser:
     global parser;
     if not isinstance(parser, argparse.ArgumentParser):
         parser = argparse.ArgumentParser(
-            prog='code/main.py',
             description=dedent('''
             Phpytex:
             A transpiler that converts python augmented LaTeX into pure python then pure LaTeX.
@@ -89,16 +88,19 @@ def get_argument_parser() -> argparse.ArgumentParser:
         );
         parser.add_argument('mode',
             nargs='?',
-            choices=['version', 'help', 'run'],
+            choices=['version', 'help', 'run', 'setup'],
             help=dedent('''
             - help:     Display this help.
             - version:  Display version.
             - run:      Run the Phpytex transpiler.
+            - setup:    Create a Phpytex config file.
             '''),
         );
         parser.add_argument('--quiet', action='store_true', default=False, help='Hide all but the most important console messages during transpilation.');
         parser.add_argument('--debug', action='store_true', default=False, help='Display debugging (for development only).');
-        parser.add_argument('--colour', action='store_true', default=True, help='(Under construction) Whether to display messages with special terminal fonts.');
+        parser.add_argument('--plain', action='store_true', default=False, help='If set, console logging will be performed without special terminal fonts.');
         parser.add_argument('--file',   nargs='?', type=str, help='(string) Path to config file (default is .phytex.yaml).');
-        parser.add_argument('--parameters',   nargs='?', type=str, help='(json) On-the-fly definition of paramaters to override parameters > options from config file.');
+        parser.add_argument('--parameters',   nargs='?', type=str, help='(json) On-the-fly definition of paramaters (overrides parameters > options in user config file).');
+        parser.add_argument('--compile',   nargs='?', type=str, help='(json) On-the-fly definition of compile options (overrides compile > options in user config file).');
+        parser.add_argument('--stamp',   nargs='?', type=str, help='(json) On-the-fly definition of paramaters (overrides compile > options in user config file).');
     return parser;

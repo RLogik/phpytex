@@ -17,8 +17,13 @@ import sys;
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)));
 
 from src.setup import *;
-from src.core.utils import *;
-from app import *;
+from main import *;
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# EXPORTS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+__all__ = [ ];
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # EXECUTION
@@ -28,7 +33,5 @@ if __name__ == '__main__':
     sys.tracebacklimit = 0;
     check_python_version();
     args = get_arguments_from_cli(*sys.argv[1:]);
-    open_source(False);
-    path_root = os.getcwd();
-    path_app = os.path.dirname(os.path.abspath(__file__));
-    enter(path_root=path_root, path_app=path_app, args=args);
+    set_open_source(False);
+    enter(args=args);

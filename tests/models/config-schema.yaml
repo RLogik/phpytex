@@ -7,6 +7,23 @@ info:
 servers:
   - url: "."
 paths: {}
+definitions:
+    FileString: &file_string
+      description: Data type for a string to be the base name of a file.
+      type: string
+      pattern: '^[^\\\/]*\.[^\\\/]+$'
+    PathToFileString: &path_to_file_string
+      description: Data type for a string to be a path to a file.
+      type: string
+      pattern: '^[^\\\/]+([\\\/][^\\\/]+)*\.[^\\\/]+$'
+    PathToDirString: &path_to_dir_string
+      description: Data type for a string to be a path to a directory.
+      type: string
+      pattern: '^[^\\\/]+([\\\/][^\\\/]+)*$'
+    PythonImportString: &python_import_string
+      description: Data type for a string to constitute an import 'path' in python.
+      type: string
+      pattern: '^[\w\_]+(\.[\w\_]+)*$'
 components:
   schemas:
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -35,21 +52,19 @@ components:
         Paths for setup.
       type: object
       required:
-        - app
-        - cases
+        - logging
+        - path-cases
+        - path-sandbox
       properties:
-        app:
-          description: Path to application.
-          type: string
-          pattern: '^[^\\\/]+([\\\/][^\\\/]+)*\.[^\\\/]+$'
-        cases:
+        logging:
+          <<: *path_to_file_string
+          description: Path to file for logging (dev mode only).
+        path-cases:
+          <<: *path_to_dir_string
           description: Path to test cases (scenarios).
-          type: string
-          pattern: '^[^\\\/]+([\\\/][^\\\/]+)*$'
-        sandbox:
+        path-sandbox:
+          <<: *path_to_dir_string
           description: Path to sandbox for temporary execution of tests on scenarios.
-          type: string
-          pattern: '^[^\\\/]+([\\\/][^\\\/]+)*$'
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Information about test case
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -61,7 +76,6 @@ components:
         - path
       properties:
         path:
+          <<: *path_to_dir_string
           description: Path to test scenario.
-          type: string
-          pattern: '^[^\\\/]+([\\\/][^\\\/]+)*$'
       additionalProperties: false
