@@ -50,5 +50,6 @@ components:
         - 'version'
         - 'help'
         - 'run'
-        - 'setup'
+        - 'template'
+        - 'example'
       default: 'help'

@@ -58,8 +58,10 @@ def enter(args: ProgrammeArguments):
                 options_compile = None if args.compile is None else json_load_safe(args.compile),
                 options_stamp = None if args.stamp is None else json_load_safe(args.stamp),
             );
-        case EnumProgrammeMode.setup:
-            endpoint_setup();
+        case EnumProgrammeMode.template:
+            endpoint_template();
+        case EnumProgrammeMode.example:
+            endpoint_example();
         case _:
             display_usage();
     return;

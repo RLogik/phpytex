@@ -12,6 +12,7 @@ import re;
 import random;
 import subprocess;
 import numpy as np;
+from typing import Optional;
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)));
 os.chdir(os.path.dirname(os.path.abspath(__file__)));
@@ -269,7 +270,7 @@ def ____compilelatex():
     bibtex_options = ____phpytex_params____['bibtex'];
 
     print('[\033[94;1mINFO\033[0m] RUN PDFLATEX');
-    pipeCall('pdflatex', *pdflatex_options, name);#, errormsg='PDFLATEX encountered a problem.');
+    pipe_call('pdflatex', *pdflatex_options, fname_out=name);#, error_msg='PDFLATEX encountered a problem.');
 
     print('[\033[94;1mINFO\033[0m] RUN BIBTEX');
     sources = [];
@@ -277,21 +278,30 @@ def ____compilelatex():
         if src in sources:
             continue;
         bibname = os.path.splitext(src)[0];
-        pipeCall('bibtex', *bibtex_options, bibname);#, errormsg='BIBTEX encountered a problem.');
+        pipe_call('bibtex', *bibtex_options, fname_out=bibname);#, error_msg='BIBTEX encountered a problem.');
         sources.append(src);
     pass;
 
-## NOTE: subprocess.run is like subprocess.Popen but waits for result
-def pipeCall(*args: str, cwd = None, errormsg: str = '', fnameOut = None):
-    cwd = cwd if isinstance(cwd, str) else os.getcwd();
-    if not isinstance(fnameOut, str):
+def pipe_call(
+    *args: str,
+    cwd: Optional[str] = None,
+    error_msg: Optional[str] = None,
+    fname_out: Optional[str] = None
+) -> None:
+    '''
+    Executes a command as a subprocess and waits for result.
+
+    NOTE: subprocess.run is like subprocess.Popen but waits for result
+    '''
+    cwd = cwd or os.getcwd();
+    if fname_out is None:
         result = subprocess.run(list(args), cwd=cwd)
     else:
-        with open(fnameOut, 'w') as fp:
+        with open(fname_out, 'w') as fp:
             result = subprocess.run(list(args), cwd=cwd, stdout=fp);
     if result.returncode == 0:
         return;
-    raise Exception(errormsg or 'Shell command < \033[94;1m{{}}\033[0m > failed.'.format(' '.join(args)));
+    raise Exception(error_msg or f'Shell command {{{ " ".join(args) }}} failed.');
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # TRANSPILED METHODS

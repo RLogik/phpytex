@@ -1,0 +1,146 @@
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# NOTE:
+# The phpytex config file contains 4 blocks which follow schemata:
+#
+# - `transpile`
+# - `stamp`
+# - `files`
+# - `folders`
+#
+# and can contain anything outside of these blocks.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Arbitrary settings
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Settings beyond the above mentioned 4 blocks will be ignored.
+info:
+  author: "Max Mustermann"
+  ignore: false
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# TRANSPILATION SETTINGS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# NOTE:
+# The stages of transpilation are {mixed -> python -> latex -> pdf}.
+# Via this block one can defines to what stage
+# transpilation/compilation occurs, as will as other options
+# about handling of comments, initialising a random seed, etc.
+#
+# Example:
+transpile:
+  options:
+    root:       root.tex # starting point for document
+    output:     main.tex # latex output of transpilation
+    debug:      false    # if true, transpilation stops at intermediate python stage
+    compile:    false    # if false (default), transpilation stop at latex stage
+    insert-bib: true     # if true, replaces any <<< bibliography ... >>> commands by bib entries, if bbl file exists
+    comments:   auto     # options: auto (default), on, off
+    show-tree:  true     # true <==> print document tree as comment in (latex) transpiled file
+    max-length: 10000    # safety feature to prevent generating an infinitely long file
+    tabs:       false    # false <==> use spaces for indentation inside code blocks
+    spaces:     4        # size of indentations, when using spaces
+    # will be initialised as random seed at the start
+    seed:       &seed 12345678
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# STAMP OPTIONS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# NOTE:
+# This block is optional.
+# If used, the (latex) transpiled file will contain a
+# multi-line comment with any arbitrary details one defines.
+#
+# Example:
+stamp:
+  file: stamp.tex
+  overwrite: true # if false and file exists, then it will not be overwritten.
+  # options can be any dictionary with arbitrary values and depth.
+  options:
+    author: "Max Mustermann"
+    dates: 01.01.2030
+    edited: 23.05.2030
+    title: "The stages of artificial intelligence beyond human intelligence"
+    institute: "Faculty of mathematics"
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# GLOBAL PARAMETERS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# NOTE:
+# This block is optional.
+# If used, a file containing global parameters is created.
+# This is particularly useful when working with templates.
+#
+# Example:
+parameters:
+  file: src.parameters
+  overwrite: true # if false and file exists, then it will not be overwritten.
+  # options can be any dictionary with arbitrary values and depth.
+  # NOTE:
+  # Keys in outermost level will be cast as variable names; thus
+  # kebab-case (in outermost level) will be replaced by snake_case.
+  options:
+    SEED: *seed # internal reference to above defined value
+    FONT_SIZE: 12pt
+    KEYWORDS:
+      - ai
+      - computer science
+      - research
+    short-title: "stages of ai"
+    bibliography-style: numeric
+    colour-references: true
+    study-number: 381
+    critical-temperature: 258.19
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# PROJECT TREE
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# NOTE:
+# If used, phpytex will generate the here described project tree.
+# A project tree consists of two parts:
+#
+# - `files` - an optional list of base-names of files.
+# - `folders` - a optional dictionary with
+#    - keys = final parts of directories
+#    - values = document trees
+#
+# Example:
+files:
+  - root.tex
+folders:
+  setup:
+    files:
+      - ".index.tex"
+      - type.tex
+      - packages.tex
+      - layout.tex
+      - macros.tex
+  front:
+    files:
+      - ".index.tex"
+      - title.tex
+      - contents.tex
+  body:
+    files:
+      - ".index.tex"
+      - intro.tex
+    folders:
+      definitions:
+        files:
+          - ".index.tex"
+          - basic.tex
+          - special.tex
+      results:
+        files:
+          - ".index.tex"
+          - "case-studies.tex"
+          - results.tex
+          - applications.tex
+  back:
+    files:
+      - ".index.tex"
+      - thanks.tex
+      - sources.bib
+
+
+

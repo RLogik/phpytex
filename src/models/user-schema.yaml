@@ -34,20 +34,35 @@ components:
         Model for all parts of the user config file.
       type: object
       properties:
+        transpile:
+          description: |-
+            Configuration block for transpilation options.
+          $ref: "#/components/schemas/UserCompileBlock"
         compile:
+          description: |-
+            Configuration block for transpilation options.
+            (Old key name -> replaced by 'transpile'.)
           anyOf:
           - $ref: "#/components/schemas/UserCompileBlock"
           - $ref: "#/components/schemas/UserCompileOptions"
         stamp:
+          description: |-
+            Configuration block for stamp settings.
           $ref: "#/components/schemas/UserStampBlock"
         parameters:
-          $ref: "#/components/schemas/UserParameterBlock"
+          description: |-
+            Configuration block for global parameters.
+          $ref: "#/components/schemas/UserParametersBlock"
         files:
+          description: |-
+            List of files for project tree.
           type: array
           items:
             <<: *file_string
           default: []
         folders:
+          description: |-
+            Dictionary with keys as (sub)directories and values which recursively define the project tree.
           type: object
           additionalProperties:
             $ref: "#/components/schemas/DataTypeFolder"
@@ -126,9 +141,9 @@ components:
           default: {}
       additionalProperties: false
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # User Parameter options
+    # User Parameters options
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    UserParameterBlock:
+    UserParametersBlock:
       description: |-
         Settings for user defined global parameters across entire document.
       type: object

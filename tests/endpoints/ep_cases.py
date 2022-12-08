@@ -55,7 +55,7 @@ def endpoint_test_case(
 def run_test() -> None:
     sandbox_path = tests_config.PATHS.path_sandbox;
     cmd = python_command_split();
-    pipeCall(*cmd, tests.paths.programme, 'run', cwd=sandbox_path);
+    pipe_call(*cmd, tests.paths.programme, 'run', cwd=sandbox_path);
     return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -11,6 +11,7 @@ from src.thirdparty.types import *;
 from src.setup import *;
 from src.core.log import *;
 from src.core.utils import *;
+from src.models.user import *;
 from src.steps import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -39,17 +40,20 @@ def endpoint_run(
         |     \033[32;1m(PH(p)y)tex\033[0m    |
         +--------------------+
     '''));
+
     user_config = step_configure(
         file_config = file_config,
         options_parameters = options_parameters,
         options_compile = options_compile,
         options_stamp = options_stamp,
     );
+    assert isinstance(user_config.transpile, UserCompileBlock);
+    assert isinstance(user_config.transpile.options, UserCompileOptions);
+
     step_create(user_config=user_config);
-    return;
-    step_transpile();
-    if user_config.compile.debug:
+    step_transpile(user_config=user_config);
+    if user_config.transpile.options.debug:
         log_info(f'The result of transpilation can be viewed in \033[1m{config.PATHS.file_transpiled}\033[0m');
         return;
-    step_compile();
+    step_compile(user_config=user_config);
     return;

@@ -266,10 +266,10 @@ def processBlockCode(u: LarkTree, offset: str, indentation: IndentationTracker) 
         else:
             return block;
     elif typ == 'blockcode_inside':
-        lenOffset = lengthOfWhiteSpace(offset);
+        lenOffset = length_of_white_space(offset);
         lines = [ lexedToStr(child) for child in children ];
         lenIndentation = [
-            lengthOfWhiteSpace(extractIndent(line))
+            length_of_white_space(extractIndent(line))
             for line in lines
             if not re.match(r'^\s*$', line) # ignore indentation of empty lines
         ];

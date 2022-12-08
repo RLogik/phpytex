@@ -41,21 +41,26 @@ FUNCTION_NAME_PRE  = '____phpytex_generate_pre';
 @dataclass
 class AssetPaths():
     version: str = field();
+    grammar: str = field();
+    template_config: str = field();
+    template_example: str = field();
     template_pre: str = field();
     template_post: str = field();
-    grammar: str = field();
 
 ASSET_PATHS = AssetPaths(
     version = 'dist/VERSION',
+    grammar = 'assets/phpytex.lark',
+    template_config = 'assets/template_config',
+    template_example = 'assets/template_example',
     template_pre = 'assets/template_pre',
     template_post = 'assets/template_post',
-    grammar = 'assets/phpytex.lark',
 );
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # LAZY LOADED RESOURCES
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+@make_lazy
 def load_internal_config() -> ProgrammeConfig: # pragma: no cover
     with open(src.paths.config, 'r') as fp:
         assets = yaml_load(fp, Loader=yaml_FullLoader);
@@ -82,7 +87,6 @@ def load_user_config(file_config: Optional[str]) -> UserConfig:
         return UserConfig(**object);
 
 # use lazy loaing to ensure that values only loaded (once) when used
-APP_CONFIG: ProgrammeConfig = lazy(load_internal_config);
+APP_CONFIG: ProgrammeConfig = load_internal_config();
 PATHS: ProgrammePaths = lazy(lambda: APP_CONFIG.paths);
-COMPILE_OPTIONS: CompileOptions = lazy(lambda: APP_CONFIG.compilation);
-# GRAMMAR = lazy
+COMPILE_OPTIONS: TranspileOptions = lazy(lambda: APP_CONFIG.transpile);

@@ -2,4 +2,4 @@ paths:
   logging: 'logs/debug.log'
   file-config: '.phpytex.yaml'
   file-transpiled: 'transpiled_phpytex.py'
-compile: {}
+transpile: {}

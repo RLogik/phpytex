@@ -1,0 +1,40 @@
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# TRANSPILATION SETTINGS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+transpile:
+  options:
+    root:       root.tex # starting point for document
+    output:     main.tex # latex output of transpilation
+    debug:      false    # if true, transpilation stops at intermediate python stage
+    compile:    false    # if false (default), transpilation stop at latex stage
+    insert-bib: true     # if true, replaces any <<< bibliography ... >>> commands by bib entries, if bbl file exists
+    comments:   auto     # options: auto (default), on, off
+    show-tree:  true     # true <==> print document tree as comment in (latex) transpiled file
+    max-length: 10000    # safety feature to prevent generating an infinitely long file
+    tabs:       false    # false <==> use spaces for indentation inside code blocks
+    spaces:     4        # size of indentations, when using spaces
+    # will be initialised as random seed at the start
+    seed:       &seed 12345678
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# STAMP SETTINGS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+stamp:
+  file: stamp.tex
+  overwrite: true
+  # options can be any dictionary with arbitrary values and depth.
+  options: {}
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# GLOBAL PARAMETERS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+parameters:
+  file: src.parameters
+  overwrite: true
+  # options can be any dictionary with arbitrary values and depth.
+  options: {}
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# PROJECT TREE
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# list of base-names of files
+files: []
+# dict: keys = final part of path; values = project tree (recursive)
+folders: {}

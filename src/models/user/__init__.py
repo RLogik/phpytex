@@ -19,6 +19,6 @@ __all__ = [
     'UserCompileBlock',
     'UserCompileOptions',
     'UserConfig',
-    'UserParameterBlock',
+    'UserParametersBlock',
     'UserStampBlock',
 ];

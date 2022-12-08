@@ -20,5 +20,5 @@ __all__ = [
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def endpoint_display_version():
-    print(get_version());
+    print(VERSION);
     return;

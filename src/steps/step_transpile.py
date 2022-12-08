@@ -15,6 +15,7 @@ from src.setup import *;
 from src.core.log import *;
 from src.core.utils import *;
 from src.models.internal import *;
+from src.models.user import *;
 from src.parsers import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -29,9 +30,13 @@ __all__ = [
 # METHOD: step transpile phpytex to python
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def step_transpile():
+def step_transpile(user_config: UserConfig):
+    assert isinstance(user_config.transpile, UserCompileBlock);
+    assert isinstance(user_config.transpile.options, UserCompileOptions);
+
     log_info('TRANSPILATION (phpytex -> python) STARTED.');
-    indentsymb = appconfig.getIndentCharacter();
+    indentsymb = config.COMPILE_OPTIONS.indent_character;
+    return;
     seed = appconfig.getSeed() if appconfig.hasSeed() else None;
 
     ## Initialise structures for recording transpilation units:

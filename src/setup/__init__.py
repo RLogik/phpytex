@@ -17,14 +17,16 @@ from src.setup.yaml import *;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 __all__ = [
+    'GRAMMAR',
+    'TEMPLATE_CONFIG',
+    'TEMPLATE_EXAMPLE',
+    'TEMPLATE_PHPYTEX_LINES_POST',
+    'TEMPLATE_PHPYTEX_LINES_PRE',
+    'VERSION',
     'config',
     'display_help',
     'display_usage',
     'get_arguments_from_cli',
-    'get_grammar',
-    'get_template_phpytex_lines_post',
-    'get_template_phpytex_lines_pre',
-    'get_version',
     'is_open_source',
     'load_user_config',
     'set_open_source',

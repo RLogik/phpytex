@@ -88,12 +88,13 @@ def get_argument_parser() -> argparse.ArgumentParser:
         );
         parser.add_argument('mode',
             nargs='?',
-            choices=['version', 'help', 'run', 'setup'],
+            choices=['version', 'help', 'run', 'template', 'example'],
             help=dedent('''
             - help:     Display this help.
             - version:  Display version.
             - run:      Run the Phpytex transpiler.
-            - setup:    Create a Phpytex config file.
+            - template: Generate a bare template for a phpytex config file.
+            - example:  Generate an example template for a phpytex config file.
             '''),
         );
         parser.add_argument('--quiet', action='store_true', default=False, help='Hide all but the most important console messages during transpilation.');

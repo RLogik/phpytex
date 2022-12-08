@@ -34,15 +34,15 @@ components:
         Internal application configuration
       type: object
       required:
-        - files
-        - compile
+        - paths
+        - transpile
       properties:
         paths:
           description: Options pertaining to files and paths
           $ref: "#/components/schemas/ProgrammePaths"
-        compile:
-          description: Options for compilation
-          $ref: "#/components/schemas/CompileOptions"
+        transpile:
+          description: Options for transpilation
+          $ref: "#/components/schemas/TranspileOptions"
       additionalProperties: false
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # File options
@@ -93,11 +93,11 @@ components:
           type: string
           default: 'MODULE_GLOBAL_PARAMS'
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # Compile options
+    # Transpilation options
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    CompileOptions:
+    TranspileOptions:
       description: |-
-        Options for compilation.
+        Options for transpilation.
       type: object
       properties:
         ignore:

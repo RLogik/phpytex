@@ -14,5 +14,5 @@ from src.models.generated.config import *;
 __all__ = [
     'ProgrammeConfig',
     'ProgrammePaths',
-    'CompileOptions',
+    'TranspileOptions',
 ];

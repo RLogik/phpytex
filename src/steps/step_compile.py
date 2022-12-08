@@ -12,6 +12,8 @@ from src.thirdparty.types import *;
 from src.setup import *;
 from src.core.log import *;
 from src.core.utils import *;
+from src.models.internal import *;
+from src.models.user import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # EXPORTS
@@ -25,8 +27,9 @@ __all__ = [
 # METHOD: step transpile python to latex
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def step_compile():
+def step_compile(user_config: UserConfig):
     log_info('CONVERSION (python -> latex [+ latex -> pdf]) STARTED.');
+    return;
     fnamePy = appconfig.getFileTranspiled(rel=True);
     fnameLatex = appconfig.getFileOutput(rel=True);
     execTranspiledCode(fnamePy=fnamePy, fnameLatex=fnameLatex);
@@ -43,7 +46,7 @@ def execTranspiledCode(fnamePy: str, fnameLatex: str):
     try:
         cmd = re.split(r'\s+', appconfig.getPythonPath());
         log_info('CALL < \033[94;1m{}\033[0m >'.format(' '.join(cmd + [fnamePy])));
-        pipeCall(*cmd, fnamePy);
+        pipe_call(*cmd, fname_out=fnamePy);
         os.remove(fnamePy);
     except:
         log_fatal(

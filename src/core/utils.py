@@ -18,15 +18,15 @@ __all__ = [
     'is_linux',
     'python_command',
     'python_command_split',
-    'pipeCall',
+    'pipe_call',
     'getFullPath',
     'formatPath',
     'get_files',
     'get_files_by_pattern',
     'createNewPathName',
     'createNewFileName',
-    'createPath',
-    'createFile',
+    'create_path',
+    'create_file',
     'read_text_file',
     'write_text_file',
     'escapeForPython',
@@ -34,7 +34,7 @@ __all__ = [
     'formatBlockUnindent',
     'formatBlockIndent',
     'extractIndent',
-    'lengthOfWhiteSpace',
+    'length_of_white_space',
     'sizeOfIndent',
     'unique',
     'inheritanceOnGraph',
@@ -69,17 +69,26 @@ def python_command() -> str:
 # METHODS: io
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-## NOTE: subprocess.run is like subprocess.Popen but waits for result
-def pipeCall(*args: str, cwd = None, errormsg: str = '', fnameOut: Optional[str] = None):
-    cwd = cwd if isinstance(cwd, str) else os.getcwd();
-    if fnameOut is None:
+def pipe_call(
+    *args: str,
+    cwd: Optional[str] = None,
+    error_msg: Optional[str] = None,
+    fname_out: Optional[str] = None
+) -> None:
+    '''
+    Executes a command as a subprocess and waits for result.
+
+    NOTE: subprocess.run is like subprocess.Popen but waits for result
+    '''
+    cwd = cwd or os.getcwd();
+    if fname_out is None:
         result = subprocess.run(list(args), cwd=cwd)
     else:
-        with open(fnameOut, 'w') as fp:
+        with open(fname_out, 'w') as fp:
             result = subprocess.run(list(args), cwd=cwd, stdout=fp);
     if result.returncode == 0:
         return;
-    raise Exception(errormsg or 'Shell command < \033[94;1m{}\033[0m > failed.'.format(' '.join(args)));
+    raise Exception(error_msg or f'Shell command {{{ " ".join(args) }}} failed.');
 
 def getFullPath(path: str, shouldexist: bool = False) -> str:
     path = os.path.abspath(path);
@@ -125,7 +134,7 @@ def createNewFileName(dir: str, nameinit: str = 'tmp', namescheme: str = 'tmp_{}
         i += 1;
     return path;
 
-def createPath(path: str):
+def create_path(path: str):
     if path in [ '', '.', os.getcwd() ]:
         return;
     if not os.path.exists(path):
@@ -134,7 +143,7 @@ def createPath(path: str):
         raise FileExistsError('Could not create or find path \033[93;1m{}\033[0m!'.format(path));
     return;
 
-def createFile(path: str):
+def create_file(path: str):
     if not os.path.exists(path):
         pathlib.Path(path).touch(exist_ok=True);
     if not os.path.exists(path):
@@ -142,6 +151,9 @@ def createFile(path: str):
     return;
 
 def read_text_file(path: str) -> str:
+    '''
+    Reads from text file.
+    '''
     with open(path, 'r') as fp:
         return ''.join(fp.readlines());
 
@@ -151,19 +163,24 @@ def write_text_file(
     force_create_path: bool = False,
     force_create_empty_line: bool = True
 ):
+    '''
+    Writes text to a file (overwrites if already exists).
+    '''
     if force_create_path:
-        createPath(os.path.dirname(path));
-    _lines = [ lines ] if isinstance(lines, str) else lines;
-    while len(_lines) > 0:
-        if not re.match(r'^\s*$', _lines[-1]):
-            break;
-        _lines = _lines[:-1];
-    if force_create_empty_line:
-        _lines = _lines + [''];
+        create_path(os.path.dirname(path));
+    if isinstance(lines, str):
+        text = lines.rstrip('\r\n');
+    else:
+        while len(lines) > 0:
+            if not re.match(pattern=r'^\s*$', string=lines[-1]):
+                break;
+            lines = lines[:-1];
+        text = '\n'.join(lines);
     with open(path, 'w') as fp:
-        fp.write('\n'.join(_lines));
+        fp.write(text);
+        if force_create_empty_line:
+            fp.write('\n');
     return;
-
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # METHODS: string
@@ -199,7 +216,7 @@ def formatBlockIndent(lines: list[str], indent: str, unindent: bool = True) -> l
 def extractIndent(s: str) -> str:
     return re.sub(r'^(\s*).*$', r'\1', s);
 
-def lengthOfWhiteSpace(s: str) -> int:
+def length_of_white_space(s: str) -> int:
     chars = [ _ for _ in re.split(r'', s) if not (_ == '') ];
     n = 0;
     for char in chars:
@@ -210,8 +227,8 @@ def lengthOfWhiteSpace(s: str) -> int:
     return n;
 
 def sizeOfIndent(s: str, indentsymb: str) -> int:
-    lenIndent = lengthOfWhiteSpace(s);
-    lenUnit = lengthOfWhiteSpace(indentsymb);
+    lenIndent = length_of_white_space(s);
+    lenUnit = length_of_white_space(indentsymb);
     return int(lenIndent / lenUnit);
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

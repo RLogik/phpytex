@@ -3,9 +3,9 @@ paths:
   path-cases: 'tests/cases'
   path-sandbox: 'tests/cases/sandbox'
 cases:
-  - path: tests/cases/case_debug_simple
-  - path: tests/cases/case_debug_withtree
-  - path: tests/cases/case_no-compile_simple
+  # - path: tests/cases/case_debug_simple
+  # - path: tests/cases/case_debug_withtree
+  # - path: tests/cases/case_no-compile_simple
   - path: tests/cases/case_no-compile_withtree
-  - path: tests/cases/case_compile_simple
-  - path: tests/cases/case_compile_withtree
+  # - path: tests/cases/case_compile_simple
+  # - path: tests/cases/case_compile_withtree
