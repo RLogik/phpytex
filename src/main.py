@@ -55,7 +55,7 @@ def enter(args: ProgrammeArguments):
             endpoint_run(
                 file_config = args.file,
                 options_parameters = None if args.parameters is None else json_load_safe(args.parameters),
-                options_compile = None if args.compile is None else json_load_safe(args.compile),
+                options_compile = None if args.transpile is None else json_load_safe(args.transpile),
                 options_stamp = None if args.stamp is None else json_load_safe(args.stamp),
             );
         case EnumProgrammeMode.template:

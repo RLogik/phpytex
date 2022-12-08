@@ -1,21 +1,20 @@
 ignore:      false
-ignore:      false
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # TRANSPILATION SETTINGS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 transpile:
   options:
-    root:       root.tex
-    output:     main.tex
-    debug:      false
-    compile:    false
+    root: root.tex
+    output: main.tex
+    debug: false
+    compile-latex: false
     insert-bib: true
-    comments:   auto
-    show-tree:  true
+    comments: auto
+    show-tree: true
     max-length: 10000
-    tabs:       false
-    spaces:     4
-    seed:       81004467
+    tabs: false
+    spaces: 4
+    seed: 81004467
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # STAMP SETTINGS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

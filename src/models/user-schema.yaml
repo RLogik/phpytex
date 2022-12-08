@@ -37,14 +37,14 @@ components:
         transpile:
           description: |-
             Configuration block for transpilation options.
-          $ref: "#/components/schemas/UserCompileBlock"
+          $ref: "#/components/schemas/UserTranspileBlock"
+        # NOTE: Old - issue warning.
         compile:
           description: |-
             Configuration block for transpilation options.
-            (Old key name -> replaced by 'transpile'.)
           anyOf:
-          - $ref: "#/components/schemas/UserCompileBlock"
-          - $ref: "#/components/schemas/UserCompileOptions"
+          - $ref: "#/components/schemas/UserTranspileBlock"
+          - $ref: "#/components/schemas/UserTranspileOptions"
         stamp:
           description: |-
             Configuration block for stamp settings.
@@ -71,15 +71,15 @@ components:
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # User Compile block
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    UserCompileBlock:
+    UserTranspileBlock:
       description: |-
         Settings for compilation.
       type: object
       properties:
         options:
-          $ref: "#/components/schemas/UserCompileOptions"
+          $ref: "#/components/schemas/UserTranspileOptions"
       additionalProperties: false
-    UserCompileOptions:
+    UserTranspileOptions:
       description: |-
         Options for compilation block.
       type: object
@@ -103,7 +103,7 @@ components:
           type: boolean
           default: true
         comments:
-          $ref: "#/components/schemas/EnumCommentsOption"
+          $ref: "./common-schema.yaml/#/components/schemas/EnumCommentsOption"
           # will be overwritten by enum default
           default: null
         insert-bib:
@@ -112,6 +112,7 @@ components:
         max-length:
           description: Prevents transpiler from creating overlarge files
           type: integer
+          default: 10000
         seed:
           type: integer
         tabs:
@@ -179,15 +180,3 @@ components:
             $ref: "#/components/schemas/DataTypeFolder"
           default: {}
       additionalProperties: false
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # ENUM Comments Options
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    EnumCommentsOption:
-      description: |-
-        An enumeration of possible options for comments
-      type: string
-      enum:
-        - 'auto'
-        - 'on'
-        - 'off'
-      default: auto

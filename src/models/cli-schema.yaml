@@ -32,9 +32,10 @@ components:
           default: false
         file:
           type: string
+        # for 'on-the-fly' alterations:
         parameters:
           type: string
-        compile:
+        transpile:
           type: string
         stamp:
           type: string

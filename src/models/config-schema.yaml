@@ -11,11 +11,11 @@ definitions:
     FileString: &file_string
       description: Data type for a string to be the base name of a file.
       type: string
-      pattern: '^[^\\\/]*\.[^\\\/]+$'
+      pattern: '^[^\\\/]*(\.[^\\\/]+)?$'
     PathToFileString: &path_to_file_string
       description: Data type for a string to be a path to a file.
       type: string
-      pattern: '^[^\\\/]+([\\\/][^\\\/]+)*\.[^\\\/]+$'
+      pattern: '^[^\\\/]+([\\\/][^\\\/]+)*(\.[^\\\/]+)?$'
     PathToDirString: &path_to_dir_string
       description: Data type for a string to be a path to a directory.
       type: string
@@ -34,27 +34,68 @@ components:
         Internal application configuration
       type: object
       required:
+        - namespace
+        - assets
         - paths
         - transpile
       properties:
+        namespace:
+          description: Internal naming parts of transpiled python code.
+          $ref: "#/components/schemas/NameSpacePython"
+        assets:
+          description: Paths to assets.
+          $ref: "#/components/schemas/AssetsPaths"
         paths:
-          description: Options pertaining to files and paths
-          $ref: "#/components/schemas/ProgrammePaths"
+          description: Settings for paths and files for the transpilation process.
+          $ref: "#/components/schemas/PathSettings"
         transpile:
-          description: Options for transpilation
+          description: Options for transpilation.
           $ref: "#/components/schemas/TranspileOptions"
       additionalProperties: false
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # File options
+    # Asset paths
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    ProgrammePaths:
+    AssetsPaths:
+      description: |-
+        Options pertaining purely to assets.
+      type: object
+      required:
+        - version
+        - grammar
+        - template_config
+        - template_example
+        - template_pre
+        - template_post
+      properties:
+        version:
+          <<: *path_to_file_string
+        grammar:
+          <<: *path_to_file_string
+        template_config:
+          <<: *path_to_file_string
+        template_example:
+          <<: *path_to_file_string
+        template_pre:
+          <<: *path_to_file_string
+        template_post:
+          <<: *path_to_file_string
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Paths for process
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    PathSettings:
       description: |-
         Options pertaining to files and paths.
       type: object
       required:
         - logging
         - file-config
+        - pattern-config
         - file-transpiled
+        - file-start
+        - file-output
+        - overwrite-stamp
+        - overwrite-params
+        - param-module-name
       properties:
         logging:
           <<: *path_to_file_string
@@ -64,34 +105,27 @@ components:
           description: Filename for user config.
         pattern-config:
           type: string
-          default: '^(|.*\.)phpytex\.ya?ml$'
         file-transpiled:
           <<: *path_to_file_string
           description: File path for intermediate transpilation (python stage).
         file-start:
           <<: *path_to_file_string
           description: File path for starting point for transpilation.
-          default: ''
         file-output:
           <<: *path_to_file_string
           description: File path for final transpilation (latex stage).
-          default: ''
         # optional:
         file-stamp:
           <<: *path_to_file_string
-        # with-file-stamp:
-        #   type: boolean
-        #   default: false
+        overwrite-stamp:
+          type: boolean
         file-params-py:
           <<: *path_to_file_string
-        # with-file-params-py:
-        #   type: boolean
-        #   default: false
-        import-param-py:
+        import-params:
           <<: *python_import_string
-        param-module-name:
-          type: string
-          default: 'MODULE_GLOBAL_PARAMS'
+          default: 'src.params'
+        overwrite-params:
+          type: boolean
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Transpilation options
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -99,49 +133,51 @@ components:
       description: |-
         Options for transpilation.
       type: object
+      required:
+        - compile-latex
+        - show-tree
+        - insert-bib
+        - max-length
+        - indent-character
+        - indent-character-re
+        - censor-symbol
+        - offset-symbol
       properties:
-        ignore:
-          type: boolean
-          default: false
         debug:
           type: boolean
           default: false
         compile-latex:
           type: boolean
-          default: false
         show-tree:
           type: boolean
-          default: true
-        comments-auto:
-          type: boolean
-          default: true
-        comments-on:
-          type: boolean
-          default: true
+        comments:
+          $ref: "./common-schema.yaml/#/components/schemas/EnumCommentsOption"
+          # will be overwritten by enum default
+          default: null
         insert-bib:
           type: boolean
-          default: false
-        overwrite-stamp:
-          type: boolean
-          default: true
-        overwrite-params:
-          type: boolean
-          default: true
         max-length:
           description: Prevents transpiler from creating overlarge files
           type: integer
-          default: 10000
         seed:
           type: integer
         indent-character:
           type: string
-          default: '    '
         indent-character-re:
           type: string
-          default: '    '
         censor-symbol:
           type: string
-          default: '########'
         offset-symbol:
           type: string
-          default: ''
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Namespace settings for transpiled python code
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    NameSpacePython:
+      description: |-
+        Internal naming parts of transpiled python code.
+      type: object
+      required:
+        - param-module-name
+      properties:
+        param-module-name:
+          type: string

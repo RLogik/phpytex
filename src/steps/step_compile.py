@@ -27,7 +27,7 @@ __all__ = [
 # METHOD: step transpile python to latex
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def step_compile(user_config: UserConfig):
+def step_compile():
     log_info('CONVERSION (python -> latex [+ latex -> pdf]) STARTED.');
     return;
     fnamePy = appconfig.getFileTranspiled(rel=True);

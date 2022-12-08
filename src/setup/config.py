@@ -23,20 +23,17 @@ from src.setup.yaml import *;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 __all__ = [
-    'APP_CONFIG',
+    'CONFIG',
     'ASSET_PATHS',
-    'COMPILE_OPTIONS',
+    'NAMESPACE',
     'PATHS',
+    'TRANSPILATION',
     'load_user_config',
 ];
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # CONSTANTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-FUNCTION_NAME_MAIN = '____phpytex_main';
-FUNCTION_NAME_FILE = '____phpytex_generate_file';
-FUNCTION_NAME_PRE  = '____phpytex_generate_pre';
 
 @dataclass
 class AssetPaths():
@@ -87,6 +84,7 @@ def load_user_config(file_config: Optional[str]) -> UserConfig:
         return UserConfig(**object);
 
 # use lazy loaing to ensure that values only loaded (once) when used
-APP_CONFIG: ProgrammeConfig = load_internal_config();
-PATHS: ProgrammePaths = lazy(lambda: APP_CONFIG.paths);
-COMPILE_OPTIONS: TranspileOptions = lazy(lambda: APP_CONFIG.transpile);
+CONFIG: ProgrammeConfig = load_internal_config();
+NAMESPACE: NameSpacePython = lazy(lambda: CONFIG.namespace);
+PATHS: PathSettings = lazy(lambda: CONFIG.paths);
+TRANSPILATION: TranspileOptions = lazy(lambda: CONFIG.transpile);

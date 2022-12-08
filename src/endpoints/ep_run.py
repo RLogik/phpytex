@@ -47,13 +47,11 @@ def endpoint_run(
         options_compile = options_compile,
         options_stamp = options_stamp,
     );
-    assert isinstance(user_config.transpile, UserCompileBlock);
-    assert isinstance(user_config.transpile.options, UserCompileOptions);
 
-    step_create(user_config=user_config);
-    step_transpile(user_config=user_config);
-    if user_config.transpile.options.debug:
+    step_create(user_config = user_config);
+    step_transpile();
+    if config.TRANSPILATION.debug:
         log_info(f'The result of transpilation can be viewed in \033[1m{config.PATHS.file_transpiled}\033[0m');
         return;
-    step_compile(user_config=user_config);
+    step_compile();
     return;

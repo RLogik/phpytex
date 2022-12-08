@@ -101,7 +101,7 @@ def get_argument_parser() -> argparse.ArgumentParser:
         parser.add_argument('--debug', action='store_true', default=False, help='Display debugging (for development only).');
         parser.add_argument('--plain', action='store_true', default=False, help='If set, console logging will be performed without special terminal fonts.');
         parser.add_argument('--file',   nargs='?', type=str, help='(string) Path to config file (default is .phytex.yaml).');
-        parser.add_argument('--parameters',   nargs='?', type=str, help='(json) On-the-fly definition of paramaters (overrides parameters > options in user config file).');
-        parser.add_argument('--compile',   nargs='?', type=str, help='(json) On-the-fly definition of compile options (overrides compile > options in user config file).');
-        parser.add_argument('--stamp',   nargs='?', type=str, help='(json) On-the-fly definition of paramaters (overrides compile > options in user config file).');
+        parser.add_argument('--parameters', nargs='?', type=str, help='(json) On-the-fly definition of paramaters (overrides parameters > options in user config file).');
+        parser.add_argument('--transpile', nargs='?', type=str, help='(json) On-the-fly definition of compile options (overrides compile > options in user config file).');
+        parser.add_argument('--stamp', nargs='?', type=str, help='(json) On-the-fly definition of paramaters (overrides compile > options in user config file).');
     return parser;

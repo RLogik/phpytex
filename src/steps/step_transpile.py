@@ -10,6 +10,7 @@ import src.paths;
 from src.thirdparty.maths import *;
 from src.thirdparty.misc import *;
 from src.thirdparty.types import *;
+from src.thirdparty.system import *;
 
 from src.setup import *;
 from src.core.log import *;
@@ -30,28 +31,28 @@ __all__ = [
 # METHOD: step transpile phpytex to python
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def step_transpile(user_config: UserConfig):
-    assert isinstance(user_config.transpile, UserCompileBlock);
-    assert isinstance(user_config.transpile.options, UserCompileOptions);
-
+def step_transpile():
     log_info('TRANSPILATION (phpytex -> python) STARTED.');
-    indentsymb = config.COMPILE_OPTIONS.indent_character;
+    indentsymb = config.TRANSPILATION.indent_character;
+
+    # only do this once!
+    seed = config.TRANSPILATION.seed;
+    reseed(seed);
     return;
-    seed = appconfig.getSeed() if appconfig.hasSeed() else None;
 
     ## Initialise structures for recording transpilation units:
-    appconfig.reSeed(); # <-- only do this once!
     preambles = [];
     imports = TranspileBlocks();
     documents = TranspileDocuments(
         root       = src.paths.wd,
         indentsymb = indentsymb,
         schemes    = dict(
-            file = config.FUNCTION_NAME_FILE,
-            main = config.FUNCTION_NAME_MAIN,
-            pre  = config.FUNCTION_NAME_PRE
+            file = config.NAMESPACE. FUNCTION_NAME_FILE,
+            main = config.NAMESPACE. FUNCTION_NAME_MAIN,
+            pre  = config.NAMESPACE. FUNCTION_NAME_PRE
         )
     );
+    return;
 
     ## Transpile preamble:
     if appconfig.getWithFileStamp():
@@ -219,6 +220,7 @@ def createImportFileParameters(
     return;
 
 def createmetacode(
+    options: UserTranspileOptions,
     documents:  TranspileDocuments,
     imports:    TranspileBlocks,
     preambles:  list[str],
@@ -232,12 +234,12 @@ def createmetacode(
         _lines_pre.format(
             imports       = '\n'.join(imports.generateCode()),
             root          = src.paths.wd,
-            output        = appconfig.getFileOutput(rel=False),
-            name          = appconfig.getFileOutputBase(),
-            insert_bib    = appconfig.getOptionInsertBib(),
-            compile_latex = appconfig.getOptionCompileLatex(),
-            length_max    = appconfig.getMaxLengthOuput(),
-            seed          = seed,
+            output        = os.path.join(src.paths.wd, options.output),
+            name          = options.output,
+            insert_bib    = options.insert_bib,
+            compile_latex = options.compile_latex,
+            length_max    = options.max_length,
+            seed          = options.seed,
             indentsymb    = appconfig.getIndentCharacter(),
             censorsymb    = appconfig.getCensorSymbol(),
             mainfct       = config.FUNCTION_NAME_MAIN,

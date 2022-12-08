@@ -1,0 +1,42 @@
+openapi: 3.0.3
+info:
+  version: x.y.z
+  title: Common schemata
+  description: |-
+    Common schemata for other schemata
+servers:
+  - url: "."
+paths: {}
+definitions:
+    FileString: &file_string
+      description: Data type for a string to be the base name of a file.
+      type: string
+      pattern: '^[^\\\/]*\.[^\\\/]+$'
+    PathToFileString: &path_to_file_string
+      description: Data type for a string to be a path to a file.
+      type: string
+      pattern: '^[^\\\/]+([\\\/][^\\\/]+)*\.[^\\\/]+$'
+    PathToDirString: &path_to_dir_string
+      description: Data type for a string to be a path to a directory.
+      type: string
+      pattern: '^[^\\\/]+([\\\/][^\\\/]+)*$'
+    PythonImportString: &python_import_string
+      description: Data type for a string to constitute an import 'path' in python.
+      type: string
+      pattern: '^[\w\_]+(\.[\w\_]+)*$'
+components:
+  schemas:
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # ENUM Comments Options
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    EnumCommentsOption:
+      description: |-
+        An enumeration of possible options for comments
+      type: string
+      enum:
+        - true
+        - false
+        - 'auto'
+        - 'on'
+        - 'off'
+      default: auto

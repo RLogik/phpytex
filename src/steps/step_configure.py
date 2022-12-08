@@ -12,11 +12,14 @@ from src.thirdparty.misc import *;
 from src.thirdparty.system import *;
 from src.thirdparty.types import *;
 
+# NOTE: need to import this way to avoid conflicts
+import src.models.config;
+import src.models.user;
+
 from src.setup import *;
 from src.core.log import *;
 from src.core.utils import *;
 from src.models.internal import *;
-from src.models.user import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # EXPORTS
@@ -35,10 +38,25 @@ def step_configure(
     options_parameters: Optional[dict] = None,
     options_compile: Optional[dict] = None,
     options_stamp: Optional[dict] = None,
-) -> UserConfig:
+) -> src.models.user.UserConfig:
     log_info('READ CONFIG STARTED');
 
     user_config = load_user_config(file_config);
+
+    if user_config.compile is not None:
+        log_warn(dedent(f'''
+        Please use \x1b[1mtranspile:\x1b[0m instead of \x1b[1mcompile:\x1b[0m in the config file!
+        Furthermore structure this block in the configuration file as follows:
+
+          {config.PATHS.file_config} contents
+          \x1b[1m--------------------------------
+          ...
+          transpile:
+            options:
+              ...
+          ...
+          --------------------------------\x1b[0m
+        '''));
 
     user_config.transpile = clean_up_compile_block(
         block = user_config.transpile or user_config.compile,
@@ -54,13 +72,14 @@ def step_configure(
         options = options_stamp,
     );
 
-    assert isinstance(user_config.transpile, UserCompileBlock);
-    assert isinstance(user_config.transpile.options, UserCompileOptions);
+    assert isinstance(user_config.transpile, src.models.user.UserTranspileBlock);
+    assert isinstance(user_config.transpile.options, src.models.user.UserTranspileOptions);
 
-    options = user_config.transpile.options;
-    cleanup_config_paths(user_config=user_config, options=options);
-    cleanup_config_indentation(user_config=user_config, options=options);
-    cleanup_config_misc(user_config=user_config, options=options);
+    update_config(
+        transpilation = user_config.transpile.options,
+        stamp = user_config.stamp,
+        parameters = user_config.parameters,
+    );
 
     log_info('READ CONFIG COMPLETE');
     return user_config;
@@ -69,33 +88,49 @@ def step_configure(
 # AUXILIARY METHODS: config update
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def cleanup_config_paths(
-    user_config: UserConfig,
-    options: UserCompileOptions,
+def update_config(
+    transpilation: src.models.user.UserTranspileOptions,
+    stamp: Optional[src.models.user.UserStampBlock],
+    parameters: Optional[src.models.user.UserParametersBlock],
 ) -> None:
-    config.PATHS.file_start = options.root;
-    config.PATHS.file_output = options.output;
-    return;
+    assert transpilation.root != transpilation.output, \
+        'transpile > options > root and transpile > options > output MUST be different!';
 
-def cleanup_config_indentation(
-    user_config: UserConfig,
-    options: UserCompileOptions,
-) -> None:
-    use_tabs = options.tabs;
-    n = options.spaces;
+    config.PATHS.file_start = transpilation.root;
+    config.PATHS.file_output = transpilation.output;
+
+    if stamp:
+        config.PATHS.overwrite_stamp = stamp.overwrite;
+        config.PATHS.file_stamp = stamp.file;
+
+    if parameters:
+        config.PATHS.overwrite_params = parameters.overwrite;
+        import_name = parameters.file;
+        parts = re.split(pattern=r'\.', string=import_name);
+        config.PATHS.import_params = import_name;
+        config.PATHS.file_stamp = os.path.join(*parts);
+
+    config.TRANSPILATION = src.models.config.TranspileOptions(**{
+        **config.TRANSPILATION.dict(),
+        # NOTE: need to convert enums:
+        **transpilation.dict(exclude={
+            'comments',
+        }),
+        'comments': transpilation.comments.value,
+        # NOTE: alternative, but unnecessary:
+        # 'comments': src.models.config.EnumCommentsOption(transpilation.comments.value);
+    });
+
+    # set spacing options
+    use_tabs = transpilation.tabs;
+    n = transpilation.spaces;
     if use_tabs:
-        config.COMPILE_OPTIONS.indent_character = '\t';
-        config.COMPILE_OPTIONS.indent_character_re = r'\t';
+        config.TRANSPILATION.indent_character = '\t';
+        config.TRANSPILATION.indent_character_re = r'\t';
     else:
-        config.COMPILE_OPTIONS.indent_character = n*' ';
-        config.COMPILE_OPTIONS.indent_character_re = n*' ';
-    return;
+        config.TRANSPILATION.indent_character = n*' ';
+        config.TRANSPILATION.indent_character_re = n*' ';
 
-def cleanup_config_misc(
-    user_config: UserConfig,
-    options: UserCompileOptions,
-) -> None:
-    config.COMPILE_OPTIONS.seed = options.seed;
     return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -103,54 +138,54 @@ def cleanup_config_misc(
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def clean_up_compile_block(
-    block: Optional[UserCompileBlock | UserCompileOptions],
+    block: Optional[src.models.user.UserTranspileBlock | src.models.user.UserTranspileOptions],
     options: Optional[dict]
-) -> UserCompileBlock:
+) -> src.models.user.UserTranspileBlock:
     '''
     Forces compile options to be defined, and potentially overrides options with cli arguments.
     '''
     if block is None:
-        block = UserCompileBlock(options=options);
+        block = src.models.user.UserTranspileBlock(options=options);
 
-    if not isinstance(block, UserCompileBlock):
-        block = UserCompileBlock(options=block);
+    if not isinstance(block, src.models.user.UserTranspileBlock):
+        block = src.models.user.UserTranspileBlock(options=block);
 
     if options is not None:
-        block.options = UserCompileOptions(**{
+        block.options = src.models.user.UserTranspileOptions(**{
             **block.options,
             **options
         });
     return block;
 
 def clean_up_parameters_block(
-    block: Optional[UserParametersBlock],
+    block: Optional[src.models.user.UserParametersBlock],
     options: Optional[dict]
-) -> UserParametersBlock:
+) -> src.models.user.UserParametersBlock:
     '''
     Forces parameters options to be defined, if options provided via cli arguments.
     '''
     if options is None:
-        return;
+        return block;
 
     if block is None:
-        block = UserParametersBlock(options=options);
+        block = src.models.user.UserParametersBlock(options=options);
 
     block.options = { **block.options, **options };
 
     return block;
 
 def clean_up_stamp_block(
-    block: Optional[UserStampBlock],
+    block: Optional[src.models.user.UserStampBlock],
     options: Optional[dict]
-) -> UserStampBlock:
+) -> src.models.user.UserStampBlock:
     '''
     Forces stamp options to be defined, if options provided via cli arguments.
     '''
     if options is None:
-        return;
+        return block;
 
     if block is None:
-        block = UserStampBlock(options=options);
+        block = src.models.user.UserStampBlock(options=options);
     block.options = { **block.options, **options };
 
     return block;

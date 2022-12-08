@@ -12,7 +12,10 @@ from src.models.generated.config import *;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 __all__ = [
+    'AssetsPaths',
+    'EnumCommentsOption',
+    'NameSpacePython',
+    'PathSettings',
     'ProgrammeConfig',
-    'ProgrammePaths',
     'TranspileOptions',
 ];

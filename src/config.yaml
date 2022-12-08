@@ -1,5 +1,32 @@
+namespace:
+  param-module-name: 'MODULE_GLOBAL_PARAMS'
+  function-name-main: '____phpytex_main'
+  function-name-file: '____phpytex_generate_file'
+  function-name-pre: '____phpytex_generate_pre'
+assets:
+  version: 'dist/VERSION'
+  grammar: 'assets/phpytex.lark'
+  template_config: 'assets/template_config'
+  template_example: 'assets/template_example'
+  template_pre: 'assets/template_pre'
+  template_post: 'assets/template_post'
 paths:
   logging: 'logs/debug.log'
   file-config: '.phpytex.yaml'
+  pattern-config: '^(|.*\.)phpytex\.ya?ml$'
   file-transpiled: 'transpiled_phpytex.py'
-transpile: {}
+  file-start: 'root.tex'
+  file-output: 'main.tex'
+  overwrite-stamp: true
+  overwrite-params: true
+transpile:
+  debug: false
+  compile-latex: false
+  show-tree: true
+  comments: auto
+  insert-bib: false
+  max-length: 10000
+  indent-character: '    '
+  indent-character-re: '    '
+  censor-symbol: '########'
+  offset-symbol: ''
