@@ -29,9 +29,9 @@ __all__ = [
 def endpoint_run(
     file_config: Optional[str] = None,
     options_parameters: Optional[dict] = None,
-    options_compile: Optional[dict] = None,
+    options_transpile: Optional[dict] = None,
     options_stamp: Optional[dict] = None,
-):
+) -> None:
     '''
     Runs transpiler
     '''
@@ -44,7 +44,7 @@ def endpoint_run(
     user_config = step_configure(
         file_config = file_config,
         options_parameters = options_parameters,
-        options_compile = options_compile,
+        options_transpile = options_transpile,
         options_stamp = options_stamp,
     );
 

@@ -81,27 +81,63 @@ def get_argument_parser() -> argparse.ArgumentParser:
     if not isinstance(parser, argparse.ArgumentParser):
         parser = argparse.ArgumentParser(
             description=dedent('''
-            Phpytex:
-            A transpiler that converts python augmented LaTeX into pure python then pure LaTeX.
+            Phpytex
+            ~~~~~~~
+            A transpiler that converts
+
+              python-augmented LaTeX ~~ into ~~> pure python ~~ into ~~> pure LaTeX.
+
+            Example usage:
+
+                phpytex example && phpytex run
             '''),
             formatter_class=argparse.RawTextHelpFormatter,
         );
         parser.add_argument('mode',
-            nargs='?',
-            choices=['version', 'help', 'run', 'template', 'example'],
-            help=dedent('''
-            - help:     Display this help.
-            - version:  Display version.
-            - run:      Run the Phpytex transpiler.
-            - template: Generate a bare template for a phpytex config file.
-            - example:  Generate an example template for a phpytex config file.
+            nargs = '?',
+            choices = ['version', 'help', 'run', 'transpile' 'template', 'example'],
+            help = dedent('''
+            - help:               Display this help.
+            - version:            Display version.
+            - run/transpile:      Run the phpytex transpiler.
+            - template:           Generate a bare template for a phpytex config file.
+            - example:            Generate an example template for a phpytex config file.
             '''),
         );
-        parser.add_argument('--quiet', action='store_true', default=False, help='Hide all but the most important console messages during transpilation.');
-        parser.add_argument('--debug', action='store_true', default=False, help='Display debugging (for development only).');
-        parser.add_argument('--plain', action='store_true', default=False, help='If set, console logging will be performed without special terminal fonts.');
-        parser.add_argument('--file',   nargs='?', type=str, help='(string) Path to config file (default is .phytex.yaml).');
-        parser.add_argument('--parameters', nargs='?', type=str, help='(json) On-the-fly definition of paramaters (overrides parameters > options in user config file).');
-        parser.add_argument('--transpile', nargs='?', type=str, help='(json) On-the-fly definition of compile options (overrides compile > options in user config file).');
-        parser.add_argument('--stamp', nargs='?', type=str, help='(json) On-the-fly definition of paramaters (overrides compile > options in user config file).');
+        parser.add_argument(
+            '--quiet',
+            action = 'store_true',
+            default = False,
+            help = 'Hide all but the most important console messages during transpilation.');
+        parser.add_argument(
+            '--debug',
+            action = 'store_true',
+            default = False,
+            help = 'Display debugging (for development only).');
+        parser.add_argument(
+            '--plain',
+            action = 'store_true',
+            default = False,
+            help = 'If set, console logging will be performed without special terminal fonts.');
+        parser.add_argument(
+            '--file', '--config',
+            nargs = '?',
+            type = str,
+            help = '(string) Path to config file (default is .phytex.yaml).');
+        parser.add_argument(
+            '--parameters-options',
+            '--parameters', # <- only need this for old versions
+            nargs = '?',
+            type = str,
+            help = '(json) On-the-fly definition of paramaters (overrides parameters > options in user config file).');
+        parser.add_argument(
+            '--transpile-options',
+            nargs = '?',
+            type = str,
+            help = '(json) On-the-fly definition of transpilation options (overrides transpile > options in user config file).');
+        parser.add_argument(
+            '--stamp-options',
+            nargs = '?',
+            type = str,
+            help = '(json) On-the-fly definition of stamp options (overrides stamp > options in user config file).');
     return parser;

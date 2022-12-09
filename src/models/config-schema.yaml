@@ -24,6 +24,7 @@ definitions:
       description: Data type for a string to constitute an import 'path' in python.
       type: string
       pattern: '^[\w\_]+(\.[\w\_]+)*$'
+    additionalProperties: false
 components:
   schemas:
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -79,6 +80,7 @@ components:
           <<: *path_to_file_string
         template_post:
           <<: *path_to_file_string
+      additionalProperties: false
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Paths for process
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -126,6 +128,7 @@ components:
           default: 'src.params'
         overwrite-params:
           type: boolean
+        additionalProperties: false
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Transpilation options
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -169,6 +172,7 @@ components:
           type: string
         offset-symbol:
           type: string
+        additionalProperties: false
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Namespace settings for transpiled python code
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -177,7 +181,17 @@ components:
         Internal naming parts of transpiled python code.
       type: object
       required:
-        - param-module-name
+        - module-name-param
+        - function-name-main
+        - function-name-file
+        - function-name-pre
       properties:
-        param-module-name:
+        module-name-param:
           type: string
+        function-name-main:
+          type: string
+        function-name-file:
+          type: string
+        function-name-pre:
+          type: string
+        additionalProperties: false

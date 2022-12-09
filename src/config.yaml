@@ -1,5 +1,5 @@
 namespace:
-  param-module-name: 'MODULE_GLOBAL_PARAMS'
+  module-name-param: 'MODULE_GLOBAL_PARAMS'
   function-name-main: '____phpytex_main'
   function-name-file: '____phpytex_generate_file'
   function-name-pre: '____phpytex_generate_pre'

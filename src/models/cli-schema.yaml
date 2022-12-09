@@ -33,11 +33,11 @@ components:
         file:
           type: string
         # for 'on-the-fly' alterations:
-        parameters:
+        parameters-options:
           type: string
-        transpile:
+        transpile-options:
           type: string
-        stamp:
+        stamp-options:
           type: string
       additionalProperties: false
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -16,6 +16,7 @@ from src.setup import *;
 from src.core.log import *;
 from src.core.utils import *;
 from src.models.internal import *;
+from src.models.config import *;
 from src.models.user import *;
 from src.parsers import *;
 
@@ -28,93 +29,91 @@ __all__ = [
 ];
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# LOCAL CONSTANTS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+exportvars = dict();
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # METHOD: step transpile phpytex to python
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def step_transpile():
+    global exportvars;
     log_info('TRANSPILATION (phpytex -> python) STARTED.');
-    indentsymb = config.TRANSPILATION.indent_character;
+    options = config.TRANSPILATION;
+    config.PATHS.file_stamp
 
     # only do this once!
-    seed = config.TRANSPILATION.seed;
-    reseed(seed);
-    return;
+    reseed(options.seed);
 
     ## Initialise structures for recording transpilation units:
     preambles = [];
+    exportvars = dict();
     imports = TranspileBlocks();
-    documents = TranspileDocuments(
-        root       = src.paths.wd,
-        indentsymb = indentsymb,
-        schemes    = dict(
-            file = config.NAMESPACE. FUNCTION_NAME_FILE,
-            main = config.NAMESPACE. FUNCTION_NAME_MAIN,
-            pre  = config.NAMESPACE. FUNCTION_NAME_PRE
-        )
-    );
-    return;
+    documents = TranspileDocuments(root=src.paths.wd, indentsymb=options.indent_character, schemes=config.NAMESPACE);
 
     ## Transpile preamble:
-    if appconfig.getWithFileStamp():
+    if config.PATHS.file_stamp is not None:
+        options_ = options.copy();
+        options_.comments = EnumCommentsOption.on;
+        options_.show_tree = False;
         name = 'stamp';
         preambles.append(name);
-        transpileDocument(
-            path        = appconfig.getFileStamp(rel=True),
+        transpile_document(
+            path        = config.PATHS.file_stamp,
             documents   = documents,
             imports     = TranspileBlocks(),
             name        = name,
             is_preamble = True,
             silent      = True,
-            params      = { 'comm': True, 'comm-auto': False, 'show-tree': False }
+            options     = options_,
         );
 
     ## Transpile document file:
-    transpileDocument(
-        path        = appconfig.getFileStart(rel=True),
+    transpile_document(
+        path        = config.PATHS.file_start,
         documents   = documents,
         imports     = imports,
         name        = '',
         is_preamble = False,
         silent      = get_quiet_mode(),
-        params      = {
-            'comm':      appconfig.getOptionCommentsOn(),
-            'comm-auto': appconfig.getOptionCommentsAuto(),
-            'show-tree': appconfig.getOptionShowTree()
-        }
+        options     = options,
     );
 
     ## Add document structure:
     name = 'tree';
-    if appconfig.getOptionShowTree():
+    if options.show_tree:
         preambles.append(name);
-    blocks = TranspileBlocks([documents.documentTree(seed=seed)]);
+    blocks = TranspileBlocks([documents.documentTree(seed=options.seed)]);
     documents.addPreamble(name=name, blocks=blocks);
 
     ## Handle global parameters:
-    if appconfig.getWithFileParamsPy():
+    if config.PATHS.file_params_py is not None:
         ## Create file:
-        createImportFileParameters(
-            path      = appconfig.getFileParamsPy(rel=False),
-            overwrite = appconfig.getOptionOverwriteParams(),
+        create_import_file_parameters(
+            path      = os.path.join(sys.path.wd, config.PATHS.file_params_py),
+            overwrite = config.PATHS.overwrite_params,
             documents = documents
         );
         ## Add import block for global parameters:
         imports.append(TranspileBlock(
             kind        = 'code',
-            content     = 'from {name} import *;'.format(name = appconfig.getImportParamsPy()),
+            content     = f'from {config.PATHS.import_params} import *;',
             level       = 0,
-            indentsymb  = indentsymb,
+            indentsymb  = options.indent_character,
         ));
 
     ## Generate result of transpilation (phpytex -> python):
-    globalvars = unique(list(appconfig.getExportVars().keys()) + list(documents.variables.keys()));
-    createmetacode(
+
+    globalvars = unique(list(exportvars.keys()) + list(documents.variables.keys()));
+    create_metacode(
         documents  = documents,
         imports    = imports,
         preambles  = preambles,
         globalvars = globalvars,
-        seed       = seed
     );
+
     log_info('TRANSPILATION (phpytex -> python) COMPLETE.');
     return;
 
@@ -122,15 +121,15 @@ def step_transpile():
 # SECONDARY METHODS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def transpileDocument(
-    path:         str,
-    documents:    TranspileDocuments,
-    imports:      TranspileBlocks,
-    chain:        list[str]          = [],
-    name:         str                = '',
-    is_preamble:  bool               = False,
-    silent:       bool               = False,
-    params:       dict[str, bool]    = dict()
+def transpile_document(
+    path: str,
+    documents: TranspileDocuments,
+    imports: TranspileBlocks,
+    options: TranspileOptions,
+    chain: list[str] = [],
+    name: str = '',
+    is_preamble: bool = False,
+    silent: bool = False,
 ):
     if path in chain:
         log_error('The document contains a cycle!');
@@ -141,66 +140,83 @@ def transpileDocument(
         log_error('Could not find or read document \033[1m{path}\033[0m!'.format(path = path));
         return;
     depth = len(chain);
-    indentsymb = appconfig.getIndentCharacter();
-    offset = appconfig.getOffsetSymbol();
+    indentsymb = options.indent_character;
+    offset = options.offset_symbol;
     indentation = IndentationTracker(
         symb    = indentsymb,
-        pattern = appconfig.getIndentCharacterRe(),
+        pattern = options.indent_character_re,
     );
 
+    # cases 1+2:
     if is_preamble:
         blocks = TranspileBlocks();
-        for block in parseText(lines, indentation, offset=offset):
-            if not (block.kind == 'text:comment'):
-                continue;
-            blocks.append(block);
-        blocks.append(TranspileBlock(kind='text:empty'))
-        documents.addPreamble(name=name, blocks=blocks);
-        log_plain(displayTreeBranch(path=path, anon=False, depth=depth));
-    else:
-        if path in documents.paths:
-            return;
-        documents.addDocument(path=path); ## NOTE: need to do this first, in order to update anon-state
-        anon = documents.isAnon(path=path);
-        hide = documents.isHidden(path=path);
-        blocks = TranspileBlocks();
-        log_plain(displayTreeBranch(path=path, anon=anon, depth=depth));
 
-        if params['show-tree']:
-            blocks.append(documents.documentStamp(depth=0, start=True, anon=anon, hide=hide));
         for block in parseText(lines, indentation, offset=offset):
-            if block.kind == 'code:import':
-                imports.append(block);
-                continue;
             if block.kind == 'text:comment':
-                if params['comm-auto'] == True:
-                    if not block.parameters.keep:
-                        continue;
-                elif params['comm'] == False:
-                    continue;
-            blocks.append(block);
-        if params['show-tree']:
-            blocks.append(documents.documentStamp(depth=0, start=False, anon=anon, hide=hide));
+                blocks.append(block);
 
-        documents.addBlocks(path=path, blocks=blocks);
-        for subpath in documents.getSubPaths(path):
-            transpileDocument(
-                path      = subpath,
-                documents = documents,
-                imports   = imports,
-                chain     = chain + [path],
-                silent    = silent,
-                params    = params
-            );
+        blocks.append(TranspileBlock(kind='text:empty'))
+
+        documents.addPreamble(name=name, blocks=blocks);
+        log_plain(display_tree_branch(path=path, anon=False, depth=depth));
+        return;
+    elif path in documents.paths:
+        return;
+
+    # case 3:
+
+    # NOTE: need to do this first, in order to update anon-state
+    documents.addDocument(path=path);
+    anon = documents.isAnon(path=path);
+    hide = documents.isHidden(path=path);
+    blocks = TranspileBlocks();
+    log_plain(display_tree_branch(path=path, anon=anon, depth=depth));
+
+    if options.show_tree:
+        blocks.append(documents.documentStamp(depth=0, start=True, anon=anon, hide=hide));
+
+    for block in parseText(lines, indentation, offset=offset):
+        match block.kind:
+            case 'code:import':
+                imports.append(block);
+            case 'text:comment':
+                match options.comments:
+                    case EnumCommentsOption.auto:
+                        if block.parameters.keep:
+                            blocks.append(block);
+                    case EnumCommentsOption.on | EnumCommentsOption.true:
+                        blocks.append(block);
+                    case _:
+                        pass;
+            case _:
+                blocks.append(block);
+
+    if options.show_tree:
+        blocks.append(documents.documentStamp(depth=0, start=False, anon=anon, hide=hide));
+
+    documents.addBlocks(path=path, blocks=blocks);
+    for subpath in documents.getSubPaths(path):
+        transpile_document(
+            path      = subpath,
+            documents = documents,
+            imports   = imports,
+            chain     = chain + [path],
+            silent    = silent,
+            options   = options,
+        );
     return;
 
-def createImportFileParameters(
-    path:      str,
+def create_import_file_parameters(
+    path: str,
     overwrite: bool,
     documents: TranspileDocuments
 ):
+    global exportvars;
+    options = config.TRANSPILATION;
+
     if os.path.exists(path) and not overwrite:
         return;
+
     lines = dedent_as_list(
         '''
         #!/usr/bin/env python3
@@ -208,27 +224,30 @@ def createImportFileParameters(
         '''
     );
     lines.append('');
-    names = appconfig.getExportVars().keys();
-    for name, (value, codedvalue) in appconfig.getExportVars().items():
+
+    names = exportvars.keys();
+    for name, (value, codedvalue) in exportvars.items():
         lines.append('{name} = {codedvalue};'.format(name=name, codedvalue=codedvalue));
+
     for name in documents.variables.keys():
         if name in names:
             continue;
         lines.append('{name} = None;'.format(name=name));
     lines.append('');
+
     write_text_file(path=path, lines=lines, force_create_path=True);
+
     return;
 
-def createmetacode(
-    options: UserTranspileOptions,
-    documents:  TranspileDocuments,
-    imports:    TranspileBlocks,
-    preambles:  list[str],
+def create_metacode(
+    documents: TranspileDocuments,
+    imports: TranspileBlocks,
+    preambles: list[str],
     globalvars: list[str],
-    seed:       Optional[int]
 ):
-    _lines_pre = get_template_phpytex_lines_pre();
-    _lines_post = get_template_phpytex_lines_post();
+    options = config.TRANSPILATION;
+    _lines_pre = assets.TEMPLATE_PHPYTEX_LINES_PRE;
+    _lines_post = assets.TEMPLATE_PHPYTEX_LINES_POST;
     lines = [];
     lines += dedent_as_list(
         _lines_pre.format(
@@ -240,31 +259,30 @@ def createmetacode(
             compile_latex = options.compile_latex,
             length_max    = options.max_length,
             seed          = options.seed,
-            indentsymb    = appconfig.getIndentCharacter(),
-            censorsymb    = appconfig.getCensorSymbol(),
-            mainfct       = config.FUNCTION_NAME_MAIN,
+            indentsymb    = options.indent_character,
+            censorsymb    = options.censor_symbol,
+            mainfct       = config.NAMESPACE.function_name_main,
         )
     );
     lines.append('');
     lines += documents.generateCode(offset=0, preambles=preambles, globalvars=globalvars);
     lines.append('');
-    lines += dedent_as_list(
-        _lines_post.format()
-    );
-    write_text_file(appconfig.getFileTranspiled(rel=False), lines);
+    lines += dedent_as_list(_lines_post.format());
+    write_text_file(config.PATHS.file_transpiled, lines);
     return;
 
-def displayTreeBranch(
-    path:       str,
-    anon:       bool = False,
-    prefix:     str  = '',
-    indentsymb: str  = '    ',
-    branchsymb: str  = '  |____',
-    depth:      int  = 0
+def display_tree_branch(
+    path: str,
+    anon: bool = False,
+    prefix: str = '',
+    indentsymb: str = '    ',
+    branchsymb: str = '  |____ ',
+    depth: int = 0,
 ) -> str:
-    return '{prefix}{tab}{branchsymb} {path}'.format(
+    options = config.TRANSPILATION;
+    return '{prefix}{tab}{branchsymb}{path}'.format(
         prefix = prefix,
-        tab = indentsymb*(depth if depth == 0 else depth - 1),
-        branchsymb = '' if depth == 0 else branchsymb,
-        path = appconfig.getCensorSymbol() if anon else path,
+        tab = indentsymb * max(depth - 1, 0),
+        branchsymb = ' ' if depth == 0 else branchsymb,
+        path = options.censor_symbol if anon else path,
     );

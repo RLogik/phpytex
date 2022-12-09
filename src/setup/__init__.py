@@ -6,6 +6,7 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 from src.setup import config;
+from src.setup import assets;
 from src.setup.config import *;
 from src.setup.assets import *;
 from src.setup.cli import *;
@@ -23,6 +24,7 @@ __all__ = [
     'TEMPLATE_PHPYTEX_LINES_POST',
     'TEMPLATE_PHPYTEX_LINES_PRE',
     'VERSION',
+    'assets',
     'config',
     'display_help',
     'display_usage',

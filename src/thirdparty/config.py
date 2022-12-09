@@ -19,7 +19,9 @@ from yaml import add_path_resolver as yaml_add_path_resolver;
 # MODIFICATIONS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def json_load_safe(text: str) -> Optional[dict[str, Any]]:
+def json_load_safe(text: Optional[str]) -> Optional[dict[str, Any]]:
+    if text is None:
+        return None;
     try:
         object = json.loads(text);
         if not isinstance(object, dict):

@@ -38,7 +38,7 @@ PYTHON_VERSION_MINIMUM = (3, 10);
 # MAIN PROCESS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def enter(args: ProgrammeArguments):
+def enter(args: ProgrammeArguments) -> None:
     # set logging level, plain mode, quiet mode:
     set_debug_mode(args.debug);
     set_quiet_mode(args.quiet);
@@ -54,9 +54,9 @@ def enter(args: ProgrammeArguments):
         case EnumProgrammeMode.run:
             endpoint_run(
                 file_config = args.file,
-                options_parameters = None if args.parameters is None else json_load_safe(args.parameters),
-                options_compile = None if args.transpile is None else json_load_safe(args.transpile),
-                options_stamp = None if args.stamp is None else json_load_safe(args.stamp),
+                options_parameters = json_load_safe(args.parameters_options),
+                options_transpile = json_load_safe(args.transpile_options),
+                options_stamp = json_load_safe(args.stamp_options),
             );
         case EnumProgrammeMode.template:
             endpoint_template();

@@ -24,34 +24,12 @@ from src.setup.yaml import *;
 
 __all__ = [
     'CONFIG',
-    'ASSET_PATHS',
+    'ASSETS',
     'NAMESPACE',
     'PATHS',
     'TRANSPILATION',
     'load_user_config',
 ];
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# CONSTANTS
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-@dataclass
-class AssetPaths():
-    version: str = field();
-    grammar: str = field();
-    template_config: str = field();
-    template_example: str = field();
-    template_pre: str = field();
-    template_post: str = field();
-
-ASSET_PATHS = AssetPaths(
-    version = 'dist/VERSION',
-    grammar = 'assets/phpytex.lark',
-    template_config = 'assets/template_config',
-    template_example = 'assets/template_example',
-    template_pre = 'assets/template_pre',
-    template_post = 'assets/template_post',
-);
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # LAZY LOADED RESOURCES
@@ -85,6 +63,7 @@ def load_user_config(file_config: Optional[str]) -> UserConfig:
 
 # use lazy loaing to ensure that values only loaded (once) when used
 CONFIG: ProgrammeConfig = load_internal_config();
+ASSETS: AssetsPaths = lazy(lambda: CONFIG.assets);
 NAMESPACE: NameSpacePython = lazy(lambda: CONFIG.namespace);
 PATHS: PathSettings = lazy(lambda: CONFIG.paths);
 TRANSPILATION: TranspileOptions = lazy(lambda: CONFIG.transpile);

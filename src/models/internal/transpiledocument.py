@@ -8,6 +8,7 @@
 from __future__ import annotations;
 
 from src.thirdparty.misc import *;
+from src.thirdparty.code import *;
 from src.thirdparty.system import *;
 from src.thirdparty.types import *;
 
@@ -15,6 +16,7 @@ from src.core.log import *;
 from src.core.utils import getAttribute;
 from src.core.utils import unique;
 from src.core.utils import inheritanceOnGraph;
+from src.models.config import *;
 from src.models.internal.transpileblock import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -30,30 +32,20 @@ __all__ = [
 # CLASS transpile document
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-class TranspileDocument(list):
-    label: str;
-    root: str;
-    path: str;
-    pathfolder: str;
-    blocks: TranspileBlocks;
-    variables: dict[str, Any];
-    indentsymb: str;
+@dataclass
+class TranspileDocumentRaw:
+    label: str = field();
+    root: str = field();
+    path: str = field();
+    indentsymb: str = field();
+    variables: dict[str, Any] = field(default_factory=dict);
+    pathfolder: str = field(init=False)
+    blocks: TranspileBlocks = field(init=False, default_factory=TranspileBlocks);
 
-    def __init__(
-        self,
-        root: str,
-        path: str,
-        label: str,
-        indentsymb: str,
-        variables: dict[str, Any] = dict()
-    ):
-        self.root = root;
-        self.pathfolder = os.path.dirname(path) or '.';
-        self.path = path;
-        self.label = label;
-        self.indentsymb = indentsymb;
-        self.variables = variables;
-        self.blocks = TranspileBlocks();
+class TranspileDocument(TranspileDocumentRaw):
+    def __init__(self, *_, **__):
+        super(TranspileDocument, self).__init__(*_, **__);
+        self.pathfolder = os.path.dirname(self.path) or '.';
         return;
 
     def __len__(self) -> int:
@@ -121,40 +113,20 @@ class TranspileDocument(list):
 # CLASS transpile documents
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-class TranspileDocuments(object):
-    root:       str;
-    indentsymb: str;
-    preamble:   dict[str, TranspileBlocks];
-    documents:  dict[str, TranspileDocument];
-    variables:  dict[str, Any];
-    schemes:    dict[str, str];
+@dataclass
+class TranspileDocuments:
+    root: str = field();
+    indentsymb: str = field();
+    schemes: NameSpacePython = field();
 
-    paths:      list[str];
-    anon:       dict[str, bool];
-    hide:       dict[str, bool];
-    edges:      list[tuple[str, str]];
-    docEdges:   list[tuple[str, str]];
-
-    variables:  list[str];
-
-    def __init__(
-        self,
-        root: str,
-        indentsymb: str,
-        schemes:    dict[str, str] = dict()
-    ):
-        self.root = root;
-        self.indentsymb = indentsymb;
-        self.paths = [];
-        self.documents = dict();
-        self.edges = [];
-        self.docEdges = [];
-        self.variables = dict();
-        self.preamble = dict();
-        self.anon = dict();
-        self.hide = dict();
-        self.schemes = schemes;
-        return;
+    preamble: dict[str, TranspileBlocks] = field(init=False, default_factory=dict);
+    documents: dict[str, TranspileDocument] = field(init=False, default_factory=dict);
+    variables: dict[str, Any] = field(init=False, default_factory=dict);
+    paths: list[str] = field(init=False, default_factory=list);
+    anon: dict[str, bool] = field(init=False, default_factory=dict);
+    hide: dict[str, bool] = field(init=False, default_factory=dict);
+    edges: list[tuple[str, str]] = field(init=False, default_factory=list);
+    docEdges: list[tuple[str, str]] = field(init=False, default_factory=list);
 
     def __len__(self) -> int:
         return len(self.documents);
@@ -210,7 +182,7 @@ class TranspileDocuments(object):
 
     def getFunctionName(self, path: str) -> str:
         index = self.paths.index(path);
-        return '{label}_{index}'.format(label=self.schemes['file'], index=index);
+        return '{label}_{index}'.format(label=self.schemes.function_name_file, index=index);
 
     def getHeadPaths(self) -> list[str]:
         degreeIn = { path: 0 for path in self.paths };
@@ -301,7 +273,7 @@ class TranspileDocuments(object):
                     document.append(TranspileBlock(
                         kind        = 'code',
                         lines       = [
-                            '{label}(\'{path}\');'.format(label=self.schemes['file'], path=_path),
+                            '{label}(\'{path}\');'.format(label=self.schemes.function_name_file, path=_path),
                             '# Restore state of current file:',
                             '__ROOT__, __DIR__, __FNAME__, __ANON__, __HIDE__, __IGNORE__ = __STATE__;',
                         ],
@@ -395,7 +367,7 @@ class TranspileDocuments(object):
         yield '{tab}# universal reference function for files'.format(tab=self.tab(offset));
         yield '{tab}def {label}(path: str):'.format(
             tab   = self.tab(offset),
-            label = self.schemes['file'],
+            label = self.schemes.function_name_file,
         );
         for path in self.paths:
             yield '{tab}    if path == \'{path}\':'.format(
@@ -419,7 +391,7 @@ class TranspileDocuments(object):
             yield '{tab}# preamble function \'{name}\''.format(tab=self.tab(offset), name=name)
             yield '{tab}def {label}():'.format(
                 tab   = self.tab(offset),
-                label = '{label}_{name}'.format(label=self.schemes['pre'], name=name),
+                label = '{label}_{name}'.format(label=self.schemes.function_name_pre, name=name),
             );
             yield from blocks.generateCode(offset=offset+1, anon=False, hide=False);
             yield '{tab}return'.format(tab=self.tab(offset + 1));
@@ -434,18 +406,18 @@ class TranspileDocuments(object):
         yield '{tab}# generate content from all files'.format(tab=self.tab(offset));
         yield '{tab}def {label}():'.format(
             tab   = self.tab(offset),
-            label = self.schemes['main'],
+            label = self.schemes.function_name_main,
         );
         yield '{tab}____cleardocument();'.format(tab=self.tab(offset + 1));
         for name in preambles:
             yield '{tab}{label}();'.format(
                 tab   = self.tab(offset + 1),
-                label = '{label}_{name}'.format(label=self.schemes['pre'], name=name),
+                label = '{label}_{name}'.format(label=self.schemes.function_name_pre, name=name),
             );
         for path in self.getHeadPaths():
             yield '{tab}{label}(\'{path}\');'.format(
                 tab   = self.tab(offset + 1),
-                label = self.schemes['file'],
+                label = self.schemes.function_name_file,
                 path  = path
             );
         yield '{tab}return;'.format(tab=self.tab(offset + 1));

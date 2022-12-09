@@ -62,7 +62,7 @@ def getLexer(mode: str = 'blocks') -> Lark:
     global _grammar;
     global _lexer;
     if not (mode in _grammar):
-        _grammar[mode] = get_grammar('phpytex.lark');
+        _grammar[mode] = GRAMMAR;
     if not (mode in _lexer):
         _lexer[mode] = Lark(
             _grammar[mode],

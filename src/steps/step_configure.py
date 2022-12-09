@@ -36,7 +36,7 @@ __all__ =  [
 def step_configure(
     file_config: Optional[str],
     options_parameters: Optional[dict] = None,
-    options_compile: Optional[dict] = None,
+    options_transpile: Optional[dict] = None,
     options_stamp: Optional[dict] = None,
 ) -> src.models.user.UserConfig:
     log_info('READ CONFIG STARTED');
@@ -60,7 +60,7 @@ def step_configure(
 
     user_config.transpile = clean_up_compile_block(
         block = user_config.transpile or user_config.compile,
-        options = options_compile,
+        options = options_transpile,
     );
     user_config.compile = None;
     user_config.parameters = clean_up_parameters_block(
