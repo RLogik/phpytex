@@ -51,8 +51,13 @@ def setupYamlReader():
             expr = None;
         return EvalType(expr);
 
+    def tuple_constructor(loader: Loader, node):
+        value = loader.construct_sequence(node, deep=True);
+        return tuple(value);
+
     add_constructor(tag=u'!eval', constructor=eval_constructor);
-    add_constructor(tag=u'!not',  constructor=not_constructor);
+    add_constructor(tag=u'!not', constructor=not_constructor);
     add_constructor(tag=u'!join', constructor=join_constructor);
-    add_constructor(tag=u'!key',  constructor=key_constructor);
+    add_constructor(tag=u'!key', constructor=key_constructor);
+    add_constructor(tag=u'!tuple', constructor=tuple_constructor);
     return;
