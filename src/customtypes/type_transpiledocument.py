@@ -85,6 +85,7 @@ class TranspileDocument(list):
         globalvars: List[str] = [],
         anon:       bool      = False,
         hide:       bool      = False,
+        align:      bool      = False,
     ) -> Generator[str, None, None]:
         yield '{tab}# generate content from file \'{path}\''.format(
             tab  = self.tab(offset),
@@ -98,21 +99,31 @@ class TranspileDocument(list):
             kind = 'code',
             lines = [
                 'global {name};'.format(name=name)
-                for name in unique([ '__ROOT__', '__DIR__', '__FNAME__', '__ANON__', '__HIDE__', '__IGNORE__' ] + globalvars)
+                for name in unique([
+                    '__ROOT__',
+                    '__DIR__',
+                    '__FNAME__',
+                    '__ANON__',
+                    '__HIDE__',
+                    '__IGNORE__',
+                    '__MARGIN__',
+                    *globalvars,
+                ])
                 if not name in [ '__STATE__' ]
             ] + [
-                '__ROOT__ = \'.\';'.format(),
-                '__DIR__ = \'{path}\';'.format(path = self.pathfolder),
-                '__FNAME__ = \'{path}\';'.format(path = self.path),
-                '__IGNORE__ = False;',
-                '__ANON__ = {};'.format(anon),
-                '__HIDE__ = {};'.format(hide),
+                f'__ROOT__ = \'.\';',
+                f'__DIR__ = \'{self.pathfolder}\';'
+                f'__FNAME__ = \'{self.path}\';',
+                f'__IGNORE__ = False;',
+                f'__ANON__ = {anon};',
+                f'__HIDE__ = {hide};',
+                f'__MARGIN__ = \'\'',
                 '# Save current state locally. Use to restore state after importing subfiles.',
                 '__STATE__ = (__ROOT__, __DIR__, __FNAME__, __ANON__, __HIDE__, __IGNORE__);',
             ]
-        ).generateCode(offset + 1, anon=False, hide=False);
+        ).generateCode(offset + 1, anon=False, hide=False, align=align);
         for block in self.blocks:
-            yield from block.generateCode(offset + 1, anon=anon, hide=hide);
+            yield from block.generateCode(offset + 1, anon=anon, hide=hide, align=align);
         yield '{tab}return;'.format(tab=self.tab(offset + 1));
         return;
 
@@ -389,6 +400,7 @@ class TranspileDocuments(object):
         globalvars: List[str] = [],
         anon:       bool      = False,
         hide:       bool      = False,
+        align:      bool      = False,
     ) -> Generator[str, None, None]:
         ## generate universal reference function
         yield '{tab}# universal reference function for files'.format(tab=self.tab(offset));
@@ -420,13 +432,13 @@ class TranspileDocuments(object):
                 tab   = self.tab(offset),
                 label = '{label}_{name}'.format(label=self.schemes['pre'], name=name),
             );
-            yield from blocks.generateCode(offset=offset+1, anon=False, hide=False);
+            yield from blocks.generateCode(offset=offset+1, anon=False, hide=False, align=align);
             yield '{tab}return'.format(tab=self.tab(offset + 1));
 
         ## generate individual functions for documents
         for path, document in self.documents.items():
             yield '';
-            yield from document.generateCode(offset=offset, globalvars=globalvars, anon=self.anon[path], hide=self.hide[path]);
+            yield from document.generateCode(offset=offset, globalvars=globalvars, anon=self.anon[path], hide=self.hide[path], align=align);
 
         ## generate main function, which calls head functions first
         yield '';

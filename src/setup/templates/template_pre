@@ -57,6 +57,7 @@ __DIR__    = '.';
 __ANON__   = False;
 __HIDE__   = False;
 __IGNORE__ = False;
+__MARGIN__ = '';
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MAIN PROCESS
@@ -146,12 +147,16 @@ def ____cleardocument():
         fp.write('');
     return;
 
-def ____forceprint(s: str, anon: bool = False, hide: bool = False):
+def ____forceprint(s: str, anon: bool = False, hide: bool = False, align: bool = False):
     global ____phpytex_params____;
 
     n = len(____phpytex_params____['lines']['content']);
+    first = True;
     with open(____phpytex_params____['output'], 'a') as fp:
         for line in re.split(r'\r?\n', s):
+            if align and not first:
+                line = __MARGIN__ + line;
+            first = False;
             print(line, file=fp);
             ____phpytex_params____['lines']['content'].append(line);
             if anon:
@@ -161,7 +166,7 @@ def ____forceprint(s: str, anon: bool = False, hide: bool = False):
             n += 1;
     return;
 
-def ____print(s: str, anon: bool = False, hide: bool = False):
+def ____print(s: str, anon: bool = False, hide: bool = False, align: bool = False):
     global ____phpytex_params____;
     global __ANON__;
     global __HIDE__;
@@ -181,7 +186,7 @@ def ____print(s: str, anon: bool = False, hide: bool = False):
     hide = (hide or __HIDE__);
     ____phpytex_params____['length'] += 1;
     ____phpytex_params____['length_error'] = ____phpytex_params____['length_error'] or ( ____phpytex_params____['length'] > ____phpytex_params____['length_max'] );
-    ____forceprint(s, anon=anon, hide=hide);
+    ____forceprint(s, anon=anon, hide=hide, align=align);
     return;
 
 def ____printfilestamp(depth: int, start: bool, anon: bool, hide: bool):

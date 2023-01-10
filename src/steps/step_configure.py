@@ -86,6 +86,7 @@ def preProcessCompileConfig(config: Dict[str, Any]) -> Dict[str, Any]:
         ## NOTE: Do not force seed to be set if not given. Allow user to decide to NOT seed the rng.
         seed       = getAttribute(config, 'seed', expectedtype=int, default=None),
         offset     = getAttribute(config, 'offset', expectedtype=str, default=''),
+        align      = getAttribute(config, 'align', expectedtype=bool, default=True),
     );
 
 def setCompileConfig(
@@ -102,7 +103,8 @@ def setCompileConfig(
     tabs:       bool,
     spaces:     int,
     seed:       Any,
-    offset:     str
+    offset:     str,
+    align:      bool,
 ):
     root = appconfig.getPathRoot();
     appconfig.setOptionLegacy(legacy);
@@ -120,6 +122,7 @@ def setCompileConfig(
     if isinstance(seed, int):
         appconfig.setSeed(seed);
     appconfig.setOffsetSymbol(offset);
+    appconfig.setOptionAlign(align);
 
     appconfig.setMaxLengthOutput(max_length);
     if tabs:

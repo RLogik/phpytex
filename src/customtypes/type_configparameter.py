@@ -57,5 +57,6 @@ class ConfigParameter(Generic[_T]):
         return;
 
     def setValue(self, x: Any) -> ConfigParameter[_T]:
+        self._defaultvalue = x;
         self.value = x;
         return self;

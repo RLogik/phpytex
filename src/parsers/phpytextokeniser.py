@@ -167,9 +167,13 @@ def processBlockContent(children: List[Tree], indentation: IndentationTracker) -
     exprs = [];
     subst: Dict[str, TranspileBlock] = dict();
     i = 0;
+    margin = None;
     for child in children:
         if child.data == 'textcontent':
             text = escapeForPython(lexedToStr(child), withformatting=True);
+            # store first left indentation:
+            if margin is None:
+                margin = re.sub(pattern=r'^(\s*)(.*[\r?\n]?)*', repl=r'\1', string=text);
             exprs.append(text);
         elif child.data == 'codeinline':
             key = 'subst' +  str(i);
@@ -177,8 +181,9 @@ def processBlockContent(children: List[Tree], indentation: IndentationTracker) -
             subst[key] = subblock;
             exprs.append('{{{}}}'.format(key));
             i += 1;
+    margin = margin or '';
     expr = ''.join(exprs);
-    block = TranspileBlock(kind='text:subst', content=expr, level=indentation.level, indentsymb=indentation.symb);
+    block = TranspileBlock(kind='text:subst', content=expr, level=indentation.level, indentsymb=indentation.symb, margin=margin);
     block.subst = subst;
     return block;
 
@@ -235,7 +240,8 @@ def processBlockCode(u: Tree, offset: str, indentation: IndentationTracker) -> T
             return block;
         elif 'print' in tokens or getAttribute(kwargs, 'print', expectedtype=bool, default=False):
             block.kind = 'code:value';
-            blockcontainer = TranspileBlock(kind='text:subst', content='{subst0}', level=indentation.level, indentsymb=indentation.symb);
+            margin = ''; # FIXME!
+            blockcontainer = TranspileBlock(kind='text:subst', content='{subst0}', level=indentation.level, indentsymb=indentation.symb, margin=margin);
             blockcontainer.subst = { 'subst0': block };
             return blockcontainer;
         else:

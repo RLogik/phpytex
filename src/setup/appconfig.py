@@ -51,6 +51,7 @@ _config_parameters: Dict[str, ConfigParameter] = {
     'indent_character_re':     ConfigParameter[str]('indentCharacterRe'),
     'censor_symbol':           ConfigParameter[str]('censorSymbol').setValue('########'),
     'offset_symbol':           ConfigParameter[str]('offsetSymbol').setValue(''),
+    'option_align':            ConfigParameter[bool]('optionAlign').setValue(True),
 };
 
 _dictionary_stamp: Dict[str, Any] = dict();
@@ -336,6 +337,14 @@ def getOffsetSymbol() -> str:
 def setOffsetSymbol(value: str):
     global _config_parameters;
     _config_parameters['offset_symbol'].value = value;
+    return;
+
+def getOptionAlign() -> bool:
+    return _config_parameters['option_align'].value;
+
+def setOptionAlign(value: bool):
+    global _config_parameters;
+    _config_parameters['option_align'].value = value;
     return;
 
 def getDictionaryStamp() -> Dict[str, Any]:

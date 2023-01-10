@@ -220,14 +220,15 @@ def createmetacode(
     imports:    TranspileBlocks,
     preambles:  List[str],
     globalvars: List[str],
-    seed:       Union[int, None]
+    seed:       Union[int, None],
 ):
     _lines_pre = getTemplatePhpytexLinesPre();
     _lines_post = getTemplatePhpytexLinesPost();
+    align = appconfig.getOptionAlign();
     lines = [];
     lines += formatTextBlockAsList(
         _lines_pre.format(
-            imports       = '\n'.join(imports.generateCode()),
+            imports       = '\n'.join(imports.generateCode(align=align)),
             root          = appconfig.getPathRoot(),
             output        = appconfig.getFileOutput(rel=False),
             name          = appconfig.getFileOutputBase(),
@@ -241,7 +242,7 @@ def createmetacode(
         )
     );
     lines.append('');
-    lines += documents.generateCode(offset=0, preambles=preambles, globalvars=globalvars);
+    lines += documents.generateCode(offset=0, preambles=preambles, globalvars=globalvars, align=align);
     lines.append('');
     lines += formatTextBlockAsList(
         _lines_post.format()

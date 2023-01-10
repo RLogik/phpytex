@@ -87,6 +87,7 @@ class TranspileBlock(object):
     level: int;
     indentsymb: str;
     parameters: TranspileBlockParameters;
+    margin: str;
     subst: Dict[str, TranspileBlock];
 
     def __init__(self,
@@ -96,6 +97,7 @@ class TranspileBlock(object):
         level: int            = 0,
         indentsymb:  str            = '    ',
         parameters:  Dict[str, Any] = dict(),
+        margin: str = '',
         **_
     ):
         self.lines = lines;
@@ -103,6 +105,7 @@ class TranspileBlock(object):
         self.level = level;
         self.indentsymb = indentsymb;
         self.parameters = TranspileBlockParameters(**parameters);
+        self.margin = margin;
         self.subst = dict();
         if isinstance(content, str):
             self._content = content;
@@ -128,28 +131,40 @@ class TranspileBlock(object):
         offset: int = 0,
         anon: bool = False,
         hide: bool = False,
+        align: bool = False,
     ) -> Generator[str, None, None]:
         state = dict(level=self.level, indentsymb=self.indentsymb);
         self.level += offset;
         if self.kind == 'text:empty':
-            yield '{tab}____print(\'\', anon={anon}, hide={hide});'.format(tab=self.tab(), anon=anon, hide=hide);
+            yield '{tab}____print(\'\', anon={anon}, hide={hide}, align={align});'.format(
+                tab   = self.tab(),
+                anon  = anon,
+                hide  = hide,
+                align = align,
+            );
         elif self.kind in [ 'text', 'text:comment' ]:
             for line in self.content:
-                yield '{tab}____print(\'\'\'{expr}\'\'\', anon={anon}, hide={hide});'.format(
+                yield '{tab}____print(\'\'\'{expr}\'\'\', anon={anon}, hide={hide}, align={align});'.format(
                     tab  = self.tab(),
                     expr = escapeForPython(line, withformatting=False),
                     anon = anon,
                     hide = hide,
+                    align = align,
                 );
         elif self.kind == 'text:subst':
             if len(self.subst) == 0:
-                yield '{tab}____print(\'\'\'{expr}\'\'\'.format(), anon={anon}, hide={hide});'.format(
+                yield '{tab}____print(\'\'\'{expr}\'\'\'.format(), anon={anon}, hide={hide}, align={align});'.format(
                     tab  = self.tab(),
                     expr = '\n'.join(list(self.content)),
                     anon = anon,
                     hide = hide,
+                    align = align,
                 );
             else:
+                yield '{tab}__MARGIN__ = \'{margin}\';'.format(
+                    tab = self.tab(),
+                    margin = self.margin,
+                );
                 yield '{tab}____print(\'\'\'{expr}\'\'\'.format('.format(
                     tab  = self.tab(),
                     expr = '\n'.join(list(self.content)),
@@ -164,20 +179,21 @@ class TranspileBlock(object):
                         value = '\n'.join(value_lines),
                     );
                     value.level = level;
-                yield '{tab}), anon={anon}, hide={hide});'.format(
+                yield '{tab}), anon={anon}, hide={hide}, align={align});'.format(
                     tab = self.tab(),
                     anon = anon,
                     hide = hide,
+                    align = align,
                 );
         elif self.kind in [ 'code', 'code:import', 'code:value']:
             yield from self.content;
         elif self.kind == 'code:set':
             line = '{varname} = {codevalue};'.format(**self.parameters.asDict());
             block = TranspileBlock(kind='code', content=line, **state);
-            yield from block.generateCode(offset=offset);
+            yield from block.generateCode(offset=offset, align=align);
         elif self.kind == 'code:escape':
             block = TranspileBlock(kind='code', content='pass;', **state);
-            yield from block.generateCode(offset=offset);
+            yield from block.generateCode(offset=offset, align=align);
         elif self.kind == 'code:input':
             pass;
         self.level = state['level'];
@@ -204,8 +220,9 @@ class TranspileBlocks(object):
         self,
         offset: int  = 0,
         anon:   bool = False,
-        hide:   bool = False
+        hide:   bool = False,
+        align:  bool = False,
     ) -> Generator[str, None, None]:
         for block in self.blocks:
-            yield from block.generateCode(offset=offset, anon=anon, hide=hide);
+            yield from block.generateCode(offset=offset, anon=anon, hide=hide, align=align);
         return;
