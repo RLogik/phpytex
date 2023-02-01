@@ -5,14 +5,10 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from __future__ import annotations;
-
-from src.thirdparty.code import *;
 from src.thirdparty.misc import *;
 from src.thirdparty.types import *;
 
-from src.core.utils import escapeForPython;
-from src.core.utils import formatBlockIndent;
+from src.core.utils import *;
 from src.models.generated.tokenisation import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -22,10 +18,6 @@ from src.models.generated.tokenisation import *;
 __all__ = [
     'TokenisationBlock',
     'TranspileBlock',
-    'TranspileBlocks',
-    'EnumTokenisationBlockKind',
-    'EnumTokenisationBlockSubKind',
-    'EnumTokenisationBlockScope',
 ];
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -100,29 +92,3 @@ class TranspileBlock(TokenisationBlock):
         # restore original indentation level:
         self.indent_level = current_level;
         return;
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# CLASS transpile blocks
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-@dataclass
-class TranspileBlocks():
-    blocks: TranspileBlock = field(default_factory=list);
-
-    def __len__(self) -> int:
-        return self.blocks.__len__();
-
-    def __iter__(self) -> Generator[TranspileBlock, None, None]:
-        yield from self.blocks;
-
-    def append(self, block: TranspileBlock):
-        self.blocks.append(block);
-
-    def generateCode(
-        self,
-        offset: int  = 0,
-        anon: bool = False,
-        hide: bool = False,
-    ) -> Generator[str, None, None]:
-        for block in self.blocks:
-            yield from block.generateCode(offset=offset, anon=anon, hide=hide);

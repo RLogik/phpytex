@@ -1,0 +1,331 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# IMPORTS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+from src.thirdparty.misc import *;
+from src.thirdparty.code import *;
+from src.thirdparty.system import *;
+from src.thirdparty.types import *;
+
+from src.core.log import *;
+from src.core.utils import *;
+from src.models.config import *;
+from src.models.internal.transpileblock import *;
+from src.models.internal.transpileblocks import *;
+from src.models.internal.transpiledocument import *;
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# EXORTS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+__all__ = [
+    'TranspileDocuments',
+];
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# CLASS transpile documents
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+@dataclass
+class TranspileDocuments:
+    root: str = field();
+    indentsymb: str = field();
+    schemes: NameSpacePython = field();
+
+    preamble: dict[str, TranspileBlocks] = field(init=False, default_factory=dict);
+    documents: dict[str, TranspileDocument] = field(init=False, default_factory=dict);
+    variables: dict[str, Any] = field(init=False, default_factory=dict);
+    paths: list[str] = field(init=False, default_factory=list);
+    anon: dict[str, bool] = field(init=False, default_factory=dict);
+    hide: dict[str, bool] = field(init=False, default_factory=dict);
+    edges: list[tuple[str, str]] = field(init=False, default_factory=list);
+    docEdges: list[tuple[str, str]] = field(init=False, default_factory=list);
+
+    def __len__(self) -> int:
+        return len(self.documents);
+
+    def tab(self, offset: int = 1) -> str:
+        return self.indentsymb * offset;
+
+    def updateAnon(self, path: str, initial_value: bool = False):
+        '''
+        Updates anonymity-state, inherit `True`-value from predecessor nodes in document tree.
+
+        @inputs
+        - `path` - path to be added as node.
+        - `initial_value` - whether or not path is initially forced to be have anon state.
+
+        @returns
+        - updated `self.anon`
+        '''
+        self.anon = inheritanceOnGraph(self.edges, { path: initial_value, **self.anon });
+
+    def updateHidden(self, path: str, initial_value: bool = False):
+        '''
+        Updates hidden-state, inherit `True`-value from predecessor nodes in document tree.
+
+        @inputs
+        - `path` - path to be added as node.
+        - `initial_value` - whether or not path is initially forced to be have hidden state.
+
+        @returns
+        - updated `self.hide`
+        '''
+        self.hide = inheritanceOnGraph(self.edges, { path: initial_value, **self.hide });
+
+    def isAnon(self, path: str) -> bool:
+        return getAttribute(self.anon, path, expectedtype=bool, default=False);
+
+    def isHidden(self, path: str) -> bool:
+        return getAttribute(self.hide, path, expectedtype=bool, default=False);
+
+    def displayPath(self, path: str) -> str:
+        return '#####' if self.anon[path] else path;
+
+    def evaluate(self, codevalue: str, document: TranspileDocument):
+        localvariables = { **self.variables, **document.variables,
+            '__ROOT__': os.path.abspath(document.root),
+            '__DIR__': os.path.abspath(document.pathfolder),
+        };
+        return eval(codevalue, None, localvariables);
+
+    def __iter__(self) -> Generator[TranspileDocument, None, None]:
+        for _, document in self.documents.items():
+            yield document;
+
+    def getFunctionName(self, path: str) -> str:
+        index = self.paths.index(path);
+        return '{label}_{index}'.format(label=self.schemes.function_name_file, index=index);
+
+    def getHeadPaths(self) -> list[str]:
+        degreeIn = { path: 0 for path in self.paths };
+        for u, v in self.edges:
+            degreeIn[v] = degreeIn[v] + 1 if v in degreeIn else 0;
+        return [ path for path in self.paths if degreeIn[path] == 0 ];
+
+    def getSubPaths(self, path: str) -> list[str]:
+        return [ __ for _, __ in self.edges if _ == path ];
+
+    def addDocument(self, path: str):
+        if path in self.paths:
+            return;
+        self.paths.append(path);
+        document = TranspileDocument(
+            root       = self.root,
+            path       = os.path.relpath(path=os.path.abspath(path), start=self.root),
+            indentsymb = self.indentsymb,
+            label      = self.getFunctionName(path)
+        );
+        self.documents[path] = document;
+        self.updateAnon(path);
+        self.updateHidden(path);
+        return;
+
+    def addPreamble(self, name: str, blocks: TranspileBlocks):
+        self.preamble[name] = blocks;
+        return;
+
+    def addBlocks(self, path: str, blocks: TranspileBlocks):
+        assert path in self.documents, 'Must add document first, before adding blocks.';
+        document = self.documents[path];
+        for block in blocks:
+            state = dict(level=block.level, indentsymb=block.indentsymb);
+            if re.match(r'^text($|:)', block.kind):
+                document.append(block);
+            elif block.kind == 'code':
+                document.append(block);
+            elif block.kind == 'code:escape':
+                document.append(block);
+            elif block.kind == 'code:set':
+                variable_name   = block.parameters.var_name;
+                variable_value = block.parameters.code_value;
+                scope     = block.parameters.scope;
+                try:
+                    value = self.evaluate(variable_value, document=document);
+                except:
+                    ## TODO: deal with error
+                    log_error(f'Could not evaluate \033[1m<<< {scope} set {variable_name} = {variable_value} >>>\033[0m.');
+                    continue;
+                if scope == 'local':
+                    document.variables[variable_name] = value;
+                elif scope == 'global':
+                    self.variables[variable_name] = value;
+                document.append(block);
+            elif block.kind == 'code:input':
+                ## extract block parameters:
+                _path      = block.parameters.path;
+                anon       = block.parameters.anon;
+                hide       = block.parameters.hide;
+                mode       = block.parameters.mode;
+                textindent = block.parameters.tab;
+                ## unpack path expression (potentially evaluate):
+                try:
+                    _path = self.evaluate(_path, document=document);
+                except:
+                    ## TODO: deal with error
+                    cmd  = ('bibliography' if mode == 'bib' else 'input') \
+                            + ('_anon' if anon else ('_hide' if hide else ''));
+                    log_error(f'Could not evaluate \033[1m<<< {cmd} {_path}\033[0m >>>\033[0m.');
+                    continue;
+                _path = document.relativisePath(_path);
+                ## add edge for the sake of display (regardless of whether input or bib mode):
+                self.docEdges.append((path, _path));
+                if mode == 'input':
+                    self.edges.append((path, _path));
+                self.updateAnon(_path, anon);
+                self.updateHidden(_path, hide);
+                ## create phpytex-code blocks based on computed path:
+                if mode == 'input':
+                    document.append(TranspileBlock(kind='text:empty', **state)); # force empty line before input of file
+                    document.append(TranspileBlock(
+                        kind        = 'code',
+                        lines       = [
+                            f'{self.schemes.function_name_file}(\'{_path}\');',
+                            '# Restore state of current file:',
+                            '__ROOT__, __DIR__, __FNAME__, __ANON__, __HIDE__, __IGNORE__ = __STATE__;',
+                        ],
+                        **state
+                    ));
+                elif mode == 'bib':
+                    document.append(TranspileBlock(
+                        kind           = 'code',
+                        lines          = [
+                            f'____insertbib(\'{_path}\', textindent=\'{textindent}\', anon={anon});',
+                        ],
+                        **state
+                    ));
+        document.append(TranspileBlock(kind='text:empty', level=0, indentsymb=self.indentsymb)); # force empty add end of file
+        return;
+
+    def documentStructurePretty(
+        self,
+        path = None,
+        anon:       bool = False,
+        prefix:     str  = '',
+        indentsymb: str  = '    ',
+        branchsymb: str  = '  |____',
+        depth:      int  = 0
+    ) -> Generator[str, None, None]:
+        if not isinstance(path, str):
+            depth = 0;
+            children = self.getHeadPaths();
+        elif self.hide[path]:
+            return;
+        else:
+            anon = anon or getAttribute(self.anon, path, expectedtype=bool, default=False);
+            yield '{prefix}{tab}{branchsymb} {path}'.format(
+                prefix = prefix,
+                tab = indentsymb*(depth if depth == 0 else depth - 1),
+                branchsymb = '' if depth == 0 else branchsymb,
+                path = '########' if anon else path,
+            );
+            depth = depth + 1;
+            children = [];
+            if path in self.paths:
+                children = [ v for u, v in self.docEdges if u == path ];
+        for subpath in children:
+            yield from self.documentStructurePretty(subpath, anon=anon, prefix=prefix, indentsymb=indentsymb, branchsymb=branchsymb, depth=depth);
+        return;
+
+    def documentStamp(self, depth: int, start: bool, anon: bool, hide: bool) -> TranspileBlock:
+        return TranspileBlock(
+            kind       = 'code',
+            content    = f'____printfilestamp(depth={depth}, start={start}, anon={anon}, hide={hide});',
+            level      = 0,
+            indentsymb = self.indentsymb
+        );
+
+    def documentTree(self, seed: Optional[int]) -> TranspileBlock:
+        return TranspileBlock(
+            kind       = 'text:comment',
+            lines      = dedent_as_list(
+                '''
+                %% ********************************************************************************
+                %% DOCUMENT STRUCTURE:
+                %% ~~~~~~~~~~~~~~~~~~~
+                %%
+                '''
+            ) \
+            + list(self.documentStructurePretty(prefix='%% ')) \
+            + dedent_as_list(
+                '''
+                %%
+                %% DOCUMENT-RANDOM-SEED: {}
+                %% ********************************************************************************
+                '''.format(seed if isinstance(seed, int) else '---')
+            ) + [ '' ],
+            level      = 0,
+            indentsymb = self.indentsymb,
+        );
+
+    def generateCode(
+        self,
+        offset:     int       = 0,
+        preambles:  list[str] = [],
+        globalvars: list[str] = [],
+        anon:       bool      = False,
+        hide:       bool      = False,
+    ) -> Generator[str, None, None]:
+        ## generate universal reference function
+        yield '{tab}# universal reference function for files'.format(tab=self.tab(offset));
+        yield '{tab}def {label}(path: str):'.format(
+            tab   = self.tab(offset),
+            label = self.schemes.function_name_file,
+        );
+        for path in self.paths:
+            yield '{tab}    if path == \'{path}\':'.format(
+                tab  = self.tab(offset),
+                path = path,
+            );
+            yield '{tab}        {label}();'.format(
+                tab = self.tab(offset),
+                path = path,
+                label = self.getFunctionName(path),
+            );
+            yield '{tab}        return;'.format(tab = self.tab(offset));
+        yield '{tab}    raise Exception(\'{msg}\'.format(path));'.format(
+            msg = r'[\033[91;1mERROR\033[0m] Could not find a method associated to the document path \033[1m{}\033[0m.',
+            tab = self.tab(offset),
+        );
+
+        ## generate function for preamble parts
+        for name, blocks in self.preamble.items():
+            yield '';
+            yield '{tab}# preamble function \'{name}\''.format(tab=self.tab(offset), name=name)
+            yield '{tab}def {label}():'.format(
+                tab   = self.tab(offset),
+                label = '{label}_{name}'.format(label=self.schemes.function_name_pre, name=name),
+            );
+            yield from blocks.generateCode(offset=offset+1, anon=False, hide=False);
+            yield '{tab}return'.format(tab=self.tab(offset + 1));
+
+        ## generate individual functions for documents
+        for path, document in self.documents.items():
+            yield '';
+            yield from document.generateCode(offset=offset, globalvars=globalvars, anon=self.anon[path], hide=self.hide[path]);
+
+        ## generate main function, which calls head functions first
+        yield '';
+        yield '{tab}# generate content from all files'.format(tab=self.tab(offset));
+        yield '{tab}def {label}():'.format(
+            tab   = self.tab(offset),
+            label = self.schemes.function_name_main,
+        );
+        yield '{tab}____cleardocument();'.format(tab=self.tab(offset + 1));
+        for name in preambles:
+            yield '{tab}{label}();'.format(
+                tab   = self.tab(offset + 1),
+                label = '{label}_{name}'.format(label=self.schemes.function_name_pre, name=name),
+            );
+        for path in self.getHeadPaths():
+            yield '{tab}{label}(\'{path}\');'.format(
+                tab   = self.tab(offset + 1),
+                label = self.schemes.function_name_file,
+                path  = path
+            );
+        yield '{tab}return;'.format(tab=self.tab(offset + 1));
+        return;
