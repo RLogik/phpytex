@@ -271,6 +271,10 @@ def create_metacode(
     write_text_file(config.PATHS.file_transpiled, lines);
     return;
 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# AUXILIARY METHODS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 def display_tree_branch(
     path: str,
     anon: bool = False,

@@ -7,131 +7,42 @@
 
 from __future__ import annotations;
 
+from src.thirdparty.code import *;
 from src.thirdparty.misc import *;
 from src.thirdparty.types import *;
 
 from src.core.utils import escapeForPython;
 from src.core.utils import formatBlockIndent;
+from src.models.generated.tokenisation import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # EXORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 __all__ = [
+    'TokenisationBlock',
     'TranspileBlock',
     'TranspileBlocks',
-    'TranspileBlockParameters',
+    'EnumTokenisationBlockKind',
+    'EnumTokenisationBlockSubKind',
+    'EnumTokenisationBlockScope',
 ];
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# GLOBAL VARIABLES
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-#
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# CLASS transpile parameters
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-class TranspileBlockParameters(object):
-    mode:      str;
-    scope:     str;
-    anon:      bool;
-    hide:      bool;
-    varname:   str;
-    codevalue: str;
-    keep:      bool;
-    level:     int;
-    path:      str;
-    tab:       str;
-
-    def __init__(
-        self,
-        mode:      str  = '',
-        scope:     str  = '',
-        anon:      bool = False,
-        hide:      bool = False,
-        varname:   str  = '',
-        codevalue: str  = '',
-        keep:      bool = True,
-        level:     int  = 0,
-        path:      str  = '',
-        tab:       str  = '',
-        **_
-    ):
-        self.mode      = mode;
-        self.scope     = scope;
-        self.anon      = anon;
-        self.hide      = hide;
-        self.varname   = varname;
-        self.codevalue = codevalue;
-        self.keep      = keep;
-        self.level     = level;
-        self.path      = path;
-        self.tab       = tab;
-        return;
-
-    def asDict(self) -> dict[str, Any]:
-        return dict(
-            mode      = self.mode,
-            scope     = self.scope,
-            anon      = self.anon,
-            hide      = self.hide,
-            varname   = self.varname,
-            codevalue = self.codevalue,
-            keep      = self.keep,
-            level     = self.level,
-            path      = self.path,
-            tab       = self.tab,
-        );
-    pass;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # CLASS transpile block
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-class TranspileBlock(object):
-    kind: str;
-    _content: str;
-    lines: list[str];
-    level: int;
-    indentsymb: str;
-    parameters: TranspileBlockParameters;
-    subst: dict[str, TranspileBlock];
-
-    def __init__(self,
-        kind:        str,
-        content:     Any            = None,
-        lines:       list[str]      = [],
-        level: int            = 0,
-        indentsymb:  str            = '    ',
-        parameters:  dict[str, Any] = dict(),
-        **_
-    ):
-        self.lines = lines;
-        self.kind = kind;
-        self.level = level;
-        self.indentsymb = indentsymb;
-        self.parameters = TranspileBlockParameters(**parameters);
-        self.subst = dict();
-        if isinstance(content, str):
-            self._content = content;
-        return;
-
-    @property
-    def isCode(self) -> bool:
-        return True if re.match(r'^code(:|$)', self.kind) else False;
-
-    @property
-    def content(self) -> Generator[str, None, None]:
-        tab = self.tab() if self.isCode else '';
-        if hasattr(self, '_content'):
-            yield '{tab}{line}'.format(tab = tab, line = self._content);
-        else:
-            yield from formatBlockIndent(self.lines, indent=tab, unindent=False);
-
+class TranspileBlock(TokenisationBlock):
     def tab(self, delta: int = 0) -> str:
-        return self.indentsymb * (self.level + delta);
+        return self.indent_symbol * (self.indent_level + delta);
+
+    @property
+    def generateContent(self) -> Generator[str, None, None]:
+        tab = self.tab() if self.kind == EnumTokenisationBlockKind.code else '';
+        if self.line is None:
+            yield from formatBlockIndent(self.lines, indent=tab, unindent=False);
+        else:
+            yield f'{tab}{self.line}';
 
     def generateCode(
         self,
@@ -139,77 +50,70 @@ class TranspileBlock(object):
         anon: bool = False,
         hide: bool = False,
     ) -> Generator[str, None, None]:
-        state = dict(level=self.level, indentsymb=self.indentsymb);
-        self.level += offset;
-        if self.kind == 'text:empty':
-            yield '{tab}____print(\'\', anon={anon}, hide={hide});'.format(tab=self.tab(), anon=anon, hide=hide);
-        elif self.kind in [ 'text', 'text:comment' ]:
-            for line in self.content:
-                yield '{tab}____print(\'\'\'{expr}\'\'\', anon={anon}, hide={hide});'.format(
-                    tab  = self.tab(),
-                    expr = escapeForPython(line, withformatting=False),
-                    anon = anon,
-                    hide = hide,
+        # temporarily increase indentation level (restore at end):
+        current_level = self.indent_level
+        self.indent_level += offset;
+
+        match (self.kind, self.sub_kind):
+            case (EnumTokenisationBlockKind.input):
+                pass;
+            case (EnumTokenisationBlockKind.text, EnumTokenisationBlockSubKind.empty):
+                yield '{tab}____print(\'\', anon={anon}, hide={hide});'.format(tab=self.tab(), anon=anon, hide=hide);
+            case (EnumTokenisationBlockKind.text, EnumTokenisationBlockSubKind.subst):
+                if len(self.substitution) == 0:
+                    content = '\n'.join(list(self.generateContent()));
+                    yield f'{self.tab()}____print(\'\'\'{content}\'\'\'.format(), anon={anon}, hide={hide});';
+                else:
+                    content = '\n'.join(list(self.generateContent()));
+                    yield f'{self.tab()}____print(\'\'\'{content}\'\'\'.format(';
+                    for key, block in self.substitution.items():
+                        # level = block.level;
+                        value_lines = formatBlockIndent(block.lines, indent=self.tab(2), unindent=True);
+                        value_lines[0] = re.sub(r'^\s*(.*)$', r'\1', value_lines[0]);
+                        value_lines_as_str = '\n'.join(value_lines);
+                        yield f'{self.tab(1)}{key} = {value_lines_as_str},';
+                        # block.level = level;
+                    yield f'{self.tab()}), anon={anon}, hide={hide});';
+            case (EnumTokenisationBlockKind.text, _):
+                for line in self.generateContent():
+                    content = escapeForPython(line, withformatting=False);
+                    yield f'{self.tab()}____print(\'\'\'{content}\'\'\', anon={anon}, hide={hide});';
+            case (EnumTokenisationBlockKind.code, EnumTokenisationBlockSubKind.set):
+                block = TranspileBlock(
+                    kind = EnumTokenisationBlockKind.code,
+                    line = f'{self.variable_name} = {self.variable_value};',
+                    indent_level = current_level,
+                    indent_symbol = self.indent_symbol,
                 );
-        elif self.kind == 'text:subst':
-            if len(self.subst) == 0:
-                yield '{tab}____print(\'\'\'{expr}\'\'\'.format(), anon={anon}, hide={hide});'.format(
-                    tab  = self.tab(),
-                    expr = '\n'.join(list(self.content)),
-                    anon = anon,
-                    hide = hide,
+                yield from block.generateCode(offset=offset);
+            case (EnumTokenisationBlockKind.code, EnumTokenisationBlockSubKind.escape):
+                block = TranspileBlock(
+                    kind = EnumTokenisationBlockKind.code,
+                    line = 'pass;',
+                    indent_level = current_level,
+                    indent_symbol = self.indent_symbol
                 );
-            else:
-                yield '{tab}____print(\'\'\'{expr}\'\'\'.format('.format(
-                    tab  = self.tab(),
-                    expr = '\n'.join(list(self.content)),
-                );
-                for key, value in self.subst.items():
-                    level = value.level;
-                    value_lines = formatBlockIndent(value.lines, indent=self.tab(2), unindent=True);
-                    value_lines[0] = re.sub(r'^\s*(.*)$', r'\1', value_lines[0]);
-                    yield '{tab}{key} = {value},'.format(
-                        tab = self.tab(1),
-                        key = key,
-                        value = '\n'.join(value_lines),
-                    );
-                    value.level = level;
-                yield '{tab}), anon={anon}, hide={hide});'.format(
-                    tab = self.tab(),
-                    anon = anon,
-                    hide = hide,
-                );
-        elif self.kind in [ 'code', 'code:import', 'code:value']:
-            yield from self.content;
-        elif self.kind == 'code:set':
-            line = '{varname} = {codevalue};'.format(**self.parameters.asDict());
-            block = TranspileBlock(kind='code', content=line, **state);
-            yield from block.generateCode(offset=offset);
-        elif self.kind == 'code:escape':
-            block = TranspileBlock(kind='code', content='pass;', **state);
-            yield from block.generateCode(offset=offset);
-        elif self.kind == 'code:input':
-            pass;
-        self.level = state['level'];
+                yield from block.generateCode(offset=offset);
+            case (EnumTokenisationBlockKind.code, _):
+                yield from self.generateContent();
+
+        # restore original indentation level:
+        self.indent_level = current_level;
         return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # CLASS transpile blocks
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-class TranspileBlocks(object):
-    blocks: list[TranspileBlock];
-
-    def __init__(self, blocks: list[TranspileBlock] = []):
-        self.blocks = blocks[:];
+@dataclass
+class TranspileBlocks():
+    blocks: TranspileBlock = field(default_factory=list);
 
     def __len__(self) -> int:
-        return len(self.blocks);
+        return self.blocks.__len__();
 
     def __iter__(self) -> Generator[TranspileBlock, None, None]:
-        for block in self.blocks:
-            yield block;
-        return;
+        yield from self.blocks;
 
     def append(self, block: TranspileBlock):
         self.blocks.append(block);
@@ -217,9 +121,8 @@ class TranspileBlocks(object):
     def generateCode(
         self,
         offset: int  = 0,
-        anon:   bool = False,
-        hide:   bool = False
+        anon: bool = False,
+        hide: bool = False,
     ) -> Generator[str, None, None]:
         for block in self.blocks:
             yield from block.generateCode(offset=offset, anon=anon, hide=hide);
-        return;

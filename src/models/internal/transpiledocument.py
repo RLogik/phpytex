@@ -224,23 +224,19 @@ class TranspileDocuments:
             elif block.kind == 'code:escape':
                 document.append(block);
             elif block.kind == 'code:set':
-                varname   = block.parameters.varname;
-                codevalue = block.parameters.codevalue;
+                variable_name   = block.parameters.var_name;
+                variable_value = block.parameters.code_value;
                 scope     = block.parameters.scope;
                 try:
-                    value = self.evaluate(codevalue, document=document);
+                    value = self.evaluate(variable_value, document=document);
                 except:
                     ## TODO: deal with error
-                    log_error('Could not evaluate \033[1m<<< {scope} set {varname} = {codevalue} >>>\033[0m.'.format(
-                        scope   = scope,
-                        varname = varname,
-                        codevalue = codevalue,
-                    ));
+                    log_error(f'Could not evaluate \033[1m<<< {scope} set {variable_name} = {variable_value} >>>\033[0m.');
                     continue;
                 if scope == 'local':
-                    document.variables[varname] = value;
+                    document.variables[variable_name] = value;
                 elif scope == 'global':
-                    self.variables[varname] = value;
+                    self.variables[variable_name] = value;
                 document.append(block);
             elif block.kind == 'code:input':
                 ## extract block parameters:
@@ -254,11 +250,9 @@ class TranspileDocuments:
                     _path = self.evaluate(_path, document=document);
                 except:
                     ## TODO: deal with error
-                    log_error('Could not evaluate \033[1m<<< {cmd} {path}\033[0m >>>\033[0m.'.format(
-                        cmd  = ('bibliography' if mode == 'bib' else 'input') \
-                                + ('_anon' if anon else ('_hide' if hide else '')),
-                        path = _path,
-                    ));
+                    cmd  = ('bibliography' if mode == 'bib' else 'input') \
+                            + ('_anon' if anon else ('_hide' if hide else ''));
+                    log_error(f'Could not evaluate \033[1m<<< {cmd} {_path}\033[0m >>>\033[0m.');
                     continue;
                 _path = document.relativisePath(_path);
                 ## add edge for the sake of display (regardless of whether input or bib mode):
@@ -273,7 +267,7 @@ class TranspileDocuments:
                     document.append(TranspileBlock(
                         kind        = 'code',
                         lines       = [
-                            '{label}(\'{path}\');'.format(label=self.schemes.function_name_file, path=_path),
+                            f'{self.schemes.function_name_file}(\'{_path}\');',
                             '# Restore state of current file:',
                             '__ROOT__, __DIR__, __FNAME__, __ANON__, __HIDE__, __IGNORE__ = __STATE__;',
                         ],
@@ -283,11 +277,7 @@ class TranspileDocuments:
                     document.append(TranspileBlock(
                         kind           = 'code',
                         lines          = [
-                            '____insertbib(\'{fname}\', textindent=\'{textindent}\', anon={anon});'.format(
-                                fname      = _path,
-                                textindent = textindent,
-                                anon       = anon,
-                            )
+                            f'____insertbib(\'{_path}\', textindent=\'{textindent}\', anon={anon});',
                         ],
                         **state
                     ));

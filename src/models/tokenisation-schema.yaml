@@ -1,0 +1,141 @@
+openapi: 3.0.3
+info:
+  version: x.y.z
+  title: Schemata for tokenisation
+  description: |-
+    Schemata for models when tokenising/parsing
+servers:
+  - url: "."
+paths: {}
+definitions: {}
+components:
+  schemas:
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Tokenisation Block
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    TokenisationBlock:
+      description: |-
+        Configuration of a block during tokenisation.
+      type: object
+      required: []
+      properties:
+        kind:
+          description: The kind of block.
+          $ref: "#/components/schemas/EnumTokenisationBlockKind"
+          # will be overwritten by enum default
+          default: null
+        sub-kind:
+          description: The sub kind of block.
+          $ref: "#/components/schemas/EnumTokenisationBlockSubKind"
+          # will be overwritten by enum default
+          default: null
+        line:
+          description: Contents of the block.
+          type: string
+        lines:
+          description: Content of block as list of strings.
+          type: array
+          items:
+            type: string
+          default: []
+        #####
+        # START parameters for indentation
+        indent:
+          description: The indentation as a string.
+          type: string
+          default: ""
+        indent-symbol:
+          description: Indentation as a symbol
+          type: string
+          default: "    "
+        indent-level:
+          description: The indentation level as an integer.
+          type: integer
+          default: 0
+        # END parameters for indentation
+        #####
+        #####
+        # START parameters for input commands
+        path:
+          description: The path to be included.
+          $ref: "./common-schema.yaml/#/components/schemas/PathToFileString"
+        anon:
+          description: Whether the command (if input) is to be censored.
+          type: boolean
+          default: False
+        hide:
+          description: Whether the command (if input) is to be hidden.
+          type: boolean
+          default: False
+        keep:
+          description: Whether the command is to be kept.
+          type: boolean
+          default: True
+        # END parameters for input commands
+        #####
+        #####
+        # START parameters for setting variables
+        scope:
+          description: For set-commands, whether the variable is local or global.
+          $ref: "#/components/schemas/EnumTokenisationBlockScope"
+          # will be overwritten by enum default
+          default: null
+        variable-name:
+          description: For set-commands, the name of the variable.
+          type: string
+          default: ""
+        variable-value:
+          description: For set-commands, the value of the variable.
+          type: string
+          default: "None"
+        # END parameters for setting variables
+        #####
+        #####
+        # START parameters for text substitutions
+        substitution:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/TokenisationBlock"
+          default: {}
+        # END parameters for text substitutions
+        #####
+      additionalProperties: false
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # ENUM Tokenisation Block Kind / SubKind
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    EnumTokenisationBlockKind:
+      description: |-
+        An enumeration of possible options for block kind
+      type: string
+      enum:
+        - 'text'
+        - 'code'
+        - 'input'
+      default: 'text'
+    EnumTokenisationBlockSubKind:
+      description: |-
+        An enumeration of possible options for block subkind
+      type: string
+      enum:
+        - 'undefined'
+        - 'escape'
+        - 'import'
+        - 'set'
+        - 'value'
+        - 'comment'
+        - 'empty'
+        - 'subst'
+        - 'tex'
+        - 'bib'
+      default: 'undefined'
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # ENUM Tokenisation Block Scope
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    EnumTokenisationBlockScope:
+      description: |-
+        An enumeration of possible options for block scope
+      type: string
+      enum:
+        - 'global'
+        - 'local'
+      default: 'local'

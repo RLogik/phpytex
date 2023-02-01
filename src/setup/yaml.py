@@ -14,55 +14,64 @@ from src.models.internal import *;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 __all__ = [
-    'setup_yaml_reader',
 ];
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# METHODS
+# CONSTANTS / LOCAL VARIABLES
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def setup_yaml_reader():
-    def not_constructor(loader: yaml_Loader, node) -> bool:
-        value = loader.construct_sequence(node, deep=True);
-        try:
-            expr = not value[0];
-        except:
-            expr = False;
-        return expr;
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Constructors
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    def key_constructor(loader: yaml_Loader, node):
-        value = loader.construct_sequence(node, deep=True);
-        try:
-            obj = value[0];
-            keys = value[1:];
-            while len(keys) > 0:
-                key, keys = keys[0], keys[1:];
-                if isinstance(obj, dict):
-                    obj = obj.get(key, None);
-                else:
-                    obj = None;
+@yaml_add_constructor(tag=u'!not', attach=True)
+def constructor(loader: YamlLoader, node: YamlSequenceNode) -> bool:
+    value = loader.construct_sequence(node, deep=True);
+    try:
+        return not bool(value[0]);
+    except:
+        pass;
+    return False;
+
+@yaml_add_constructor(tag=u'!key', attach=True)
+def constructor(loader: YamlLoader, node: YamlSequenceNode):
+    value = loader.construct_sequence(node, deep=True);
+    try:
+        obj = value[0];
+        keys = value[1:];
+        while len(keys) > 0 and isinstance(obj, dict):
+            key, keys = keys[0], keys[1:];
+            obj = obj.get(key, None);
+        if isinstance(obj, dict):
             return obj;
-        except:
-            return None;
+    except:
+        pass;
+    return None;
 
-    def join_constructor(loader: yaml_Loader, node):
-        values = loader.construct_sequence(node, deep=True);
-        try:
-            sep, parts = str(values[0]), [str(_) for _ in values[1]];
-            return sep.join(parts);
-        except:
-            return '';
+@yaml_add_constructor(tag=u'!join', attach=True)
+def constructorn(loader: YamlLoader, node: YamlSequenceNode):
+    values = loader.construct_sequence(node, deep=True);
+    try:
+        sep, parts = str(values[0]), [str(_) for _ in values[1]];
+        return sep.join(parts);
+    except:
+        pass;
+    return '';
 
-    def eval_constructor(loader: yaml_Loader, node):
-        value = loader.construct_sequence(node, deep=True);
-        try:
-            expr = value[0];
-        except:
-            expr = None;
-        return EvalType(expr);
+@yaml_add_constructor(tag=u'!eval', attach=True)
+def constructorl(loader: YamlLoader, node: YamlSequenceNode):
+    value = loader.construct_sequence(node, deep=True);
+    try:
+        return EvalType(str(value[0]));
+    except:
+        pass;
+    return EvalType();
 
-    add_constructor(tag=u'!eval', constructor=eval_constructor);
-    add_constructor(tag=u'!not',  constructor=not_constructor);
-    add_constructor(tag=u'!join', constructor=join_constructor);
-    add_constructor(tag=u'!key',  constructor=key_constructor);
-    return;
+@yaml_add_constructor(tag=u'!tuple', attach=True)
+def constructorle(loader: YamlLoader, node: YamlSequenceNode):
+    value = loader.construct_sequence(node, deep=True);
+    try:
+        return tuple(value);
+    except:
+        pass;
+    return None;

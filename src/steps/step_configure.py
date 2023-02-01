@@ -108,7 +108,7 @@ def update_config(
         import_name = parameters.file;
         parts = re.split(pattern=r'\.', string=import_name);
         config.PATHS.import_params = import_name;
-        config.PATHS.file_stamp = os.path.join(*parts);
+        config.PATHS.file_params_py = os.path.join(*parts);
 
     config.TRANSPILATION = src.models.config.TranspileOptions(**{
         **config.TRANSPILATION.dict(),
@@ -122,14 +122,13 @@ def update_config(
     });
 
     # set spacing options
-    use_tabs = transpilation.tabs;
-    n = transpilation.spaces;
-    if use_tabs:
+    if transpilation.tabs:
         config.TRANSPILATION.indent_character = '\t';
         config.TRANSPILATION.indent_character_re = r'\t';
     else:
-        config.TRANSPILATION.indent_character = n*' ';
-        config.TRANSPILATION.indent_character_re = n*' ';
+        n = transpilation.spaces;
+        config.TRANSPILATION.indent_character = n * ' ';
+        config.TRANSPILATION.indent_character_re = n * ' ';
 
     return;
 

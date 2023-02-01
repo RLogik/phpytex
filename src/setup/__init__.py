@@ -32,5 +32,4 @@ __all__ = [
     'is_open_source',
     'load_user_config',
     'set_open_source',
-    'setup_yaml_reader',
 ];

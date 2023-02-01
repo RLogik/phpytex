@@ -37,7 +37,7 @@ PATHS_CONFIG = 'tests/config.yaml';
 
 def load_assets_config() -> TestProgrammeConfig: # pragma: no cover
     with open(PATHS_CONFIG, 'r') as fp:
-        assets = yaml_load(fp, Loader=yaml_FullLoader);
+        assets = yaml_load(fp, Loader=YamlFullLoader);
         assert isinstance(assets, dict);
         return TestProgrammeConfig(**assets);
 

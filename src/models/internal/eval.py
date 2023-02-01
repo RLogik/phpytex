@@ -33,5 +33,6 @@ class EvalMetaType(type):
 @dataclass
 class EvalType(metaclass=EvalMetaType):
     expr: str = field(default=str(None));
+
     def __str__(self) -> str:
         return self.expr;

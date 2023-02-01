@@ -17,10 +17,13 @@ from src.models.internal.transpiledocument import *;
 
 __all__ = [
     'ConfigParameter',
+    'EnumTokenisationBlockKind',
+    'EnumTokenisationBlockSubKind',
+    'EnumTokenisationBlockScope',
     'EvalType',
     'IndentationTracker',
+    'TokenisationBlock',
     'TranspileBlock',
-    'TranspileBlockParameters',
     'TranspileBlocks',
     'TranspileDocument',
     'TranspileDocuments',

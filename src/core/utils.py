@@ -284,7 +284,7 @@ def inheritanceOnGraph(edges: list[tuple[str, str]], hasProperty: dict[str, bool
 
 def readYamlFile(path: str) -> dict:
     with open(path, 'r') as fp:
-        spec = yaml_load(fp, Loader=yaml_FullLoader);
+        spec = yaml_load(fp, Loader=YamlFullLoader);
         if not isinstance(spec, dict):
             raise ValueError('Config is not a dictionary object!');
     return spec;

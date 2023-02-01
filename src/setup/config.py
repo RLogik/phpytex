@@ -38,12 +38,11 @@ __all__ = [
 @make_lazy
 def load_internal_config() -> ProgrammeConfig: # pragma: no cover
     with open(src.paths.config, 'r') as fp:
-        assets = yaml_load(fp, Loader=yaml_FullLoader);
+        assets = yaml_load(fp, Loader=YamlFullLoader);
         assert isinstance(assets, dict);
         return ProgrammeConfig(**assets);
 
 def load_user_config(file_config: Optional[str]) -> UserConfig:
-    setup_yaml_reader();
     pattern = PATHS.pattern_config;
 
     try:
@@ -57,7 +56,7 @@ def load_user_config(file_config: Optional[str]) -> UserConfig:
 
     assert os.path.exists(file_config) and os.path.isfile(file_config), 'Config file must exist!';
     with open(file_config, 'r') as fp:
-        object = yaml_load(fp, Loader=yaml_FullLoader);
+        object = yaml_load(fp, Loader=YamlFullLoader);
         assert isinstance(object, dict);
         return UserConfig(**object);
 

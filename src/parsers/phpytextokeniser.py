@@ -150,16 +150,33 @@ def lexedToBlock(u: LarkTree, offset: str, indentation: IndentationTracker) -> T
     if typ == 'block':
         return lexedToBlock(children[0], offset=offset, indentation=indentation);
     if typ == 'emptyline':
-        return TranspileBlock(kind='text:empty', level=indentation.level, indentsymb=indentation.symb);
+        return TranspileBlock(
+            kind = EnumTokenisationBlockKind.text,
+            sub_kind = EnumTokenisationBlockSubKind.empty,
+            indent_level = indentation.level,
+            indent_symbol  = indentation.symb,
+        );
     ## TEXT COMMENT
     elif typ == 'blockcomment':
         return lexedToBlock(children[0], offset=offset, indentation=indentation);
     elif typ == 'blockcomment_simple':
-        parameters = dict(keep=False);
-        return TranspileBlock(kind='text:comment', content=lexedToStr(u), level=indentation.level, indentsymb=indentation.symb, parameters=parameters);
+        return TranspileBlock(
+            kind = EnumTokenisationBlockKind.text,
+            sub_kind = EnumTokenisationBlockSubKind.comment,
+            line = lexedToStr(u),
+            indent_level = indentation.level,
+            indent_symbol =indentation.symb,
+            keep = False,
+        );
     elif typ == 'blockcomment_keep':
-        parameters = dict(keep=True);
-        return TranspileBlock(kind='text:comment', content=lexedToStr(u), level=indentation.level, indentsymb=indentation.symb, parameters=parameters);
+        return TranspileBlock(
+            kind = EnumTokenisationBlockKind.text,
+            sub_kind = EnumTokenisationBlockSubKind.comment,
+            line = lexedToStr(u),
+            indent_level = indentation.level,
+            indent_symb = indentation.symb,
+            keep = True,
+        );
     ## TEXT CONTENT
     elif typ == 'blockcontent':
         ## attempt to re-process as quick command:
@@ -190,7 +207,7 @@ def lexedToQuickBlock(u: LarkTree, indentation: IndentationTracker) -> Transpile
 ## BLOCK PARSERS
 def processBlockContent(children: list[LarkTree], indentation: IndentationTracker) -> TranspileBlock:
     exprs = [];
-    subst: dict[str, TranspileBlock] = dict();
+    subst: dict[str, TokenisationBlock] = dict();
     i = 0;
     for child in children:
         if child.data == 'textcontent':
@@ -203,44 +220,107 @@ def processBlockContent(children: list[LarkTree], indentation: IndentationTracke
             exprs.append('{{{}}}'.format(key));
             i += 1;
     expr = ''.join(exprs);
-    block = TranspileBlock(kind='text:subst', content=expr, level=indentation.level, indentsymb=indentation.symb);
-    block.subst = subst;
+    block = TranspileBlock(
+        kind = EnumTokenisationBlockKind.text,
+        sub_kind = EnumTokenisationBlockSubKind.subst,
+        line = expr,
+        indent_level = indentation.level,
+        indent_symbol = indentation.symb,
+        substitution = subst,
+    );
     return block;
 
 def processBlockQuickCommand(u: LarkTree, textindent: str, indentation: IndentationTracker) -> TranspileBlock:
     typ = u.data;
     children = filterSubExpr(u);
-    if typ in [ 'quickglobalset', 'quicklocalset' ]:
-        varname = lexedToStr(children[0]);
-        codevalue = stripEndOfCode(lexedToStr(children[1])).strip();
-        parameters = dict(varname=varname, codevalue=codevalue);
-        if typ == 'quickglobalset':
-            parameters = { **parameters, **dict(scope='global') };
-        elif typ == 'quicklocalset':
-            parameters = { **parameters, **dict(scope='local') };
-        return TranspileBlock(kind='code:set', level=indentation.level, indentsymb=indentation.symb, parameters=parameters);
-    elif typ in [ 'quickinput', 'quickinput_anon', 'quickinput_hide', 'quickbib', 'quickbib_anon' ]:
-        path = stripEndOfCode(lexedToStr(children[0]));
-        parameters = dict(path=path, tab=textindent);
-        if typ == 'quickinput':
-            parameters = { **parameters, **dict(mode='input', anon=False) };
-        elif typ == 'quickinput_anon':
-            parameters = { **parameters, **dict(mode='input', anon=True) };
-        elif typ == 'quickinput_hide':
-            parameters = { **parameters, **dict(mode='input', anon=True, hide=True) };
-        elif typ == 'quickbib':
-            parameters = { **parameters, **dict(mode='bib', anon=False) };
-        elif typ == 'quickbib_anon':
-            parameters = { **parameters, **dict(mode='bib', anon=True) };
-        return TranspileBlock(kind='code:input', level=indentation.level, indentsymb=indentation.symb, parameters=parameters);
-    elif typ == 'quickescape':
-        indentation.level = 0;
-        parameters = dict(level=0);
-        return TranspileBlock(kind='code:escape', level=indentation.level, indentsymb=indentation.symb, parameters=parameters);
-    elif typ == 'quickescapeonce':
-        indentation.decrOffset();
-        parameters = dict(level=indentation.level);
-        return TranspileBlock(kind='code:escape', level=indentation.level, indentsymb=indentation.symb, parameters=parameters);
+    match typ:
+        case 'quickglobalset':
+            return TranspileBlock(
+                kind = EnumTokenisationBlockKind.input,
+                sub_kind = EnumTokenisationBlockSubKind.set,
+                indent_level = indentation.level,
+                indent_symbol = indentation.symb,
+                scope = EnumTokenisationBlockScope.global_,
+                variable_name = lexedToStr(children[0]),
+                variable_value = stripEndOfCode(lexedToStr(children[1])).strip(),
+            );
+        case 'quicklocalset':
+            return TranspileBlock(
+                kind = EnumTokenisationBlockKind.input,
+                sub_kind = EnumTokenisationBlockSubKind.set,
+                indent_level = indentation.level,
+                indent_symbol = indentation.symb,
+                scope = EnumTokenisationBlockScope.local,
+                variable_name = lexedToStr(children[0]),
+                variable_value = stripEndOfCode(lexedToStr(children[1])).strip(),
+            );
+        case 'quickinput':
+            return TranspileBlock(
+                kind = EnumTokenisationBlockKind.input,
+                sub_kind = EnumTokenisationBlockSubKind.tex,
+                indent_level = indentation.level,
+                indent_symbol = indentation.symb,
+                path = stripEndOfCode(lexedToStr(children[0])),
+                anon = False,
+                indent = textindent,
+            );
+        case 'quickinput_anon':
+            return TranspileBlock(
+                kind = EnumTokenisationBlockKind.input,
+                sub_kind = EnumTokenisationBlockSubKind.tex,
+                indent_level = indentation.level,
+                indent_symbol = indentation.symb,
+                path = stripEndOfCode(lexedToStr(children[0])),
+                anon = True,
+                indent = textindent,
+            );
+        case 'quickinput_hide':
+            return TranspileBlock(
+                kind = EnumTokenisationBlockKind.input,
+                sub_kind = EnumTokenisationBlockSubKind.tex,
+                indent_level = indentation.level,
+                indent_symbol = indentation.symb,
+                path = stripEndOfCode(lexedToStr(children[0])),
+                anon = True,
+                hide = True
+                indent = textindent,
+            );
+        case 'quickbib':
+            return TranspileBlock(
+                kind = EnumTokenisationBlockKind.input,
+                sub_kind = EnumTokenisationBlockSubKind.bib,
+                indent_level = indentation.level,
+                indent_symbol = indentation.symb,
+                path = stripEndOfCode(lexedToStr(children[0])),
+                anon = False,
+                indent = textindent,
+            );
+        case 'quickbib_anon':
+            return TranspileBlock(
+                kind = EnumTokenisationBlockKind.input,
+                sub_kind = EnumTokenisationBlockSubKind.bib,
+                indent_level = indentation.level,
+                indent_symbol = indentation.symb,
+                path = stripEndOfCode(lexedToStr(children[0])),
+                anon = True,
+                indent = textindent,
+            );
+        case 'quickescape':
+            indentation.level = 0;
+            return TranspileBlock(
+                kind = EnumTokenisationBlockKind.code,
+                sub_kind = EnumTokenisationBlockSubKind.escape,
+                indent_level = 0,
+                indent_symbol  = indentation.symb,
+            );
+        case 'quickescapeonce':
+            indentation.decrOffset();
+            return TranspileBlock(
+                kind = EnumTokenisationBlockKind.code,
+                sub_kind = EnumTokenisationBlockSubKind.escape,
+                indent_level = indentation.level,
+                indent_symbol  = indentation.symb,
+            );
     raise Exception('Could not parse expression!');
 
 # see .lark file for regex pattern
@@ -256,12 +336,22 @@ def processBlockCode(u: LarkTree, offset: str, indentation: IndentationTracker) 
         tokens, kwargs = instructions;
         block = processBlockCode(children[1], offset=offset, indentation=indentation);
         if 'import' in tokens:
-            block.kind = 'code:import';
+            block.kind = EnumTokenisationBlockKind.code;
+            block.sub_kind = EnumTokenisationBlockSubKind.import_;
             return block;
         elif 'print' in tokens or getAttribute(kwargs, 'print', expectedtype=bool, default=False):
-            block.kind = 'code:value';
-            blockcontainer = TranspileBlock(kind='text:subst', content='{subst0}', level=indentation.level, indentsymb=indentation.symb);
-            blockcontainer.subst = { 'subst0': block };
+            block.kind = EnumTokenisationBlockKind.code;
+            block.sub_kind = EnumTokenisationBlockSubKind.value;
+            blockcontainer = TranspileBlock(
+                kind = EnumTokenisationBlockKind.text,
+                sub_kind = EnumTokenisationBlockSubKind.subst,
+                indent_level = indentation.level,
+                indent_symbol = indentation.symb,
+                line = r'{subst0}',
+                substitution = {
+                    'subst0': block,
+                },
+            );
             return blockcontainer;
         else:
             return block;
@@ -279,7 +369,12 @@ def processBlockCode(u: LarkTree, offset: str, indentation: IndentationTracker) 
         indents = getIndentations(lines, indentsymb=indentation.symb, encoding=ENCODING_UTF8);
         if len(indents) > 0:
             indentation.setOffset(indents[-1]);
-        return TranspileBlock(kind='code', lines=lines, level=0, indentsymb=indentation.symb);
+        return TranspileBlock(
+            kind = EnumTokenisationBlockKind.code,
+            lines = lines,
+            indent_level = 0,
+            indent_symbol = indentation.symb,
+        );
     raise Exception('Could not parse expression!');
 
 ## MISCELLANEOUS PARSERS
@@ -292,10 +387,22 @@ def processCodeInline(u: LarkTree, indentation: IndentationTracker) -> Transpile
         return processCodeInline(children[0], indentation=indentation);
     elif typ == 'codeoneline':
         lines = formatValue([ lexedToStr(u) ], indent=indent);
-        return TranspileBlock(kind='code:value', lines=lines, level=indentation.level, indentsymb=indentation.symb);
+        return TranspileBlock(
+            kind = EnumTokenisationBlockKind.code,
+            sub_kind = EnumTokenisationBlockSubKind.value,
+            lines = lines,
+            indent_level = indentation.level,
+            indent_symbol = indentation.symb,
+        );
     elif typ == 'codemultiline':
         lines = formatValue([ lexedToStr(child) for child in children ], indent=indent);
-        return TranspileBlock(kind='code:value', lines=lines, level=indentation.level, indentsymb=indentation.symb);
+        return TranspileBlock(
+            kind = EnumTokenisationBlockKind.code,
+            sub_kind = EnumTokenisationBlockSubKind.value,
+            lines = lines,
+            indent_level = indentation.level,
+            indent_symbol = indentation.symb,
+        );
     raise Exception('Could not parse expression!');
 
 def processBlockCodeArguments(u: LarkTree) -> tuple[list[str], dict[str, Any]]:
