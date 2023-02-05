@@ -101,6 +101,31 @@ components:
         #####
       additionalProperties: false
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Tokenisation Block
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    TokenisationDocument:
+      description: |-
+        Structure for transpiled document consisting of blocks.
+      type: object
+      required:
+        - label
+        - root
+        - path
+        - intent-symbol
+      properties:
+        label:
+          type: string
+        root:
+          type: string
+        path:
+          type: string
+        indent-symbol:
+          type: string
+        variables:
+          type: object
+          default: {}
+      additionalProperties: false
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # ENUM Tokenisation Block Kind / SubKind
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     EnumTokenisationBlockKind:
