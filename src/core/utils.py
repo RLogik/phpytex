@@ -36,20 +36,19 @@ __all__ = [
     'extractIndent',
     'length_of_white_space',
     'sizeOfIndent',
+    'flatten',
     'unique',
-    'inheritanceOnGraph',
     'readYamlFile',
     'restrictDictionary',
     'toPythonKeys',
     'toPythonKeysDict',
-    'getAttribute',
 ];
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# GLOBAL VARIABLES
+# LOCAL VARIABLES / CONSTANTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#
+T = TypeVar('T');
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # METHOD os sensitive commands
@@ -235,7 +234,7 @@ def sizeOfIndent(s: str, indentsymb: str) -> int:
 # METHODS: array methods
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def unique(X: list[Any]) -> list[Any]:
+def unique(X: list[T]) -> list[T]:
     X_ = [];
     for el in X:
         if el in X_:
@@ -243,40 +242,11 @@ def unique(X: list[Any]) -> list[Any]:
         X_.append(el);
     return X_;
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# METHODS: inheritance properties on graphs
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-def inheritanceOnGraph(edges: list[tuple[str, str]], hasProperty: dict[str, bool]):
-    '''
-    @inputs:
-    - `edges` of a finite graph
-    - an abstract `hasProperty` dictionary, assigning to each node, if property holds
-
-    @returns:
-    copy of `hasProperty` wherein all descendants of nodes with property have property
-    '''
-    P = [];
-    for u, value in hasProperty.items():
-        if value:
-            P.append(u)
-    properties = { u: value for u, value in hasProperty.items() };
-    for u, v in edges:
-        if not (u in properties):
-            properties[u] = False;
-        if not (v in properties):
-            properties[v] = False;
-    # keep updating until stable:
-    while True:
-        changed = False;
-        for u, v in edges:
-            if u in P and not (v in P):
-                P.append(v);
-                properties[v] = True;
-                changed = True;
-        if not changed:
-            break;
-    return properties;
+def flatten(XX: list[list[T]]) -> list[T]:
+    X = [];
+    for X_ in XX:
+        X += X_;
+    return X;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # METHODS: yaml and config
@@ -297,29 +267,3 @@ def toPythonKeys(key: str) -> str:
 
 def toPythonKeysDict(obj: dict[str, Any]) -> dict[str, Any]:
     return { toPythonKeys(key): value for key, value in obj.items() };
-
-def getAttribute(obj: Any, *keys: str | int | list[str | int], expectedtype: Type | tuple[Type] = Any, default: Any = None) -> Any:
-    if len(keys) == 0:
-        return obj;
-    nextkey = keys[0];
-    nextkey = nextkey if isinstance(nextkey, list) else [ nextkey ];
-    try:
-        for key in nextkey:
-            if isinstance(key, str) and isinstance(obj, dict) and key in obj:
-                value = obj[key];
-                if len(keys) <= 1:
-                    return value if isinstance(value, expectedtype) else default;
-                else:
-                    return getAttribute(obj[key], *keys[1:], expectedtype=expectedtype, default=default);
-            elif isinstance(key, int) and isinstance(obj, (list,tuple)) and key < len(obj):
-                value = obj[key];
-                if len(keys) <= 1:
-                    return value if isinstance(value, expectedtype) else default;
-                else:
-                    return getAttribute(obj[key], *keys[1:], expectedtype=expectedtype, default=default);
-    except:
-        pass;
-    if len(keys) <= 1:
-        return default;
-    path = ' -> '.join([ str(key) for key in keys ]);
-    raise Exception('Could not find \033[1m{}\033[0m in object!'.format(path));

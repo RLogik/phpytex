@@ -334,12 +334,15 @@ def processBlockCode(u: LarkTree, offset: str, indentation: IndentationTracker) 
     if typ == 'blockcode':
         instructions = processBlockCodeArguments(children[0]);
         tokens, kwargs = instructions;
+        option_import = 'import' in tokens;
+        option_print = 'print' in tokens or kwargs.get('print', False);
+        option_print = option_print if isinstance(option_print, bool) else False;
         block = processBlockCode(children[1], offset=offset, indentation=indentation);
-        if 'import' in tokens:
+        if option_import:
             block.kind = EnumTokenisationBlockKind.code;
             block.sub_kind = EnumTokenisationBlockSubKind.import_;
             return block;
-        elif 'print' in tokens or getAttribute(kwargs, 'print', expectedtype=bool, default=False):
+        elif option_print:
             block.kind = EnumTokenisationBlockKind.code;
             block.sub_kind = EnumTokenisationBlockSubKind.value;
             blockcontainer = TranspileBlock(

@@ -111,7 +111,7 @@ components:
         - label
         - root
         - path
-        - intent-symbol
+        - indent-symbol
       properties:
         label:
           type: string
@@ -124,6 +124,25 @@ components:
         variables:
           type: object
           default: {}
+      additionalProperties: false
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Tokenisation Block
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    TokenisationDocuments:
+      description: |-
+        Structure for transpiled project consisting of documents.
+      type: object
+      required:
+        - root
+        - indent-symbol
+        - name-space
+      properties:
+        root:
+          type: string
+        indent-symbol:
+          type: string
+        name-space:
+            $ref: "./config-schema.yaml/#/components/schemas/NameSpacePython"
       additionalProperties: false
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # ENUM Tokenisation Block Kind / SubKind

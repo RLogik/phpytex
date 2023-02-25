@@ -51,7 +51,11 @@ def step_transpile():
     preambles = [];
     exportvars = dict();
     imports = TranspileBlocks();
-    documents = TranspileDocuments(root=src.paths.wd, indentsymb=options.indent_character, schemes=config.NAMESPACE);
+    documents = TranspileDocuments(
+        root = src.paths.wd,
+        indentsymb = options.indent_character,
+        name_space = config.NAMESPACE,
+    );
 
     ## Transpile preamble:
     if config.PATHS.file_stamp is not None:
@@ -195,7 +199,7 @@ def transpile_document(
         blocks.append(documents.documentStamp(depth=0, start=False, anon=anon, hide=hide));
 
     documents.addBlocks(path=path, blocks=blocks);
-    for subpath in documents.getSubPaths(path):
+    for subpath in documents.subpaths(path):
         transpile_document(
             path      = subpath,
             documents = documents,
