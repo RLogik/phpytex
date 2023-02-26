@@ -22,8 +22,8 @@ from src.models.internal.transpiledocuments import *;
 __all__ = [
     'ConfigParameter',
     'EnumTokenisationBlockKind',
-    'EnumTokenisationBlockSubKind',
     'EnumTokenisationBlockScope',
+    'EnumTokenisationBlockSubKind',
     'EvalType',
     'IndentationTracker',
     'TokenisationBlock',
@@ -31,4 +31,6 @@ __all__ = [
     'TranspileBlocks',
     'TranspileDocument',
     'TranspileDocuments',
+    'create_block_stamp',
+    'create_block_tree',
 ];

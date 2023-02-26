@@ -123,12 +123,12 @@ def update_config(
 
     # set spacing options
     if transpilation.tabs:
-        config.TRANSPILATION.indent_character = '\t';
-        config.TRANSPILATION.indent_character_re = r'\t';
+        config.TRANSPILATION.indent_symbol = '\t';
+        config.TRANSPILATION.indent_symbol_re = r'\t';
     else:
         n = transpilation.spaces;
-        config.TRANSPILATION.indent_character = n * ' ';
-        config.TRANSPILATION.indent_character_re = n * ' ';
+        config.TRANSPILATION.indent_symbol = n * ' ';
+        config.TRANSPILATION.indent_symbol_re = n * ' ';
 
     return;
 

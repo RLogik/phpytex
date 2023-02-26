@@ -53,7 +53,7 @@ def step_transpile():
     imports = TranspileBlocks();
     documents = TranspileDocuments(
         root = src.paths.wd,
-        indentsymb = options.indent_character,
+        indent_symbol = options.indent_symbol,
         name_space = config.NAMESPACE,
     );
 
@@ -64,33 +64,29 @@ def step_transpile():
         options_.show_tree = False;
         name = 'stamp';
         preambles.append(name);
-        transpile_document(
-            path        = config.PATHS.file_stamp,
-            documents   = documents,
-            imports     = TranspileBlocks(),
-            name        = name,
-            is_preamble = True,
-            silent      = True,
-            options     = options_,
+        transpile_preamble(
+            name = name,
+            path = config.PATHS.file_stamp,
+            documents = documents,
+            imports = TranspileBlocks(),
+            options = options_,
         );
 
     ## Transpile document file:
     transpile_document(
-        path        = config.PATHS.file_start,
-        documents   = documents,
-        imports     = imports,
-        name        = '',
-        is_preamble = False,
-        silent      = get_quiet_mode(),
-        options     = options,
+        path = config.PATHS.file_start,
+        documents = documents,
+        options = options,
+        imports = imports,
+        silent = get_quiet_mode(),
     );
 
     ## Add document structure:
     name = 'tree';
     if options.show_tree:
         preambles.append(name);
-    blocks = TranspileBlocks([documents.documentTree(seed=options.seed)]);
-    documents.addPreamble(name=name, blocks=blocks);
+    blocks = TranspileBlocks([create_block_tree(documents, seed=options.seed)]);
+    documents.append_preamble(name=name, blocks=blocks);
 
     ## Handle global parameters:
     if config.PATHS.file_params_py is not None:
@@ -105,7 +101,7 @@ def step_transpile():
             kind        = 'code',
             content     = f'from {config.PATHS.import_params} import *;',
             level       = 0,
-            indentsymb  = options.indent_character,
+            indent_symbol  = options.indent_symbol,
         ));
 
     ## Generate result of transpilation (phpytex -> python):
@@ -125,65 +121,81 @@ def step_transpile():
 # SECONDARY METHODS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+def transpile_preamble(
+    name: str,
+    path: str,
+    documents: TranspileDocuments,
+    options: TranspileOptions,
+):
+    try:
+        lines = read_text_file(path);
+    except:
+        log_error(f'Could not find or read document \x1b[1m{path}\x1b[0m!');
+        return;
+
+    indentation = IndentationTracker(
+        symb    = options.indent_symbol,
+        pattern = options.indent_symbol_re,
+    );
+
+    blocks = TranspileBlocks();
+    for block in parseText(lines, indentation, offset=options.offset_symbol):
+        if (block.kind, block.sub_kind) == (EnumTokenisationBlockKind.text, EnumTokenisationBlockSubKind.comment):
+            blocks.append(block);
+    blocks.append(TranspileBlock(
+        kind = EnumTokenisationBlockKind.text,
+        sub_kind = EnumTokenisationBlockSubKind.empty,
+        level = 0,
+        indent_symbol = documents.indent_symbol,
+    ));
+    documents.append_preamble(name=name, blocks=blocks);
+    log_plain(display_tree_branch(path=path));
+    return;
+
 def transpile_document(
     path: str,
     documents: TranspileDocuments,
-    imports: TranspileBlocks,
     options: TranspileOptions,
-    chain: list[str] = [],
-    name: str = '',
-    is_preamble: bool = False,
+    imports: TranspileBlocks,
     silent: bool = False,
+    chain: list[str] = [],
 ):
     if path in chain:
         log_error('The document contains a cycle!');
         return;
+    if path in documents.paths:
+        return;
+
     try:
         lines = read_text_file(path);
     except:
-        log_error('Could not find or read document \033[1m{path}\033[0m!'.format(path = path));
+        log_error(f'Could not find or read document \x1b[1m{path}\x1b[0m!');
         return;
+
     depth = len(chain);
-    indentsymb = options.indent_character;
-    offset = options.offset_symbol;
     indentation = IndentationTracker(
-        symb    = indentsymb,
-        pattern = options.indent_character_re,
+        symb = options.indent_symbol,
+        pattern = options.indent_symbol_re,
     );
 
-    # cases 1+2:
-    if is_preamble:
-        blocks = TranspileBlocks();
+    # NOTE: need to add document first, in order to update anon- + hide-state:
+    document = documents.append_document(path=path);
+    anon = documents.anon[path];
+    hide = documents.hide[path];
 
-        for block in parseText(lines, indentation, offset=offset):
-            if block.kind == 'text:comment':
-                blocks.append(block);
-
-        blocks.append(TranspileBlock(kind='text:empty'))
-
-        documents.addPreamble(name=name, blocks=blocks);
-        log_plain(display_tree_branch(path=path, anon=False, depth=depth));
-        return;
-    elif path in documents.paths:
-        return;
-
-    # case 3:
-
-    # NOTE: need to do this first, in order to update anon-state
-    documents.addDocument(path=path);
-    anon = documents.isAnon(path=path);
-    hide = documents.isHidden(path=path);
     blocks = TranspileBlocks();
-    log_plain(display_tree_branch(path=path, anon=anon, depth=depth));
+
+    if not silent:
+        log_plain(display_tree_branch(path=path, anon=anon, depth=depth));
 
     if options.show_tree:
-        blocks.append(documents.documentStamp(depth=0, start=True, anon=anon, hide=hide));
+        blocks.append(create_block_stamp(documents, depth=0, start=True, anon=anon, hide=hide));
 
-    for block in parseText(lines, indentation, offset=offset):
-        match block.kind:
-            case 'code:import':
+    for block in parseText(lines, indentation, offset=options.offset_symbol):
+        match (block.kind, block.sub_kind):
+            case (EnumTokenisationBlockKind.code, EnumTokenisationBlockSubKind.import_):
                 imports.append(block);
-            case 'text:comment':
+            case (EnumTokenisationBlockKind.text, EnumTokenisationBlockSubKind.comment):
                 match options.comments:
                     case EnumCommentsOption.auto:
                         if block.parameters.keep:
@@ -196,17 +208,20 @@ def transpile_document(
                 blocks.append(block);
 
     if options.show_tree:
-        blocks.append(documents.documentStamp(depth=0, start=False, anon=anon, hide=hide));
+        blocks.append(create_block_stamp(documents, depth=0, start=False, anon=anon, hide=hide));
 
-    documents.addBlocks(path=path, blocks=blocks);
+    # add transpiled blocks to document:
+    documents.append_blocks(document, blocks=blocks);
+
+    # call recursively for subpaths:
     for subpath in documents.subpaths(path):
         transpile_document(
-            path      = subpath,
+            path = subpath,
             documents = documents,
-            imports   = imports,
-            chain     = chain + [path],
-            silent    = silent,
-            options   = options,
+            options = options,
+            imports = imports,
+            silent = silent,
+            chain = chain + [path],
         );
     return;
 
@@ -216,7 +231,6 @@ def create_import_file_parameters(
     documents: TranspileDocuments
 ):
     global exportvars;
-    options = config.TRANSPILATION;
 
     if os.path.exists(path) and not overwrite:
         return;
@@ -255,17 +269,17 @@ def create_metacode(
     lines = [];
     lines += dedent_as_list(
         _lines_pre.format(
-            imports       = '\n'.join(imports.generateCode()),
-            root          = src.paths.wd,
-            output        = os.path.join(src.paths.wd, options.output),
-            name          = options.output,
-            insert_bib    = options.insert_bib,
+            imports = '\n'.join(imports.generateCode()),
+            root = src.paths.wd,
+            output = os.path.join(src.paths.wd, options.output),
+            name = options.output,
+            insert_bib = options.insert_bib,
             compile_latex = options.compile_latex,
-            length_max    = options.max_length,
-            seed          = options.seed,
-            indentsymb    = options.indent_character,
-            censorsymb    = options.censor_symbol,
-            mainfct       = config.NAMESPACE.function_name_main,
+            length_max = options.max_length,
+            seed = options.seed,
+            indent_symbol = options.indent_symbol,
+            censor_symbol = options.censor_symbol,
+            mainfct = config.NAMESPACE.function_name_main,
         )
     );
     lines.append('');
@@ -283,14 +297,14 @@ def display_tree_branch(
     path: str,
     anon: bool = False,
     prefix: str = '',
-    indentsymb: str = '    ',
+    indent_symbol: str = '    ',
     branchsymb: str = '  |____ ',
     depth: int = 0,
 ) -> str:
     options = config.TRANSPILATION;
     return '{prefix}{tab}{branchsymb}{path}'.format(
         prefix = prefix,
-        tab = indentsymb * max(depth - 1, 0),
+        tab = indent_symbol * max(depth - 1, 0),
         branchsymb = ' ' if depth == 0 else branchsymb,
         path = options.censor_symbol if anon else path,
     );

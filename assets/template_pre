@@ -49,8 +49,8 @@ ____phpytex_params____ = dict(
     length         = 0,
     length_max     = {length_max},
     length_error   = False,
-    indentsymb     = '{indentsymb}',
-    censorsymb     = '{censorsymb}',
+    indent_symbol  = '{indent_symbol}',
+    censor_symbol  = '{censor_symbol}',
 );
 __FNAME__  = '<undefined>';
 __ROOT__   = '.';
@@ -194,8 +194,8 @@ def ____printfilestamp(depth: int, start: bool, anon: bool, hide: bool):
     anon = (anon or __ANON__);
     hide = (hide or __HIDE__);
     params = dict(
-        tab  = ____phpytex_params____['indentsymb'] * depth,
-        path = ____phpytex_params____['censorsymb'] if anon else __FNAME__,
+        tab  = ____phpytex_params____['indent_symbol'] * depth,
+        path = ____phpytex_params____['censor_symbol'] if anon else __FNAME__,
     );
     if start:
         ____print('{{tab}}%% ********************************************************************************'.format(**params), anon=anon, hide=hide);

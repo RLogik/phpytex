@@ -164,9 +164,9 @@ components:
           type: integer
         seed:
           type: integer
-        indent-character:
+        indent-symbol:
           type: string
-        indent-character-re:
+        indent-symbol-re:
           type: string
         censor-symbol:
           type: string

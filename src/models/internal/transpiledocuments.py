@@ -27,6 +27,8 @@ from src.models.internal.transpiledocument import *;
 
 __all__ = [
     'TranspileDocuments',
+    'create_block_stamp',
+    'create_block_tree',
 ];
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -78,81 +80,119 @@ class TranspileDocuments(TokenisationDocuments):
             index = None;
         return f'{self.name_space.function_name_file}_{index}';
 
-    def addPreamble(self, name: str, blocks: TranspileBlocks):
+    def append_preamble(self, name: str, blocks: TranspileBlocks):
         self.preamble[name] = blocks;
         return;
 
-    def addDocument(self, path: str):
-        if path in self.paths:
-            return;
-        self.paths.append(path);
-        document = TranspileDocument(
-            root = self.root,
-            path = os.path.relpath(path=os.path.abspath(path), start=self.root),
-            indent_symbol = self.indent_symbol,
-            label = self.function_name(path)
-        );
-        self.documents[path] = document;
-        # update properites of anonymity and hidden-state:
-        property_inheritance_graph(edges=self.edges, state=self.anon);
-        property_inheritance_graph(edges=self.edges, state=self.hide);
-        return;
+    def append_document(self, path: str) -> TranspileDocument:
+        path = os.path.relpath(path=path, start=self.root) if os.path.isabs(path) else path;
+        if not path in self.paths:
+            self.paths.append(path);
+            document = TranspileDocument(
+                root = self.root,
+                path = path,
+                indent_symbol = self.indent_symbol,
+                label = self.function_name(path)
+            );
+            self.documents[path] = document;
+            # update properites of anonymity and hidden-state:
+            property_inheritance_graph(edges=self.edges, state=self.anon);
+            property_inheritance_graph(edges=self.edges, state=self.hide);
+        return self.documents[path];
 
-    def addBlocks(self, path: str, blocks: TranspileBlocks):
-        assert path in self.documents, 'Must add document first, before adding blocks.';
-        document = self.documents[path];
+    def append_blocks(self, document: TranspileDocument, blocks: TranspileBlocks):
+        path = document.path;
         for block in blocks:
             state = dict(level=block.level, indent_symbol=block.indent_symbol);
-            if re.match(r'^text($|:)', block.kind):
-                document.append(block);
-            elif block.kind == 'code':
-                document.append(block);
-            elif block.kind == 'code:escape':
-                document.append(block);
-            elif block.kind == 'code:set':
-                variable_name   = block.parameters.var_name;
-                variable_value = block.parameters.code_value;
-                scope     = block.parameters.scope;
-                try:
-                    value = self.evaluate(variable_value, document=document);
-                except:
-                    ## TODO: deal with error
-                    log_error(f'Could not evaluate \033[1m<<< {scope} set {variable_name} = {variable_value} >>>\033[0m.');
-                    continue;
-                if scope == 'local':
-                    document.variables[variable_name] = value;
-                elif scope == 'global':
-                    self.variables[variable_name] = value;
-                document.append(block);
-            elif block.kind == 'code:input':
-                ## extract block parameters:
-                _path      = block.parameters.path;
-                anon       = block.parameters.anon;
-                hide       = block.parameters.hide;
-                mode       = block.parameters.mode;
-                textindent = block.parameters.tab;
-                ## unpack path expression (potentially evaluate):
-                try:
-                    _path = self.evaluate(_path, document=document);
-                except:
-                    ## TODO: deal with error
-                    cmd  = ('bibliography' if mode == 'bib' else 'input') \
-                            + ('_anon' if anon else ('_hide' if hide else ''));
-                    log_error(f'Could not evaluate \033[1m<<< {cmd} {_path}\033[0m >>>\033[0m.');
-                    continue;
-                _path = path_relative_to_root(path=_path, document=document);
-                ## add edge for the sake of display (regardless of whether input or bib mode):
-                self.docEdges.append((path, _path));
-                if mode == 'input':
-                    self.edges.append((path, _path));
-                # update properites of anonymity and hidden-state:
-                property_inheritance_graph(edges=self.edges, state=self.anon, force=[_path] if anon else []);
-                property_inheritance_graph(edges=self.edges, state=self.hide, force=[_path] if hide else []);
-                ## create phpytex-code blocks based on computed path:
-                if mode == 'input':
-                    document.append(TranspileBlock(kind='text:empty', **state)); # force empty line before input of file
+            match (block.kind, block.sub_kind):
+                case (EnumTokenisationBlockKind.text, _):
+                    document.append(block);
+                case (EnumTokenisationBlockKind.code, EnumTokenisationBlockSubKind.set):
+                    variable_name   = block.parameters.var_name;
+                    variable_value = block.parameters.code_value;
+                    scope     = block.parameters.scope;
+                    try:
+                        value = self.evaluate(variable_value, document=document);
+                    except:
+                        # TODO: deal with error
+                        log_error(f'Could not evaluate \x1b[1m<<< {scope} set {variable_name} = {variable_value} >>>\x1b[0m.');
+                        continue;
+                    if scope == 'local':
+                        document.variables[variable_name] = value;
+                    elif scope == 'global':
+                        self.variables[variable_name] = value;
+                    document.append(block);
+                case (EnumTokenisationBlockKind.code, EnumTokenisationBlockSubKind.escape):
+                    document.append(block);
+                case (EnumTokenisationBlockKind.code, _):
+                    document.append(block);
+                case (EnumTokenisationBlockSubKind.input, EnumTokenisationBlockSubKind.bib):
+                    # extract block parameters:
+                    _path = block.parameters.path;
+                    anon = block.parameters.anon;
+                    hide = block.parameters.hide;
+                    textindent = block.parameters.tab;
+
+                    # unpack path expression (potentially evaluate):
+                    try:
+                        _path = self.evaluate(_path, document=document);
+                    except:
+                        # TODO: deal with error
+                        cmd  = 'bibliography' + ('_anon' if anon else ('_hide' if hide else ''));
+                        log_error(f'Could not evaluate \x1b[1m<<< {cmd} {_path}\x1b[0m >>>\x1b[0m.');
+                        continue;
+
+                    _path = path_relative_to_root(path=_path, document=document);
+                    # add edge for the sake of display (regardless of whether input or bib mode):
+                    self.docEdges.append((path, _path));
+
+                    # update properites of anonymity and hidden-state:
+                    property_inheritance_graph(edges=self.edges, state=self.anon, force=[_path] if anon else []);
+                    property_inheritance_graph(edges=self.edges, state=self.hide, force=[_path] if hide else []);
+
+                    # create phpytex-code blocks based on computed path:
                     document.append(TranspileBlock(
-                        kind        = 'code',
+                        kind = EnumTokenisationBlockKind.code,
+                        lines = [
+                            f'____insertbib(\'{_path}\', textindent=\'{textindent}\', anon={anon});',
+                        ],
+                        **state
+                    ));
+                # case (EnumTokenisationBlockSubKind.input, EnumTokenisationBlockSubKind.tex):
+                case (EnumTokenisationBlockSubKind.input, _):
+                    # extract block parameters:
+                    _path = block.parameters.path;
+                    anon = block.parameters.anon;
+                    hide = block.parameters.hide;
+                    textindent = block.parameters.tab;
+
+                    # unpack path expression (potentially evaluate):
+                    try:
+                        _path = self.evaluate(_path, document=document);
+                    except:
+                        # TODO: deal with error
+                        cmd  = 'input' + ('_anon' if anon else ('_hide' if hide else ''));
+                        log_error(f'Could not evaluate \x1b[1m<<< {cmd} {_path}\x1b[0m >>>\x1b[0m.');
+                        continue;
+
+                    _path = path_relative_to_root(path=_path, document=document);
+                    # add edge for the sake of display (regardless of whether input or bib mode):
+                    self.docEdges.append((path, _path));
+                    self.edges.append((path, _path));
+
+                    # update properites of anonymity and hidden-state:
+                    property_inheritance_graph(edges=self.edges, state=self.anon, force=[_path] if anon else []);
+                    property_inheritance_graph(edges=self.edges, state=self.hide, force=[_path] if hide else []);
+
+                    # create phpytex-code blocks based on computed path:
+                    # force empty line before input of file
+                    document.append(TranspileBlock(
+                        kind = EnumTokenisationBlockKind.text,
+                        sub_kind = EnumTokenisationBlockSubKind.empty,
+                        **state
+                    ));
+                    document.append(TranspileBlock(
+                        kind = EnumTokenisationBlockKind.code,
                         lines       = [
                             f'{self.name_space.function_name_file}(\'{_path}\');',
                             '# Restore state of current file:',
@@ -160,78 +200,14 @@ class TranspileDocuments(TokenisationDocuments):
                         ],
                         **state
                     ));
-                elif mode == 'bib':
-                    document.append(TranspileBlock(
-                        kind           = 'code',
-                        lines          = [
-                            f'____insertbib(\'{_path}\', textindent=\'{textindent}\', anon={anon});',
-                        ],
-                        **state
-                    ));
-        document.append(TranspileBlock(kind='text:empty', level=0, indent_symbol=self.indent_symbol)); # force empty add end of file
-        return;
-
-    def documentStructurePretty(
-        self,
-        path = None,
-        anon:       bool = False,
-        prefix:     str  = '',
-        indent_symbol: str  = '    ',
-        branchsymb: str  = '  |____',
-        depth:      int  = 0
-    ) -> Generator[str, None, None]:
-        if not isinstance(path, str):
-            depth = 0;
-            children = self.head_paths;
-        elif self.hide[path]:
-            return;
-        else:
-            anon = anon or self.anon[path];
-            yield '{prefix}{tab}{branchsymb} {path}'.format(
-                prefix = prefix,
-                tab = indent_symbol*(depth if depth == 0 else depth - 1),
-                branchsymb = '' if depth == 0 else branchsymb,
-                path = '########' if anon else path,
-            );
-            depth = depth + 1;
-            children = [];
-            if path in self.paths:
-                children = [ v for u, v in self.docEdges if u == path ];
-        for subpath in children:
-            yield from self.documentStructurePretty(subpath, anon=anon, prefix=prefix, indent_symbol=indent_symbol, branchsymb=branchsymb, depth=depth);
-        return;
-
-    def documentStamp(self, depth: int, start: bool, anon: bool, hide: bool) -> TranspileBlock:
-        return TranspileBlock(
-            kind       = 'code',
-            content    = f'____printfilestamp(depth={depth}, start={start}, anon={anon}, hide={hide});',
-            level      = 0,
-            indent_symbol = self.indent_symbol
-        );
-
-    def documentTree(self, seed: Optional[int]) -> TranspileBlock:
-        return TranspileBlock(
-            kind       = 'text:comment',
-            lines      = dedent_as_list(
-                '''
-                %% ********************************************************************************
-                %% DOCUMENT STRUCTURE:
-                %% ~~~~~~~~~~~~~~~~~~~
-                %%
-                '''
-            ) \
-            + list(self.documentStructurePretty(prefix='%% ')) \
-            + dedent_as_list(
-                f'''
-                %%
-                %% DOCUMENT-RANDOM-SEED: {seed if isinstance(seed, int) else "---"}
-                %% ********************************************************************************
-                '''
-            ) \
-            + [ '' ],
-            level      = 0,
+        # force empty line at end of file
+        document.append(TranspileBlock(
+            kind = EnumTokenisationBlockKind.text,
+            sub_kind = EnumTokenisationBlockSubKind.empty,
+            level = 0,
             indent_symbol = self.indent_symbol,
-        );
+        ));
+        return;
 
     def generateCode(
         self,
@@ -258,7 +234,7 @@ class TranspileDocuments(TokenisationDocuments):
             + [
                 f'{tab}{tab}case _:'
                 f'{tab}{tab}{tab}raise Exception(f\'[\\x1b[91;1mERROR\\x1b[0m] Could not find a method associated to the document {{path}}.\')'
-                r' \033[1m{}\033[0m.'
+                r' \x1b[1m{}\x1b[0m.'
             ] \
             + [
                 f'{tab}return;',
@@ -320,3 +296,91 @@ class TranspileDocuments(TokenisationDocuments):
             indent_symbol = self.indent_symbol,
         ).generateCode(offset=offset, anon=False, hide=False);
         return;
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# OTHER METHODS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def create_block_stamp(
+    documents: TranspileDocuments,
+    depth: int,
+    start: bool,
+    anon: bool,
+    hide: bool,
+) -> TranspileBlock:
+    return TranspileBlock(
+        kind = EnumTokenisationBlockKind.code,
+        content = f'____printfilestamp(depth={depth}, start={start}, anon={anon}, hide={hide});',
+        level = 0,
+        indent_symbol = documents.indent_symbol,
+    );
+
+def create_block_tree(
+    documents: TranspileDocuments,
+    seed: Optional[int],
+) -> TranspileBlock:
+    return TranspileBlock(
+        kind = EnumTokenisationBlockKind.text,
+        kind = EnumTokenisationBlockSubKind.comment,
+        lines = dedent_as_list(
+                '''
+                %% ********************************************************************************
+                %% DOCUMENT STRUCTURE:
+                %% ~~~~~~~~~~~~~~~~~~~
+                %%
+                '''
+            ) \
+            + list(documents.pretty(prefix='%% ')) \
+            + dedent_as_list(
+                f'''
+                %%
+                %% DOCUMENT-RANDOM-SEED: {seed if isinstance(seed, int) else "---"}
+                %% ********************************************************************************
+                '''
+            ) \
+            + [ '' ],
+        level = 0,
+        indent_symbol = documents.indent_symbol,
+    );
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# AUXILIARY METHODS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def print_pretty(
+    documents: TranspileDocuments,
+    path = None,
+    anon:       bool = False,
+    prefix:     str  = '',
+    indent_symbol: str  = '    ',
+    branchsymb: str  = '  |____',
+    depth:      int  = 0
+) -> Generator[str, None, None]:
+    if not isinstance(path, str):
+        depth = 0;
+        children = documents.head_paths;
+    elif documents.hide[path]:
+        return;
+    else:
+        anon = anon or documents.anon[path];
+        yield '{prefix}{tab}{branchsymb} {path}'.format(
+            prefix = prefix,
+            tab = indent_symbol*(depth if depth == 0 else depth - 1),
+            branchsymb = '' if depth == 0 else branchsymb,
+            path = '########' if anon else path,
+        );
+        depth = depth + 1;
+        children = [];
+        if path in documents.paths:
+            children = [ v for u, v in documents.docEdges if u == path ];
+    for subpath in children:
+        yield from print_pretty(
+            documents,
+            path = subpath,
+            anon = anon,
+            prefix = prefix,
+            indent_symbol = indent_symbol,
+            branchsymb = branchsymb,
+            depth = depth,
+        );
+    return;
