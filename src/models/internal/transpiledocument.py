@@ -53,7 +53,7 @@ class TranspileDocument(TokenisationDocument):
         self.blocks.append(block);
         return;
 
-    def generateCode(
+    def to_code(
         self,
         offset:     int       = 0,
         globalvars: list[str] = [],
@@ -66,7 +66,7 @@ class TranspileDocument(TokenisationDocument):
                 f'# generate content from file \'{self.path}\'',
                 f'def {self.label}():',
             ],
-        ).generateCode(offset, anon=False, hide=False);
+        ).to_code(offset, anon=False, hide=False);
         yield from TranspileBlock(
             kind = EnumTokenisationBlockKind.code,
             lines = [
@@ -83,15 +83,15 @@ class TranspileDocument(TokenisationDocument):
                 '# Save current state locally. Use to restore state after importing subfiles.',
                 '__STATE__ = (__ROOT__, __DIR__, __FNAME__, __ANON__, __HIDE__, __IGNORE__);',
             ],
-        ).generateCode(offset+1, anon=False, hide=False);
+        ).to_code(offset+1, anon=False, hide=False);
         for block in self:
-            yield from block.generateCode(offset+1, anon=anon, hide=hide);
+            yield from block.to_code(offset+1, anon=anon, hide=hide);
         yield from TranspileBlock(
             kind = EnumTokenisationBlockKind.code,
             lines = [
                 'return;',
             ],
-        ).generateCode(offset, anon=False, hide=False);
+        ).to_code(offset, anon=False, hide=False);
         return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

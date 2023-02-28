@@ -7,7 +7,8 @@
 
 from __future__ import annotations;
 
-from src.core.utils import sizeOfIndent;
+from src.thirdparty.types import *;
+from src.core.utils import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # EXORTS
@@ -22,35 +23,55 @@ __all__ = [
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 class IndentationTracker(object):
-    pattern:    str;
-    symb:       str;
-    reference: int;
-    level:     int;
+    pattern: str;
+    symbol: str;
+    reference: tuple[int, int];
+    level: int;
 
     def __init__(
         self,
-        symb: str,
+        symbol: str,
         pattern: str,
         reference: str = ''
     ):
-        self.symb = symb;
+        self.symbol = symbol;
         self.pattern = pattern;
         self.level = 0;
-        self.reference = sizeOfIndent(reference, indentsymb=symb);
+        self.reference = size_of_indent(reference, unit=symbol);
         return;
 
-    def relativeOffset(self, s: str):
-        return max(sizeOfIndent(s, indentsymb=self.symb) - self.reference, 0);
+    def _compute_offset(self, s: str) -> int:
+        # compute size of
+        n0, r0 = self.reference;
+        n, r = size_of_indent(s, unit=self.symbol);
+        return max(n - n0, 0);
 
-    def setOffset(self, s: str) -> int:
-        n = self.relativeOffset(s);
-        self.level = n;
-        return self.level;
+    def set_offset(self, s: str):
+        '''
+        Computes the level of indentation based on string `s`
+        computed relative to the indentation symbol.
+        '''
+        self.level = self._compute_offset(s);
+        return;
 
-    def decrOffset(self) -> int:
-        self.level = max(self.level - 1, 0);
-        return self.level;
-
-    def incrOffset(self) -> int:
+    def __iadd__(self, n: Any):
+        '''
+        Increase indentation by `n` levels.
+        '''
+        if not isinstance(n, int):
+            raise Exception(f'Can only perfor {self} += <int>-type!');
+        if n < 0:
+            return self.__isub__(-n);
         self.level += 1;
+        return self.level;
+
+    def __isub__(self, n: Any):
+        '''
+        Decrease indentation by `n` levels.
+        '''
+        if not isinstance(n, int):
+            raise Exception(f'Can only perfor {self} += <int>-type!');
+        if n < 0:
+            return self.__iadd__(-n);
+        self.level = max(self.level - 1, 0);
         return self.level;

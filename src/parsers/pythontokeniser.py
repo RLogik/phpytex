@@ -11,8 +11,7 @@ from src.thirdparty.logic import *;
 
 from src.core.constants import *;
 from src.core.log import *;
-from src.core.utils import extractIndent;
-from src.core.utils import sizeOfIndent;
+from src.core.utils import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # EXPORTS
@@ -40,16 +39,16 @@ __all__ = [
 # NOTE: recursively yields the required level of indentation _after_ each lines
 # E.g. lines ending in ':' command a +1 indentation level.
 ########
-def getIndentations(codelines: list[str], indentsymb: str = '    ', encoding: str = ENCODING_UTF8) -> list[str]:
+def getIndentations(codelines: list[str], indent_symbol: str = '    ', encoding: str = ENCODING_UTF8) -> list[str]:
     indents = [];
     tokengroup = [];
     ## pad code lines, to allow for interrupted blocks that start off with positive indents:
     nPad = 0;
     for line in codelines:
         if not (line.strip() == ''):
-            indent = extractIndent(line);
-            nPad = sizeOfIndent(indent, indentsymb=indentsymb);
-            codelines = [ indentsymb*i + 'pass;' for i in range(nPad) ] + codelines;
+            indent = extract_indent(line);
+            nPad, _ = size_of_indent(indent, indent_symbol=indent_symbol);
+            codelines = [ f'{indent_symbol * i}pass;' for i in range(nPad) ] + codelines;
             break;
     ## cumulatively group together tokens and yield indentation:
     for token in tokenisePythonCode(code='\n'.join(codelines), encoding=encoding):
@@ -100,4 +99,4 @@ def getIndentationOfTokenGroup(tokengroup: list[tokenize.TokenInfo]):
 # NOTE: tokenize does not always compute the full indentation of INDENT/DEDENT tokens, so need to manually extract
 def getFullIndentationOfToken(token: tokenize.TokenInfo) -> str:
     line = token.line.rstrip();
-    return extractIndent(line);
+    return extract_indent(line);

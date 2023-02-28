@@ -209,7 +209,7 @@ class TranspileDocuments(TokenisationDocuments):
         ));
         return;
 
-    def generateCode(
+    def to_code(
         self,
         offset:     int       = 0,
         preambles:  list[str] = [],
@@ -240,7 +240,7 @@ class TranspileDocuments(TokenisationDocuments):
                 f'{tab}return;',
             ],
             indent_symbol = self.indent_symbol,
-        ).generateCode(offset=offset, anon=False, hide=False);
+        ).to_code(offset=offset, anon=False, hide=False);
 
         # generate function for preamble parts
         for name, blocks in self.preamble.items():
@@ -253,19 +253,19 @@ class TranspileDocuments(TokenisationDocuments):
                     '''
                 ),
                 indent_symbol = self.indent_symbol,
-            ).generateCode(offset=offset, anon=False, hide=False);
-            yield from blocks.generateCode(offset=offset+1, anon=False, hide=False);
+            ).to_code(offset=offset, anon=False, hide=False);
+            yield from blocks.to_code(offset=offset+1, anon=False, hide=False);
             yield from TranspileBlock(
                 lines = [
                     f'{tab}return;',
                 ],
                 indent_symbol = self.indent_symbol,
-            ).generateCode(offset, anon=False, hide=False);
+            ).to_code(offset, anon=False, hide=False);
 
         # generate individual functions for documents
         for path, document in self.documents.items():
             yield '';
-            yield from document.generateCode(
+            yield from document.to_code(
                 offset = offset,
                 globalvars = globalvars,
                 anon = self.anon[path],
@@ -294,7 +294,7 @@ class TranspileDocuments(TokenisationDocuments):
                 f'{tab}return;',
             ],
             indent_symbol = self.indent_symbol,
-        ).generateCode(offset=offset, anon=False, hide=False);
+        ).to_code(offset=offset, anon=False, hide=False);
         return;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

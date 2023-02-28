@@ -5,7 +5,6 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from src.thirdparty.config import *;
 from src.thirdparty.misc import *;
 from src.thirdparty.system import *;
 from src.thirdparty.types import *;
@@ -15,33 +14,18 @@ from src.thirdparty.types import *;
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 __all__ = [
-    'is_linux',
-    'python_command',
-    'python_command_split',
-    'pipe_call',
-    'getFullPath',
-    'formatPath',
-    'get_files',
-    'get_files_by_pattern',
-    'createNewPathName',
-    'createNewFileName',
-    'create_path',
-    'create_file',
-    'read_text_file',
-    'write_text_file',
-    'escapeForPython',
-    'dedentIgnoreEmptyLines',
-    'formatBlockUnindent',
-    'formatBlockIndent',
-    'extractIndent',
-    'length_of_white_space',
-    'sizeOfIndent',
+    'escape_for_python',
+    'extract_indent',
     'flatten',
+    'is_linux',
+    'length_of_white_space',
+    'pipe_call',
+    'python_command_split',
+    'python_command',
+    'size_of_indent',
+    'text_block_indent',
+    'text_block_unindent',
     'unique',
-    'readYamlFile',
-    'restrictDictionary',
-    'toPythonKeys',
-    'toPythonKeysDict',
 ];
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -51,7 +35,7 @@ __all__ = [
 T = TypeVar('T');
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# METHOD os sensitive commands
+# METHOD - system
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def is_linux() -> bool:
@@ -59,14 +43,10 @@ def is_linux() -> bool:
     return not ( platform.system().lower() == 'windows' );
 
 def python_command_split() -> list[str]:
-    return ['python3'] if is_linux() else ['py', '-3'];
+    return [ 'python3' ] if is_linux() else ['py', '-3'];
 
 def python_command() -> str:
     return ' '.join(python_command_split());
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# METHODS: io
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def pipe_call(
     *args: str,
@@ -89,146 +69,77 @@ def pipe_call(
         return;
     raise Exception(error_msg or f'Shell command {{{ " ".join(args) }}} failed.');
 
-def getFullPath(path: str, shouldexist: bool = False) -> str:
-    path = os.path.abspath(path);
-    if shouldexist and not os.path.exists(path):
-        raise Exception('Path \033[1m{}\033[0m does not exist!');
-    return path;
-
-def formatPath(path: str, root: str, relative: bool, ext: Any = None, ext_if_empty: Any = None) -> str:
-    if os.path.isabs(path):
-        if relative:
-            path = os.path.relpath(path=path, start=root);
-    else:
-        if not relative:
-            path = os.path.abspath(os.path.join(root, path));
-    path_, ext_ = os.path.splitext(path);
-    if isinstance(ext, str):
-        path = '{path}{ext}'.format(path=path_, ext=ext);
-    elif isinstance(ext_if_empty, str) and ext_ == '':
-        path = '{path}{ext}'.format(path=path_, ext=ext_if_empty);
-    return path;
-
-def get_files(path: str) -> list[tuple[str, str]]:
-    items = [(_, os.path.join(path, _)) for _ in os.listdir(path)];
-    return [ (_, __) for _, __ in items if os.path.isfile(__)];
-
-def get_files_by_pattern(path: str, pattern: str) -> list[str]:
-    regex = re.compile(pattern);
-    return [ __ for _, __ in get_files(path) if regex.match(_) ];
-
-def createNewPathName(dir: str, nameinit: str = 'tmp', namescheme: str = 'tmp_{}') -> str:
-    path = os.path.join(dir, nameinit);
-    i = 0;
-    while os.path.isdir(path):
-        path = os.path.join(dir, namescheme.format(i));
-        i += 1;
-    return path;
-
-def createNewFileName(dir: str, nameinit: str = 'tmp', namescheme: str = 'tmp_{}') -> str:
-    path = os.path.join(dir, nameinit);
-    i = 0;
-    while os.path.isfile(path):
-        path = os.path.join(dir, namescheme.format(i));
-        i += 1;
-    return path;
-
-def create_path(path: str):
-    if path in [ '', '.', os.getcwd() ]:
-        return;
-    if not os.path.exists(path):
-        pathlib.Path(path).mkdir(parents=True, exist_ok=True);
-    if not os.path.exists(path):
-        raise FileExistsError('Could not create or find path \033[93;1m{}\033[0m!'.format(path));
-    return;
-
-def create_file(path: str):
-    if not os.path.exists(path):
-        pathlib.Path(path).touch(exist_ok=True);
-    if not os.path.exists(path):
-        raise FileExistsError('Could not create or find path \033[93;1m{}\033[0m!'.format(path));
-    return;
-
-def read_text_file(path: str) -> str:
-    '''
-    Reads from text file.
-    '''
-    with open(path, 'r') as fp:
-        return ''.join(fp.readlines());
-
-def write_text_file(
-    path: str,
-    lines: str | list[str],
-    force_create_path: bool = False,
-    force_create_empty_line: bool = True
-):
-    '''
-    Writes text to a file (overwrites if already exists).
-    '''
-    if force_create_path:
-        create_path(os.path.dirname(path));
-    if isinstance(lines, str):
-        text = lines.rstrip('\r\n');
-    else:
-        while len(lines) > 0:
-            if not re.match(pattern=r'^\s*$', string=lines[-1]):
-                break;
-            lines = lines[:-1];
-        text = '\n'.join(lines);
-    with open(path, 'w') as fp:
-        fp.write(text);
-        if force_create_empty_line:
-            fp.write('\n');
-    return;
-
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# METHODS: string
+# METHODS: strings
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # escapes string for use in python code
-def escapeForPython(s: str, withformatting: bool = False) -> str:
+def escape_for_python(s: str, with_formatting: bool = False) -> str:
     s = re.sub(r'(\\+)', r'\1\1', s);
     s = re.sub(r'\n', r'\\n', s);
     s = re.sub(r'\t', r'\\t', s);
     s = re.sub(r'\"', r'\\u0022', s);
     s = re.sub(r'\'', r'\\u0027', s);
     # s = re.sub(r'\%', slash+'u0025', s);
-    if withformatting:
+    if with_formatting:
         s = re.sub(r'(\{+)', r'\1\1', s);
         s = re.sub(r'(\}+)', r'\1\1', s);
     return s;
 
-## NOTE: dedent ignores lines that consist entirely of whitespaces, otherwise would needs to be handled differently:
-def dedentIgnoreEmptyLines(s: str) -> str:
-    return dedent(s);
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# METHODS: string - remove and set indentation
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def formatBlockUnindent(lines: list[str], reference: str) -> list[str]:
-    s = dedentIgnoreEmptyLines('\n'.join([ reference + '.' ] + lines));
+def text_block_unindent(lines: list[str], reference: str) -> list[str]:
+    s = dedent('\n'.join([ reference + '.' ] + lines));
     return s.split('\n')[1:];
 
-def formatBlockIndent(lines: list[str], indent: str, unindent: bool = True) -> list[str]:
+def text_block_indent(lines: list[str], indent: str, unindent: bool = True) -> list[str]:
     if unindent:
-        s = dedentIgnoreEmptyLines('\n'.join(lines));
+        s = dedent('\n'.join(lines));
         lines = s.split('\n');
     return [ indent + line for line in lines ];
 
-def extractIndent(s: str) -> str:
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# METHODS: string - compute white spaces and indents
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def extract_indent(s: str) -> str:
     return re.sub(r'^(\s*).*$', r'\1', s);
 
-def length_of_white_space(s: str) -> int:
-    chars = [ _ for _ in re.split(r'', s) if not (_ == '') ];
+def length_of_white_space(text: str) -> int:
+    '''
+    Computes the white space length of a string.
+    Ignores all characters except `' '` and `'\\t'`.
+    '''
     n = 0;
-    for char in chars:
-        if char == ' ':
-            n += 1;
-        elif char == '\t':
-            n = (n - n % 8) + 8; # next tab stop
+    for u in text:
+        match u:
+            # add 1 for spaces
+            case ' ':
+                n += 1;
+            # 'go to' next tab stop in case of tab
+            case '\t':
+                n = (n - n % 8) + 8;
     return n;
 
-def sizeOfIndent(s: str, indentsymb: str) -> int:
-    lenIndent = length_of_white_space(s);
-    lenUnit = length_of_white_space(indentsymb);
-    return int(lenIndent / lenUnit);
+def size_of_indent(space: str, unit: str) -> tuple[int, int]:
+    '''
+    Computes the size of white space relative to a given indent symbol.
+
+    @inputs
+    - `s` - white space string
+    - `indent_symbol` - white space string used as a base reference.
+
+    @returns
+    `(n, r)` where `n` = number of instance of base unit
+    and `r` = remainder white space in absolute terms (relative to single spaces).
+    '''
+    len_space = length_of_white_space(space);
+    len_unit = length_of_white_space(unit);
+    n = int(len_space / len_unit);
+    r = len_space - n * len_unit;
+    return (n, r);
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # METHODS: array methods
@@ -247,23 +158,3 @@ def flatten(XX: list[list[T]]) -> list[T]:
     for X_ in XX:
         X += X_;
     return X;
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# METHODS: yaml and config
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-def readYamlFile(path: str) -> dict:
-    with open(path, 'r') as fp:
-        spec = yaml_load(fp, Loader=YamlFullLoader);
-        if not isinstance(spec, dict):
-            raise ValueError('Config is not a dictionary object!');
-    return spec;
-
-def restrictDictionary(x: dict[str, Any], keys: list[str]) -> dict:
-    return { key: value for key, value in x.items() if key in keys };
-
-def toPythonKeys(key: str) -> str:
-    return re.sub(r'-', r'_', key);
-
-def toPythonKeysDict(obj: dict[str, Any]) -> dict[str, Any]:
-    return { toPythonKeys(key): value for key, value in obj.items() };

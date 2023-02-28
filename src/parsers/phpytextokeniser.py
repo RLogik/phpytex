@@ -154,7 +154,7 @@ def lexedToBlock(u: LarkTree, offset: str, indentation: IndentationTracker) -> T
             kind = EnumTokenisationBlockKind.text,
             sub_kind = EnumTokenisationBlockSubKind.empty,
             indent_level = indentation.level,
-            indent_symbol  = indentation.symb,
+            indent_symbol  = indentation.symbol,
         );
     ## TEXT COMMENT
     elif typ == 'blockcomment':
@@ -165,7 +165,7 @@ def lexedToBlock(u: LarkTree, offset: str, indentation: IndentationTracker) -> T
             sub_kind = EnumTokenisationBlockSubKind.comment,
             line = lexedToStr(u),
             indent_level = indentation.level,
-            indent_symbol =indentation.symb,
+            indent_symbol =indentation.symbol,
             keep = False,
         );
     elif typ == 'blockcomment_keep':
@@ -174,7 +174,7 @@ def lexedToBlock(u: LarkTree, offset: str, indentation: IndentationTracker) -> T
             sub_kind = EnumTokenisationBlockSubKind.comment,
             line = lexedToStr(u),
             indent_level = indentation.level,
-            indent_symb = indentation.symb,
+            indent_symb = indentation.symbol,
             keep = True,
         );
     ## TEXT CONTENT
@@ -211,7 +211,7 @@ def processBlockContent(children: list[LarkTree], indentation: IndentationTracke
     i = 0;
     for child in children:
         if child.data == 'textcontent':
-            text = escapeForPython(lexedToStr(child), withformatting=True);
+            text = escape_for_python(lexedToStr(child), with_formatting=True);
             exprs.append(text);
         elif child.data == 'codeinline':
             key = 'subst' +  str(i);
@@ -225,7 +225,7 @@ def processBlockContent(children: list[LarkTree], indentation: IndentationTracke
         sub_kind = EnumTokenisationBlockSubKind.subst,
         line = expr,
         indent_level = indentation.level,
-        indent_symbol = indentation.symb,
+        indent_symbol = indentation.symbol,
         substitution = subst,
     );
     return block;
@@ -239,7 +239,7 @@ def processBlockQuickCommand(u: LarkTree, textindent: str, indentation: Indentat
                 kind = EnumTokenisationBlockKind.input,
                 sub_kind = EnumTokenisationBlockSubKind.set,
                 indent_level = indentation.level,
-                indent_symbol = indentation.symb,
+                indent_symbol = indentation.symbol,
                 scope = EnumTokenisationBlockScope.global_,
                 variable_name = lexedToStr(children[0]),
                 variable_value = stripEndOfCode(lexedToStr(children[1])).strip(),
@@ -249,7 +249,7 @@ def processBlockQuickCommand(u: LarkTree, textindent: str, indentation: Indentat
                 kind = EnumTokenisationBlockKind.input,
                 sub_kind = EnumTokenisationBlockSubKind.set,
                 indent_level = indentation.level,
-                indent_symbol = indentation.symb,
+                indent_symbol = indentation.symbol,
                 scope = EnumTokenisationBlockScope.local,
                 variable_name = lexedToStr(children[0]),
                 variable_value = stripEndOfCode(lexedToStr(children[1])).strip(),
@@ -259,7 +259,7 @@ def processBlockQuickCommand(u: LarkTree, textindent: str, indentation: Indentat
                 kind = EnumTokenisationBlockKind.input,
                 sub_kind = EnumTokenisationBlockSubKind.tex,
                 indent_level = indentation.level,
-                indent_symbol = indentation.symb,
+                indent_symbol = indentation.symbol,
                 path = stripEndOfCode(lexedToStr(children[0])),
                 anon = False,
                 indent = textindent,
@@ -269,7 +269,7 @@ def processBlockQuickCommand(u: LarkTree, textindent: str, indentation: Indentat
                 kind = EnumTokenisationBlockKind.input,
                 sub_kind = EnumTokenisationBlockSubKind.tex,
                 indent_level = indentation.level,
-                indent_symbol = indentation.symb,
+                indent_symbol = indentation.symbol,
                 path = stripEndOfCode(lexedToStr(children[0])),
                 anon = True,
                 indent = textindent,
@@ -279,7 +279,7 @@ def processBlockQuickCommand(u: LarkTree, textindent: str, indentation: Indentat
                 kind = EnumTokenisationBlockKind.input,
                 sub_kind = EnumTokenisationBlockSubKind.tex,
                 indent_level = indentation.level,
-                indent_symbol = indentation.symb,
+                indent_symbol = indentation.symbol,
                 path = stripEndOfCode(lexedToStr(children[0])),
                 anon = True,
                 hide = True
@@ -290,7 +290,7 @@ def processBlockQuickCommand(u: LarkTree, textindent: str, indentation: Indentat
                 kind = EnumTokenisationBlockKind.input,
                 sub_kind = EnumTokenisationBlockSubKind.bib,
                 indent_level = indentation.level,
-                indent_symbol = indentation.symb,
+                indent_symbol = indentation.symbol,
                 path = stripEndOfCode(lexedToStr(children[0])),
                 anon = False,
                 indent = textindent,
@@ -300,7 +300,7 @@ def processBlockQuickCommand(u: LarkTree, textindent: str, indentation: Indentat
                 kind = EnumTokenisationBlockKind.input,
                 sub_kind = EnumTokenisationBlockSubKind.bib,
                 indent_level = indentation.level,
-                indent_symbol = indentation.symb,
+                indent_symbol = indentation.symbol,
                 path = stripEndOfCode(lexedToStr(children[0])),
                 anon = True,
                 indent = textindent,
@@ -311,21 +311,21 @@ def processBlockQuickCommand(u: LarkTree, textindent: str, indentation: Indentat
                 kind = EnumTokenisationBlockKind.code,
                 sub_kind = EnumTokenisationBlockSubKind.escape,
                 indent_level = 0,
-                indent_symbol  = indentation.symb,
+                indent_symbol  = indentation.symbol,
             );
         case 'quickescapeonce':
-            indentation.decrOffset();
+            indentation -= 1; # decrease indentation by 1 level
             return TranspileBlock(
                 kind = EnumTokenisationBlockKind.code,
                 sub_kind = EnumTokenisationBlockSubKind.escape,
                 indent_level = indentation.level,
-                indent_symbol  = indentation.symb,
+                indent_symbol  = indentation.symbol,
             );
     raise Exception('Could not parse expression!');
 
 # see .lark file for regex pattern
 def processBlockCodeRegex(text: str, offset: str, indentation: IndentationTracker) -> TranspileBlock:
-    text = dedentIgnoreEmptyLines(text);
+    text = dedent(text);
     return parseCodeBlock(text, offset=offset, indentation=indentation);
 
 def processBlockCode(u: LarkTree, offset: str, indentation: IndentationTracker) -> TranspileBlock:
@@ -349,7 +349,7 @@ def processBlockCode(u: LarkTree, offset: str, indentation: IndentationTracker) 
                 kind = EnumTokenisationBlockKind.text,
                 sub_kind = EnumTokenisationBlockSubKind.subst,
                 indent_level = indentation.level,
-                indent_symbol = indentation.symb,
+                indent_symbol = indentation.symbol,
                 line = r'{subst0}',
                 substitution = {
                     'subst0': block,
@@ -362,21 +362,21 @@ def processBlockCode(u: LarkTree, offset: str, indentation: IndentationTracker) 
         lenOffset = length_of_white_space(offset);
         lines = [ lexedToStr(child) for child in children ];
         lenIndentation = [
-            length_of_white_space(extractIndent(line))
+            length_of_white_space(extract_indent(line))
             for line in lines
             if not re.match(r'^\s*$', line) # ignore indentation of empty lines
         ];
         assert all( n >= lenOffset for n in lenIndentation ), 'One or more lines inside code block are too far left of acceptable minimal offset.';
-        lines = formatBlockUnindent(lines=lines, reference=offset);
+        lines = text_block_unindent(lines=lines, reference=offset);
         # NOTE: uses python's tokenize module to extract syntactic information:
-        indents = getIndentations(lines, indentsymb=indentation.symb, encoding=ENCODING_UTF8);
+        indents = getIndentations(lines, indent_symbol=indentation.symbol, encoding=ENCODING_UTF8);
         if len(indents) > 0:
-            indentation.setOffset(indents[-1]);
+            indentation.set_offset(indents[-1]);
         return TranspileBlock(
             kind = EnumTokenisationBlockKind.code,
             lines = lines,
             indent_level = 0,
-            indent_symbol = indentation.symb,
+            indent_symbol = indentation.symbol,
         );
     raise Exception('Could not parse expression!');
 
@@ -385,7 +385,7 @@ def processBlockCode(u: LarkTree, offset: str, indentation: IndentationTracker) 
 def processCodeInline(u: LarkTree, indentation: IndentationTracker) -> TranspileBlock:
     typ = u.data;
     children = filterSubExpr(u);
-    indent = indentation.symb*indentation.level;
+    indent = indentation.symbol * indentation.level;
     if typ == 'codeinline':
         return processCodeInline(children[0], indentation=indentation);
     elif typ == 'codeoneline':
@@ -395,7 +395,7 @@ def processCodeInline(u: LarkTree, indentation: IndentationTracker) -> Transpile
             sub_kind = EnumTokenisationBlockSubKind.value,
             lines = lines,
             indent_level = indentation.level,
-            indent_symbol = indentation.symb,
+            indent_symbol = indentation.symbol,
         );
     elif typ == 'codemultiline':
         lines = formatValue([ lexedToStr(child) for child in children ], indent=indent);
@@ -404,7 +404,7 @@ def processCodeInline(u: LarkTree, indentation: IndentationTracker) -> Transpile
             sub_kind = EnumTokenisationBlockSubKind.value,
             lines = lines,
             indent_level = indentation.level,
-            indent_symbol = indentation.symb,
+            indent_symbol = indentation.symbol,
         );
     raise Exception('Could not parse expression!');
 
@@ -489,7 +489,7 @@ def filterOutNoncapture(u: LarkTree) -> list[str | LarkTree]:
 def formatValue(lines: list[str], indent: str) -> list[str]:
     if len(lines) == 0:
         return [];
-    lines = formatBlockUnindent(lines, reference = indent);
+    lines = text_block_unindent(lines, reference = indent);
     lines[-1] = stripEndOfCode(lines[-1]);
     return lines;
 

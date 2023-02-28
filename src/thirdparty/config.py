@@ -17,6 +17,7 @@ from yaml import add_path_resolver as yaml_add_path_resolver;
 from yaml.nodes import SequenceNode as YamlSequenceNode;
 
 from functools import wraps;
+import re;
 from typing import Callable;
 from typing import TypeVar;
 
@@ -66,6 +67,10 @@ def yaml_add_constructor(tag: str, attach: bool = True):
         return wrapped_method;
     return dec;
 
+def dict_remove_kebab_case(obj: dict[str, Any]) -> dict[str, Any]:
+    remove_kebab_case = lambda key: re.sub(r'-', r'_', key);
+    return { remove_kebab_case(key): value for key, value in obj.items() };
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # EXPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -75,6 +80,7 @@ __all__ = [
     'YamlLoader',
     'YamlSequenceNode',
     'add_constructor',
+    'dict_remove_kebab_case',
     'json',
     'json_load_safe',
     'lazy',

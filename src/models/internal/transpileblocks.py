@@ -24,7 +24,7 @@ __all__ = [
 
 @dataclass
 class TranspileBlocks():
-    blocks: TranspileBlock = field(default_factory=list);
+    blocks: list[TranspileBlock] = field(default_factory=list);
 
     def __len__(self) -> int:
         return self.blocks.__len__();
@@ -35,11 +35,11 @@ class TranspileBlocks():
     def append(self, block: TranspileBlock):
         self.blocks.append(block);
 
-    def generateCode(
+    def to_code(
         self,
         offset: int  = 0,
         anon: bool = False,
         hide: bool = False,
     ) -> Generator[str, None, None]:
         for block in self.blocks:
-            yield from block.generateCode(offset=offset, anon=anon, hide=hide);
+            yield from block.to_code(offset=offset, anon=anon, hide=hide);

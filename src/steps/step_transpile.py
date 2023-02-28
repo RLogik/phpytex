@@ -134,7 +134,7 @@ def transpile_preamble(
         return;
 
     indentation = IndentationTracker(
-        symb    = options.indent_symbol,
+        symbol = options.indent_symbol,
         pattern = options.indent_symbol_re,
     );
 
@@ -174,7 +174,7 @@ def transpile_document(
 
     depth = len(chain);
     indentation = IndentationTracker(
-        symb = options.indent_symbol,
+        symbol = options.indent_symbol,
         pattern = options.indent_symbol_re,
     );
 
@@ -269,7 +269,7 @@ def create_metacode(
     lines = [];
     lines += dedent_as_list(
         _lines_pre.format(
-            imports = '\n'.join(imports.generateCode()),
+            imports = '\n'.join(imports.to_code()),
             root = src.paths.wd,
             output = os.path.join(src.paths.wd, options.output),
             name = options.output,
@@ -283,7 +283,7 @@ def create_metacode(
         )
     );
     lines.append('');
-    lines += documents.generateCode(offset=0, preambles=preambles, globalvars=globalvars);
+    lines += documents.to_code(offset=0, preambles=preambles, globalvars=globalvars);
     lines.append('');
     lines += dedent_as_list(_lines_post.format());
     write_text_file(config.PATHS.file_transpiled, lines);
