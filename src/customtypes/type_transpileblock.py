@@ -7,6 +7,7 @@
 
 from __future__ import annotations;
 
+from src.local.code import *;
 from src.local.misc import *;
 from src.local.typing import *;
 
@@ -23,58 +24,20 @@ from src.core.utils import formatBlockIndent;
 # CLASS transpile parameters
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+@dataclass
 class TranspileBlockParameters(object):
-    mode:      str;
-    scope:     str;
-    anon:      bool;
-    hide:      bool;
-    varname:   str;
-    codevalue: str;
-    keep:      bool;
-    level:     int;
-    path:      str;
-    tab:       str;
-
-    def __init__(
-        self,
-        mode:      str  = '',
-        scope:     str  = '',
-        anon:      bool = False,
-        hide:      bool = False,
-        varname:   str  = '',
-        codevalue: str  = '',
-        keep:      bool = True,
-        level:     int  = 0,
-        path:      str  = '',
-        tab:       str  = '',
-        **_
-    ):
-        self.mode      = mode;
-        self.scope     = scope;
-        self.anon      = anon;
-        self.hide      = hide;
-        self.varname   = varname;
-        self.codevalue = codevalue;
-        self.keep      = keep;
-        self.level     = level;
-        self.path      = path;
-        self.tab       = tab;
-        return;
-
-    def asDict(self) -> Dict[str, Any]:
-        return dict(
-            mode      = self.mode,
-            scope     = self.scope,
-            anon      = self.anon,
-            hide      = self.hide,
-            varname   = self.varname,
-            codevalue = self.codevalue,
-            keep      = self.keep,
-            level     = self.level,
-            path      = self.path,
-            tab       = self.tab,
-        );
-    pass;
+    mode:        str  = field(default='');
+    scope:       str  = field(default='');
+    anon:        bool = field(default=False);
+    hide:        bool = field(default=False);
+    varname:     str  = field(default='');
+    codevalue:   str  = field(default='');
+    keep:        bool = field(default=True);
+    level:       int  = field(default=0);
+    path:        str  = field(default='');
+    tab:         str  = field(default='');
+    bib_mode:    str  = field(default='basic');
+    bib_options: str  = field(default='');
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # CLASS transpile block
@@ -94,10 +57,10 @@ class TranspileBlock(object):
         kind:        str,
         content:     Any            = None,
         lines:       List[str]      = [],
-        level: int            = 0,
+        level:       int            = 0,
         indentsymb:  str            = '    ',
         parameters:  Dict[str, Any] = dict(),
-        margin: str = '',
+        margin:      str            = '',
         **_
     ):
         self.lines = lines;
@@ -188,7 +151,7 @@ class TranspileBlock(object):
         elif self.kind in [ 'code', 'code:import', 'code:value']:
             yield from self.content;
         elif self.kind == 'code:set':
-            line = '{varname} = {codevalue};'.format(**self.parameters.asDict());
+            line = f'{self.parameters.varname} = {self.parameters.codevalue};'
             block = TranspileBlock(kind='code', content=line, **state);
             yield from block.generateCode(offset=offset, align=align);
         elif self.kind == 'code:escape':

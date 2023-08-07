@@ -199,7 +199,7 @@ def processBlockQuickCommand(u: Tree, textindent: str, indentation: IndentationT
         elif typ == 'quicklocalset':
             parameters = { **parameters, **dict(scope='local') };
         return TranspileBlock(kind='code:set', level=indentation.level, indentsymb=indentation.symb, parameters=parameters);
-    elif typ in [ 'quickinput', 'quickinput_anon', 'quickinput_hide', 'quickbib', 'quickbib_anon' ]:
+    elif typ in [ 'quickinput', 'quickinput_anon', 'quickinput_hide', 'quickbib', 'quickbib_anon', 'quickbiblatex', 'quickbiblatex_anon' ]:
         path = stripEndOfCode(lexedToStr(children[0]));
         parameters = dict(path=path, tab=textindent);
         if typ == 'quickinput':
@@ -209,9 +209,13 @@ def processBlockQuickCommand(u: Tree, textindent: str, indentation: IndentationT
         elif typ == 'quickinput_hide':
             parameters = { **parameters, **dict(mode='input', anon=True, hide=True) };
         elif typ == 'quickbib':
-            parameters = { **parameters, **dict(mode='bib', anon=False) };
+            parameters = { **parameters, **dict(mode='bib', anon=False, bib_mode='basic', bib_options='') };
         elif typ == 'quickbib_anon':
-            parameters = { **parameters, **dict(mode='bib', anon=True) };
+            parameters = { **parameters, **dict(mode='bib', anon=True, bib_mode='basic', bib_options='') };
+        elif typ == 'quickbiblatex':
+            parameters = { **parameters, **dict(mode='bib', anon=False, bib_mode='biblatex', bib_options='') };
+        elif typ == 'quickbiblatex_anon':
+            parameters = { **parameters, **dict(mode='bib', anon=True, bib_mode='biblatex', bib_options='') };
         return TranspileBlock(kind='code:input', level=indentation.level, indentsymb=indentation.symb, parameters=parameters);
     elif typ == 'quickescape':
         indentation.level = 0;

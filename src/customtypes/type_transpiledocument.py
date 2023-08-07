@@ -254,6 +254,7 @@ class TranspileDocuments(object):
         assert path in self.documents, 'Must add document first, before adding blocks.';
         document = self.documents[path];
         for block in blocks:
+            parameters = block.parameters;
             state = dict(level=block.level, indentsymb=block.indentsymb);
             if re.match(r'^text($|:)', block.kind):
                 document.append(block);
@@ -262,18 +263,14 @@ class TranspileDocuments(object):
             elif block.kind == 'code:escape':
                 document.append(block);
             elif block.kind == 'code:set':
-                varname   = block.parameters.varname;
-                codevalue = block.parameters.codevalue;
-                scope     = block.parameters.scope;
+                varname   = parameters.varname;
+                codevalue = parameters.codevalue;
+                scope     = parameters.scope;
                 try:
                     value = self.evaluate(codevalue, document=document);
                 except:
                     ## TODO: deal with error
-                    logError('Could not evaluate \033[1m<<< {scope} set {varname} = {codevalue} >>>\033[0m.'.format(
-                        scope   = scope,
-                        varname = varname,
-                        codevalue = codevalue,
-                    ));
+                    logError(f'Could not evaluate \033[1m<<< {parameters.scope} set {parameters.varname} = {parameters.codevalue} >>>\033[0m.');
                     continue;
                 if scope == 'local':
                     document.variables[varname] = value;
@@ -282,50 +279,41 @@ class TranspileDocuments(object):
                 document.append(block);
             elif block.kind == 'code:input':
                 ## extract block parameters:
-                _path      = block.parameters.path;
-                anon       = block.parameters.anon;
-                hide       = block.parameters.hide;
-                mode       = block.parameters.mode;
-                textindent = block.parameters.tab;
+                _path      = parameters.path;
                 ## unpack path expression (potentially evaluate):
                 try:
-                    _path = self.evaluate(_path, document=document);
+                    _path = self.evaluate(parameters.path, document=document);
                 except:
+                    cmd  = ('bibliography' if parameters.mode == 'bib' else 'input') \
+                            + ('_anon' if parameters.anon else ('_hide' if parameters.hide else ''));
                     ## TODO: deal with error
-                    logError('Could not evaluate \033[1m<<< {cmd} {path}\033[0m >>>\033[0m.'.format(
-                        cmd  = ('bibliography' if mode == 'bib' else 'input') \
-                                + ('_anon' if anon else ('_hide' if hide else '')),
-                        path = _path,
-                    ));
+                    logError(f'Could not evaluate \033[1m<<< {cmd} {parameters.path}\033[0m >>>\033[0m.');
                     continue;
                 _path = document.relativisePath(_path);
                 ## add edge for the sake of display (regardless of whether input or bib mode):
                 self.docEdges.append((path, _path));
-                if mode == 'input':
+                if parameters.mode == 'input':
                     self.edges.append((path, _path));
-                self.updateAnon(_path, anon);
-                self.updateHidden(_path, hide);
+                self.updateAnon(_path, parameters.anon);
+                self.updateHidden(_path, parameters.hide);
                 ## create phpytex-code blocks based on computed path:
-                if mode == 'input':
+                if parameters.mode == 'input':
+                    flabel = self.schemes['file'];
                     document.append(TranspileBlock(kind='text:empty', **state)); # force empty line before input of file
                     document.append(TranspileBlock(
                         kind        = 'code',
                         lines       = [
-                            '{label}(\'{path}\');'.format(label=self.schemes['file'], path=_path),
+                            f'{flabel}(\'{_path}\');',
                             '# Restore state of current file:',
                             '__ROOT__, __DIR__, __FNAME__, __ANON__, __HIDE__, __IGNORE__ = __STATE__;',
                         ],
                         **state
                     ));
-                elif mode == 'bib':
+                elif parameters.mode == 'bib':
                     document.append(TranspileBlock(
                         kind           = 'code',
                         lines          = [
-                            '____insertbib(\'{fname}\', textindent=\'{textindent}\', anon={anon});'.format(
-                                fname      = _path,
-                                textindent = textindent,
-                                anon       = anon,
-                            )
+                            f'____insertbib(\'{_path}\', textindent=\'{parameters.tab}\', anon={parameters.anon}, mode=\'{parameters.bib_mode}\', options=\'{parameters.bib_options}\');'
                         ],
                         **state
                     ));

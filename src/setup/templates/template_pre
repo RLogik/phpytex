@@ -41,8 +41,9 @@ ____phpytex_params____ = dict(
         # '-interaction=nonstopmode',
     ],
     insert_bib     = {insert_bib},
-    bibtex         = [
+    bib_options    = [
     ],
+    bib_backend    = '{backend_bib}',
     seed           = {seed},
     ctr_emptylines = 0,
     length         = 0,
@@ -214,28 +215,41 @@ def ____printfilestamp(depth: int, start: bool, anon: bool, hide: bool):
 def ____insertbib(
     fname:      str,
     textindent: str  = '',
-    anon:       bool = False
+    anon:       bool = False,
+    mode:       str = 'basic',
+    options:    str = '',
 ):
     global ____phpytex_params____;
 
-    line = '{{tab}}\\bibliography{{{{{{file}}}}}}'.format(
-        tab  = textindent,
-        # file = os.path.splitext(fname)[0] ## NOTE: older compilers require .bib to be stripped!
-        file = fname, ## NOTE: \bibliography file argument cannot contain ", ', or  spaces!
-    );
+    insert = True;
+
+    if mode == 'biblatex':
+        insert = False;
+        if options == '':
+            line = f'{{textindent}}\\printbibliography'
+        else:
+            line = f'{{textindent}}\\printbibliography[{{options}}]'
+    else:
+        # NOTE: older compilers require .bib to be stripped!
+        # file = os.path.splitext(fname)[0]
+        # NOTE: \bibliography file argument cannot contain ", ', or  spaces!
+        line = f'{{textindent}}\\bibliography{{{{{{fname}}}}}}'
+
     n = len(____phpytex_params____['lines']['content']);
     with open(____phpytex_params____['output'], 'a') as fp:
         print(line, file=fp);
+
     ____phpytex_params____['lines']['content'].append(line);
 
     ## TODO: This needs to be generalised to allow the possibility of compiling multiple .bib files
-    src = '{{bibname}}.bbl'.format(bibname = ____phpytex_params____['name']);
+    bibname = ____phpytex_params____['name'];
+    src = f'{{bibname}}.bbl';
 
     if not ( fname in ____phpytex_params____['lines']['bib'] ):
         ____phpytex_params____['lines']['bib'][fname] = (src, []);
     if anon:
         ____phpytex_params____['lines']['anon'].append(n);
-    elif ____phpytex_params____['insert_bib']:
+    elif ____phpytex_params____['insert_bib'] and insert:
         ____phpytex_params____['lines']['bib'][fname][1].append(n);
     return;
 
@@ -271,18 +285,19 @@ def ____compilelatex():
     name = ____phpytex_params____['name'];
     bib = ____phpytex_params____['lines']['bib'];
     pdflatex_options = ____phpytex_params____['pdflatex'];
-    bibtex_options = ____phpytex_params____['bibtex'];
+    bib_options = ____phpytex_params____['bib_options'];
+    bib_be = ____phpytex_params____['bib_backend'];
 
     print('[\033[94;1mINFO\033[0m] RUN PDFLATEX');
     pipeCall('pdflatex', *pdflatex_options, name);#, errormsg='PDFLATEX encountered a problem.');
 
-    print('[\033[94;1mINFO\033[0m] RUN BIBTEX');
+    print(f'[\033[94;1mINFO\033[0m] RUN {{bib_be.upper()}}');
     sources = [];
     for fname, (src, indexes) in bib.items():
         if src in sources:
             continue;
         bibname = os.path.splitext(src)[0];
-        pipeCall('bibtex', *bibtex_options, bibname);#, errormsg='BIBTEX encountered a problem.');
+        pipeCall(f'{{bib_be.lower()}}', *bib_options, bibname);#, errormsg=f'{{bib_be.upper()}} encountered a problem.');
         sources.append(src);
     pass;
 

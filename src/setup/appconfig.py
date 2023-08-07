@@ -42,6 +42,7 @@ _config_parameters: Dict[str, ConfigParameter] = {
     'option_comments_auto':    ConfigParameter[bool]('optionCommentsAuto').setValue(True),
     'option_comments_on':      ConfigParameter[bool]('optionCommentsOn').setValue(True),
     'option_insert_bib':       ConfigParameter[bool]('optionInsertBib').setValue(False),
+    'option_backend_bib':      ConfigParameter[str]('optionBackendBib').setValue('bibtex'),
     'option_overwrite_stamp':  ConfigParameter[bool]('optionOverwriteStamp').setValue(True),
     'option_overwrite_params': ConfigParameter[bool]('optionOverwriteParams').setValue(True),
     'max_length':              ConfigParameter[int]('maxLength').setValue(10000),
@@ -114,6 +115,14 @@ def getOptionInsertBib() -> bool:
 def setOptionInsertBib(value: bool):
     global _config_parameters;
     _config_parameters['option_insert_bib'].value = value;
+    return;
+
+def getOptionBackendBib() -> str:
+    return _config_parameters['option_backend_bib'].value;
+
+def setOptionBackendBib(value: str):
+    global _config_parameters;
+    _config_parameters['option_backend_bib'].value = value;
     return;
 
 def getOptionOverwriteStamp() -> bool:

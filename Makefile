@@ -58,9 +58,14 @@ setup: check-system-requirements setup-no-checks
 setup-no-checks:
 	@${PYTHON} -m pip install -r "requirements"
 build:
-	source scripts/.lib.sh && run_create_artefact
+	@source scripts/.lib.sh && run_create_artefact
 run:
 	@${PYTHON} src/main.py;
+
+dev:
+	@make build
+	@cp dist/phpytex ${HOME}/.phpytex/dev
+
 ################################
 # TARGETS: testing
 ################################

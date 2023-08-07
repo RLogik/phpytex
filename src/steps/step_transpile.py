@@ -233,6 +233,7 @@ def createmetacode(
             output        = appconfig.getFileOutput(rel=False),
             name          = appconfig.getFileOutputBase(),
             insert_bib    = appconfig.getOptionInsertBib(),
+            backend_bib   = appconfig.getOptionBackendBib(),
             compile_latex = appconfig.getOptionCompileLatex(),
             length_max    = appconfig.getMaxLengthOuput(),
             seed          = seed,

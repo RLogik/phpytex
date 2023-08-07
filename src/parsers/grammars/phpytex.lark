@@ -101,6 +101,8 @@ quickinstruction: "set"i WHITESPACES quickvariable WHITESPACES? "=" WHITESPACES?
     | "input_hide"i WHITESPACES safetext                                                  -> quickinput_hide
     | ( "bibliography"i | "bib"i ) WHITESPACES safetext                                   -> quickbib
     | ( "bibliography_anon"i | "bib_anon"i ) WHITESPACES safetext                         -> quickbib_anon
+    | "biblatex"i WHITESPACES safetext                                                    -> quickbiblatex
+    | "biblatex_anon"i WHITESPACES safetext                                               -> quickbiblatex_anon
     | ( "escape"i | "esc"i )                                                              -> quickescape
     | ( "escape_once"i | "esc_once"i )                                                    -> quickescapeonce
 quickvariable: VARNAME -> quickvariable

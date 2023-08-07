@@ -6,6 +6,7 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 from src.local.misc import *;
+from src.local.config import *;
 from src.local.typing import *;
 
 from src.customtypes.exports import *;
@@ -23,11 +24,7 @@ def convertToPythonString(
     typ = None;
     if isinstance(value, str):
         typ = 'str';
-        lines = re.split(r'\n', value);
-        if len(lines) > 1:
-            sep = "\n{}".format(indentchar*indent) if multiline else r"+'\n'+";
-            return typ, sep.join(["r'{}'".format(_) for _ in lines]);
-        return typ, "r'{}'".format(value);
+        return typ, json.dumps(value);
     elif isinstance(value, (int, float, bool, EvalType)) or value is None:
         if isinstance(value, int):
             typ = 'int';
