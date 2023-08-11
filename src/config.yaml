@@ -6,10 +6,10 @@ namespace:
 assets:
   version: 'dist/VERSION'
   grammar: 'assets/phpytex.lark'
-  template_config: 'assets/template_config'
-  template_example: 'assets/template_example'
-  template_pre: 'assets/template_pre'
-  template_post: 'assets/template_post'
+  template-config: 'assets/template_config'
+  template-example: 'assets/template_example'
+  template-pre: 'assets/template_pre'
+  template-post: 'assets/template_post'
 paths:
   logging: 'logs/debug.log'
   file-config: '.phpytex.yaml'

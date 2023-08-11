@@ -13,6 +13,7 @@ from src.thirdparty.system import *;
 from src.thirdparty.types import *;
 
 from src.models.config import *;
+from src.models.internal import *;
 from src.core.constants import *;
 from src.core.utils import *;
 
@@ -57,7 +58,7 @@ def is_open_source() -> bool:
 
 def read_asset(
     path: str,
-    encoding: str = ENCODING_UTF8,
+    encoding: str = EnumEncoding,
 ) -> str:
     '''
     Reads asset.

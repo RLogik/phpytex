@@ -14,7 +14,6 @@ from src.thirdparty.system import *;
 
 from src.setup import *;
 from src.core.log import *;
-from src.core.utils import *;
 from src.models.internal import *;
 from src.models.config import *;
 from src.models.user import *;
@@ -139,7 +138,7 @@ def transpile_preamble(
     );
 
     blocks = TranspileBlocks();
-    for block in parseText(lines, indentation, offset=options.offset_symbol):
+    for block in parse_text(lines, indentation, offset=options.offset_symbol):
         if (block.kind, block.sub_kind) == (EnumTokenisationBlockKind.text, EnumTokenisationBlockSubKind.comment):
             blocks.append(block);
     blocks.append(TranspileBlock(
@@ -191,7 +190,7 @@ def transpile_document(
     if options.show_tree:
         blocks.append(create_block_stamp(documents, depth=0, start=True, anon=anon, hide=hide));
 
-    for block in parseText(lines, indentation, offset=options.offset_symbol):
+    for block in parse_text(lines, indentation, offset=options.offset_symbol):
         match (block.kind, block.sub_kind):
             case (EnumTokenisationBlockKind.code, EnumTokenisationBlockSubKind.import_):
                 imports.append(block);

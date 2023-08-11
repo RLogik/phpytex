@@ -8,6 +8,7 @@
 from datetime import datetime;
 from datetime import timedelta;
 from functools import wraps;
+from itertools import chain as itertools_chain;
 import lorem;
 import re;
 from textwrap import dedent as textwrap_dedent;
@@ -18,17 +19,19 @@ from typing import TypeVar;
 # MODIFICATIONS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+T = TypeVar('T');
+
 def prestrip(first: bool = True, last: bool = True, all: bool = False):
     '''
     Returns a decorator that modifies string -> string methods
     '''
-    T = TypeVar('T');
-    def dec(method: Callable[[str], T]) -> Callable[[str], T]:
+    T_ = TypeVar('T_');
+    def dec(method: Callable[[str], T_]) -> Callable[[str], T_]:
         '''
         Performs method but first strips initial/final (empty) lines.
         '''
         @wraps(method)
-        def wrapped_method(text: str) -> T:
+        def wrapped_method(text: str) -> T_:
             lines = re.split(pattern=r'\n', string=text);
             if all:
                 if first:
@@ -71,6 +74,12 @@ def dedent_as_list(text: str) -> list[str]:
     '''
     return re.split(r'\n', dedent(text));
 
+def flatten(XX: list[list[T]]) -> list[T]:
+    return list(itertools_chain.from_iterable(XX));
+
+def unique(X: list[T]) -> list[T]:
+    return list(set(X));
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # EXPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -79,8 +88,10 @@ __all__ = [
     'datetime',
     'dedent',
     'dedent_as_list',
+    'flatten',
     'lorem',
     'prestrip',
     're',
     'timedelta',
+    'unique',
 ];

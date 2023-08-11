@@ -16,7 +16,6 @@ from src.thirdparty.types import *;
 __all__ = [
     'escape_for_python',
     'extract_indent',
-    'flatten',
     'is_linux',
     'length_of_white_space',
     'pipe_call',
@@ -25,7 +24,6 @@ __all__ = [
     'size_of_indent',
     'text_block_indent',
     'text_block_unindent',
-    'unique',
 ];
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -140,21 +138,3 @@ def size_of_indent(space: str, unit: str) -> tuple[int, int]:
     n = int(len_space / len_unit);
     r = len_space - n * len_unit;
     return (n, r);
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# METHODS: array methods
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-def unique(X: list[T]) -> list[T]:
-    X_ = [];
-    for el in X:
-        if el in X_:
-            continue;
-        X_.append(el);
-    return X_;
-
-def flatten(XX: list[list[T]]) -> list[T]:
-    X = [];
-    for X_ in XX:
-        X += X_;
-    return X;

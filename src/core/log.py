@@ -5,14 +5,10 @@
 # IMPORTS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from src.thirdparty.io import *;
-from src.thirdparty.misc import *;
-from src.thirdparty.system import *;
 from src.thirdparty.types import *;
 from src.thirdparty.log import *;
 
 from src.core.timer import *;
-from src.setup import config;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # EXPORTS
@@ -21,18 +17,22 @@ from src.setup import config;
 __all__ = [
     'LOG_LEVELS',
     'configure_logging',
-    'log_plain',
+    'get_debug_mode',
+    'get_level',
+    'get_plain_mode',
+    'get_quiet_mode',
     'log_debug',
-    'log_info',
-    'log_warn',
     'log_error',
     'log_fatal',
-    'log_dev',
+    'log_info',
+    'log_plain',
+    'log_warn',
     'set_debug_mode',
-    'set_plain_mode',
+    'set_level',
     'set_logging_level',
+    'set_plain_mode',
     'set_quiet_mode',
-    'get_quiet_mode',
+    'time_elapsed',
 ];
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -140,11 +140,3 @@ def log_error(*messages: Any):
 def log_fatal(*messages: Any):
     logging.fatal(*messages);
     exit(1);
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# DEBUG LOGGING FOR DEVELOPMENT
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-def log_dev(*messages: Any): # pragma: no cover
-    with open(config.PATHS.logging, 'a') as fp:
-        print(*messages, file=fp);

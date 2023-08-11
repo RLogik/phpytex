@@ -23,7 +23,7 @@ definitions:
     PythonImportString: &python_import_string
       description: Data type for a string to constitute an import 'path' in python.
       type: string
-      pattern: '^[\w\_]+(\.[\w\_]+)*$'
+      pattern: '^(\.\.|\.)[\w\_]+(\.[\w\_]+)*$'
 components:
   schemas:
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

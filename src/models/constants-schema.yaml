@@ -1,0 +1,24 @@
+openapi: 3.0.3
+info:
+  version: x.y.z
+  title: Constants
+  description: |-
+    Generates constants
+servers:
+  - url: "."
+paths: {}
+definitions: {}
+components:
+  schemas:
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # ENUM
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    EnumEncoding:
+      description: |-
+        An enumeration of encoding options
+      type: string
+      enum:
+        - 'ascii'
+        - 'utf-8'
+        - 'unicode_escape'
+      default: 'utf-8'

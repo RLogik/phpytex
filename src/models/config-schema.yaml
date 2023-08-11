@@ -23,8 +23,7 @@ definitions:
     PythonImportString: &python_import_string
       description: Data type for a string to constitute an import 'path' in python.
       type: string
-      pattern: '^[\w\_]+(\.[\w\_]+)*$'
-    additionalProperties: false
+      pattern: '^(\.\.|\.)[\w\_]+(\.[\w\_]+)*$'
 components:
   schemas:
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -63,22 +62,22 @@ components:
       required:
         - version
         - grammar
-        - template_config
-        - template_example
-        - template_pre
-        - template_post
+        - template-config
+        - template-example
+        - template-pre
+        - template-post
       properties:
         version:
           <<: *path_to_file_string
         grammar:
           <<: *path_to_file_string
-        template_config:
+        template-config:
           <<: *path_to_file_string
-        template_example:
+        template-example:
           <<: *path_to_file_string
-        template_pre:
+        template-pre:
           <<: *path_to_file_string
-        template_post:
+        template-post:
           <<: *path_to_file_string
       additionalProperties: false
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -128,7 +127,7 @@ components:
           default: 'src.params'
         overwrite-params:
           type: boolean
-        additionalProperties: false
+      additionalProperties: false
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Transpilation options
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -172,7 +171,7 @@ components:
           type: string
         offset-symbol:
           type: string
-        additionalProperties: false
+      additionalProperties: false
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Namespace settings for transpiled python code
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -194,4 +193,4 @@ components:
           type: string
         function-name-pre:
           type: string
-        additionalProperties: false
+      additionalProperties: false

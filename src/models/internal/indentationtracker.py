@@ -37,21 +37,16 @@ class IndentationTracker(object):
         self.symbol = symbol;
         self.pattern = pattern;
         self.level = 0;
-        self.reference = size_of_indent(reference, unit=symbol);
+        self.reference, _ = size_of_indent(reference, unit=symbol);
         return;
-
-    def _compute_offset(self, s: str) -> int:
-        # compute size of
-        n0, r0 = self.reference;
-        n, r = size_of_indent(s, unit=self.symbol);
-        return max(n - n0, 0);
 
     def set_offset(self, s: str):
         '''
         Computes the level of indentation based on string `s`
         computed relative to the indentation symbol.
         '''
-        self.level = self._compute_offset(s);
+        n, _ = size_of_indent(s, unit=self.symbol);
+        self.level = max(n - self.reference, 0);
         return;
 
     def __iadd__(self, n: Any):
@@ -59,7 +54,7 @@ class IndentationTracker(object):
         Increase indentation by `n` levels.
         '''
         if not isinstance(n, int):
-            raise Exception(f'Can only perfor {self} += <int>-type!');
+            raise Exception('Can only perform <IndentationTracker> += <int>.');
         if n < 0:
             return self.__isub__(-n);
         self.level += 1;
@@ -70,7 +65,7 @@ class IndentationTracker(object):
         Decrease indentation by `n` levels.
         '''
         if not isinstance(n, int):
-            raise Exception(f'Can only perfor {self} += <int>-type!');
+            raise Exception('Can only perform <IndentationTracker> += <int>.');
         if n < 0:
             return self.__iadd__(-n);
         self.level = max(self.level - 1, 0);

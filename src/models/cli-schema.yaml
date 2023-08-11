@@ -47,6 +47,14 @@ components:
       description: |-
         An enumeration of possible options for mode
       type: string
+      # # TODO:
+      # # This currently has no effect. Wait for fix.
+      # x-enum-varnames:
+      #   - VERSION
+      #   - HELP
+      #   - RUN
+      #   - TEMPLATE
+      #   - EXAMPLE
       enum:
         - 'version'
         - 'help'

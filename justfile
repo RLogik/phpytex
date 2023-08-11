@@ -88,6 +88,7 @@ _generate-models path name:
         --encoding "UTF-8" \
         --disable-timestamp \
         --use-schema-description \
+        --field-constraints \
         --set-default-enum-member \
         --allow-population-by-field-name \
         --snake-case-field \
