@@ -202,7 +202,7 @@ def createImportFileParameters(
         #!/usr/bin/env python3
         # -*- coding: utf-8 -*-
 
-        from fraction import Fraction;
+        from fractions import Fraction;
         '''
     );
     lines.append('');
