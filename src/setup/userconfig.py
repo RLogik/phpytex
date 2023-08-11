@@ -10,6 +10,7 @@ from yaml import load;
 from yaml import Loader;
 from yaml import FullLoader;
 from yaml.nodes import Node;
+from fraction import Fraction;
 
 from src.core.utils import getAttribute;
 from src.customtypes.exports import *;
@@ -74,10 +75,18 @@ def setupYamlReader():
         except:
             return None;
 
+    def fraction_constructor(loader: Loader, node: Node):
+        try:
+            value = loader.construct_yaml_str(node);
+            return Fraction(value);
+        except:
+            return None;
+
     add_constructor(tag=u'!include', constructor=include_constructor);
     add_constructor(tag=u'!eval', constructor=eval_constructor);
     add_constructor(tag=u'!not', constructor=not_constructor);
     add_constructor(tag=u'!join', constructor=join_constructor);
     add_constructor(tag=u'!key', constructor=key_constructor);
     add_constructor(tag=u'!tuple', constructor=tuple_constructor);
+    add_constructor(tag=u'!fraction', constructor=fraction_constructor);
     return;

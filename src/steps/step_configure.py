@@ -46,9 +46,9 @@ def step(fnameConfig: str, extra_parameters: dict):
 
     ## set app config
     setCompileConfig(**config_compile);
-    setStampConfig(**toPythonKeysDict(config_stamp));
-    setParamsConfig(**toPythonKeysDict(config_parameters));
-    setConfigFilesAndFolders(toPythonKeysDict(config));
+    setStampConfig(**toPythonKeysDict(config_stamp, deep=False));
+    setParamsConfig(**toPythonKeysDict(config_parameters, deep=False));
+    setConfigFilesAndFolders(toPythonKeysDict(config, deep=False));
 
     logInfo('READ CONFIG COMPLETE');
     return;

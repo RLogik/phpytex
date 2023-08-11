@@ -6,6 +6,7 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 from src.local.misc import *;
+from src.local.maths import *;
 from src.local.config import *;
 from src.local.typing import *;
 
@@ -33,6 +34,8 @@ def convertToPythonString(
         elif isinstance(value, bool):
             typ = 'bool';
         return typ, str(value);
+    elif isinstance(value, Fraction):
+        return 'Fraction', f"Fraction('{value}')",
     elif isinstance(value, tuple):
         typ = 'tuple';
         values = [convertToPythonString(value=_, indent=indent+1, multiline=multiline)[1] for _ in value];

@@ -16,9 +16,9 @@ from src.steps.exports import *;
 
 def endpoint(fnameConfig: str, parameters: dict, **_):
     logPlain(formatTextBlock('''
-        ----------------------
+        +--------------------+
         |     \033[32;1m(PH(p)y)tex\033[0m    |
-        ----------------------
+        +--------------------+
     '''));
     step_configure(fnameConfig=fnameConfig, extra_parameters=parameters);
     if appconfig.getOptionIgnore():

@@ -7,3 +7,4 @@
 
 import math;
 import random;
+from fraction import Fraction;

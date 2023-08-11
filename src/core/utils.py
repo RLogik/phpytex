@@ -11,10 +11,10 @@ from src.local.system import *;
 from src.local.typing import *;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# GLOBAL VARIABLES
+# LOCAL VARIABLES
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#
+T = TypeVar('T')
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # METHOD os sensitive commands
@@ -282,8 +282,20 @@ def restrictDictionary(x: Dict[str, Any], keys: List[str]) -> dict:
 def toPythonKeys(key: str) -> str:
     return re.sub(r'-', r'_', key);
 
-def toPythonKeysDict(obj: Dict[str, Any]) -> Dict[str, Any]:
-    return { toPythonKeys(key): value for key, value in obj.items() };
+def toPythonKeysDict(
+    obj: T,
+    deep: bool = False
+) -> T:
+    if deep:
+        if isinstance(obj, dict):
+            obj = { toPythonKeys(key): toPythonKeysDict(x, deep=True)
+                    for key, x in obj.items() };
+        elif isinstance(obj, list):
+            obj = [ toPythonKeysDict(x, deep=True) for x in obj ];
+    else:
+        if isinstance(obj, dict):
+            obj = { toPythonKeys(key): x for key, x in obj.items() };
+    return obj
 
 def getAttributeIgnoreError(obj: Any, *keys: Union[str, int], expectedtype: Union[Type, Tuple[Type]] = Any, default: Any = None):
     try:

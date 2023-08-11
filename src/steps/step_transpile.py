@@ -201,16 +201,18 @@ def createImportFileParameters(
         '''
         #!/usr/bin/env python3
         # -*- coding: utf-8 -*-
+
+        from fraction import Fraction;
         '''
     );
     lines.append('');
     names = appconfig.getExportVars().keys();
     for name, (value, codedvalue) in appconfig.getExportVars().items():
-        lines.append('{name} = {codedvalue};'.format(name=name, codedvalue=codedvalue));
+        lines.append(f'{name} = {codedvalue};');
     for name in documents.variables.keys():
         if name in names:
             continue;
-        lines.append('{name} = None;'.format(name=name));
+        lines.append(f'{name} = None;');
     lines.append('');
     writeTextFile(path=path, lines=lines, force_create_path=True);
     return;

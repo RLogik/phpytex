@@ -12,6 +12,7 @@ from src.local.maths import *;
 from src.local.typing import *;
 
 from src.core.utils import PythonCommand;
+from src.core.utils import toPythonKeysDict;
 from src.core.utils import getFullPath;
 from src.customtypes.exports import *;
 
@@ -369,7 +370,7 @@ def getDictionaryParms() -> Dict[str, Any]:
 
 def setDictionaryParams(value: Dict[str, Any]):
     global _dictionary_params;
-    _dictionary_params = value;
+    _dictionary_params = toPythonKeysDict(value, deep=False);
     return;
 
 def getProjectTree() -> ProjectTree:
