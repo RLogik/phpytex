@@ -119,7 +119,7 @@ def main():
             feed_buffer = [];
             continue;
         ## or print original line if non-empty:
-        if re.match('\S', line):
+        if re.match(r'\S', line):
             with open(____phpytex_params____['output'], 'a') as fp:
                 for _line in feed_buffer + [ line ]:
                     print(_line, file=fp);
