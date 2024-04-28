@@ -199,7 +199,7 @@ githook-qa *args:
 
 setup:
     @echo "TASK: SETUP"
-    @cp -n "templates/template.env" ".env"
+    @- cp -n "templates/template.env" ".env"
 
 build:
     @echo "TASK: BUILD"
@@ -214,6 +214,11 @@ build-skip-requirements:
     @just build-venv
     @just check-system-requirements
     @just build-models
+
+build-deployment:
+    @echo "TASK: BUILD FOR DEPLOYMENT"
+    @just build-venv
+    @just build-requirements
 
 build-venv:
     @- ${PYTHON_PATH} -m venv .venv
@@ -260,17 +265,7 @@ build-docs:
 build-archive:
     @echo "SUBTASK: build artefact"
     @mkdir -p dist
-    @git archive --output dist/${PROJECT_NAME}-$(cat dist/VERSION).zip HEAD
-
-build-compile:
-    @git add . && git commit --no-verify -m temp
-    @# zip source files to single file and make executable:
-    @just build-archive
-    @echo  "#!/usr/bin/env python3\n# -*- coding: utf-8 -*-" | cat - dist/${PROJECT_NAME}-$(cat dist/VERSION).zip > dist/${NAME_OF_APP};
-    @chmod +x "dist/${NAME_OF_APP}";
-    @# remove temp artefacts:
-    @rm dist/${PROJECT_NAME}-$(cat dist/VERSION).zip
-    @git reset --soft HEAD~1 && git reset .
+    @git archive --output "dist/${PROJECT_NAME}-$(cat dist/VERSION).zip" HEAD
 
 # process for release
 dist:
@@ -280,9 +275,63 @@ dist:
     @just build-docs
     @just build-archive
 
-deploy:
-    @just build-compile
-    @cp dist/phpytex "${DEPLOYMENT_PATH}"
+# process for deploying closed-source binary
+deploy-binary:
+    @git add . && git commit --no-verify --allow-empty -m temp
+    @# zip source files to single file and make executable:
+    @just build-archive
+    @echo  "#!/usr/bin/env python3\n# -*- coding: utf-8 -*-" | cat - "dist/${PROJECT_NAME}-$(cat dist/VERSION).zip" > dist/${NAME_OF_APP};
+    @chmod +x "dist/${NAME_OF_APP}";
+    @# remove temp artefacts:
+    @rm "dist/${PROJECT_NAME}-$(cat dist/VERSION).zip"
+    @git reset --soft HEAD~1 && git reset .
+    @mkdir -p "${DEPLOYMENT_PATH}/bin"
+    @cp dist/phpytex "${DEPLOYMENT_PATH}/bin"
+
+deploy-open-source:
+    #!/usr/bin/env bash
+
+    # create zip artefact
+    git add . && git commit --no-verify --allow-empty -m temp
+    # zip source files to single file and make executable:
+    just build-archive
+    git reset --soft HEAD~1 && git reset .
+
+    VERSION="$(cat dist/VERSION)"
+    FILE="dist/${PROJECT_NAME}-${VERSION}.zip"
+    TARGET="${DEPLOYMENT_PATH}/${VERSION}"
+
+    # unzip file in destination
+    rm -rf "${TARGET}"
+    unzip -q "${FILE}" -d "${TARGET}"
+    cp -n .env "${TARGET}" 2> /dev/null
+
+    # build repo there
+    pushd "${TARGET}" >> /dev/null
+        just setup
+        just build-deployment
+    popd >> /dev/null
+
+    # create launch script
+    TARGET="${DEPLOYMENT_PATH}/bin"
+    pushd "${TARGET}" >> /dev/null
+        touch .env && rm .env
+        echo "VERSION=\"${VERSION}\"" >> .env
+        touch "${NAME_OF_APP}" && rm -f "${NAME_OF_APP}"
+        echo '''#!/usr/bin/env bash
+        source .env
+        dist="$( dirname $( dirname "${0}" ) )/${VERSION}"
+        jf="${dist}/justfile"
+        if [[ ${#@} == 1 ]] && [[ "$1" == "run" ]]; then
+            just --justfile "${jf}" run-cli  "run" "TRANSPILE" --path "${PWD}"
+        else
+            just --justfile "${jf}" run-cli  "$@"
+        fi
+        ''' >> "${NAME_OF_APP}"
+        chmod +x "${NAME_OF_APP}"
+    popd >> /dev/null
+
+    exit 0;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # TARGETS: execution
@@ -292,12 +341,12 @@ deploy:
 # Together with 'set positional-arguments := true' above
 # this is the way to preserve quotes in variadic arguments
 
-run *args:
-    @{{PYVENV_ON}} && {{PYVENV}} -m src.main "$@"
+run-cli *args:
+    @{{PYVENV_ON}} && cd "{{CURRENT_DIR}}" && {{PYVENV}} "{{PATH_ROOT}}/src/main.py" "$@"
 
-run-transpiler:
+run-transpiler log_path="logs":
     @just _reset-logs
-    @just run "run" "TRANSPILE"
+    @just run "run" "TRANSPILE" --logs "logs" --path "{{CURRENT_DIR}}"
 
 examples log_path="logs":
     #!/usr/bin/env bash
