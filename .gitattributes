@@ -1,0 +1,2 @@
+# Forces text files to save with LF instead of CRLF-endings
+*    text=auto

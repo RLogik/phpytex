@@ -1,0 +1,80 @@
+/**
+!/.gitignore
+!/.gitattributes
+
+# ----------------------------------------------------------------
+# ROOT
+# ----------------------------------------------------------------
+
+!/README.md
+!/LICENCE
+!/justfile
+!/Makefile
+!/pyproject.toml
+!/poetry.lock
+!/.pre-commit-config.yaml
+!/.coveragerc
+!/.behaverc
+# for git workflows
+!/.github
+!/.github/workflows
+!/.github/workflows/*.yaml
+
+# ----------------------------------------------------------------
+# PROJECT FILES
+# ----------------------------------------------------------------
+
+!/assets
+!/assets/template*
+!/assets/*.lark
+
+!/templates
+!/templates/template*
+
+!/models
+!/models/*.yaml
+
+!/src
+!/src/**/
+!/src/**/*.py
+!/src/setup/*.yaml
+!/__main__.py
+
+!/tests
+!/tests/**/
+!/tests/cases/case_*/**
+!/tests/**/*.py
+!/tests/**/*.tex
+!/tests/**/*.yaml
+
+!/docs
+!/docs/**/
+!/docs/**/*.md
+
+!/examples
+
+!/dist
+!/dist/VERSION
+
+# ----------------------------------------------------------------
+# AUXLIARY
+# ----------------------------------------------------------------
+
+/logs
+
+# ----------------------------------------------------------------
+# ARTEFACTS
+# ----------------------------------------------------------------
+
+/**/.vscode
+/**/__pycache__
+/**/.pytest_cache
+/**/.DS_Store
+/**/__archive__*
+/**/sandbox
+
+# ----------------------------------------------------------------
+# Git Keep
+# ----------------------------------------------------------------
+
+!/**/.gitkeep
