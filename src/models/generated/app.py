@@ -122,6 +122,9 @@ class UserConfigPartCompileOptions(BaseModel):
         description='Filename of start of transpilation\n  (phpytex) -> py -> tex -> pdf',
         pattern='^[^\\/\\\\]+\\.tex',
     )
+    python_path: Optional[str] = Field(
+        None, alias='python-path', description='User choice of python path (e.g. local venv).'
+    )
     transpiled: str = Field(
         'phpytex_transpiled.py',
         description='Filename of intermediate transpilation result\n  phpytex -> (py) -> tex -> pdf',

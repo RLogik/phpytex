@@ -275,26 +275,7 @@ dist:
     @just build-docs
     @just build-archive
 
-deploy-binary:
-    #!/usr/bin/env bash
-
-    # create zip artefact
-    git add . && git commit --no-verify --allow-empty -m temp
-    just build-archive
-    git reset --soft HEAD~1 && git reset .
-
-    VERSION="$(cat dist/VERSION)"
-    FILE="dist/${PROJECT_NAME}-${VERSION}.zip"
-    TARGET="${DEPLOYMENT_PATH}/bin"
-
-    # zip -> binary
-    mkdir -p "${TARGET}"
-    cat "templates/template-app.py" | cat - "${FILE}" > "${TARGET}/${NAME_OF_APP}";
-    chmod +x "${TARGET}/${NAME_OF_APP}";
-    rm "dist/${PROJECT_NAME}-$(cat dist/VERSION).zip"
-    exit 0;
-
-deploy-open-source:
+deploy:
     #!/usr/bin/env bash
 
     # create zip artefact
@@ -347,7 +328,7 @@ run-cli *args:
 
 run-transpiler log_path="logs":
     @just _reset-logs
-    @just run "run" "TRANSPILE" --logs "logs" --path "{{CURRENT_DIR}}"
+    @just run-cli "run" "TRANSPILE" --logs "logs" --path "{{CURRENT_DIR}}"
 
 examples log_path="logs":
     #!/usr/bin/env bash
@@ -365,7 +346,7 @@ examples log_path="logs":
         cp -r "$path/." "${path_output}";
 
         # run programme on example (in results path)
-        just run --path "${path_output}" --log "{{log_path}}" "run" "TRANSPILE";
+        just run-cli --path "${path_output}" --log "{{log_path}}" "run" "TRANSPILE";
     done <<< $( find examples/example_* -mindepth 0 -maxdepth 0 2> /dev/null );
     exit 0;
 

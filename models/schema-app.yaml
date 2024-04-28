@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  version: 1.5.1
+  version: 1.5.1a
   title: Schemata for user - app interaction
 servers:
   - url: "https://github.com/RLogik"
@@ -123,6 +123,10 @@ components:
           type: string
           default: root.tex
           pattern: '^[^\/\\]+\.tex'
+        python-path:
+          description: |-
+            User choice of python path (e.g. local venv).
+          type: string
         transpiled:
           description: |-
             Filename of intermediate transpilation result

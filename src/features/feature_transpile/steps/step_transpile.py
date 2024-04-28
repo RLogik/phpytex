@@ -32,7 +32,7 @@ __all__ = [
 # ----------------------------------------------------------------
 
 
-@echo_function(tag='STEP TRANSPILE (phpytex -> python)', level=LOG_LEVELS.INFO, close=True)
+@echo_function(tag='STEP TRANSPILE ([phpytex -> py] -> ...)', level=LOG_LEVELS.INFO, close=True)
 def step_transpile(cfg_user: UserConfig):
     options = cfg_user.compile.options
     indentsymb = user.setting_indent_character()

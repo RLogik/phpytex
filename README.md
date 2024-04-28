@@ -21,7 +21,7 @@ Each case contains a set of initial files and a counterpart folder with the outp
 ### System requirements ###
 
 - Bash (windows users may install [git/bash for windows](https://gitforwindows.org))
-- python `^3.11`
+- python `~3.12` (may however work with `3.10`, `3.11`)
 
 ### Installation ###
 
@@ -94,11 +94,13 @@ to ensure the binaries are included in `$PATH`.
 - `phpytex version` displays in plain text the version number.
 - `phpytex run [file=<name of config file>]` runs the programme within a project using the named config file.
   </br>
-  If the `file` flag is left empty, the programme searches for the first yaml-file matching the pattern `*.(phpytex|phpycreate).(yml|yaml)` and uses this as the config file.
+  If the `file` flag is left empty, the programme searches for
+  the first yaml-file matching the pattern `*.phpytex.ya?ml`
+  and uses this as the config file.
 
 ### Set up of config file ###
 
-To use phpytex, a `.phpytex.yml` file is required in the (root of) the project folder.
+To use phpytex, a `.phpytex.yaml` file is required in the (root of) the project folder.
 This should contain 4 parts with the following structure:
 
 ```yaml
