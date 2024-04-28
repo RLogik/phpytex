@@ -6,9 +6,7 @@ on:
       - main
       - staging
     paths:
-      - examples/**
-      - src/**
-      - tests/**
+      - '*'
     # see https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows
     types:
       - assigned
