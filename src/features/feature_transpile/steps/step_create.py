@@ -109,8 +109,22 @@ def create_file_stamp(
 
 
 def create_parameter_encoding(options: dict[str, Any]):
+    # unparse key-values
+    data = [
+        (name, value, parser_python.unparse(value, indent=0, multiline=False))
+        for name, value in options.items()
+    ]
+    # clean keys
     user.EXPORT_VARS = {
-        key: (value, parser_python.unparse(value, indent=0, multiline=False))
-        for key, value in options.items()
+        clean_var_name(name): (value, coded_value) for name, value, coded_value in data
     }
     return
+
+
+# ----------------------------------------------------------------
+# AUXILIARY METHODS
+# ----------------------------------------------------------------
+
+
+def clean_var_name(key: str) -> str:
+    return re.sub(r'[^a-z0-9\_]', '_', key, flags=re.IGNORECASE)

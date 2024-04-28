@@ -1,6 +1,6 @@
 [tool.poetry]
 name = 'phpytex'
-version = '1.5.1a'
+version = '1.5.2'
 description = 'A transpiler which converts python augmented latex to latex'
 homepage = 'https://github.com/RLogik/phpytex'
 authors = [

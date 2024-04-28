@@ -149,8 +149,6 @@ class TranspileDocuments(object):
     edges: list[tuple[str, str]]
     docEdges: list[tuple[str, str]]
 
-    variables: list[str]
-
     def __init__(self, root: str, indentsymb: str, schemes: dict[str, str] = dict()):
         self.root = root
         self.indentsymb = indentsymb
@@ -443,7 +441,10 @@ class TranspileDocuments(object):
                 label='{label}_{name}'.format(label=self.schemes['pre'], name=name),
             )
             yield from blocks.generateCode(
-                offset=offset + 1, anon=False, hide=False, align=align
+                offset=offset + 1,
+                anon=False,
+                hide=False,
+                align=align,
             )
             yield '{tab}return'.format(tab=self.tab(offset + 1))
 

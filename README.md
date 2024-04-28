@@ -117,37 +117,53 @@ To use phpytex, a `.phpytex.yaml` file is required in the (root of) the project 
 This should contain 4 parts with the following structure:
 
 ```yaml
-########################################
+# ----------------------------------------------------------------
 # COMPILE OPTIONS
-########################################
+# ----------------------------------------------------------------
+
 compile:
   options:
-    root:   root.tex
+    root: root.tex
     output: main.tex
+    debug: false
+    compile-latex: false
+    comments: auto
+    tabs: false
+    spaces: 4
     ...
-########################################
+
+# ----------------------------------------------------------------
 # STAMP OPTIONS (optional)
-########################################
+# ----------------------------------------------------------------
+
 stamp:
-  file:      stamp.tex
+  file: stamp.tex
   overwrite: true
   options:
     ...
-########################################
+
+# ----------------------------------------------------------------
 # DOCUMENT PARAMETERS (optional)
-########################################
+# ----------------------------------------------------------------
+
 parameters:
   file: src.parameters
   overwrite: true
   options:
-  ...
-########################################
-# DOCUMENT TREE (optional)
-########################################
+    ...
+
+# ----------------------------------------------------------------
+# PROJECT TREE (optional)
+# ----------------------------------------------------------------
+
 files:
-  ...
-folders:
-  ...
+  - "file1"
+  - "file2"
+  - ...
+
+folders: # values are recursive files-folder structure
+  subfolder1: { ... }
+  subfolder1: { ... }
 ```
 
 See [LONGREADME.md](./LONGREADME.md#usage-short_config) for more details
