@@ -1,0 +1,108 @@
+// ---------------- IMPORTS + SPECIALS ---------------- //
+
+%import common.WS
+%import common.NUMBER
+%import common.WORD
+
+// ---------------- SYMBOLS ---------------- //
+
+// terminal symbols - noncapture
+WHITESPACES: /[^\r\n\S]+/
+NEWLINE:     /[^\r\n\S]*\r?\n/m
+ENDCODE:     /;/
+COMMENT:     /\%/
+NCOMMENT:    /[^\%\r\n]/
+LMETA:       /\<{3}/
+RMETA:       /\>{3}/
+// regex for NMETA matches a string up to the first occurrence of <<< or >>>
+NMETA:       /((?!(?:\r|\n|\<{3}|\>{3})).)+/
+// regex for NCOMMNMETA matches a left-stripped line which must not start with % and up to the first occurrence of <<< or >>>
+NCOMMNMETA:  /(?![\%\s])((?!(?:\r|\n|\<{3}|\>{3})).)+/
+// regex for NMETANQUOTE any string which does not contain any occurrences of <<< or >>> or ' or " bar escaped
+NMETANQUOTE: /(?:((?!(?:\r|\n|"|'|\\|\<{3}|\>{3})).)+|\\'|\\"|\\)+/
+COMMA:       /,/
+EMPTYLINE:   /^[^\r\n\S]*\r?\n/m
+SPACES:      /[^\r\n\S]+/
+NOSPACES:    /\S+/
+VARNAME:     /[\_\w\p{L}]+/
+TEXT:        /[^\r\n]+/
+DBLQUOTES:   /((?:"")*")(?!")(?:[^\r\n"\\]+|\\"|\\|(?!\1)"+)+\1/
+SGLQUOTES:   /((?:'')*')(?!')(?:[^\r\n'\\]+|\\'|\\|(?!\1)'+)+\1/
+EMPTYQUOTES: /(?:''|"")+/
+
+// ---------------- BASIC ---------------- //
+
+// indentation
+indenttext: WHITESPACES? -> indenttext
+
+// text with nested but balanced quotation marks
+quotetext: quotetext_nonempty | quotetext_empty -> quotetext
+quotetext_nonempty.1001: DBLQUOTES | SGLQUOTES
+quotetext_empty.1002:    EMPTYQUOTES
+
+// text than contains no occurrences of >>> / <<< except inside quotes
+safetext: ( NMETANQUOTE | quotetext )+ -> safetext
+
+// mixed value/kwvalue dictionaries
+arglist: argoption ( WHITESPACES? COMMA WHITESPACES? argoption )* -> arglist
+argoption: argoption_kwarg | argoption_token -> argoption
+argoption_kwarg: argoption_key WHITESPACES? "=" WHITESPACES? argoption_value -> argoption_kwarg
+argoption_token: argoption_key                                               -> argoption_token
+argoption_key: /[^,\s=]+/                                                    -> argoption_key
+argoption_value: quotetext | WORD | NUMBER                                   -> argoption_value
+
+// ---------------- BLOCKS ---------------- //
+
+blocks: (blockempty | block_nl)* block? -> blocks
+blockfeed: blockfeedone blockfeedrest?
+blockfeedone: blockempty // highest priority 100
+    | block_nl           // priority 200
+    | block              // priority 300
+blockempty.100: EMPTYLINE   -> emptyline
+blockfeedrest: /[\S\s]+/m   -> blockfeedrest
+block_nl.200: block NEWLINE -> block
+block.300: blockcode_regex -> block // priority 310
+    | blockcomment         -> block // priority 320
+    | blockcontent         -> block // priority 330
+
+// BLOCK CODE AS REGEX
+?blockcode_regex.310: /^([^\S\r\n]*)\<{3}([^\S\r\n]*\S+)+(?<!(\>{3}))[^\S\r\n]*\r?\n(?:\1[^\r\n]*\r?\n|[^\r\n\S]*\r?\n)*?(\1\>{3})$/m -> blockcode_regex
+
+// BLOCK CODE (separately lexed, after blockcode_regex recognised)
+blockcode: LMETA WHITESPACES? blockcode_args NEWLINE+ blockcode_inside NEWLINE+ RMETA -> blockcode
+blockcode_inside: blockcode_line ( NEWLINE blockcode_line )* -> blockcode_inside
+blockcode_line:   TEXT?                                      -> blockcode_line
+blockcode_args:   "{" WHITESPACES? arglist WHITESPACES? "}"  -> blockcode_args
+    | arglist                                                -> blockcode_args
+
+// BLOCK COMMENT
+blockcomment.320: blockcomment_keep | blockcomment_simple   -> blockcomment
+blockcomment_keep:   SPACES? COMMENT COMMENT TEXT?      -> blockcomment_keep
+blockcomment_simple: SPACES? COMMENT ( NCOMMENT TEXT? )? -> blockcomment_simple
+
+// BLOCK CONTENT
+blockcontent.330: textcontentfirstnonempty ( codeinline textcontent? )*              -> blockcontent
+    | textcontentfirstnonempty? codeinline ( textcontent? codeinline )* textcontent? -> blockcontent
+textcontentfirstnonempty: SPACES? NCOMMNMETA?                                                    -> textcontent
+textcontent: NMETA                                                                               -> textcontent
+codeinline: codeoneline_container | codemultiline_container                                      -> codeinline
+codeoneline_container.331: LMETA WHITESPACES? codeoneline WHITESPACES? RMETA                     -> codeinline
+codemultiline_container.332: LMETA WHITESPACES? NEWLINE codemultiline NEWLINE WHITESPACES? RMETA -> codeinline
+codeoneline:   safetext                                                                          -> codeoneline
+codemultiline: codeoneline ( NEWLINE+ codeoneline )*                                             -> codemultiline
+
+// BLOCK QUICK (separately possibly lexed, after blockcontent recognised)
+blockquick: indenttext LMETA WHITESPACES? quickinstruction WHITESPACES? ENDCODE? WHITESPACES? RMETA -> blockquick
+quickinstruction: "set"i WHITESPACES quickvariable WHITESPACES? "=" WHITESPACES? safetext -> quickglobalset
+    | "global set"i WHITESPACES quickvariable WHITESPACES? "=" WHITESPACES? safetext      -> quickglobalset
+    | "local set"i WHITESPACES quickvariable WHITESPACES? "=" WHITESPACES? safetext       -> quicklocalset
+    | "input"i WHITESPACES safetext                                                       -> quickinput
+    | "input_anon"i WHITESPACES safetext                                                  -> quickinput_anon
+    | "input_hide"i WHITESPACES safetext                                                  -> quickinput_hide
+    | ( "bibliography"i | "bib"i ) WHITESPACES safetext                                   -> quickbib
+    | ( "bibliography_anon"i | "bib_anon"i ) WHITESPACES safetext                         -> quickbib_anon
+    | "biblatex"i WHITESPACES safetext                                                    -> quickbiblatex
+    | "biblatex_anon"i WHITESPACES safetext                                               -> quickbiblatex_anon
+    | ( "escape"i | "esc"i )                                                              -> quickescape
+    | ( "escape_once"i | "esc_once"i )                                                    -> quickescapeonce
+quickvariable: VARNAME -> quickvariable
