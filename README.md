@@ -1,3 +1,11 @@
+[![Python version: 3.12](https://img.shields.io/badge/python%20version-3.11-1464b4.svg)](https://www.python.org)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
+[![qa manual:main](https://github.com/RLogikg/phpytex/actions/workflows/manual.yaml/badge.svg?branch=main)](https://github.com/RLogikg/phpytex/actions/workflows/manual.yaml)
+[![qa manual:staging](https://github.com/RLogikg/phpytex/actions/workflows/manual.yaml/badge.svg?branch=staging)](https://github.com/RLogikg/phpytex/actions/workflows/manual.yaml)
+[![qa auto:staging](https://github.com/RLogikg/phpytex/actions/workflows/auto.yaml/badge.svg?branch=staging)](https://github.com/RLogikg/phpytex/actions/workflows/auto.yaml)
+[![qa auto:current](https://github.com/RLogikg/phpytex/actions/workflows/auto.yaml/badge.svg)](https://github.com/RLogikg/phpytex/actions/workflows/auto.yaml)
+
 # (PH(p)y)TeX #
 
 Phpytex transpiles hybrid code (ordinary LaTeX files augmented by blocks of python code)
@@ -7,6 +15,10 @@ to a python script, which in turn generates a single LaTeX file
 ```text
 augmented code ⟶ python script ⟶ single .tex [⟶ pdf]
 ```
+
+The core of the transpiler is built on the [Lark](https://github.com/lark-parser/lark) lexer/parser,
+which we use to build our own grammar for the augmented (py + tex) language
+(see [assets/phpytex.lark](assets/phpytex.lark)).[^lexer]
 
 ## What exactly does it do? Show me examples! ##
 
@@ -146,7 +158,7 @@ There are many _(insert language here)_-to-LaTeX transpilers available.
 And many of these do all sorts of fancy things like incorporate lots of
 extra special syntax to embed plots, _etc._
 By contrast our transpiler is intentionally designed to be 'boring' (=sufficently general)!
-It has no built-in _'We can produce these cool graphics with this one command!'_<sup>[1](#footnote_1)</a></sup> selling point.
+It has no built-in _'We can produce these cool graphics with this one command!'_ selling point.[^scope]
 
 And neither—in our opinion—does it need to.
 
@@ -170,22 +182,10 @@ Furthermore Phpytex was originally conceived for the personal reason to
 
 And this shall remain a cornerstone feature of Phpytex.
 
-<br/>
-<br/>
-<br/>
-<br/>
+## References ##
 
-----
+- Lark: <https://github.com/lark-parser/lark>
 
-<div style='font-size:8pt'>
-<a name='footnote_1'><b>[1]</b></a> But incidentally, with Phpytex one can do this and just about any such task.
-The user simply has to program their own methods, say a python function <tt>makegraphics(...)</tt>
-in a code block or an importable script, and ensure this method takes desired inputs and
-<i>either</i> generates an image and returns suitable LaTeX command to include this,
-<i>or</i> returns a series of LaTeX commands (<i>e.g.</i> <tt>tikz</tt> commands)
-to produce the image natively in LaTeX.
+[^lexer]: We would like develop phpytex under a compiled language, e.g. go, rust, or zig. However, the challenge lies in finding a suitable flexible grammar. We used [ANTLR4](https://github.com/antlr/antlr4) with go a few years ago, but this proved to be somewhat inflexible compared to Lark. Things may however have improved since then.
 
-One can clearly make a standard suite of such functions.
-But creating such things should not be in the scope of a good, sufficiently general, transpiler,
-but rather of package development.
-</div>
+[^scope]: But incidentally, with Phpytex one can do this and just about any such task. The user simply has to program their own methods, say a python function `makegraphics(...)` in a code block or an importable script, and ensure this method takes desired inputs and _either_ generates an image and returns suitable LaTeX command to include this, _or_ returns a series of LaTeX commands (e.g. `tikz` commands) to produce the image natively in LaTeX. One can clearly make a standard suite of such functions. But creating such things should not be in the scope of a good, sufficiently general, transpiler, but rather of package development.

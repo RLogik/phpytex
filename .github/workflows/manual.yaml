@@ -1,0 +1,119 @@
+name: QA (manual)
+on:
+  workflow_dispatch:
+    inputs:
+      docker-image:
+        description: Choice of docker image on which to run action.
+        default: ubuntu-latest
+        type: choice
+        options:
+          - ubuntu-latest
+      environment:
+        description: 'Environment to run tests against'
+        type: environment
+        required: true
+        default: 'local'
+      deploy:
+        description: 'Deploy?'
+        type: boolean
+        default: false
+      # NOTE: currently not used, but can use in future
+      log-level:
+        description: 'Log level'
+        default: INFO
+        type: choice
+        options:
+          - INFO
+          - DEBUG
+          - WARNING
+
+permissions:
+  contents: read
+
+jobs:
+  job-qa:
+    name: QA
+    runs-on: ${{ github.event.inputs.docker-image }}
+    environment: "${{ github.event.inputs.environment }}"
+    env:
+      PYTHON_PATH: "${{ vars.PYTHON_PATH }}"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # see https://github.com/extractions/setup-just
+      - name: Action - install justfile tool
+        uses: extractions/setup-just@v1
+        with:
+          just-version: "1.25.2"
+
+      - name: Action - install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Setup - ping basic tools and perform pre-installation
+        shell: bash
+        run: |-
+          # ping just tool
+          just --version
+          # ping tools
+          just check-system
+          # run setup
+          just setup
+
+      - name: Build code
+        shell: bash
+        run: |-
+          just build
+
+      - name:  Check linting
+        shell: bash
+        run: |-
+          just lint-check "src"
+          just lint-check "tests"
+
+      - name:  Run unit tests
+        shell: bash
+        run: |-
+          just tests-unit
+
+      - name:  Run behavioural tests
+        shell: bash
+        run: |-
+          echo "Not yet implemented!"
+
+  # only performed if qa passes and option set
+  job-deploy:
+    name: Deployment
+    needs: 'job-qa'
+    # job only runs if deploy-checkbox is selected
+    if: ${{ github.event.inputs.deploy == 'true' }}
+    runs-on: ${{ github.event.inputs.docker-image }}
+
+    environment: "${{ github.event.inputs.environment }}"
+    env:
+      PYTHON_PATH: "${{ vars.PYTHON_PATH }}"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Action - install justfile tool
+        uses: extractions/setup-just@v1
+        with:
+          just-version: "1.25.2"
+
+      - name: Action - install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name:  Build artefact
+        shell: bash
+        run: |-
+          echo "Not implemented! Currently performed manually!"
+
+      - name:  Deploy
+        shell: bash
+        run: |-
+          echo "Not implemented! Currently performed manually!"
