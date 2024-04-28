@@ -47,6 +47,7 @@ class CliArguments(CliArgumentsBase):
         )
         parser.add_argument(
             'feature',
+            nargs='?',
             choices=[e.value for e in EnumFeatures],
             type=EnumFeatures,
             help=dedent(
