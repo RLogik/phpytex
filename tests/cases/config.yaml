@@ -1,0 +1,7 @@
+cases:
+  - tests/cases/case_debug_simple
+  - tests/cases/case_debug_withtree
+  - tests/cases/case_no-compile_simple
+  - tests/cases/case_no-compile_withtree
+  - tests/cases/case_compile_simple
+  - tests/cases/case_compile_withtree

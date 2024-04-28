@@ -1,0 +1,27 @@
+\documentclass[a4paper,<<< FONT_SIZE; >>>]{article}
+
+<<< global set draft = True; >>>
+
+    <<< python
+    if draft:
+    >>>
+
+\newcommand{\beschreibung}[0]{a draft document}
+
+        <<< python
+        else:
+        >>>
+
+\newcommand{\beschreibung}[0]{the final version}
+
+    <<< escape_once; >>>
+
+\begin{document}
+    \section{<<< TITLE + '.'; >>>}
+
+    <<< local set method = 'simple approach'; >>>
+
+    This is \beschreibung.
+
+    <<< input 'thanks.tex'; >>>
+\end{document}
