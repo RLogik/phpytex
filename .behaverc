@@ -1,0 +1,17 @@
+[behave]
+lang = en
+verbose = false
+expand = true
+stdout_capture = false
+log_capture = true
+# format = plain
+logging-format = "%(levelname)s:%(name)s:%(message)s"
+logging-level = INFO
+logging_clear_handlers = yes
+paths =
+    tests/behave/**/*.feature
+# tags = '@important,~@noskip'
+scenario_outline_annotation_schema = {name} -- @{row.id} {examples.name}
+
+[behave.userdata]
+log = tests/behave/logs

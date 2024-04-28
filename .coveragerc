@@ -1,0 +1,26 @@
+[run]
+source="."
+
+[report]
+show_missing = true
+omit =
+    # ignore all archive-like files
+    **/__archive__*
+    # ignore tests folder and all files with 'tests_' prefix
+    tests/*
+    **/tests_*.py
+    # ignore examples
+    examples/*
+    # ignore thirdparty imports
+    src/thirdparty/*
+    # ignore models folder (auto generated)
+    src/models/generated/**
+    # ignore __init__ files (mainly used for exports)
+    **/__init__.py
+    # ignore main.py (-> too macroscopic; should be covered by integration tests)
+    src/main.py
+# NOTE: set to 100 if want 100% coverage!
+fail_under = 0
+precision = 1
+exclude_lines =
+    pragma: no cover

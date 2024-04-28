@@ -1,0 +1,90 @@
+default_install_hook_types:
+  - commit-msg
+  - pre-commit
+  - pre-push
+
+fail_fast: true
+
+repos:
+  - repo: local
+    hooks:
+
+    - id: commit-message
+      name: Commit Message
+      description: |-
+        This hook ensures that commit messages conform to the schema.
+      language: pygrep
+      args: [ '--negate' ]
+      entry: '^(Merge remote-tracking branch .* into .*)$|^(\S+(-\S+)* > \S+(-\S+)*:\s+\S+(\s*\S+)*)$'
+      verbose: true
+      stages: [ commit-msg ]
+
+  - repo: local
+    hooks:
+
+    - id: lint
+      name: Lint files
+      description: |-
+        This hook performs linting on files.
+      files: '^(src|tests|examples)/.*\.(py|ipynb)$'
+      pass_filenames: true
+      language: system
+      args: []
+      entry: |-
+        bash -c '
+          echo "run githook manually"
+          # just githook-lint "$0"
+        '
+      verbose: true
+      stages: [ pre-commit ]
+
+    - id: utests
+      name: Unit tests
+      description: |-
+        This hook performs checks to see if unit tests in this file are green.
+      files: '^tests/unit(/tests_[^/]+/)*/tests_[^/]+\.py$'
+      pass_filenames: true
+      language: system
+      args: []
+      entry: |-
+        bash -c '
+          echo "run githook manually"
+          # just githook-utests "$0"
+        '
+      verbose: true
+      stages: [ pre-commit ]
+
+    - id: btests
+      name: Behavioural tests
+      description: |-
+        This hook performs checks to see if behavioural tests in this file are green.
+      files: '^tests/behave(/tests_[^/]+/)*/[^/]\.feature$'
+      pass_filenames: true
+      language: system
+      args: []
+      entry: |-
+        bash -c '
+          echo "run githook manually"
+          # just githook-btests "$0"
+        '
+      verbose: true
+      stages: [ pre-commit ]
+
+  - repo: local
+    hooks:
+
+    - id: qa
+      name: QA
+      description: |-
+        This hook performs QA on all files before a push.
+      files: '.*'
+      pass_filenames: false
+      language: system
+      args: []
+      entry: |-
+        bash -c '
+          echo "run githook manually"
+          # just githook-qa
+        '
+      verbose: true
+      stages: [ pre-push ]
