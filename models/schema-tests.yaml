@@ -1,0 +1,31 @@
+openapi: 3.0.3
+info:
+  version: 1.4.4b
+  title: Schemata for tests
+servers:
+  - url: "https://github.com/RLogik"
+paths: {}
+components:
+  schemas:
+    # ----------------------------------------------------------------
+    # DEFINITIONS
+    # ----------------------------------------------------------------
+
+    TestCaseConfig:
+      description: |-
+        Structure of config for test cases.
+      type: object
+      required:
+        - cases
+      properties:
+        cases:
+          type: array
+          items:
+            type: string
+      additionalProperties: true
+
+    # ----------------------------------------------------------------
+    # ENUMS
+    # ----------------------------------------------------------------
+
+    #

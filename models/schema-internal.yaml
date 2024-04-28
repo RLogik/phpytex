@@ -1,0 +1,60 @@
+openapi: 3.0.3
+info:
+  version: 1.4.4b
+  title: Schemata for internal app settings
+servers:
+  - url: "https://github.com/RLogik"
+paths: {}
+components:
+  schemas:
+    # ----------------------------------------------------------------
+    # DEFINITIONS
+    # ----------------------------------------------------------------
+
+    # --------------------------------
+    # Repository Infos
+    # --------------------------------
+
+    RepoInfo:
+      description: |-
+        Basic infos about repo - parses `pyproject.toml`
+      type: object
+      required:
+        - name
+        - description
+        - version
+        - homepage
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        version:
+          type: string
+        homepage:
+          type: string
+          format: uri
+      # NOTE: allow this, as this will be parsed from pyproject.toml
+      additionalProperties: true
+
+    # --------------------------------
+    # Config
+    # --------------------------------
+
+    AppConfig:
+      description: |-
+        Structure of main part of config
+      type: object
+      required:
+        - user-config-pattern
+      properties:
+        user-config-pattern:
+          description: Used to automatically recognise user config file.
+          type: string
+      additionalProperties: false
+
+    # ----------------------------------------------------------------
+    # ENUMS
+    # ----------------------------------------------------------------
+
+    #

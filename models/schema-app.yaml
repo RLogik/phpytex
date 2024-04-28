@@ -1,0 +1,285 @@
+openapi: 3.0.3
+info:
+  version: 1.4.4b
+  title: Schemata for user - app interaction
+servers:
+  - url: "https://github.com/RLogik"
+paths: {}
+components:
+  schemas:
+    # ----------------------------------------------------------------
+    # DEFINITIONS
+    # ----------------------------------------------------------------
+
+    # --------------------------------
+    # User Config
+    # --------------------------------
+
+    UserConfig:
+      description: |-
+        Structure of user phpytex.yaml config
+      type: object
+      required:
+        - compile
+      properties:
+        ignore:
+          type: boolean
+          default: false
+        compile:
+          $ref: "#/components/schemas/UserConfigPartCompile"
+        stamp:
+          $ref: "#/components/schemas/UserConfigPartStamp"
+        parameters:
+          $ref: "#/components/schemas/UserConfigPartParameters"
+        files:
+          type: array
+          items:
+            type: string
+          default: []
+        folders:
+          type: object
+          required: []
+          additionalProperties:
+            $ref: "#/components/schemas/UserProjectTree"
+          default: {}
+      # NOTE: allow additional properties as this is a user setting.
+      additionalProperties: true
+
+    UserConfigPartCompile:
+      description: |-
+        Options for 'compile' section of user config.
+      type: object
+      required:
+        - options
+      properties:
+        options:
+          $ref: "#/components/schemas/UserConfigPartCompileOptions"
+      additionalProperties: true
+
+    UserConfigPartStamp:
+      description: |-
+        Options for 'stamp' section of user config.
+      type: object
+      required: []
+      properties:
+        file:
+          type: string
+          default: stamp.tex
+        overwrite:
+          type: boolean
+          default: false
+        options:
+          type: object
+          required: []
+      additionalProperties: true
+
+    UserConfigPartParameters:
+      description: |-
+        Options for 'parameters' section of user config.
+      type: object
+      required: []
+      properties:
+        file:
+          type: string
+          pattern: '^[^\.\s]*(\.[^\.\s]*)+'
+          default: 'parameters'
+        overwrite:
+          type: boolean
+          default: true
+        options:
+          type: object
+          required: []
+      additionalProperties: true
+
+    UserProjectTree:
+      description: |-
+       Recursive structure of user project tree part of user config.
+      type: object
+      required: []
+      properties:
+        files:
+          type: array
+          items:
+            type: string
+          default: []
+        folders:
+          type: object
+          required: []
+          additionalProperties:
+            $ref: "#/components/schemas/UserProjectTree"
+          default: {}
+      additionalProperties: false
+
+    UserConfigPartCompileOptions:
+      description: |-
+        Options for compile section of user config.
+      type: object
+      required: []
+      properties:
+        root:
+          description: |-
+            Filename of start of transpilation
+              (phpytex) -> py -> tex -> pdf
+          type: string
+          default: root.tex
+          pattern: '^[^\/\\]+\.tex'
+        transpiled:
+          description: |-
+            Filename of intermediate transpilation result
+              phpytex -> (py) -> tex -> pdf
+          type: string
+          pattern: '^[^\/\\]+\.py'
+          default: 'phpytex_transpiled.py'
+        output:
+          description: |-
+            Filename of end of transpilation result
+              phpytex -> py -> (tex) -> pdf
+          type: string
+          pattern: '^[^\/\\]+\.tex'
+          default: main.tex
+        debug:
+          type: boolean
+          default: false
+        compile-latex:
+          type: boolean
+          default: false
+        insert-bib:
+          type: boolean
+          default: false
+        backend-bib:
+          type: string
+          default: bibtex
+        comments:
+          $ref: "#/components/schemas/EnumCommentsOptions"
+          default: auto
+        censor-symbol:
+          type: string
+          pattern: '^.*\S{3}.*$'
+          default: '########'
+        show-structure:
+          type: boolean
+          default: false
+        max-length:
+          type: integer
+          default: 10000
+        tabs:
+          type: boolean
+          default: false
+        spaces:
+          type: integer
+          default: 4
+          minimum: 1
+        offset:
+          type: string
+          default: ''
+        align:
+          type: boolean
+          default: true
+        seed:
+          type: integer
+        legacy:
+          type: boolean
+          default: false
+      additionalProperties: true
+
+    # --------------------------------
+    # Transpile Blocks
+    # --------------------------------
+
+    TranspileBlockParameters:
+      description: |-
+        Data structure for use in parsing blocks of text in phpytex files.
+      type: object
+      required: []
+      properties:
+        mode:
+          type: string
+          default: ''
+        scope:
+          type: string
+          default: ''
+        anon:
+          type: boolean
+          default: False
+        hide:
+          type: boolean
+          default: False
+        var-name:
+          type: string
+          default: ''
+        code-value:
+          type: string
+          default: ''
+        keep:
+          type: boolean
+          default: True
+        level:
+          type: integer
+          default: 0
+        path:
+          type: string
+          default: ''
+        tab:
+          type: string
+          default: ''
+        bib-mode:
+          type: string
+          default: 'basic'
+        bib-options:
+          type: string
+          default: ''
+      additionalProperties: false
+
+
+    # ----------------------------------------------------------------
+    # ENUMS
+    # ----------------------------------------------------------------
+
+    # --------------------------------
+    # ENUM: Option for features
+    # --------------------------------
+
+    EnumProgrammeMode:
+      description: |-
+        Choice of programme mode
+      type: string
+      enum:
+        - version
+        - run
+
+    # --------------------------------
+    # ENUM: Option for features
+    # --------------------------------
+
+    EnumFeatures:
+      description: |-
+        Choice of feature to run
+      type: string
+      enum:
+        - TRANSPILE
+        - UNKNOWN
+
+    # --------------------------------
+    # ENUM: options for task location
+    # --------------------------------
+
+    EnumFilesManagementSystem:
+      description: |-
+        Choice of location of task
+      type: string
+      enum:
+        - OS
+
+    # --------------------------------
+    # ENUM: options for comments options
+    # --------------------------------
+
+    EnumCommentsOptions:
+      description: |-
+        Mode for handling comments in transpilation process.
+      type: string
+      enum:
+        - 'on'
+        - 'off'
+        - auto
+      default: auto
