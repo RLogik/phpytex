@@ -275,31 +275,37 @@ dist:
     @just build-docs
     @just build-archive
 
-# process for deploying closed-source binary
 deploy-binary:
-    @git add . && git commit --no-verify --allow-empty -m temp
-    @# zip source files to single file and make executable:
-    @just build-archive
-    @echo  "#!/usr/bin/env python3\n# -*- coding: utf-8 -*-" | cat - "dist/${PROJECT_NAME}-$(cat dist/VERSION).zip" > dist/${NAME_OF_APP};
-    @chmod +x "dist/${NAME_OF_APP}";
-    @# remove temp artefacts:
-    @rm "dist/${PROJECT_NAME}-$(cat dist/VERSION).zip"
-    @git reset --soft HEAD~1 && git reset .
-    @mkdir -p "${DEPLOYMENT_PATH}/bin"
-    @cp dist/phpytex "${DEPLOYMENT_PATH}/bin"
+    #!/usr/bin/env bash
+
+    # create zip artefact
+    git add . && git commit --no-verify --allow-empty -m temp
+    just build-archive
+    git reset --soft HEAD~1 && git reset .
+
+    VERSION="$(cat dist/VERSION)"
+    FILE="dist/${PROJECT_NAME}-${VERSION}.zip"
+    TARGET="${DEPLOYMENT_PATH}/bin"
+
+    # zip -> binary
+    mkdir -p "${TARGET}"
+    cat "templates/template-app.py" | cat - "${FILE}" > "${TARGET}/${NAME_OF_APP}";
+    chmod +x "${TARGET}/${NAME_OF_APP}";
+    rm "dist/${PROJECT_NAME}-$(cat dist/VERSION).zip"
+    exit 0;
 
 deploy-open-source:
     #!/usr/bin/env bash
 
     # create zip artefact
     git add . && git commit --no-verify --allow-empty -m temp
-    # zip source files to single file and make executable:
     just build-archive
     git reset --soft HEAD~1 && git reset .
 
     VERSION="$(cat dist/VERSION)"
     FILE="dist/${PROJECT_NAME}-${VERSION}.zip"
     TARGET="${DEPLOYMENT_PATH}/${VERSION}"
+    mkdir -p "${TARGET}"
 
     # unzip file in destination
     rm -rf "${TARGET}"
@@ -314,20 +320,15 @@ deploy-open-source:
 
     # create launch script
     TARGET="${DEPLOYMENT_PATH}/bin"
+    mkdir -p "${TARGET}"
+    CWD="{{PATH_ROOT}}"
     pushd "${TARGET}" >> /dev/null
         touch .env && rm .env
         echo "VERSION=\"${VERSION}\"" >> .env
+
         touch "${NAME_OF_APP}" && rm -f "${NAME_OF_APP}"
-        echo '''#!/usr/bin/env bash
-        source .env
-        dist="$( dirname $( dirname "${0}" ) )/${VERSION}"
-        jf="${dist}/justfile"
-        if [[ ${#@} == 1 ]] && [[ "$1" == "run" ]]; then
-            just --justfile "${jf}" run-cli  "run" "TRANSPILE" --path "${PWD}"
-        else
-            just --justfile "${jf}" run-cli  "$@"
-        fi
-        ''' >> "${NAME_OF_APP}"
+        cp "${CWD}/templates/template-app.sh" "${NAME_OF_APP}"
+
         chmod +x "${NAME_OF_APP}"
     popd >> /dev/null
 
