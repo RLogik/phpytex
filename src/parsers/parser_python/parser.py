@@ -34,12 +34,14 @@ def unparse(
 ) -> str:
     '''
     Returns an encoded version of value for implementation in python code.
-
-    TODO: This method was created a long time ago.
-    It is likely superfluous and may be replacable (with a few caveats) by json.dumps.
     '''
     conv = lambda x: unparse(x, indent=indent + 1, multiline=multiline, indentchar=indentchar)
-    if isinstance(value, (str, int, float, bool)):
+
+    if isinstance(value, bool):
+        # DEV-NOTE: booleans are also of type integer! Thus need to do this first.
+        return str(value)
+
+    elif isinstance(value, (str, int, float)):
         return json.dumps(value)
 
     elif isinstance(value, EvalType) or value is None:
@@ -61,7 +63,7 @@ def unparse(
         )
 
     elif isinstance(value, dict):
-        values = [f"{key}: {conv(value)}" for key, value in value.items()]
+        values = [f'"{key}": {conv(value)}' for key, value in value.items()]
         return unparse_iterable(
             values, ('{', '}'), multiline=multiline, indent=indent, indentchar=indentchar
         )
