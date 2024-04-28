@@ -37,17 +37,27 @@ __all__ = [
 
 
 @echo_function(tag='STEP READ CONFIG', level=LOG_LEVELS.INFO, close=True)
-def step_configure(path_config: str, parameters: dict = {}) -> UserConfig:
+def step_configure(
+    path_config: str,
+    compileoptions: dict = {},
+    parameters: dict = {},
+) -> UserConfig:
     # get configuration file
     path_config = path_config or user.locate_user_config()
     cfg_user = user.load_user_config(path_config)
 
-    # overwrite config parameters options via cli-parameters
+    # overwrite config compile-options via cli-parameters
+    if len(compileoptions) > 0:
+        options = cfg_user.compile.options
+        raw = options.model_dump() | compileoptions
+        options = UserConfigPartCompileOptions.model_validate(raw)
+        cfg_user.compile.options = options
+
+    # overwrite config parameters-options via cli-parameters
     if len(parameters) > 0:
         options = cfg_user.parameters.options
-        raw = options.model_dump() | parameters
-        options = UserConfigPartCompileOptions.model_validate(raw)
-        cfg_user.parameters.options = options
+        raw = (options or {}) | parameters
+        cfg_user.parameters.options = raw
 
     # handle parts of config file
     handle_part_compile(cfg_user.compile.options)

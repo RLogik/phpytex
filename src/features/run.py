@@ -32,7 +32,8 @@ __all__ = [
 def process(
     feature: EnumFeatures,
     path_config: str,
-    parameters: dict,
+    compileoptions: dict = {},
+    parameters: dict = {},
 ):
     '''
     Hub for running all features.
@@ -49,7 +50,10 @@ def process(
     match feature:
         case EnumFeatures.TRANSPILE as feature:
             feature_transpile.endpoint(
-                feature=feature, path_config=path_config, parameters=parameters
+                feature=feature,
+                path_config=path_config,
+                compileoptions=compileoptions,
+                parameters=parameters,
             )
 
         case _ as ft if isinstance(feature, EnumFeatures):

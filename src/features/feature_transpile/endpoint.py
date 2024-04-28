@@ -29,9 +29,10 @@ __all__ = [
 def endpoint(
     feature: EnumFeatures,
     path_config: str,
-    parameters: dict | None,
+    compileoptions: dict = {},
+    parameters: dict = {},
 ):
-    cfg_user = step_configure(path_config, parameters=parameters or {})
+    cfg_user = step_configure(path_config, compileoptions=compileoptions, parameters=parameters)
     if cfg_user.ignore:
         log_info('\033[32;1m(PH(p)y)tex\033[0m transpilation will be skipped.')
         return
