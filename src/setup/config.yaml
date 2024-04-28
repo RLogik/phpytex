@@ -1,0 +1,6 @@
+# ----------------------------------------------------------------
+# Internal configuration application
+# ----------------------------------------------------------------
+# NOTE: this is NOT set externally!
+
+user-config-pattern: '^(?:.*\.)?(?:phpytex|phpycreate)\.ya?ml$'
