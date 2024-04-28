@@ -79,7 +79,14 @@ class CliArguments(CliArgumentsBase):
             '--parameters',
             type=parse_json_as_dict('--parameters'),
             nargs='?',
-            help='JSON encoded object to override user config settings on-the-fly.',
+            help='JSON encoded object to override user config / parameter settings on-the-fly.',
+            default=None,
+        )
+        parser.add_argument(
+            '--compile',
+            type=parse_json_as_dict('--compile'),
+            nargs='?',
+            help='JSON encoded object to override user config / compile settings on-the-fly.',
             default=None,
         )
         parser.add_argument(

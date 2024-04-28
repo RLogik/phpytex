@@ -46,4 +46,9 @@ if __name__ == '__main__':
     if args.path is not None:
         os.chdir(args.path)
 
-    run.process(feature=args.feature, path_config=args.config, parameters=args.parameters or {})
+    run.process(
+        feature=args.feature,
+        path_config=args.config,
+        compileoptions=args.compile or {},
+        parameters=args.parameters or {},
+    )
