@@ -5,12 +5,18 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
-from .thirdparty.system import *
+import os
+import sys
 
-from .setup import *
-from .models.application import *
-from .queries.console.client import *
-from .features import *
+# NOTE: do not change the directory!
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+from src.thirdparty.system import *
+
+from src.setup import *
+from src.models.application import *
+from src.queries.console.client import *
+from src.features import *
 
 # ----------------------------------------------------------------
 # LOCAL CONSTANTS
