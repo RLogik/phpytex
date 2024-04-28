@@ -1,10 +1,10 @@
 [![Python version: 3.12](https://img.shields.io/badge/python%20version-3.11-1464b4.svg)](https://www.python.org)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-[![qa manual:main](https://github.com/RLogikg/phpytex/actions/workflows/manual.yaml/badge.svg?branch=main)](https://github.com/RLogikg/phpytex/actions/workflows/manual.yaml)
-[![qa manual:staging](https://github.com/RLogikg/phpytex/actions/workflows/manual.yaml/badge.svg?branch=staging)](https://github.com/RLogikg/phpytex/actions/workflows/manual.yaml)
-[![qa auto:staging](https://github.com/RLogikg/phpytex/actions/workflows/auto.yaml/badge.svg?branch=staging)](https://github.com/RLogikg/phpytex/actions/workflows/auto.yaml)
-[![qa auto:current](https://github.com/RLogikg/phpytex/actions/workflows/auto.yaml/badge.svg)](https://github.com/RLogikg/phpytex/actions/workflows/auto.yaml)
+[![qa manual:main](https://github.com/RLogik/phpytex/actions/workflows/manual.yaml/badge.svg?branch=main)](https://github.com/RLogikg/phpytex/actions/workflows/manual.yaml)
+[![qa manual:staging](https://github.com/RLogik/phpytex/actions/workflows/manual.yaml/badge.svg?branch=staging)](https://github.com/RLogik/phpytex/actions/workflows/manual.yaml)
+[![qa auto:staging](https://github.com/RLogik/phpytex/actions/workflows/auto.yaml/badge.svg?branch=staging)](https://github.com/RLogik/phpytex/actions/workflows/auto.yaml)
+[![qa auto:current](https://github.com/RLogik/phpytex/actions/workflows/auto.yaml/badge.svg)](https://github.com/RLogik/phpytex/actions/workflows/auto.yaml)
 
 # (PH(p)y)TeX #
 
