@@ -214,7 +214,7 @@ def ____printfilestamp(depth: int, start: bool, anon: bool, hide: bool):
     path = ____phpytex_params____['censorsymb'] if anon else __FNAME__
     if start:
         ____print(f'{{tab}}%% ********************************************************************************', anon=anon, hide=hide)
-        ____print('{{tab}}%% FILE: {{path}}'.format(**params), anon=anon, hide=hide)
+        ____print(f'{{tab}}%% FILE: {{path}}', anon=anon, hide=hide)
         ____print(f'{{tab}}%% ********************************************************************************', anon=anon, hide=hide)
         ____print('', anon=anon, hide=hide)
     else:

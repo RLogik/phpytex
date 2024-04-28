@@ -4,6 +4,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **root** | [**String**](string.md) | Filename of start of transpilation   (phpytex) -&gt; py -&gt; tex -&gt; pdf | [optional] [default to root.tex]
+**pythonMinuspath** | [**String**](string.md) | User choice of python path (e.g. local venv). | [optional] [default to null]
 **transpiled** | [**String**](string.md) | Filename of intermediate transpilation result   phpytex -&gt; (py) -&gt; tex -&gt; pdf | [optional] [default to phpytex_transpiled.py]
 **output** | [**String**](string.md) | Filename of end of transpilation result   phpytex -&gt; py -&gt; (tex) -&gt; pdf | [optional] [default to main.tex]
 **debug** | [**Boolean**](boolean.md) |  | [optional] [default to false]

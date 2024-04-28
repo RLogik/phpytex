@@ -123,6 +123,10 @@ components:
           type: string
           default: root.tex
           pattern: '^[^\/\\]+\.tex'
+        python-path:
+          description: |-
+            User choice of python path (e.g. local venv).
+          type: string
         transpiled:
           description: |-
             Filename of intermediate transpilation result
