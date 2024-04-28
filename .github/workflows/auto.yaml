@@ -5,8 +5,14 @@ on:
     branches:
       - main
       - staging
+      - 'dev-*'
+      - 'bugfix-*'
+      - 'feature-*'
+      - 'feat-*'
+
     paths:
       - '*'
+
     # see https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows
     types:
       - assigned

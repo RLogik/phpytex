@@ -227,26 +227,24 @@ def createImportFileParameters(
 ):
     if os.path.exists(path) and not overwrite:
         return
-    lines = re.split(
-        r'\r?\n',
-        dedent(
-            '''
+
+    lines = []
+    lines += dedent_split(
+        '''
         #!/usr/bin/env python3
         # -*- coding: utf-8 -*-
 
         from fractions import Fraction;
         '''
-        ),
     )
     lines.append('')
-    names = user.EXPORT_VARS.keys()
-    for name, (_, codedvalue) in user.EXPORT_VARS.items():
-        lines.append(f'{name} = {codedvalue};')
-    for name in documents.variables.keys():
-        if name in names:
-            continue
-        lines.append(f'{name} = None;')
+
+    data = {key: None for key, value in documents.variables.items()} | {
+        key: coded_value for key, (_, coded_value) in user.EXPORT_VARS.items()
+    }
+    lines += [f'{key} = {coded_value}' for key, coded_value in data.items()]
     lines.append('')
+
     write_text_file(path=path, lines=lines)
     return
 
