@@ -275,26 +275,7 @@ dist:
     @just build-docs
     @just build-archive
 
-deploy-binary:
-    #!/usr/bin/env bash
-
-    # create zip artefact
-    git add . && git commit --no-verify --allow-empty -m temp
-    just build-archive
-    git reset --soft HEAD~1 && git reset .
-
-    VERSION="$(cat dist/VERSION)"
-    FILE="dist/${PROJECT_NAME}-${VERSION}.zip"
-    TARGET="${DEPLOYMENT_PATH}/bin"
-
-    # zip -> binary
-    mkdir -p "${TARGET}"
-    cat "templates/template-app.py" | cat - "${FILE}" > "${TARGET}/${NAME_OF_APP}";
-    chmod +x "${TARGET}/${NAME_OF_APP}";
-    rm "dist/${PROJECT_NAME}-$(cat dist/VERSION).zip"
-    exit 0;
-
-deploy-open-source:
+deploy:
     #!/usr/bin/env bash
 
     # create zip artefact
