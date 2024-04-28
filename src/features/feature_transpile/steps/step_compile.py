@@ -27,7 +27,9 @@ __all__ = [
 
 
 @echo_function(
-    tag='STEP TRANSPILE [+ COMPILE] (py -> tex [-> pdf])', level=LOG_LEVELS.INFO, close=True
+    tag='STEP TRANSPILE/COMPILE (phpytex -> [py -> tex -> pdf])',
+    level=LOG_LEVELS.INFO,
+    close=True,
 )
 def step_compile(cfg_user: UserConfig):
     options = cfg_user.compile.options
@@ -42,17 +44,21 @@ def step_compile(cfg_user: UserConfig):
 
 
 def execute_transpiled_code(options: UserConfigPartCompileOptions):
-    path_from = options.transpiled
-    path_to = options.output
-    python_cmd = options.python_path or python_command()
     try:
+        path_from = options.transpiled
+        path_to = options.output
+        python_cmd = options.python_path or python_command()
         cmd = re.split(r'\s+', python_cmd) + [path_from]
         log_info(f"CALL < \033[94;1m{' '.join(cmd)}\033[0m >")
         pipe_call(cmd)
-    except:
-        log_fatal(
-            'An error occurred during (py -> tex [-> pdf]) conversion.',
-            f'  - Consult the error logs and the script \033[1m{path_from}\033[0m for more information.',
-            f'  - Partial output may also be found in \033[1m{path_to}\033[0m.',
+
+    except Exception as err:
+        message = '\n'.join(
+            [
+                'An error occurred during (phpytex -> [py -> tex -> pdf]) conversion.',
+                f'  - Consult the error logs and the script \033[1m{path_from}\033[0m for more information.',
+                f'  - Partial output may also be found in \033[1m{path_to}\033[0m.',
+            ]
         )
-    return
+        err.add_note(message)
+        raise err
