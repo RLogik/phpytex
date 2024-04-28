@@ -25,8 +25,68 @@ Each case contains a set of initial files and a counterpart folder with the outp
 
 ### Installation ###
 
-Follow the instructions in [install/README.md](./install/README.md).
-This will enable you to call `phpytex` within any project containing a `.phpytex.yml` config file.
+The following steps are flexible:
+
+1. Create/choose a path, e.g. `$HOME/.phpytex`:
+
+    ```bash
+    mkdir -p "$HOME/.phpytex"
+    mkdir -p "$HOME/.phpytex/bin"
+    ```
+
+2. Ensure that the latter path (for the binaries) is part of your `$PATH` variable:
+
+    ```bash
+    # only needed once, if not already created
+    touch $HOME/.bash_profile
+    # permanently adds the path - the file can also be manually editted
+    echo "export \${PATH}=\"\${PATH}:\${HOME}/.phpytex/bin\"" >> ${HOME}/.bash_profile
+    ```
+
+3. Clone or download a repository zip artefact (see the [Releases](releases) page).
+
+4. Rename the folder to `X.Y.Z` and store it under `$HOME/.phpytex/X.Y.Z`.
+
+5. Navigate to `$HOME/.phpytex/X.Y.Z`.
+
+    1. Run `just setup` and update the `.env` file.
+
+    2. Run `just build-deployment`
+
+6. Navigate to `$HOME/.phpytex/bin`.
+   Create a bash script called `phpytex`
+
+    ```sh
+    #!/usr/bin/env bash
+
+    VERSION="X.Y.Z" # <- the current version
+
+    dist="$( dirname $( dirname "${0}" ) )/${VERSION}"
+    jf="${dist}/justfile"
+
+    if [[ ${#@} == 1 ]] && [[ "$1" == "run" ]]; then
+        just --justfile "${jf}" run-cli  "run" "TRANSPILE" --path "${PWD}"
+    else
+        just --justfile "${jf}" run-cli  "$@"
+    fi
+    ```
+
+    and store this as `$HOME/.phpytex/bin/phpytex`.
+
+7. Assign execution permissions to the file via
+
+    ```bash
+    chmod +x "$HOME/.phpytex/bin/phpytex"
+    ```
+
+Test it out:
+
+  ```bash
+  phpytex --version
+  ```
+
+NOTE: you may need to restart the bash session in advance
+to ensure the binaries are included in `$PATH`.
 
 ### Usage - quick start ###
 
