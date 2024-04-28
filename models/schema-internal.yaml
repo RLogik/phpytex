@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  version: 1.5.1
+  version: 1.5.1a
   title: Schemata for internal app settings
 servers:
   - url: "https://github.com/RLogik"
