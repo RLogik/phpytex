@@ -1,0 +1,30 @@
+\documentclass[a4paper]{report}
+
+<<< python, import
+import re;
+import math;
+import random;
+>>>
+
+\begin{document}
+    <<< Greeting >>>, and hello <<<
+        ', '.join([ name.title() for name in Planets ])
+    >>>. We can also greet like this:
+
+    \begin{itemize}
+    <<< python
+    for name in Planets:
+        if re.match(r'^[a-m]', name, re.IGNORECASE):
+    >>>
+    \item A planet in the lower half of the alphabet: <<< name.lower(); >>>.
+    <<< python
+        else:
+    >>>
+    \item A planet in the upper half of the alphabet: <<< name.upper(); >>>.
+    <<< escape >>>
+    \end{itemize}
+
+    % NOTE: this random number changes upon each transpilation, as the rng is not seeded:
+    The value $x=<<< random.random() >>>$ is a randomly generated number in $[0,1]$.
+    The value of Euler's number is $e\approx<<< round(math.e, 8) >>>$.
+\end{document}

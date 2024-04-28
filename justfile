@@ -297,11 +297,12 @@ run *args:
 
 run-transpiler:
     @just _reset-logs
-    @just run run TRANSPILE
+    @just run "run" "TRANSPILE"
 
-examples:
+examples log_path="logs":
     #!/usr/bin/env bash
     echo -e "CREATE EXAMPLES" >> /dev/stdout;
+    just _reset-logs
     # loop through all files in examples folder
     while read path; do
         [[ "${path}" == "" ]] && continue;
@@ -314,7 +315,7 @@ examples:
         cp -r "$path/." "${path_output}";
 
         # run programme on example (in results path)
-        just run --path "${path_output}" run;
+        just run --path "${path_output}" --log "{{log_path}}" "run" "TRANSPILE";
     done <<< $( find examples/example_* -mindepth 0 -maxdepth 0 2> /dev/null );
     exit 0;
 

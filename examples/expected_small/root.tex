@@ -1,0 +1,31 @@
+<<< input 'src/index.tex'; >>>
+
+% This comment block will be removed.
+%% This comment block will be retained.
+%% The following block of empty lines will be reduced to a maximum of 1 empty line:
+
+
+\begin{document}
+    \section{<<< TITLE; >>>}
+    \author{<<< AUTHOR; >>>}
+
+    This paper concerns the compatability of
+    of different standards of technologies between the systems
+
+    \begin{itemise}
+    <<< python
+    for name in SystemNames:
+    >>>
+    \item <<< name.title(); >>>
+    <<< escape; >>>
+    \end{itemise}
+
+    between the temperatures <<< T_range[0]; >>> and <<< T_range[1]; >>> Kelvin.
+
+    % NOTE: This random number remains the same upon each transpilation, as the rng is seeded:
+    The value $T_{r}=<<<
+        round(T_range[0] + (T_range[1] - T_range[0])*random.random(), 2)
+    >>>$ is a randomly generated temperature in this interval.
+
+    <<< input 'body/index.tex'; >>>
+\end{document}

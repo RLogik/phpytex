@@ -1,0 +1,21 @@
+compile:
+  options:
+    root:    root.tex
+    output:  main.tex
+    debug:   false
+    compile: false
+    tabs:    false
+    spaces:  4
+parameters:
+  options:
+    Greeting: Hello World
+    Planets:
+      # - sol
+      - mercury
+      - venus
+      - terra
+      - mars
+      - jupiter
+      - saturn
+      - uranus
+      - neptune
