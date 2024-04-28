@@ -347,7 +347,7 @@ run-cli *args:
 
 run-transpiler log_path="logs":
     @just _reset-logs
-    @just run "run" "TRANSPILE" --logs "logs" --path "{{CURRENT_DIR}}"
+    @just run-cli "run" "TRANSPILE" --logs "logs" --path "{{CURRENT_DIR}}"
 
 examples log_path="logs":
     #!/usr/bin/env bash
@@ -365,7 +365,7 @@ examples log_path="logs":
         cp -r "$path/." "${path_output}";
 
         # run programme on example (in results path)
-        just run --path "${path_output}" --log "{{log_path}}" "run" "TRANSPILE";
+        just run-cli --path "${path_output}" --log "{{log_path}}" "run" "TRANSPILE";
     done <<< $( find examples/example_* -mindepth 0 -maxdepth 0 2> /dev/null );
     exit 0;
 
