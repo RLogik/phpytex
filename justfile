@@ -442,7 +442,6 @@ lint-check path:
     @{{PYVENV_ON}} && {{PYVENV}} -m {{LINTING}} --check --verbose "{{path}}"
 
 prettify:
-    @{{PYVENV_ON}} && {{PYVENV}} -m {{LINTING}} --verbose *.py
     @{{PYVENV_ON}} && {{PYVENV}} -m {{LINTING}} --verbose src/*
     @{{PYVENV_ON}} && {{PYVENV}} -m {{LINTING}} --verbose tests/*
 

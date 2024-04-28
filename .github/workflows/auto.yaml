@@ -1,0 +1,75 @@
+name: QA (auto)
+
+on:
+  pull_request:
+    branches:
+      - main
+      - staging
+    paths:
+      - examples/**
+      - src/**
+      - tests/**
+    # see https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows
+    types:
+      - assigned
+      - opened
+      - edited
+      - reopened
+      - ready_for_review
+      - unlocked
+
+permissions:
+  contents: read
+
+jobs:
+  job-qa:
+    name: QA
+    runs-on: "ubuntu-latest"
+
+    environment: "local"
+    env:
+      PYTHON_PATH: "${{ vars.PYTHON_PATH }}"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Action - install justfile tool
+        uses: extractions/setup-just@v1
+        with:
+          just-version: "1.25.2"
+
+      - name: Action - install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Setup - ping basic tools and perform pre-installation
+        shell: bash
+        run: |-
+          # ping just tool
+          just --version
+          # ping tools
+          just check-system
+          # run setup
+          just setup
+
+      - name: Build code
+        shell: bash
+        run: |-
+          just build
+
+      - name:  Check linting
+        shell: bash
+        run: |-
+          just lint-check "src"
+          just lint-check "tests"
+
+      - name:  Run unit tests
+        shell: bash
+        run: |-
+          just tests-unit
+
+      - name:  Run behavioural tests
+        shell: bash
+        run: |-
+          echo "Not yet implemented!"
