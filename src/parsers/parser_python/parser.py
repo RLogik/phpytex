@@ -52,21 +52,15 @@ def unparse(
 
     elif isinstance(value, tuple):
         values = list(map(conv, value))
-        return unparse_iterable(
-            values, ('(', ')'), multiline=multiline, indent=indent, indentchar=indentchar
-        )
+        return unparse_iterable(values, ('(', ')'), multiline=multiline, indent=indent, indentchar=indentchar)  # fmt: skip
 
     elif isinstance(value, list):
         values = list(map(conv, value))
-        return unparse_iterable(
-            values, ('[', ']'), multiline=multiline, indent=indent, indentchar=indentchar
-        )
+        return unparse_iterable(values, ('[', ']'), multiline=multiline, indent=indent, indentchar=indentchar)  # fmt: skip
 
     elif isinstance(value, dict):
         values = [f'"{key}": {conv(value)}' for key, value in value.items()]
-        return unparse_iterable(
-            values, ('{', '}'), multiline=multiline, indent=indent, indentchar=indentchar
-        )
+        return unparse_iterable(values, ('{', '}'), multiline=multiline, indent=indent, indentchar=indentchar)  # fmt: skip
 
     raise Exception('Could not evaluated value as string')
 
@@ -99,7 +93,6 @@ def unparse_iterable(
     indent: int,
     indentchar: str,
 ):
-    # NOTE: trailing comma is necessary for tuple-type!
     sepFirst, sep, sepFinal = '', ',', ','
     if multiline and len(values) > 1:
         tab = indentchar * indent
@@ -107,5 +100,9 @@ def unparse_iterable(
         sep = f',\n{tab + indent}'
         sepFinal = f',\n{tab}'
 
+    # NOTE: trailing comma is allowed for all, but necessary for tuple-type!
     contents = sep.join(values)
-    return f'{braces[0]}{sepFirst}{contents}{sepFinal}{braces[1]}'
+    if len(values) > 0:
+        contents += sepFinal
+
+    return f'{braces[0]}{sepFirst}{contents}{braces[1]}'
