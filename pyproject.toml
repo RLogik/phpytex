@@ -1,6 +1,6 @@
 [tool.poetry]
 name = 'phpytex'
-version = '1.5.2'
+version = '1.5.2a'
 description = 'A transpiler which converts python augmented latex to latex'
 homepage = 'https://github.com/RLogik/phpytex'
 authors = [
@@ -34,10 +34,10 @@ classifiers = [
 # compiler
 # --------------------------------
 python = ">=3.10,<4.0"
-pip = {version='^24.0'}
-poetry = {version='^1.8.2'}
+pip = {version='^24.2'}
+poetry = {version='^1.8.3'}
 wheel = {version='^0.43.0'}
-setuptools = {version='^69.5.1'}
+setuptools = {version='^72.0.0'}
 # --------------------------------
 # code - general
 # --------------------------------
@@ -48,27 +48,27 @@ typing = {version='^3.7.4.3'}
 # code - async, distr. system
 # --------------------------------
 asyncio = {version='^3.4.3'}
-anyio = {version='^4.3.0'}
+anyio = {version='^4.4.0'}
 # --------------------------------
 # config
 # --------------------------------
 toml = {version='^0.10.2'}
 argparse = {version='^1.4.0'}
 python-dotenv = {version='^1.0.1'}
-jsonschema = {version='^4.21.1'}
+jsonschema = {version='^4.23.0'}
 lazy-load = {version='^0.8.3'}
 pyyaml = {version='^6.0.1'}
 # --------------------------------
 # models
 # --------------------------------
 dataclasses = {version='^0.6'} # not latest, otherwise conflicts with other packages
-pydantic = {version='~2.7'} # NOTE: strict
-pydantic-yaml = {version='~1.2'} # NOTE: strict
+pydantic = {version='~2.8.2'}
+pydantic-yaml = {version='^1.3.0'}
 # --------------------------------
 # data
 # --------------------------------
 numpy = {version='~1,^1.24.0'} # ensures major version = 1, and version >= 1.24.0
-pandas = {version='~2.2'}
+pandas = {version='^2.2.2'}
 # --------------------------------
 # parsing
 # --------------------------------
@@ -88,24 +88,24 @@ codetiming = {version='^1.4.0'}
 # --------------------------------
 # testing
 # --------------------------------
-coverage = {extras=['toml'], version='^7.4.1'}
-pytest-cov = {version='^4.1.0'}
+coverage = {extras=['toml'], version='^7.6.0'}
+pytest-cov = {version='^5.0.0'}
 pytest-lazy-fixture = {version='^0.6.3'}
-pytest-order = {version='^1.2.0'}
+pytest-order = {version='^1.2.1'}
 pytest = {version='^7.4.4,~7'}
-testfixtures = {version='^7.2.2'}
+testfixtures = {version='^8.3.0'}
 behave = {version='^1.2.6'}
 # --------------------------------
 # model
 # --------------------------------
-datamodel-code-generator = {version='^0.25'}
+datamodel-code-generator = {version='^0.25.8'}
 openapi-generator-cli = {version='^4.3.1'}
 openapi-generator = {version='^1.0.6'}
 # --------------------------------
 # hooks and linting
 # --------------------------------
-pre_commit = {version='^3.7.0'}
-black = {extras=['d', 'jupyter'], version='^24.4.1'}
+pre-commit = {version='^3.8.0'}
+black = {extras=['d', 'jupyter'], version='^24.4.2'}
 
 [tool.setuptools]
 include-package-data = true
