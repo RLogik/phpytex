@@ -8,7 +8,7 @@
 from ...thirdparty.misc import *
 from ...thirdparty.lexers import *
 
-from ...core.utils import *
+from ..._core.utils.basic import *
 from ...models.enums import *
 from .basic import *
 

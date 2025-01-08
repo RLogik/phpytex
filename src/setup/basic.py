@@ -5,6 +5,8 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
+import logging
+
 from ..thirdparty.code import *
 from ..thirdparty.config import *
 from ..thirdparty.maths import *
@@ -14,8 +16,8 @@ from ..thirdparty.system import *
 from ..thirdparty.types import *
 
 from ..__paths__ import *
-from ..core.utils import *
-from ..core.logging import *
+from .._core.utils.basic import *
+from .._core.logging import *
 from ..models.transpilation import *
 from ..models.internal import *
 
@@ -32,12 +34,12 @@ __all__ = [
 # GLOBAL PROPERTIES
 # ----------------------------------------------------------------
 
-pid = Property[int]()
-path_env = Property[str]()
-path_logging = Property[Optional[str]]()
-quiet_mode = Property[bool]()
-open_source = Property[bool]()
-yaml_initialised = Property[bool](final=False)
+pid = FinalProperty[int]()
+path_env = FinalProperty[str]()
+path_logging = FinalProperty[str | None]()
+quiet_mode = FinalProperty[bool]()
+open_source = FinalProperty[bool]()
+yaml_initialised = Property[bool]()
 yaml_initialised.set(False)
 
 # ----------------------------------------------------------------
@@ -55,13 +57,14 @@ def initialise_application(
     '''
     initialise_logging(name=name, debug=debug)
     initialise_yaml_parser()
-    log_info(f'running {title or name} v{INFO.version} on PID {pid()}')
+    logging.info(f'running {title or name} v{INFO.version} on PID {pid()}')
     return
 
 
 def initialise_logging(name: str, debug: bool):
-    level = LOG_LEVELS.DEBUG if debug else LOG_LEVELS.INFO
-    configure_logging(name=name, level=level.name, path=path_logging())
+    level = "DEBUG" if debug else "INFO"
+    path = path_logging()
+    configure_logging(name=name, level=level, path=path)
     return
 
 
@@ -160,7 +163,7 @@ def load_repo_info() -> RepoInfo:
         is_archived=open_source(),
     )
     config_repo = toml.loads(text)
-    assets = config_repo.get('tool', {}).get('poetry', {})
+    assets = config_repo.get('project', {})
     info = RepoInfo.model_validate(assets)
     return info
 

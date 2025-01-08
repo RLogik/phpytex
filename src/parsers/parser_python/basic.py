@@ -10,7 +10,7 @@ from ...thirdparty.lexers import *
 from ...thirdparty.misc import *
 from ...thirdparty.types import *
 
-from ...core.utils import *
+from ..._core.utils.basic import *
 from ...models.enums import *
 
 # ----------------------------------------------------------------

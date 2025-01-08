@@ -8,7 +8,7 @@
 from ....thirdparty.misc import *
 from ....thirdparty.types import *
 
-from ....core.logging import *
+from ...._core.logging import *
 from ....models.transpilation import *
 from ..tokeniser import *
 from .basic import *

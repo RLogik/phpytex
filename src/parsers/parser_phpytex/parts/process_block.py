@@ -10,7 +10,7 @@ from ....thirdparty.lexers import *
 
 from ....models.enums import *
 from ....models.transpilation import *
-from ....core.utils import *
+from ...._core.utils.basic import *
 from ... import parser_python
 from ..tokeniser import *
 from .basic import *

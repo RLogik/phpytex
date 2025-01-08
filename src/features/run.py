@@ -12,7 +12,7 @@ If called from e.g. cli.py or api.py, must initialise all paths.
 
 from ..thirdparty.misc import *
 
-from ..core.logging import *
+from .._core.logging import *
 from ..models.application import *
 from . import feature_transpile
 

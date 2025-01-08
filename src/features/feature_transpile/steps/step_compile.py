@@ -5,11 +5,13 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
+import logging
+
 from ....thirdparty.misc import *
 from ....thirdparty.system import *
 from ....thirdparty.types import *
 
-from ....core.logging import *
+from ...._core.logging import *
 from ....setup import *
 from ....models.user import *
 
@@ -28,7 +30,7 @@ __all__ = [
 
 @echo_function(
     tag='STEP TRANSPILE/COMPILE (phpytex -> [py -> tex -> pdf])',
-    level=LOG_LEVELS.INFO,
+    level="INFO",
     close=True,
 )
 def step_compile(cfg_user: UserConfig):
@@ -49,7 +51,7 @@ def execute_transpiled_code(options: UserConfigPartCompileOptions):
         path_to = options.output
         python_cmd = options.python_path or python_command()
         cmd = re.split(r'\s+', python_cmd) + [path_from]
-        log_info(f"CALL < \033[94;1m{' '.join(cmd)}\033[0m >")
+        logging.info(f"CALL < \033[94;1m{' '.join(cmd)}\033[0m >")
         pipe_call(cmd)
 
     except Exception as err:

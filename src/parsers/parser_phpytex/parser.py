@@ -5,10 +5,12 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
+import logging
+
 from ...thirdparty.config import *
 from ...thirdparty.types import *
 
-from ...core.logging import *
+from ..._core.logging import *
 from ...models.enums import *
 from ...models.transpilation import *
 from ..parser_python import *
@@ -42,5 +44,5 @@ def parse(
         yield from lexed_to_blocks(tokeniser, u, offset=offset, indentation=indentation)
 
     except Exception as err:
-        log_error(err)
+        logging.error(err)
         yield from lexed_to_block_feed(tokeniser, text, offset=offset, indentation=indentation)

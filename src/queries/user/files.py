@@ -10,7 +10,7 @@ from ...thirdparty.types import *
 from ...thirdparty.misc import *
 from ...thirdparty.system import *
 
-from ...core.utils import *
+from ..._core.utils.basic import *
 from ...models.user import *
 from ...setup import *
 

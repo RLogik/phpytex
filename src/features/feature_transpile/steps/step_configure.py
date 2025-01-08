@@ -9,8 +9,8 @@ from ....thirdparty.misc import *
 from ....thirdparty.system import *
 from ....thirdparty.types import *
 
-from ....core.logging import *
-from ....core.utils import *
+from ...._core.logging import *
+from ...._core.utils.basic import *
 from ....models.enums import *
 from ....models.transpilation import *
 from ....models.user import *
@@ -36,7 +36,7 @@ __all__ = [
 # ----------------------------------------------------------------
 
 
-@echo_function(tag='STEP READ CONFIG', level=LOG_LEVELS.INFO, close=True)
+@echo_function(tag='STEP READ CONFIG', level="INFO", close=True)
 def step_configure(
     path_config: str,
     compileoptions: dict = {},

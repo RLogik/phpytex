@@ -56,7 +56,7 @@ class CliArgumentsBase:
             description=dedent(
                 f'''
                 \x1b[1mProgramme: {self._info.name} @ v{self._info.version}{part}\x1b[0m
-                \x1b[2murl: \x1b[4m{self._info.homepage}\x1b[0m
+                \x1b[2murl: \x1b[4m{self._info.urls.homepage}\x1b[0m
                 \x1b[2;3m{description}\x1b[0m
                 '''
             ),

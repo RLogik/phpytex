@@ -9,7 +9,7 @@ from ...thirdparty.system import *
 from ...thirdparty.maths import *
 from ...thirdparty.types import *
 
-from ...core.utils import *
+from ..._core.utils.basic import *
 from ...models.internal import *
 from ...models.transpilation import *
 
@@ -27,8 +27,8 @@ __all__ = [
 # GLOBAL VARIABLES
 # ----------------------------------------------------------------
 
-setting_indent_character = Property[str]()
-setting_indent_character_re = Property[str]()
+setting_indent_character = FinalProperty[str]()
+setting_indent_character_re = FinalProperty[str]()
 EXPORT_VARS: dict[str, tuple[Any, str]] = {}
 
 # ----------------------------------------------------------------

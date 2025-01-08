@@ -11,7 +11,7 @@ from ...thirdparty.misc import *
 from ...thirdparty.system import *
 from ...thirdparty.types import *
 
-from ...core.utils import *
+from ..._core.utils.basic import *
 from ...models.application import *
 from .basic import *
 from ...__paths__ import *

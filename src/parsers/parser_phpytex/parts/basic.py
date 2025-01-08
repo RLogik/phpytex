@@ -8,7 +8,7 @@
 from ....thirdparty.lexers import *
 from ....thirdparty.misc import *
 
-from ....core.utils import *
+from ...._core.utils.basic import *
 
 # ----------------------------------------------------------------
 # EXPORTS
