@@ -33,6 +33,9 @@ __all__ = [
 
 @echo_function(tag="STEP CREATE AUXILIARY FILES", level="INFO", close=True)
 def step_create(cfg_user: UserConfig):
+    """
+    Step to create auxiliary files.
+    """
     create_project_tree(path=os.getcwd(), files=cfg_user.files, folders=cfg_user.folders)
 
     if cfg_user.stamp is not None:
@@ -44,6 +47,7 @@ def step_create(cfg_user: UserConfig):
 
     if cfg_user.parameters is not None:
         create_parameter_encoding(options=cfg_user.parameters.options)
+
     return
 
 

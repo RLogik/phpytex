@@ -41,7 +41,6 @@ PATH_SANDBOX: str = f"{PATH_CASES}/sandbox"
 # ----------------------------------------------------------------
 
 if __name__ == "__main__":
-    sys.tracebacklimit = 0
     config.open_source.set(False)
     args = CliArguments(config.INFO, config.APPCONFIG).parse(*sys.argv[1:])
 
@@ -78,6 +77,7 @@ if __name__ == "__main__":
                 ],
                 cwd=os.getcwd(),
             )
+
         except BaseException as err:
             err.add_note(f"Test case \033[1m{path}\033[0m failed.")
             if args.inspect:
