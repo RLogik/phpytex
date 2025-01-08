@@ -5,13 +5,15 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
+import logging
+
 from ....thirdparty.maths import *
 from ....thirdparty.misc import *
 from ....thirdparty.system import *
 from ....thirdparty.types import *
 
-from ....core.logging import *
-from ....core.utils import *
+from ...._core.logging import *
+from ...._core.utils.basic import *
 from ....models.enums import *
 from ....models.transpilation import *
 from ....models.user import *
@@ -32,7 +34,7 @@ __all__ = [
 # ----------------------------------------------------------------
 
 
-@echo_function(tag='STEP TRANSPILE ([phpytex -> py] -> ...)', level=LOG_LEVELS.INFO, close=True)
+@echo_function(tag='STEP TRANSPILE ([phpytex -> py] -> ...)', level="INFO", close=True)
 def step_transpile(cfg_user: UserConfig):
     options = cfg_user.compile.options
     indentsymb = user.setting_indent_character()
@@ -50,6 +52,7 @@ def step_transpile(cfg_user: UserConfig):
     )
 
     # Transpile preamble:
+    log_console(".")
     if cfg_user.stamp is not None:
         name = 'stamp'
         preambles.append(name)
@@ -62,6 +65,7 @@ def step_transpile(cfg_user: UserConfig):
             is_preamble=True,
             silent=True,
             params={'comm': True, 'comm-auto': False, 'show-tree': False},
+            lex=[False],
         )
 
     # Transpile document file:
@@ -78,6 +82,7 @@ def step_transpile(cfg_user: UserConfig):
             'comm-auto': options.comments == EnumCommentsOptions.AUTO,
             'show-tree': options.show_structure,
         },
+        lex=[True],
     )
 
     # Add document structure:
@@ -138,17 +143,19 @@ def transpileDocument(
     is_preamble: bool = False,
     silent: bool = False,
     params: dict[str, bool] = dict(),
+    lex: list[bool] = [],
 ):
     if path in chain:
-        log_error('The document contains a cycle!')
+        logging.error('The document contains a cycle!')
         return
     try:
         with open(path, 'r') as fp:
             lines = ''.join(fp.readlines())
+
     except:
-        log_error('Could not find or read document \033[1m{path}\033[0m!'.format(path=path))
+        logging.error('Could not find or read document \033[1m{path}\033[0m!'.format(path=path))
         return
-    depth = len(chain)
+
     indentsymb = user.setting_indent_character()
     indentation = IndentationTracker(
         symb=indentsymb,
@@ -161,16 +168,15 @@ def transpileDocument(
             if not (block.kind == 'text:comment'):
                 continue
             blocks.append(block)
+
         blocks.append(TranspileBlock(kind='text:empty'))
         documents.addPreamble(name=name, blocks=blocks)
-        log_console(
-            displayTreeBranch(
-                path=path,
-                anon=False,
-                depth=depth,
-                censorsymb=options.censor_symbol,
-            )
+        branch = display_tree_branch(
+            path=path,
+            anon=False,
+            lex=lex,
         )
+        log_console(branch)
 
     else:
         if path in documents.paths:
@@ -181,33 +187,39 @@ def transpileDocument(
         anon = documents.isAnon(path=path)
         hide = documents.isHidden(path=path)
         blocks = TranspileBlocks()
-        log_console(
-            displayTreeBranch(
-                path=path,
-                anon=anon,
-                depth=depth,
-                censorsymb=options.censor_symbol,
-            )
+        branch = display_tree_branch(
+            path=path,
+            anon=anon,
+            lex=lex,
         )
+        log_console(branch)
 
         if params['show-tree']:
             blocks.append(documents.documentStamp(depth=0, start=True, anon=anon, hide=hide))
+
         for block in parser_phpytex.parse(lines, indentation, offset=options.offset):
             if block.kind == 'code:import':
                 imports.append(block)
                 continue
+
             if block.kind == 'text:comment':
                 if params['comm-auto'] == True:
                     if not block.parameters.keep:
                         continue
+
                 elif params['comm'] == False:
                     continue
+
             blocks.append(block)
+
         if params['show-tree']:
             blocks.append(documents.documentStamp(depth=0, start=False, anon=anon, hide=hide))
 
         documents.addBlocks(path=path, blocks=blocks)
-        for subpath in documents.getSubPaths(path):
+        subpaths = documents.getSubPaths(path)
+        n = len(subpaths)
+        for k, subpath in enumerate(subpaths):
+            is_final=k == n-1
             transpileDocument(
                 options=options,
                 path=subpath,
@@ -216,6 +228,7 @@ def transpileDocument(
                 chain=chain + [path],
                 silent=silent,
                 params=params,
+                lex=[*lex, is_final],
             )
     return
 
@@ -289,19 +302,28 @@ def createmetacode(
     write_text_file(options.transpiled, lines)
     return
 
+# ----------------------------------------------------------------
+# METHOD: step transpile phpytex to python
+# ----------------------------------------------------------------
 
-def displayTreeBranch(
+def display_tree_branch(
     path: str,
     anon: bool = False,
-    prefix: str = '',
-    indentsymb: str = '    ',
-    branchsymb: str = '  |____',
-    censorsymb: str = '****',
-    depth: int = 0,
+    lex: list[bool] = [],
 ) -> str:
-    return '{prefix}{tab}{branchsymb} {path}'.format(
-        prefix=prefix,
-        tab=indentsymb * (depth if depth == 0 else depth - 1),
-        branchsymb='' if depth == 0 else branchsymb,
-        path=censorsymb if anon else path,
-    )
+    if len(lex) == 0:
+        is_final = True
+        sep = ""
+
+    else:
+        is_final = lex[-1]
+        sep = "└──  " if is_final else "├──  "
+
+    indent = "  "
+    path = "*****" if anon else path
+    prefix = "".join([
+        (" " if is_last else "│") + indent
+        for is_last in lex[:-1]
+    ])  # fmt: skip
+
+    return f"{prefix}{sep}{path}"

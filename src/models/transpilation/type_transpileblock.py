@@ -11,7 +11,7 @@ from ...thirdparty.code import *
 from ...thirdparty.misc import *
 from ...thirdparty.types import *
 
-from ...core.utils import *
+from ..._core.utils.basic import *
 from ...models.generated.app import *
 from ...parsers import parser_python
 

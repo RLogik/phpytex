@@ -7,12 +7,19 @@
 
 from __future__ import annotations
 
+import logging
+from collections import defaultdict
+from pydantic import BaseModel
+from pydantic import ConfigDict
+from pydantic import Field
+
 from ...thirdparty.misc import *
 from ...thirdparty.system import *
 from ...thirdparty.types import *
 
-from ...core.logging import *
-from ...core.utils import *
+from ..._core.logging import *
+from ..._core.utils.basic import *
+from ...models.internal import *
 from .type_transpileblock import *
 
 # ----------------------------------------------------------------
@@ -144,8 +151,8 @@ class TranspileDocuments(object):
     schemes: dict[str, str]
 
     paths: list[str]
-    anon: dict[str, bool]
-    hide: dict[str, bool]
+    anon: defaultdict[str, bool]
+    hide: defaultdict[str, bool]
     edges: list[tuple[str, str]]
     docEdges: list[tuple[str, str]]
 
@@ -158,8 +165,8 @@ class TranspileDocuments(object):
         self.docEdges = []
         self.variables = dict()
         self.preamble = dict()
-        self.anon = dict()
-        self.hide = dict()
+        self.anon = defaultdict(lambda: False)
+        self.hide = defaultdict(lambda: False)
         self.schemes = schemes
         return
 
@@ -180,7 +187,7 @@ class TranspileDocuments(object):
         @returns
         - updated `self.anon`
         '''
-        self.anon = inheritanceOnGraph(self.edges, {path: initial_value, **self.anon})
+        self.anon = inheritance_on_graph(self.edges, {path: initial_value, **self.anon})
 
     def updateHidden(self, path: str, initial_value: bool = False):
         '''
@@ -193,7 +200,7 @@ class TranspileDocuments(object):
         @returns
         - updated `self.hide`
         '''
-        self.hide = inheritanceOnGraph(self.edges, {path: initial_value, **self.hide})
+        self.hide = inheritance_on_graph(self.edges, {path: initial_value, **self.hide})
 
     def isAnon(self, path: str) -> bool:
         return self.anon.get(path, False)
@@ -221,11 +228,9 @@ class TranspileDocuments(object):
         index = self.paths.index(path)
         return '{label}_{index}'.format(label=self.schemes['file'], index=index)
 
-    def getHeadPaths(self) -> list[str]:
-        degreeIn = {path: 0 for path in self.paths}
-        for u, v in self.edges:
-            degreeIn[v] = degreeIn[v] + 1 if v in degreeIn else 0
-        return [path for path in self.paths if degreeIn[path] == 0]
+    def get_root_paths(self) -> list[str]:
+        has_predecessor = set(v for _, v in self.edges)
+        return [path for path in self.paths if path not in has_predecessor]
 
     def getSubPaths(self, path: str) -> list[str]:
         return [__ for _, __ in self.edges if _ == path]
@@ -269,9 +274,7 @@ class TranspileDocuments(object):
                     value = self.evaluate(code_value, document=document)
                 except:
                     # TODO: deal with error
-                    log_error(
-                        f'Could not evaluate \033[1m<<< {parameters.scope} set {parameters.var_name} = {parameters.code_value} >>>\033[0m.'
-                    )
+                    logging.error(f'Could not evaluate \033[1m<<< {parameters.scope} set {parameters.var_name} = {parameters.code_value} >>>\033[0m.')  # fmt: skip
                     continue
                 if scope == 'local':
                     document.variables[var_name] = value
@@ -285,19 +288,18 @@ class TranspileDocuments(object):
                 try:
                     _path = self.evaluate(parameters.path, document=document)
                 except:
-                    cmd = ('bibliography' if parameters.mode == 'bib' else 'input') + (
-                        '_anon' if parameters.anon else ('_hide' if parameters.hide else '')
-                    )
+                    cmd = ('bibliography' if parameters.mode == 'bib' else 'input') \
+                        + ('_anon' if parameters.anon else ('_hide' if parameters.hide else ''))  # fmt: skip
                     # TODO: deal with error
-                    log_error(
-                        f'Could not evaluate \033[1m<<< {cmd} {parameters.path}\033[0m >>>\033[0m.'
-                    )
+                    logging.error(f'Could not evaluate \033[1m<<< {cmd} {parameters.path}\033[0m >>>\033[0m.')  # fmt: skip
                     continue
                 _path = document.relativisePath(_path)
+
                 ## add edge for the sake of display (regardless of whether input or bib mode):
                 self.docEdges.append((path, _path))
                 if parameters.mode == 'input':
                     self.edges.append((path, _path))
+
                 self.updateAnon(_path, parameters.anon)
                 self.updateHidden(_path, parameters.hide)
                 ## create phpytex-code blocks based on computed path:
@@ -330,42 +332,37 @@ class TranspileDocuments(object):
         # force empty add end of file
         return
 
-    def documentStructurePretty(
+    def as_tree(
         self,
-        path=None,
-        anon: bool = False,
-        prefix: str = '',
-        indentsymb: str = '    ',
-        branchsymb: str = '  |____',
-        depth: int = 0,
-    ) -> Generator[str, None, None]:
-        if not isinstance(path, str):
-            depth = 0
-            children = self.getHeadPaths()
-        elif self.hide[path]:
-            return
+        path: str | None = None,
+        /,
+    ) -> GenericTree[TranspileDocumentNode]:
+        """
+        Parses as tree structure
+        """
+
+        if path is None:
+            root = TranspileDocumentNode()
+            paths_children = self.get_root_paths()
+
         else:
-            anon = anon or self.anon.get(path, False)
-            yield '{prefix}{tab}{branchsymb} {path}'.format(
-                prefix=prefix,
-                tab=indentsymb * (depth if depth == 0 else depth - 1),
-                branchsymb='' if depth == 0 else branchsymb,
-                path='########' if anon else path,
-            )
-            depth = depth + 1
-            children = []
-            if path in self.paths:
-                children = [v for u, v in self.docEdges if u == path]
-        for subpath in children:
-            yield from self.documentStructurePretty(
-                subpath,
-                anon=anon,
-                prefix=prefix,
-                indentsymb=indentsymb,
-                branchsymb=branchsymb,
-                depth=depth,
-            )
-        return
+            anon = self.anon[path]
+            root = TranspileDocumentNode(path=path, anon=anon)
+            paths_children = [v for u, v in self.docEdges if u == path]
+
+        children = [
+            self.as_tree(path)
+            for path in paths_children
+            if not self.hide[path]
+        ]
+
+        tree = GenericTree(root=root, children=children)
+
+        return tree
+
+    def __str__(self) -> str:
+        tree = self.as_tree()
+        return str(tree)
 
     def documentStamp(self, depth: int, start: bool, anon: bool, hide: bool) -> TranspileBlock:
         return TranspileBlock(
@@ -376,6 +373,7 @@ class TranspileDocuments(object):
         )
 
     def documentTree(self, seed: int | None) -> TranspileBlock:
+        lines = self.__str__().split('\n')
         return TranspileBlock(
             kind='text:comment',
             lines=dedent_split(
@@ -386,7 +384,7 @@ class TranspileDocuments(object):
                 %%
                 '''
             )
-            + list(self.documentStructurePretty(prefix='%% '))
+            + [f'%% {line}' for line in lines]
             + dedent_split(
                 '''
                 %%
@@ -472,9 +470,33 @@ class TranspileDocuments(object):
                 tab=self.tab(offset + 1),
                 label='{label}_{name}'.format(label=self.schemes['pre'], name=name),
             )
-        for path in self.getHeadPaths():
+        for path in self.get_root_paths():
             yield '{tab}{label}(\'{path}\');'.format(
-                tab=self.tab(offset + 1), label=self.schemes['file'], path=path
+                tab=self.tab(offset + 1),
+                label=self.schemes['file'],
+                path=path,
             )
         yield '{tab}return;'.format(tab=self.tab(offset + 1))
         return
+
+
+# ----------------------------------------------------------------
+# AUXILIARY CLASSES
+# ----------------------------------------------------------------
+
+
+class TranspileDocumentNode(BaseModel):
+    """
+    Node class for display purposes
+    """
+
+    model_config = ConfigDict(
+        extra="forbid",
+        populate_by_name=True,
+    )
+
+    path: str = Field(default=".")
+    anon: bool = Field(default=False)
+
+    def __str__(self) -> str:
+        return "*****" if self.anon else self.path

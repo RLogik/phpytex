@@ -7,7 +7,7 @@
 
 from __future__ import annotations
 
-from ...core.utils import *
+from ..._core.utils.basic import *
 
 # ----------------------------------------------------------------
 # EXPORTS
