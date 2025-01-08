@@ -89,7 +89,7 @@ def lexed_to_block(
             # attempt to re-process as quick command:
             try:
                 text = lexed_to_str(u)
-                u = tokeniser.parse("blockquick", text)
+                u = tokeniser.parse(text, mode="blockquick")
                 return lexed_to_quick_block(u, indentation=indentation)
 
             # otherwise, consider block to contain purely text + inline code:

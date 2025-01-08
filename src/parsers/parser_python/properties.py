@@ -27,7 +27,7 @@ __all__ = [
 def compute_indentations(
     codelines: list[str],
     indentsymb: str = "    ",
-    encoding: Encoding = Encoding.UTF8,
+    encoding: ENCODING = "utf-8",
 ) -> list[str]:
     """
     Use python's tokenize module to extract syntactic information.

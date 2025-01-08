@@ -127,7 +127,7 @@ def process_block_code(
             indents = parser_python.compute_indentations(
                 lines,
                 indentsymb=indentation.symb,
-                encoding=Encoding.UTF8,
+                encoding="utf-8",
             )
             if len(indents) > 0:
                 indentation.setOffset(indents[-1])
@@ -150,5 +150,5 @@ def process_block_code_regex(
     """
     # TODO: possibly replace this by dedent(...)
     text = dedent_full(text)
-    u = tokeniser.parse("blockcode", text)
+    u = tokeniser.parse(text, mode="blockcode")
     return process_block_code(u, offset=offset, indentation=indentation)

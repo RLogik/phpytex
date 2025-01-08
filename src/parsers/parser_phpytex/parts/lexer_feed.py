@@ -46,7 +46,7 @@ def lexed_to_block_feed(
     while textrest != "":
         # attempt to lex next block:
         try:
-            u = tokeniser.parse("blockfeed", textrest)
+            u = tokeniser.parse(textrest, mode="blockfeed")
 
         except Exception as err:
             err.add_note(lex_error(lines, linespos))

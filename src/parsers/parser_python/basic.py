@@ -10,7 +10,6 @@ import tokenize
 from typing import Generator
 
 from ..._core.utils.basic import *
-from ..._core.utils.io import *
 from ...models.enums import *
 
 # ----------------------------------------------------------------
@@ -32,13 +31,18 @@ __all__ = [
 
 def tokenise_code(
     code: str,
-    encoding: Encoding = Encoding.UTF8,
+    encoding: ENCODING = "utf-8",
 ) -> Generator[tokenize.TokenInfo, None, None]:
     """
     Method to tokenise code line by line
     """
-    with BytesIOStream(code.encode(encoding.value)) as fp:
-        return tokenize.tokenize(fp.readline)
+    lines = iter(code.split("\n"))
+
+    def stream() -> bytes:
+        line = next(lines)
+        return line.encode()
+
+    return tokenize.tokenize(stream)
 
 
 def group_ends_in_colon(tokengroup: list[tokenize.TokenInfo]) -> bool:
@@ -57,6 +61,7 @@ def get_indentation_of_group(tokengroup: list[tokenize.TokenInfo]):
             line = token.line.rstrip()
             indent = get_full_indentation(token)
             return [] if line == "" else [indent]
+
     return []
 
 
