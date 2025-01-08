@@ -5,22 +5,21 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
-from ...thirdparty.system import *
-from ...thirdparty.maths import *
-from ...thirdparty.types import *
-
 from ..._core.utils.basic import *
 from ...models.internal import *
 from ...models.transpilation import *
+from ...thirdparty.maths import *
+from ...thirdparty.system import *
+from ...thirdparty.types import *
 
 # ----------------------------------------------------------------
 # EXPORTS
 # ----------------------------------------------------------------
 
 __all__ = [
-    'EXPORT_VARS',
-    'setting_indent_character',
-    'setting_indent_character_re',
+    "EXPORT_VARS",
+    "setting_indent_character",
+    "setting_indent_character_re",
 ]
 
 # ----------------------------------------------------------------

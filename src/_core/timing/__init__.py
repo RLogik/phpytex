@@ -15,9 +15,9 @@ from .decorators import *
 # ----------------------------------------------------------------
 
 __all__ = [
-    'Countdown',
-    'Timer',
-    'TimerError',
-    'add_countdown',
-    'add_countdown_async',
+    "Countdown",
+    "Timer",
+    "TimerError",
+    "add_countdown",
+    "add_countdown_async",
 ]

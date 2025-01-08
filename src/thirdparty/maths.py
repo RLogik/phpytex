@@ -8,6 +8,7 @@
 import math
 import random
 from fractions import Fraction
+
 from numpy.random import MT19937
 from numpy.random import RandomState
 from numpy.random import SeedSequence
@@ -32,8 +33,8 @@ def reseed(
 # ----------------------------------------------------------------
 
 __all__ = [
-    'Fraction',
-    'math',
-    'random',
-    'reseed',
+    "Fraction",
+    "math",
+    "random",
+    "reseed",
 ]

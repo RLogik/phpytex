@@ -12,7 +12,7 @@ from ...thirdparty.misc import *
 # ----------------------------------------------------------------
 
 __all__ = [
-    'Countdown',
+    "Countdown",
 ]
 
 # ----------------------------------------------------------------
@@ -21,9 +21,9 @@ __all__ = [
 
 
 class Countdown:
-    '''
+    """
     Allows one to set events based on a timer.
-    '''
+    """
 
     _duration: float
     _time_finished: datetime
@@ -42,31 +42,31 @@ class Countdown:
 
     @property
     def done(self) -> bool:
-        '''
+        """
         Checks if countdown timer is finished.
 
         - if done, returns `true`.
         - otherwise returns `false`.
-        '''
+        """
         t_now = datetime.now(timezone.utc)
         return t_now >= self._time_finished
 
     def restart_if_done(self) -> bool:
-        '''
+        """
         Checks if countdown timer is finished.
 
         - if done, resets and returns `true`.
         - otherwise returns `false`.
-        '''
+        """
         if self.done:
             self.restart()
             return True
         return False
 
     def restart(self):
-        '''
+        """
         Restarts the timer.
-        '''
+        """
         dt = self.duration  # in seconds
         t_now = datetime.now(timezone.utc)
         self._time_finished = t_now + timedelta(seconds=dt)

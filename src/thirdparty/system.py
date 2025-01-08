@@ -6,16 +6,16 @@
 # ----------------------------------------------------------------
 
 import os
-from pathlib import Path
 import platform
+
+# for modifications
+import re
 import shutil
 import subprocess
 import sys
 import traceback
 import warnings
-
-# for modifications
-import re
+from pathlib import Path
 
 # ----------------------------------------------------------------
 # MODIFICATIONS
@@ -79,48 +79,48 @@ def write_text_file(
     trim_empty_lines: bool = True,
     add_empty_line: bool = True,
 ):
-    '''
+    """
     Writes lines of text to file.
-    '''
+    """
     create_file_if_not_exists(path)
 
     # trim lines
     if trim_empty_lines:
         lines = lines[:]
-        while len(lines) > 0 and re.match(r'^\s*$', lines[-1]):
+        while len(lines) > 0 and re.match(r"^\s*$", lines[-1]):
             lines = lines[:-1]
 
     # write lines
-    with open(path, 'w') as fp:
-        fp.write('\n'.join(lines))
+    with open(path, "w") as fp:
+        fp.write("\n".join(lines))
         if add_empty_line:
-            fp.write('\n')
+            fp.write("\n")
     return
 
 
 def is_linux() -> bool:
     # return not ( os.name == 'nt' );
-    return not (platform.system().lower() == 'windows')
+    return not (platform.system().lower() == "windows")
 
 
 def python_command() -> str:
-    return 'python3' if is_linux() else 'py -3'
+    return "python3" if is_linux() else "py -3"
 
 
 def pipe_call(
     args: list[str],
     cwd=None,
-    err_msg: str = '',
+    err_msg: str = "",
     fname_out: str | None = None,
 ):
-    '''
+    """
     DEV-NOTE: subprocess.run is like subprocess.Popen but waits for result
-    '''
+    """
     cwd = cwd if isinstance(cwd, str) else os.getcwd()
     if fname_out is None:
         result = subprocess.run(args, cwd=cwd)
     else:
-        with open(fname_out, 'w') as fp:
+        with open(fname_out, "w") as fp:
             result = subprocess.run(args, cwd=cwd, stdout=fp)
     if result.returncode == 0:
         return
@@ -134,20 +134,20 @@ def pipe_call(
 # ----------------------------------------------------------------
 
 __all__ = [
-    'Path',
-    'clear_dir_if_exists',
-    'create_dir_if_not_exists',
-    'create_file_if_not_exists',
-    'os',
-    'platform',
-    'python_command',
-    'pipe_call',
-    'remove_dir_if_exists',
-    'remove_file_if_exists',
-    'shutil',
-    'subprocess',
-    'sys',
-    'traceback',
-    'warnings',
-    'write_text_file',
+    "Path",
+    "clear_dir_if_exists",
+    "create_dir_if_not_exists",
+    "create_file_if_not_exists",
+    "os",
+    "pipe_call",
+    "platform",
+    "python_command",
+    "remove_dir_if_exists",
+    "remove_file_if_exists",
+    "shutil",
+    "subprocess",
+    "sys",
+    "traceback",
+    "warnings",
+    "write_text_file",
 ]

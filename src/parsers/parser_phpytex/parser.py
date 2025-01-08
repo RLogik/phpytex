@@ -7,12 +7,11 @@
 
 import logging
 
-from ...thirdparty.config import *
-from ...thirdparty.types import *
-
 from ..._core.logging import *
 from ...models.enums import *
 from ...models.transpilation import *
+from ...thirdparty.config import *
+from ...thirdparty.types import *
 from ..parser_python import *
 from .parts import *
 from .tokeniser import *
@@ -22,7 +21,7 @@ from .tokeniser import *
 # ----------------------------------------------------------------
 
 __all__ = [
-    'parse',
+    "parse",
 ]
 
 # ----------------------------------------------------------------
@@ -33,14 +32,14 @@ __all__ = [
 def parse(
     text: str,
     indentation: IndentationTracker,
-    offset: str = '',
+    offset: str = "",
 ) -> Generator[TranspileBlock, None, None]:
-    if text.strip() == '':
+    if text.strip() == "":
         return
 
     try:
         tokeniser = Tokeniser()
-        u = tokeniser.parse('blocks', text)
+        u = tokeniser.parse("blocks", text)
         yield from lexed_to_blocks(tokeniser, u, offset=offset, indentation=indentation)
 
     except Exception as err:

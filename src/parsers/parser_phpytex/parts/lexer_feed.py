@@ -5,11 +5,10 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
-from ....thirdparty.misc import *
-from ....thirdparty.types import *
-
 from ...._core.logging import *
 from ....models.transpilation import *
+from ....thirdparty.misc import *
+from ....thirdparty.types import *
 from ..tokeniser import *
 from .basic import *
 from .lexer_block import *
@@ -19,7 +18,7 @@ from .lexer_block import *
 # ----------------------------------------------------------------
 
 __all__ = [
-    'lexed_to_block_feed',
+    "lexed_to_block_feed",
 ]
 
 # ----------------------------------------------------------------
@@ -33,20 +32,20 @@ def lexed_to_block_feed(
     offset: str,
     indentation: IndentationTracker,
 ) -> Generator[TranspileBlock, None, None]:
-    '''
+    """
     NOTE: As this method is too slow.
     Thus only used when main parse-method fails,
     in order to pinpoint failure.
-    '''
-    lines = re.split(r'\r?\n', text)
+    """
+    lines = re.split(r"\r?\n", text)
     numlines = len(lines)
     linespos = 0
     textrest = text
 
-    while textrest != '':
+    while textrest != "":
         # attempt to lex next block:
         try:
-            u = tokeniser.parse('blockfeed', textrest)
+            u = tokeniser.parse("blockfeed", textrest)
 
         except Exception as err:
             err.add_note(lex_error(lines, linespos))
@@ -58,7 +57,7 @@ def lexed_to_block_feed(
         if len(children) > 1:
             textrest = lexed_to_str(children[1])
             # NOTE: add character to ensure last line is not empty in line count:
-            numlines_ = len(re.split(r'\r?\n', textrest + '.'))
+            numlines_ = len(re.split(r"\r?\n", textrest + "."))
             linespos = numlines - numlines_
 
         # attempt to parse next block:
@@ -87,14 +86,14 @@ def lex_error(lines: list[str], linepos: int) -> str:
 
     # NOTE: display linepos + 1, as documents start with 1 not 0
     messages.append(
-        f'At line \033[1m{linepos + 1}\033[0m the text could not be \033[1mtokenised\033[0m:'
+        f"At line \033[1m{linepos + 1}\033[0m the text could not be \033[1mtokenised\033[0m:"
     )
-    messages.append('\033[1m--------------------------------\033[0m')
-    messages += [f'\033[2m{line}\033[0m' for line in text_consumed[-3:]]
-    messages += [f'\033[91;1m{line}\033[0m' for line in text_remaining[:1]]
-    messages += [f'\033[2m{line}\033[0m' for line in text_remaining[1:3]]
-    messages.append('\033[1m--------------------------------\033[0m')
-    return '\n'.join(messages)
+    messages.append("\033[1m--------------------------------\033[0m")
+    messages += [f"\033[2m{line}\033[0m" for line in text_consumed[-3:]]
+    messages += [f"\033[91;1m{line}\033[0m" for line in text_remaining[:1]]
+    messages += [f"\033[2m{line}\033[0m" for line in text_remaining[1:3]]
+    messages.append("\033[1m--------------------------------\033[0m")
+    return "\n".join(messages)
 
 
 def parse_error(lines: list[str], linepos1: int, linepos2: int) -> str:
@@ -105,11 +104,11 @@ def parse_error(lines: list[str], linepos1: int, linepos2: int) -> str:
 
     # NOTE: display linepos + 1, as documents start with 1 not 0
     messages.append(
-        f'At lines \033[1m{linepos1 + 1}\033[0m-\033[1m{linepos2 + 1}\033[0m the text could not be \033[1mparsed\033[0m:'
+        f"At lines \033[1m{linepos1 + 1}\033[0m-\033[1m{linepos2 + 1}\033[0m the text could not be \033[1mparsed\033[0m:"
     )
-    messages.append('\033[1m--------------------------------\033[0m')
-    messages += [f'\033[2m{line}\033[0m' for line in text_consumed[-3:]]
-    messages += [f'\033[91;1m{line}\033[0m' for line in text_block]
-    messages += [f'\033[2m{line}\033[0m' for line in text_remaining[:3]]
-    messages.append('\033[1m--------------------------------\033[0m')
-    return '\n'.join(messages)
+    messages.append("\033[1m--------------------------------\033[0m")
+    messages += [f"\033[2m{line}\033[0m" for line in text_consumed[-3:]]
+    messages += [f"\033[91;1m{line}\033[0m" for line in text_block]
+    messages += [f"\033[2m{line}\033[0m" for line in text_remaining[:3]]
+    messages.append("\033[1m--------------------------------\033[0m")
+    return "\n".join(messages)

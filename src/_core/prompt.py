@@ -14,9 +14,9 @@ from ..thirdparty.types import *
 # ----------------------------------------------------------------
 
 __all__ = [
-    'prompt_user_input',
-    'prompt_secure_user_input',
-    'prompt_confirmation',
+    "prompt_confirmation",
+    "prompt_secure_user_input",
+    "prompt_user_input",
 ]
 
 # ----------------------------------------------------------------
@@ -33,15 +33,19 @@ def prompt_user_input(message: str, expected: Callable[[str], bool]) -> Optional
     answer = None
     while True:
         try:
-            answer = input(f'{message}$ ')
+            answer = input(f"{message}$ ")
+
         # Capture Meta+C or Meta+D
         except (KeyboardInterrupt, EOFError):
-            print('')
+            print("")
             return None
-        except:
+
+        except Exception as _:
             continue
+
         if expected(answer):
             break
+
     return answer
 
 
@@ -50,13 +54,15 @@ def prompt_secure_user_input(message: str, expected: Callable[[str], bool]) -> O
     while True:
         try:
             # TODO: show **** without line break
-            answer = getpass(f'{message}$ ', stream=None)
+            answer = getpass(f"{message}$ ", stream=None)
         # Capture Meta+C or Meta+D
         except (KeyboardInterrupt, EOFError):
-            print('')
+            print("")
             return None
-        except:
+
+        except Exception as _:
             continue
+
         if expected(answer):
             break
     return answer
@@ -64,13 +70,13 @@ def prompt_secure_user_input(message: str, expected: Callable[[str], bool]) -> O
 
 def prompt_confirmation(message: str, default: bool = False) -> bool:
     expected = lambda x: not not re.match(
-        pattern=r'^(y|yes|j|ja|n|no|nein)$',
+        pattern=r"^(y|yes|j|ja|n|no|nein)$",
         string=x.lower(),
         flags=re.IGNORECASE,
     )
     answer = prompt_user_input(message, expected)
     if not isinstance(answer, str):
         return default
-    if re.match(pattern=r'^(y|yes|j|ja)$', string=answer.lower(), flags=re.IGNORECASE):
+    if re.match(pattern=r"^(y|yes|j|ja)$", string=answer.lower(), flags=re.IGNORECASE):
         return True
     return False

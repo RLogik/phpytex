@@ -5,29 +5,27 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
-from copy import copy
-from copy import deepcopy
-from codetiming import Timer as TimerBasic
-from codetiming import TimerError
-from datetime import datetime
-from datetime import timezone
-from datetime import timedelta
-from itertools import product as itertools_product
-from pydantic import AwareDatetime
-
-# import lorem
-import pytz
-
 # import pendulum
-
 # for modifications, not export
 import re
 import time
+from copy import copy
+from copy import deepcopy
+from datetime import datetime
+from datetime import timedelta
+from datetime import timezone
 from functools import wraps
+from itertools import product as itertools_product
 from textwrap import dedent as textwrap_dedent
 from typing import Any
 from typing import Callable
 from typing import TypeVar
+
+# import lorem
+import pytz
+from codetiming import Timer as TimerBasic
+from codetiming import TimerError
+from pydantic import AwareDatetime
 
 # ----------------------------------------------------------------
 # MODIFICATIONS
@@ -35,36 +33,36 @@ from typing import TypeVar
 
 
 def parse_datetime(stamp: str) -> datetime:
-    return datetime.fromisoformat(stamp.replace('Z', ' +00:00'))
+    return datetime.fromisoformat(stamp.replace("Z", " +00:00"))
 
 
-def get_timestamp(format: str = r'%Y-%m-%d %H:%M:%S%z') -> str:
+def get_timestamp(format: str = r"%Y-%m-%d %H:%M:%S%z") -> str:
     return datetime.now().strftime(format)
 
 
 def get_datetime_stamp(rounded: bool = False) -> str:
-    return get_timestamp(r'%Y-%m-%d %H:%M:%S%z' if rounded else r'%Y-%m-%d %H:%M:%S.%f%z')
+    return get_timestamp(r"%Y-%m-%d %H:%M:%S%z" if rounded else r"%Y-%m-%d %H:%M:%S.%f%z")
 
 
 def get_date_stamp() -> str:
-    return get_timestamp(r'%Y-%m-%d')
+    return get_timestamp(r"%Y-%m-%d")
 
 
 def make_aware_datetime(t: datetime, tz: timezone) -> AwareDatetime:
-    '''
+    """
     Returns a copy of a datetime object.
 
     - If the object was 'timezone-aware' then the clone is returned.
     - Otherwise forcibly adds timezone to clone and returns this.
-    '''
+    """
     # DEV-NOTE: returns a clone, does not change original variable
     return t.replace(tzinfo=t.tzinfo or tz)
 
 
 def make_aware_datetime_or_none(t: Any, tz: timezone) -> AwareDatetime | None:
-    '''
+    """
     Makes a datetime timezone-aware.
-    '''
+    """
     if not isinstance(t, datetime):
         return None
     return make_aware_datetime(t=t, tz=tz)
@@ -78,9 +76,9 @@ class Timer(TimerBasic):
 
 
 class TimerQuiet:
-    '''
+    """
     A class to simply compute elapsed time without any logging
-    '''
+    """
 
     _current_time = 0
 
@@ -103,36 +101,36 @@ def strip_around(
     last: bool,
     all: bool = True,
 ):
-    '''
+    """
     Strips all initial/final 'empty' lines.
-    '''
-    lines = re.split(pattern=r'\n', string=text)
+    """
+    lines = re.split(pattern=r"\n", string=text)
     if all:
         if first:
-            while len(lines) > 0 and lines[0].strip() == '':
+            while len(lines) > 0 and lines[0].strip() == "":
                 lines = lines[1:]
         if last:
-            while len(lines) > 0 and lines[-1].strip() == '':
+            while len(lines) > 0 and lines[-1].strip() == "":
                 lines = lines[:-1]
     else:
         if first:
             lines = lines[1:]
         if last:
             lines = lines[:-1]
-    text = '\n'.join(lines)
+    text = "\n".join(lines)
     return text
 
 
 def dec_prestrip(first: bool = True, last: bool = True, all: bool = False):
-    '''
+    """
     Returns a decorator that modifies string -> string methods
-    '''
-    T = TypeVar('T')
+    """
+    T = TypeVar("T")
 
     def dec(method: Callable[[str], T]) -> Callable[[str], T]:
-        '''
+        """
         Performs method but first strips all initial/final 'empty' lines.
-        '''
+        """
 
         @wraps(method)
         def wrapped_method(text: str) -> T:
@@ -146,7 +144,7 @@ def dec_prestrip(first: bool = True, last: bool = True, all: bool = False):
 
 @dec_prestrip(all=False)
 def dedent(text: str) -> str:
-    '''
+    r"""
     Remove any common leading whitespace from every line in `text`.
 
     This can be used to make triple-quoted strings line up with the left
@@ -165,7 +163,7 @@ def dedent(text: str) -> str:
 
     ```py
     text = dedent(
-        """
+        '''
           This is a text
         ==============
 
@@ -174,7 +172,7 @@ def dedent(text: str) -> str:
           - item 1
           - item 2
           - item 3
-        """
+        '''
     )
     print(f'\\n{text}\\n')
     ```
@@ -194,7 +192,7 @@ def dedent(text: str) -> str:
     whereas
     ```py
     text = dedent(
-        """
+        '''
 
 
           This is a text
@@ -206,7 +204,7 @@ def dedent(text: str) -> str:
           - item 2
           - item 3
 
-        """
+        '''
     )
     print(f'\\n{text}\\n')
     ```
@@ -226,13 +224,13 @@ def dedent(text: str) -> str:
 
     ----
     ```
-    '''
+    """
     return textwrap_dedent(text)
 
 
 @dec_prestrip(all=True)
 def dedent_full(text: str) -> str:
-    '''
+    r"""
     Remove any common leading whitespace from every line in `text`.
 
     This can be used to make triple-quoted strings line up with the left
@@ -252,7 +250,7 @@ def dedent_full(text: str) -> str:
 
     ```py
     text = dedent_full(
-        """
+        '''
           This is a text
         ==============
 
@@ -261,7 +259,7 @@ def dedent_full(text: str) -> str:
           - item 1
           - item 2
           - item 3
-        """
+        '''
     )
     print(f'\\n{text}\\n')
     ```
@@ -281,7 +279,7 @@ def dedent_full(text: str) -> str:
     and
     ```py
     text = dedent_full(
-        """
+        '''
 
 
           This is a text
@@ -293,7 +291,7 @@ def dedent_full(text: str) -> str:
           - item 2
           - item 3
 
-        """
+        '''
     )
     print(f'\\n{text}\\n')
     ```
@@ -310,35 +308,35 @@ def dedent_full(text: str) -> str:
         - item 3
     ----
     ```
-    '''
+    """
     return textwrap_dedent(text)
 
 
 def dedent_split(text: str, full: bool = False) -> list[str]:
     text = dedent_full(text) if full else dedent(text)
-    return re.split(r'\r?\n', text)
+    return re.split(r"\r?\n", text)
 
 
-def unindent_text(text: str, reference: str = '') -> str:
-    text = f'\n{reference}.\n{text}\n'  # add reference point to first line
+def unindent_text(text: str, reference: str = "") -> str:
+    text = f"\n{reference}.\n{text}\n"  # add reference point to first line
     lines = dedent_split(text)  # dedent, utilising the reference marker
     lines = lines[1:]  # strip reference marker
-    text = '\n'.join(lines)
+    text = "\n".join(lines)
     return text
 
 
-def unindent_lines(lines: list[str], reference: str = '') -> list[str]:
-    text = '\n'.join(lines)
-    text = f'\n{reference}.\n{text}\n'  # add reference point to first line
+def unindent_lines(lines: list[str], reference: str = "") -> list[str]:
+    text = "\n".join(lines)
+    text = f"\n{reference}.\n{text}\n"  # add reference point to first line
     lines = dedent_split(text)  # dedent, utilising the reference marker
     return lines[1:]  # strip reference marker
 
 
 def reindent_lines(lines: list[str], indent: str, unindent: bool = False) -> list[str]:
-    '''
+    """
     Either adds to indentation (`unindent=False`)
     or forces an indentation level (`unindent=True`).
-    '''
+    """
     if unindent:
         lines = unindent_lines(lines)
     return [indent + line for line in lines]
@@ -349,31 +347,31 @@ def reindent_lines(lines: list[str], indent: str, unindent: bool = False) -> lis
 # ----------------------------------------------------------------
 
 __all__ = [
-    'AwareDatetime',
-    'Timer',
-    'TimerError',
-    'TimerQuiet',
-    'copy',
-    'datetime',
-    'dedent',
-    'dedent_full',
-    'dedent_split',
-    'deepcopy',
-    'get_date_stamp',
-    'get_datetime_stamp',
-    'get_timestamp',
-    'itertools_product',
+    "AwareDatetime",
+    "Timer",
+    "TimerError",
+    "TimerQuiet",
+    "copy",
+    "datetime",
+    "dedent",
+    "dedent_full",
+    "dedent_split",
+    "deepcopy",
+    "get_date_stamp",
+    "get_datetime_stamp",
+    "get_timestamp",
+    "itertools_product",
     # 'lorem',
-    'make_aware_datetime',
-    'make_aware_datetime_or_none',
-    'parse_datetime',
+    "make_aware_datetime",
+    "make_aware_datetime_or_none",
+    "parse_datetime",
     # 'pendulum',
-    'pytz',
-    're',
-    'reindent_lines',
-    'strip_around',
-    'timedelta',
-    'timezone',
-    'unindent_lines',
-    'unindent_text',
+    "pytz",
+    "re",
+    "reindent_lines",
+    "strip_around",
+    "timedelta",
+    "timezone",
+    "unindent_lines",
+    "unindent_text",
 ]

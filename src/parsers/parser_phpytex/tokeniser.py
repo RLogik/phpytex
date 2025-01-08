@@ -5,24 +5,23 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
+from ...setup import *
 from ...thirdparty.code import *
 from ...thirdparty.lexers import *
-
-from ...setup import *
 
 # ----------------------------------------------------------------
 # EXPORTS
 # ----------------------------------------------------------------
 
 __all__ = [
-    'Tokeniser',
+    "Tokeniser",
 ]
 
 # ----------------------------------------------------------------
 # CONSTANTS
 # ----------------------------------------------------------------
 
-GRAMMAR = 'phpytex.lark'
+GRAMMAR = "phpytex.lark"
 
 # ----------------------------------------------------------------
 # METHODS
@@ -38,13 +37,13 @@ class Tokeniser:
         if self._grammar is None:
             self._grammar = get_grammar(GRAMMAR)
 
-        if not (mode in self._lexer):
+        if mode not in self._lexer:
             self._lexer[mode] = Lark(
                 self._grammar,
                 start=mode,
                 regex=True,
-                parser='earley',  # 'lalr', 'earley', 'cyk'
-                priority='invert',  # auto (default), none, normal, invert
+                parser="earley",  # 'lalr', 'earley', 'cyk'
+                priority="invert",  # auto (default), none, normal, invert
             )
 
         lexer = self._lexer[mode]
@@ -53,5 +52,5 @@ class Tokeniser:
             return lexer.parse(text)
 
         except Exception as err:
-            err.add_note(f'Could not tokenise input as \033[1m{mode}\033[0m!')
+            err.add_note(f"Could not tokenise input as \033[1m{mode}\033[0m!")
             raise err

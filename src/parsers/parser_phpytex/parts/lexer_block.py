@@ -5,22 +5,21 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
+from ....models.transpilation import *
 from ....thirdparty.lexers import *
 from ....thirdparty.types import *
-
-from ....models.transpilation import *
 from ..tokeniser import *
 from .basic import *
-from .process_block import *
 from .lexer_quick import *
+from .process_block import *
 
 # ----------------------------------------------------------------
 # EXPORTS
 # ----------------------------------------------------------------
 
 __all__ = [
-    'lexed_to_block',
-    'lexed_to_blocks',
+    "lexed_to_block",
+    "lexed_to_blocks",
 ]
 
 # ----------------------------------------------------------------
@@ -36,13 +35,13 @@ def lexed_to_blocks(
 ) -> Generator[TranspileBlock, None, None]:
     children = filter_subexpr(u)
     match u.data:
-        case 'blocks':
+        case "blocks":
             for child in children:
                 yield lexed_to_block(tokeniser, child, offset=offset, indentation=indentation)
             return
 
         case _ as t:
-            raise Exception(f'Could not parse {t} expression!')
+            raise Exception(f"Could not parse {t} expression!")
 
 
 def lexed_to_block(
@@ -53,30 +52,30 @@ def lexed_to_block(
 ) -> TranspileBlock:
     children = filter_subexpr(u)
     match u.data:
-        case 'blockfeedone' | 'block' | 'blockcomment':
+        case "blockfeedone" | "block" | "blockcomment":
             return lexed_to_block(
                 tokeniser, children[0], offset=offset, indentation=indentation
             )
 
-        case 'emptyline':
+        case "emptyline":
             return TranspileBlock(
-                kind='text:empty',
+                kind="text:empty",
                 level=indentation.level,
                 indentsymb=indentation.symb,
             )
 
-        case 'blockcomment_simple':
+        case "blockcomment_simple":
             return TranspileBlock(
-                kind='text:comment',
+                kind="text:comment",
                 content=lexed_to_str(u),
                 level=indentation.level,
                 indentsymb=indentation.symb,
                 parameters=TranspileBlockParameters(keep=False),
             )
 
-        case 'blockcomment_keep':
+        case "blockcomment_keep":
             return TranspileBlock(
-                kind='text:comment',
+                kind="text:comment",
                 content=lexed_to_str(u),
                 level=indentation.level,
                 indentsymb=indentation.symb,
@@ -84,11 +83,11 @@ def lexed_to_block(
             )
 
         # TEXT CONTENT
-        case 'blockcontent':
+        case "blockcontent":
             # attempt to re-process as quick command:
             try:
                 text = lexed_to_str(u)
-                u = tokeniser.parse('blockquick', text)
+                u = tokeniser.parse("blockquick", text)
                 return lexed_to_quick_block(u, indentation=indentation)
 
             # otherwise, consider block to contain purely text + inline code:
@@ -96,7 +95,7 @@ def lexed_to_block(
                 return process_block_content(children, indentation=indentation)
 
         # CODE BLOCK REGEX
-        case 'blockcode_regex':
+        case "blockcode_regex":
             text = lexed_to_str(u)
             return process_block_code_regex(
                 tokeniser,
@@ -106,7 +105,7 @@ def lexed_to_block(
             )
 
         # CODE BLOCK
-        case 'blockcode':
+        case "blockcode":
             return process_block_code(children[0], offset=offset, indentation=indentation)
 
-    raise Exception('Could not parse expression!')
+    raise Exception("Could not parse expression!")

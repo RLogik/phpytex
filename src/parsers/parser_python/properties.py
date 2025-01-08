@@ -5,11 +5,10 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
-from ...thirdparty.misc import *
-from ...thirdparty.lexers import *
-
 from ..._core.utils.basic import *
 from ...models.enums import *
+from ...thirdparty.lexers import *
+from ...thirdparty.misc import *
 from .basic import *
 
 # ----------------------------------------------------------------
@@ -17,7 +16,7 @@ from .basic import *
 # ----------------------------------------------------------------
 
 __all__ = [
-    'compute_indentations',
+    "compute_indentations",
 ]
 
 # ----------------------------------------------------------------
@@ -27,23 +26,23 @@ __all__ = [
 
 def compute_indentations(
     codelines: list[str],
-    indentsymb: str = '    ',
+    indentsymb: str = "    ",
     encoding: Encoding = Encoding.UTF8,
 ) -> list[str]:
-    '''
+    """
     Use python's tokenize module to extract syntactic information.
 
     Recursively yields the required level of indentation _after_ each lines
     E.g. lines ending in ':' command a +1 indentation level.
-    '''
+    """
     # first need to pad code to prevent parser from failing for interrupted blocks.
     pad = get_padding(codelines, indentsymb=indentsymb)
-    codelines = [indentsymb * i + 'pass;' for i in range(pad)] + codelines
+    codelines = [indentsymb * i + "pass;" for i in range(pad)] + codelines
 
     # cumulatively group together tokens and yield indentation:
     indents = []
     tokengroup = []
-    for token in tokenise_code(code='\n'.join(codelines), encoding=encoding):
+    for token in tokenise_code(code="\n".join(codelines), encoding=encoding):
         # ignore encoding-lines, comment-lines, and empty lines (NL):
         if token.type in [tokenize.ENCODING, tokenize.COMMENT, tokenize.NL]:
             continue

@@ -12,7 +12,7 @@ from ...thirdparty.types import *
 # ----------------------------------------------------------------
 
 __all__ = [
-    'EvalType',
+    "EvalType",
 ]
 
 # ----------------------------------------------------------------
@@ -21,7 +21,7 @@ __all__ = [
 
 
 class EvalMetaType(type):
-    __name__ = 'evaluation'
+    __name__ = "evaluation"
 
     @classmethod
     def __instancecheck__(cls, o) -> bool:

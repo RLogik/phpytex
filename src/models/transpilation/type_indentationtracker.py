@@ -14,7 +14,7 @@ from ..._core.utils.basic import *
 # ----------------------------------------------------------------
 
 __all__ = [
-    'IndentationTracker',
+    "IndentationTracker",
 ]
 
 # ----------------------------------------------------------------
@@ -28,7 +28,7 @@ class IndentationTracker(object):
     reference: int
     level: int
 
-    def __init__(self, symb: str, pattern: str, reference: str = ''):
+    def __init__(self, symb: str, pattern: str, reference: str = ""):
         self.symb = symb
         self.pattern = pattern
         self.level = 0

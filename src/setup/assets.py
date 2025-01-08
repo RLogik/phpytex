@@ -5,11 +5,10 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
+from ..__paths__ import *
+from ..models.enums import *
 from ..thirdparty.io import *
 from ..thirdparty.system import *
-
-from ..models.enums import *
-from ..__paths__ import *
 from . import basic
 
 # ----------------------------------------------------------------
@@ -17,18 +16,18 @@ from . import basic
 # ----------------------------------------------------------------
 
 __all__ = [
-    'get_template_phpytex_lines_pre',
-    'get_template_phpytex_lines_post',
-    'get_grammar',
+    "get_grammar",
+    "get_template_phpytex_lines_post",
+    "get_template_phpytex_lines_pre",
 ]
 
 # ----------------------------------------------------------------
 # CONSTANTS
 # ----------------------------------------------------------------
 
-PATH_TO_ASSETS = 'assets'
-TEMPLATE_FILE_PRE = 'template_pre'
-TEMPLATE_FILE_POST = 'template_post'
+PATH_TO_ASSETS = "assets"
+TEMPLATE_FILE_PRE = "template_pre"
+TEMPLATE_FILE_POST = "template_post"
 
 # ----------------------------------------------------------------
 # METHODS: get app config

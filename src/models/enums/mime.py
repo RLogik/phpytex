@@ -12,7 +12,7 @@ from enum import Enum
 # ----------------------------------------------------------------
 
 __all__ = [
-    'MimeType',
+    "MimeType",
 ]
 
 # ----------------------------------------------------------------
@@ -21,8 +21,8 @@ __all__ = [
 
 
 class MimeType(Enum):
-    BYTES = 'application/octet-stream'
-    TEXT = 'text/plain;charset=utf-8'
-    JSON = 'application/json;charset=utf-8'
+    BYTES = "application/octet-stream"
+    TEXT = "text/plain;charset=utf-8"
+    JSON = "application/json;charset=utf-8"
     # see https://learn.microsoft.com/previous-versions/office/office-2007-resource-kit/ee309278(v=office.12)
-    XLSX = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"

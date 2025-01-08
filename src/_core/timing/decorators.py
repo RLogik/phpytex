@@ -7,7 +7,6 @@
 
 from ...thirdparty.code import *
 from ...thirdparty.types import *
-
 from .countdown import *
 
 # ----------------------------------------------------------------
@@ -15,18 +14,18 @@ from .countdown import *
 # ----------------------------------------------------------------
 
 __all__ = [
-    'add_countdown',
-    'add_countdown_async',
+    "add_countdown",
+    "add_countdown_async",
 ]
 
 # ----------------------------------------------------------------
 # LOCAL CONSTANTS/VARIABLES
 # ----------------------------------------------------------------
 
-PARAMS = ParamSpec('PARAMS')
-T1 = TypeVar('T1')
-T2 = TypeVar('T2')
-RETURN = TypeVar('RETURN')
+PARAMS = ParamSpec("PARAMS")
+T1 = TypeVar("T1")
+T2 = TypeVar("T2")
+RETURN = TypeVar("RETURN")
 
 # ----------------------------------------------------------------
 # DECORATORS
@@ -36,16 +35,16 @@ RETURN = TypeVar('RETURN')
 def add_countdown(
     duration: float,
 ):
-    '''
+    """
     Inserts a countdown class obj to a method
 
     @args
     - `duration` - duration of countdown in seconds
-    '''
+    """
     countdown = Countdown(duration=duration)
 
     def dec(
-        method: Callable[Concatenate[Countdown, PARAMS], RETURN]
+        method: Callable[Concatenate[Countdown, PARAMS], RETURN],
     ) -> Callable[PARAMS, Result[RETURN, BaseException]]:
         @wraps(method)
         def wrapped_action(
@@ -62,12 +61,12 @@ def add_countdown(
 def add_countdown_async(
     duration: float,
 ):
-    '''
+    """
     Inserts a countdown class obj to an async method
 
     @args
     - `duration` - duration of countdown in seconds
-    '''
+    """
     countdown = Countdown(duration=duration)
 
     def dec(

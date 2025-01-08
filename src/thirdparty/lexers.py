@@ -5,18 +5,19 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
-from lark.indenter import Indenter
+import tokenize
+
 from lark import Lark
 from lark import Tree
-import tokenize
+from lark.indenter import Indenter
 
 # ----------------------------------------------------------------
 # EXPORTS
 # ----------------------------------------------------------------
 
 __all__ = [
-    'Indenter',
-    'Lark',
-    'Tree',
-    'tokenize',
+    "Indenter",
+    "Lark",
+    "Tree",
+    "tokenize",
 ]

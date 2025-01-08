@@ -5,10 +5,6 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
-from ....thirdparty.misc import *
-from ....thirdparty.system import *
-from ....thirdparty.types import *
-
 from ...._core.logging import *
 from ...._core.utils.basic import *
 from ....models.enums import *
@@ -16,13 +12,16 @@ from ....models.transpilation import *
 from ....models.user import *
 from ....queries import user
 from ....setup import *
+from ....thirdparty.misc import *
+from ....thirdparty.system import *
+from ....thirdparty.types import *
 
 # ----------------------------------------------------------------
 # EXPORTS
 # ----------------------------------------------------------------
 
 __all__ = [
-    'step_configure',
+    "step_configure",
 ]
 
 # ----------------------------------------------------------------
@@ -36,7 +35,7 @@ __all__ = [
 # ----------------------------------------------------------------
 
 
-@echo_function(tag='STEP READ CONFIG', level="INFO", close=True)
+@echo_function(tag="STEP READ CONFIG", level="INFO", close=True)
 def step_configure(
     path_config: str,
     compileoptions: dict = {},
@@ -71,11 +70,11 @@ def step_configure(
 
 def handle_part_compile(options: UserConfigPartCompileOptions):
     if options.tabs:
-        user.setting_indent_character.set('\t')
-        user.setting_indent_character_re.set(r'\t')
+        user.setting_indent_character.set("\t")
+        user.setting_indent_character_re.set(r"\t")
     else:
-        user.setting_indent_character.set(' ' * options.spaces)
-        user.setting_indent_character_re.set(' ' * options.spaces)
+        user.setting_indent_character.set(" " * options.spaces)
+        user.setting_indent_character_re.set(" " * options.spaces)
 
     file_input = os.path.abspath(options.root)
     file_output = os.path.abspath(options.output)

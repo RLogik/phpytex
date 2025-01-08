@@ -13,7 +13,7 @@ from .properties import *
 # ----------------------------------------------------------------
 
 __all__ = [
-    'compute_indentations',
-    'escape_code',
-    'unparse',
+    "compute_indentations",
+    "escape_code",
+    "unparse",
 ]

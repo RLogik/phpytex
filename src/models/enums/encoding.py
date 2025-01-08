@@ -12,7 +12,7 @@ from enum import Enum
 # ----------------------------------------------------------------
 
 __all__ = [
-    'Encoding',
+    "Encoding",
 ]
 
 # ----------------------------------------------------------------
@@ -21,6 +21,6 @@ __all__ = [
 
 
 class Encoding(Enum):
-    ASCII = 'ascii'
-    UTF8 = 'utf-8'
-    UNICODE = 'unicode_escape'
+    ASCII = "ascii"
+    UTF8 = "utf-8"
+    UNICODE = "unicode_escape"

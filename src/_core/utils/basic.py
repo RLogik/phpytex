@@ -16,17 +16,17 @@ from ...thirdparty.types import *
 # ----------------------------------------------------------------
 
 __all__ = [
-    'len_whitespace',
-    'size_of_whitespace',
-    'unique',
-    'inheritance_on_graph',
+    "inheritance_on_graph",
+    "len_whitespace",
+    "size_of_whitespace",
+    "unique",
 ]
 
 # ----------------------------------------------------------------
 # LOCAL VARIABLES
 # ----------------------------------------------------------------
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 # ----------------------------------------------------------------
 # METHODS: string
@@ -37,7 +37,7 @@ def len_whitespace(
     text: str,
     mode: Literal[-1] | Literal[0] | Literal[1] = 0,
 ) -> int:
-    '''
+    r"""
     Computes the effective length of white-space occuring in text as follows:
 
     - spaces count as `1`.
@@ -62,18 +62,18 @@ def len_whitespace(
     len_whitespace(' \\t') # 11
     len_whitespace('  \\t   ') # 11
     ```
-    '''
+    """
     n = 0
     match mode:
         case -1:
-            text = re.sub(r'^(\s*).*$', r'\1', text)
+            text = re.sub(r"^(\s*).*$", r"\1", text)
         case 1:
-            text = re.sub(r'^(|.*\S)(\s*)$', r'\2', text)
+            text = re.sub(r"^(|.*\S)(\s*)$", r"\2", text)
     for alpha in text:
         match alpha:
-            case ' ':
+            case " ":
                 n += 1
-            case '\t':
+            case "\t":
                 # go to next tab stop
                 t = n // 8  # index of current tab-stop
                 n = 8 * (t + 1)
@@ -81,9 +81,9 @@ def len_whitespace(
 
 
 def size_of_whitespace(text: str, indentsymb: str) -> int:
-    '''
+    """
     Computes the whole number of indentations (roughly) equivalent to a given whitespace text.
-    '''
+    """
     n = len_whitespace(text)
     unit = len_whitespace(indentsymb)
     return n // unit
@@ -135,7 +135,7 @@ def inheritance_on_graph(
     while True:
         changed = False
         for u, v in edges:
-            if u in P and not (v in P):
+            if u in P and v not in P:
                 P.append(v)
                 properties[v] = True
                 changed = True

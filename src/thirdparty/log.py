@@ -13,6 +13,6 @@ from logging import LogRecord
 # ----------------------------------------------------------------
 
 __all__ = [
-    'logging',
-    'LogRecord',
+    "LogRecord",
+    "logging",
 ]

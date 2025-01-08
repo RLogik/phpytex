@@ -5,20 +5,19 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
-from ...thirdparty.misc import *
-from ...thirdparty.maths import *
-from ...thirdparty.config import *
-from ...thirdparty.types import *
-
 from ...models.transpilation import *
+from ...thirdparty.config import *
+from ...thirdparty.maths import *
+from ...thirdparty.misc import *
+from ...thirdparty.types import *
 
 # ----------------------------------------------------------------
 # EXPORTS
 # ----------------------------------------------------------------
 
 __all__ = [
-    'unparse',
-    'escape_code',
+    "escape_code",
+    "unparse",
 ]
 
 # ----------------------------------------------------------------
@@ -30,11 +29,11 @@ def unparse(
     value: Any,
     indent: int = 0,
     multiline: bool = False,
-    indentchar: str = '    ',
+    indentchar: str = "    ",
 ) -> str:
-    '''
+    """
     Returns an encoded version of value for implementation in python code.
-    '''
+    """
     conv = lambda x: unparse(x, indent=indent + 1, multiline=multiline, indentchar=indentchar)
 
     if isinstance(value, bool):
@@ -62,22 +61,22 @@ def unparse(
         values = [f'"{key}": {conv(value)}' for key, value in value.items()]
         return unparse_iterable(values, ('{', '}'), multiline=multiline, indent=indent, indentchar=indentchar)  # fmt: skip
 
-    raise Exception('Could not evaluated value as string')
+    raise Exception("Could not evaluated value as string")
 
 
 def escape_code(text: str, fmt: bool = False) -> str:
-    '''
+    """
     escapes string for use in python code
-    '''
-    text = re.sub(r'(\\+)', r'\1\1', text)
-    text = re.sub(r'\n', r'\\n', text)
-    text = re.sub(r'\t', r'\\t', text)
-    text = re.sub(r'\"', r'\\u0022', text)
-    text = re.sub(r'\'', r'\\u0027', text)
+    """
+    text = re.sub(r"(\\+)", r"\1\1", text)
+    text = re.sub(r"\n", r"\\n", text)
+    text = re.sub(r"\t", r"\\t", text)
+    text = re.sub(r"\"", r"\\u0022", text)
+    text = re.sub(r"\'", r"\\u0027", text)
     # text = re.sub(r'\%', slash+'u0025', text);
     if fmt:
-        text = re.sub(r'(\{+)', r'\1\1', text)
-        text = re.sub(r'(\}+)', r'\1\1', text)
+        text = re.sub(r"(\{+)", r"\1\1", text)
+        text = re.sub(r"(\}+)", r"\1\1", text)
     return text
 
 
@@ -93,16 +92,16 @@ def unparse_iterable(
     indent: int,
     indentchar: str,
 ):
-    sepFirst, sep, sepFinal = '', ',', ','
+    sepFirst, sep, sepFinal = "", ",", ","
     if multiline and len(values) > 1:
         tab = indentchar * indent
-        sepFirst = f'\n{tab + indent}'
-        sep = f',\n{tab + indent}'
-        sepFinal = f',\n{tab}'
+        sepFirst = f"\n{tab + indent}"
+        sep = f",\n{tab + indent}"
+        sepFinal = f",\n{tab}"
 
     # NOTE: trailing comma is allowed for all, but necessary for tuple-type!
     contents = sep.join(values)
     if len(values) > 0:
         contents += sepFinal
 
-    return f'{braces[0]}{sepFirst}{contents}{braces[1]}'
+    return f"{braces[0]}{sepFirst}{contents}{braces[1]}"

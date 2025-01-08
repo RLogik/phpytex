@@ -5,23 +5,22 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
+from ...__paths__ import *
+from ..._core.utils.basic import *
+from ...models.application import *
 from ...thirdparty.config import *
 from ...thirdparty.io import *
 from ...thirdparty.misc import *
 from ...thirdparty.system import *
 from ...thirdparty.types import *
-
-from ..._core.utils.basic import *
-from ...models.application import *
 from .basic import *
-from ...__paths__ import *
 
 # ----------------------------------------------------------------
 # EXPORTS
 # ----------------------------------------------------------------
 
 __all__ = [
-    'CliArguments',
+    "CliArguments",
 ]
 
 # ----------------------------------------------------------------
@@ -30,44 +29,44 @@ __all__ = [
 
 
 class CliArguments(CliArgumentsBase):
-    _part = 'TEST CASES'
+    _part = "TEST CASES"
 
     def create_parser(self) -> ArgumentParser:
         parser = self.baseparser
         parser.add_argument(
-            'mode',
+            "mode",
             choices=[e.value for e in EnumProgrammeMode],
             type=EnumProgrammeMode,
             help=dedent(
-                f'''
+                f"""
                 {EnumProgrammeMode.VERSION.value} = show version of programme
                 {EnumProgrammeMode.RUN.value} = run programme
-                '''
+                """
             ),
         )
         add_boolean_key_pair(
             parser=parser,
-            key='inspect',
+            key="inspect",
             default=False,
-            help_true='Run test cases with inspection',
-            help_false='Run test cases without inspection',
+            help_true="Run test cases with inspection",
+            help_false="Run test cases without inspection",
         )
         parser.add_argument(
-            '--quiet',
-            '-q',
-            action='store_true',
-            help='Make logging less verbose.',
+            "--quiet",
+            "-q",
+            action="store_true",
+            help="Make logging less verbose.",
         )
         parser.add_argument(
-            '--debug',
-            action='store_true',
-            help='Force logging level to be DEBUG.',
+            "--debug",
+            action="store_true",
+            help="Force logging level to be DEBUG.",
         )
         parser.add_argument(
-            '--log',
-            nargs='?',
+            "--log",
+            nargs="?",
             type=str,
-            help='Path to files for logging.',
+            help="Path to files for logging.",
             default=None,
         )
         return parser
