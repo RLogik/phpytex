@@ -5,7 +5,9 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
-from ...thirdparty.types import *
+from pydantic import BaseModel
+from pydantic import ConfigDict
+from pydantic import Field
 
 # ----------------------------------------------------------------
 # EXPORTS
@@ -20,28 +22,13 @@ __all__ = [
 # ----------------------------------------------------------------
 
 
-class EvalMetaType(type):
-    __name__ = "evaluation"
+class EvalType(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        populate_by_name=True,
+    )
 
-    @classmethod
-    def __instancecheck__(cls, o) -> bool:
-        try:
-            return type(o).__name__ == cls.__name__
-        except:
-            return False
-
-
-class EvalType(metaclass=EvalMetaType):
-    _expr: str = str(None)
-
-    def __init__(self, expr):
-        if isinstance(expr, str):
-            self._expr = expr
-        return
-
-    @property
-    def expr(self):
-        return self._expr
+    expr: str = Field(default_factory=lambda: str(None))
 
     def __str__(self) -> str:
         return self.expr
