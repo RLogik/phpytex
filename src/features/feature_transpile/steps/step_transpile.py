@@ -29,14 +29,25 @@ __all__ = [
 ]
 
 # ----------------------------------------------------------------
+# CONSTANTS
+# ----------------------------------------------------------------
+
+GRAMMAR = "phpytex.lark"
+
+# ----------------------------------------------------------------
 # METHOD: step transpile phpytex to python
 # ----------------------------------------------------------------
 
 
 @echo_function(tag="STEP TRANSPILE ([phpytex -> py] -> ...)", level="INFO", close=True)
 def step_transpile(cfg_user: UserConfig):
+    """
+    Main step to transpile from augmented language to python
+    """
     options = cfg_user.compile.options
     indentsymb = user.setting_indent_character()
+    grammar = assets.get_grammar_transpiler()
+    tok = parser_phpytex.Tokeniser(grammar=grammar)
 
     # only do this once!
     reseed(seed=options.seed, legacy=True)
@@ -56,8 +67,9 @@ def step_transpile(cfg_user: UserConfig):
         name = "stamp"
         preambles.append(name)
         transpileDocument(
+            cfg_user.stamp.file,
+            tokeniser=tok,
             options=options,
-            path=cfg_user.stamp.file,
             documents=documents,
             imports=TranspileBlocks(),
             name=name,
@@ -69,8 +81,9 @@ def step_transpile(cfg_user: UserConfig):
 
     # Transpile document file:
     transpileDocument(
+        options.root,
+        tokeniser=tok,
         options=options,
-        path=options.root,
         documents=documents,
         imports=imports,
         name="",
@@ -133,8 +146,11 @@ def step_transpile(cfg_user: UserConfig):
 
 
 def transpileDocument(
-    options: UserConfigPartCompileOptions,
     path: str,
+    /,
+    *,
+    tokeniser: parser_phpytex.Tokeniser,
+    options: UserConfigPartCompileOptions,
     documents: TranspileDocuments,
     imports: TranspileBlocks,
     chain: list[str] = [],
@@ -149,7 +165,7 @@ def transpileDocument(
         return
     try:
         with open(path, "r") as fp:
-            lines = "".join(fp.readlines())
+            text = "".join(fp.readlines())
 
     except Exception as _:
         logging.error("Could not find or read document \033[1m{path}\033[0m!".format(path=path))
@@ -163,7 +179,12 @@ def transpileDocument(
 
     if is_preamble:
         blocks = TranspileBlocks()
-        for block in parser_phpytex.parse(lines, indentation, offset=options.offset):
+        for block in parser_phpytex.parse(
+            text,
+            tokeniser=tokeniser,
+            indentation=indentation,
+            offset=options.offset,
+        ):
             if not (block.kind == "text:comment"):
                 continue
             blocks.append(block)
@@ -196,7 +217,12 @@ def transpileDocument(
         if params["show-tree"]:
             blocks.append(documents.documentStamp(depth=0, start=True, anon=anon, hide=hide))
 
-        for block in parser_phpytex.parse(lines, indentation, offset=options.offset):
+        for block in parser_phpytex.parse(
+            text,
+            tokeniser=tokeniser,
+            indentation=indentation,
+            offset=options.offset,
+        ):
             if block.kind == "code:import":
                 imports.append(block)
                 continue
@@ -220,8 +246,9 @@ def transpileDocument(
         for k, subpath in enumerate(subpaths):
             is_final = k == n - 1
             transpileDocument(
+                subpath,
+                tokeniser=tokeniser,
                 options=options,
-                path=subpath,
                 documents=documents,
                 imports=imports,
                 chain=[*chain, path],
@@ -269,8 +296,8 @@ def createmetacode(
     globalvars: list[str],
     seed: int | None,
 ):
-    _lines_pre = get_template_phpytex_lines_pre()
-    _lines_post = get_template_phpytex_lines_post()
+    _lines_pre = assets.get_template_phpytex_lines_pre()
+    _lines_post = assets.get_template_phpytex_lines_post()
     align = options.align
     lines = []
     lines += dedent_split(

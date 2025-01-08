@@ -127,15 +127,16 @@ def parse_contents(
 def read_internal_asset(
     root: str,
     path: str,
-    encoding: str = "utf-8",
     is_archived: bool = False,
-) -> str:
+) -> bytes:
     """
     Reads a file inside a folder that is optionally zipped.
     """
     if is_archived:
         with ZipFile(root, "r") as fp:
-            return fp.read(path).decode(encoding)
-    path = os.path.join(root, path)
-    with open(path, "r") as fp:
-        return "".join(fp.readlines())
+            return fp.read(path)
+
+    else:
+        path = os.path.join(root, path)
+        with open(path, "rb") as fp:
+            return fp.read()

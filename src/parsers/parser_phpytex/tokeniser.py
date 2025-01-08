@@ -19,12 +19,6 @@ __all__ = [
 ]
 
 # ----------------------------------------------------------------
-# CONSTANTS
-# ----------------------------------------------------------------
-
-GRAMMAR = "phpytex.lark"
-
-# ----------------------------------------------------------------
 # METHODS
 # ----------------------------------------------------------------
 
@@ -40,7 +34,7 @@ class TokeniserStruct(BaseModel):
         arbitrary_types_allowed=True,
     )
 
-    grammar: str | None = Field(default=None)
+    grammar: str
     lexer: dict[str, Lark] = Field(default_factory=dict)
 
 
@@ -56,12 +50,6 @@ class Tokeniser(TokeniserStruct):
         *,
         mode: str,
     ):
-        if self.grammar is None:
-            # TODO: this should not be done here. -> refactor code!
-            from ...setup import get_grammar
-
-            self.grammar = get_grammar(GRAMMAR)
-
         lexer = self.lexer.get(mode)
         if lexer is None:
             lexer = Lark(

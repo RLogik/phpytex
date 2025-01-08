@@ -69,12 +69,13 @@ def initialise_logging(name: str, debug: bool):
 @make_lazy
 @compute_once
 def load_repo_info() -> RepoInfo:
-    text = read_internal_asset(
+    contents = read_internal_asset(
         root=get_root_path(),
         path="pyproject.toml",
         is_archived=open_source(),
     )
-    config_repo = toml.loads(text)
+    config_repo = toml.loads(contents.decode())
+
     assets = config_repo.get("project", {})
     info = RepoInfo.model_validate(assets)
     return info
@@ -94,7 +95,7 @@ def load_internal_config() -> AppConfig:
         root=get_root_path(),
         path=os.path.join("src", "setup", "config.yaml"),
         is_archived=open_source(),
-    ).encode()
+    )
     assets = read_yaml_from_contents(contents)
     return AppConfig.model_validate(assets)
 

@@ -39,7 +39,7 @@ def register_yaml_constructors():
     """
     global _yaml_constructors_registered
 
-    if _yaml_constructors_registered.value():
+    if _yaml_constructors_registered.value:
         return
 
     yaml.add_constructor(tag="!include", constructor=include_constructor)

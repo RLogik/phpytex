@@ -5,8 +5,8 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
-from . import basic as config
-from .assets import *
+from . import assets
+from . import config
 
 # ----------------------------------------------------------------
 # CONSTANTS
@@ -24,8 +24,6 @@ __all__ = [
     "FUNCTION_NAME_FILE",
     "FUNCTION_NAME_MAIN",
     "FUNCTION_NAME_PRE",
+    "assets",
     "config",
-    "get_grammar",
-    "get_template_phpytex_lines_post",
-    "get_template_phpytex_lines_pre",
 ]

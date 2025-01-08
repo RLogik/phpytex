@@ -27,6 +27,9 @@ __all__ = [
 
 def parse(
     text: str,
+    /,
+    *,
+    tokeniser: Tokeniser,
     indentation: IndentationTracker,
     offset: str = "",
 ) -> Generator[TranspileBlock, None, None]:
@@ -34,7 +37,6 @@ def parse(
         return
 
     try:
-        tokeniser = Tokeniser()
         u = tokeniser.parse(text, mode="blocks")
         yield from lexed_to_blocks(tokeniser, u, offset=offset, indentation=indentation)
 
