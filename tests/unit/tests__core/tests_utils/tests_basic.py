@@ -8,7 +8,7 @@
 from tests.unit.thirdparty.unit import *
 from src.thirdparty.types import *
 
-from src.core.utils import *
+from src._core.utils.basic import *
 
 # ----------------------------------------------------------------
 # TESTS

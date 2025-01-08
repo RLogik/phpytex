@@ -11,13 +11,15 @@ import sys
 os.chdir(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.insert(0, os.getcwd())
 
+import logging
+
 from src.thirdparty.config import *
 from src.thirdparty.misc import *
 from src.thirdparty.system import *
 from src.thirdparty.types import *
 
 from src.setup import *
-from src.core.logging import *
+from src._core.logging import *
 from src.models.application import *
 from src.models.generated.tests import *
 from src.queries.console.cases import *
@@ -80,12 +82,12 @@ if __name__ == '__main__':
         except BaseException as err:
             err.add_note(f'Test case \033[1m{path}\033[0m failed.')
             if args.inspect:
-                log_error('An error occurred', err, message_pause)
+                logging.error('An error occurred', err, message_pause)
                 input('Press any key to continue...')
             raise err
 
         if args.inspect:
-            log_debug(message_pause)
+            logging.debug(message_pause)
             input('Press any key to continue...')
 
         remove_dir_if_exists(PATH_SANDBOX)
