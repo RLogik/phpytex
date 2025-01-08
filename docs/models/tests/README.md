@@ -5,14 +5,14 @@
 
 All URIs are relative to *https://github.com/RLogik*
 
-Class | Method | HTTP request | Description
------------- | ------------- | ------------- | -------------
+| Class | Method | HTTP request | Description |
+|------------ | ------------- | ------------- | -------------|
 
 
 <a name="documentation-for-models"></a>
 ## Documentation for Models
 
- - [TestCaseConfig](.//Models/TestCaseConfig.md)
+ - [TestCaseConfig](./Models/TestCaseConfig.md)
 
 
 <a name="documentation-for-authorization"></a>

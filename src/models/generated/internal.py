@@ -6,19 +6,26 @@ from __future__ import annotations
 from pydantic import AnyUrl, BaseModel, ConfigDict, Field
 
 
+class Urls(BaseModel):
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    homepage: AnyUrl = "https://domain.com"
+
+
 class RepoInfo(BaseModel):
     """
     Basic infos about repo - parses `pyproject.toml`
     """
 
     model_config = ConfigDict(
-        extra='allow',
+        extra="allow",
         populate_by_name=True,
     )
     name: str
     description: str
     version: str
-    homepage: AnyUrl
+    urls: Urls
 
 
 class AppConfig(BaseModel):
@@ -27,11 +34,11 @@ class AppConfig(BaseModel):
     """
 
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     user_config_pattern: str = Field(
         ...,
-        alias='user-config-pattern',
-        description='Used to automatically recognise user config file.',
+        alias="user-config-pattern",
+        description="Used to automatically recognise user config file.",
     )

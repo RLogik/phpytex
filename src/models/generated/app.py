@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, RootModel
 
@@ -15,12 +15,12 @@ class UserConfigPartStamp(BaseModel):
     """
 
     model_config = ConfigDict(
-        extra='allow',
+        extra="allow",
         populate_by_name=True,
     )
-    file: str = 'stamp.tex'
+    file: str = "stamp.tex"
     overwrite: bool = False
-    options: Optional[Dict[str, Any]] = None
+    options: dict[str, Any] | None = None
 
 
 class UserConfigPartParameters(BaseModel):
@@ -29,12 +29,12 @@ class UserConfigPartParameters(BaseModel):
     """
 
     model_config = ConfigDict(
-        extra='allow',
+        extra="allow",
         populate_by_name=True,
     )
-    file: str = Field('parameters', pattern='^[^\\.\\s]*(\\.[^\\.\\s]*)+')
+    file: str = Field(default="parameters", pattern="^[^\\.\\s]*(\\.[^\\.\\s]*)+")
     overwrite: bool = True
-    options: Optional[Dict[str, Any]] = None
+    options: dict[str, Any] | None = None
 
 
 class UserProjectTree(BaseModel):
@@ -43,11 +43,11 @@ class UserProjectTree(BaseModel):
     """
 
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
-    files: List[str] = []
-    folders: Dict[str, UserProjectTree] = {}
+    files: list[str] = []
+    folders: dict[str, UserProjectTree] = {}
 
 
 class TranspileBlockParameters(BaseModel):
@@ -56,21 +56,21 @@ class TranspileBlockParameters(BaseModel):
     """
 
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
-    mode: str = ''
-    scope: str = ''
+    mode: str = ""
+    scope: str = ""
     anon: bool = False
     hide: bool = False
-    var_name: str = Field('', alias='var-name')
-    code_value: str = Field('', alias='code-value')
+    var_name: str = Field(default="", alias="var-name")
+    code_value: str = Field(default="", alias="code-value")
     keep: bool = True
     level: int = 0
-    path: str = ''
-    tab: str = ''
-    bib_mode: str = Field('basic', alias='bib-mode')
-    bib_options: str = Field('', alias='bib-options')
+    path: str = ""
+    tab: str = ""
+    bib_mode: str = Field(default="basic", alias="bib-mode")
+    bib_options: str = Field(default="", alias="bib-options")
 
 
 class EnumProgrammeMode(str, Enum):
@@ -78,8 +78,8 @@ class EnumProgrammeMode(str, Enum):
     Choice of programme mode
     """
 
-    VERSION = 'version'
-    RUN = 'run'
+    VERSION = "version"
+    RUN = "run"
 
 
 class EnumFeatures(str, Enum):
@@ -87,15 +87,15 @@ class EnumFeatures(str, Enum):
     Choice of feature to run
     """
 
-    TRANSPILE = 'TRANSPILE'
-    UNKNOWN = 'UNKNOWN'
+    TRANSPILE = "TRANSPILE"
+    UNKNOWN = "UNKNOWN"
 
 
-class EnumFilesManagementSystem(RootModel[Literal['OS']]):
+class EnumFilesManagementSystem(RootModel[Literal["OS"]]):
     model_config = ConfigDict(
         populate_by_name=True,
     )
-    root: Literal['OS'] = Field(..., description='Choice of location of task')
+    root: Literal["OS"] = Field(..., description="Choice of location of task")
 
 
 class EnumCommentsOptions(str, Enum):
@@ -103,9 +103,9 @@ class EnumCommentsOptions(str, Enum):
     Mode for handling comments in transpilation process.
     """
 
-    ON = 'on'
-    OFF = 'off'
-    AUTO = 'auto'
+    ON = "on"
+    OFF = "off"
+    AUTO = "auto"
 
 
 class UserConfigPartCompileOptions(BaseModel):
@@ -114,40 +114,44 @@ class UserConfigPartCompileOptions(BaseModel):
     """
 
     model_config = ConfigDict(
-        extra='allow',
+        extra="allow",
         populate_by_name=True,
     )
     root: str = Field(
-        'root.tex',
-        description='Filename of start of transpilation\n  (phpytex) -> py -> tex -> pdf',
-        pattern='^[^\\/\\\\]+\\.tex',
+        default="root.tex",
+        description="Filename of start of transpilation\n  (phpytex) -> py -> tex -> pdf",
+        pattern="^[^\\/\\\\]+\\.tex",
     )
-    python_path: Optional[str] = Field(
-        None, alias='python-path', description='User choice of python path (e.g. local venv).'
+    python_path: str | None = Field(
+        default=None,
+        alias="python-path",
+        description="User choice of python path (e.g. local venv).",
     )
     transpiled: str = Field(
-        'phpytex_transpiled.py',
-        description='Filename of intermediate transpilation result\n  phpytex -> (py) -> tex -> pdf',
-        pattern='^[^\\/\\\\]+\\.py',
+        default="phpytex_transpiled.py",
+        description="Filename of intermediate transpilation result\n  phpytex -> (py) -> tex -> pdf",
+        pattern="^[^\\/\\\\]+\\.py",
     )
     output: str = Field(
-        'main.tex',
-        description='Filename of end of transpilation result\n  phpytex -> py -> (tex) -> pdf',
-        pattern='^[^\\/\\\\]+\\.tex',
+        default="main.tex",
+        description="Filename of end of transpilation result\n  phpytex -> py -> (tex) -> pdf",
+        pattern="^[^\\/\\\\]+\\.tex",
     )
     debug: bool = False
-    compile_latex: bool = Field(False, alias='compile-latex')
-    insert_bib: bool = Field(False, alias='insert-bib')
-    backend_bib: str = Field('bibtex', alias='backend-bib')
+    compile_latex: bool = Field(default=False, alias="compile-latex")
+    insert_bib: bool = Field(default=False, alias="insert-bib")
+    backend_bib: str = Field(default="bibtex", alias="backend-bib")
     comments: EnumCommentsOptions = EnumCommentsOptions.AUTO
-    censor_symbol: str = Field('########', alias='censor-symbol', pattern='^.*\\S{3}.*$')
-    show_structure: bool = Field(False, alias='show-structure')
-    max_length: int = Field(10000, alias='max-length')
+    censor_symbol: str = Field(
+        default="########", alias="censor-symbol", pattern="^.*\\S{3}.*$"
+    )
+    show_structure: bool = Field(default=False, alias="show-structure")
+    max_length: int = Field(default=10000, alias="max-length")
     tabs: bool = False
-    spaces: int = Field(4, ge=1)
-    offset: str = ''
+    spaces: int = Field(default=4, ge=1)
+    offset: str = ""
     align: bool = True
-    seed: Optional[int] = None
+    seed: int | None = None
     legacy: bool = False
 
 
@@ -157,7 +161,7 @@ class UserConfigPartCompile(BaseModel):
     """
 
     model_config = ConfigDict(
-        extra='allow',
+        extra="allow",
         populate_by_name=True,
     )
     options: UserConfigPartCompileOptions
@@ -169,15 +173,15 @@ class UserConfig(BaseModel):
     """
 
     model_config = ConfigDict(
-        extra='allow',
+        extra="allow",
         populate_by_name=True,
     )
     ignore: bool = False
     compile: UserConfigPartCompile
-    stamp: Optional[UserConfigPartStamp] = None
-    parameters: Optional[UserConfigPartParameters] = None
-    files: List[str] = []
-    folders: Dict[str, UserProjectTree] = {}
+    stamp: UserConfigPartStamp | None = None
+    parameters: UserConfigPartParameters | None = None
+    files: list[str] = []
+    folders: dict[str, UserProjectTree] = {}
 
 
 UserProjectTree.model_rebuild()
