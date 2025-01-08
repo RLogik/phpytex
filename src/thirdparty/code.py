@@ -28,6 +28,33 @@ from lazy_load import lazy
 from pydantic import BaseModel
 
 # ----------------------------------------------------------------
+# EXPORTS
+# ----------------------------------------------------------------
+
+__all__ = [
+    "MISSING",
+    "BaseModel",
+    "Field",
+    "asdict",
+    "compute_once",
+    "dataclass",
+    "field",
+    "itemgetter",
+    "itertools_chain",
+    "itertools_product",
+    "lazy",
+    "make_lazy",
+    "make_safe",
+    "make_safe_none",
+    "partial",
+    "raise_err",
+    "reduce",
+    "safe_unwrap",
+    "value_of_model",
+    "wraps",
+]
+
+# ----------------------------------------------------------------
 # MODIFICATIONS
 # ----------------------------------------------------------------
 
@@ -131,31 +158,3 @@ def make_safe_none(f: Callable[PARAMS, RETURN]) -> Callable[PARAMS, RETURN | Non
         return safe_unwrap(lambda: f(*_, **__))
 
     return wrapped_fct
-
-
-# ----------------------------------------------------------------
-# EXPORTS
-# ----------------------------------------------------------------
-
-__all__ = [
-    "MISSING",
-    "BaseModel",
-    "Field",
-    "asdict",
-    "compute_once",
-    "dataclass",
-    "field",
-    "itemgetter",
-    "itertools_chain",
-    "itertools_product",
-    "lazy",
-    "make_lazy",
-    "make_safe",
-    "make_safe_none",
-    "partial",
-    "raise_err",
-    "reduce",
-    "safe_unwrap",
-    "value_of_model",
-    "wraps",
-]

@@ -24,6 +24,33 @@ from io import TextIOWrapper
 from zipfile import ZipFile
 
 # ----------------------------------------------------------------
+# EXPORTS
+# ----------------------------------------------------------------
+
+__all__ = [
+    "ENCODING",
+    "ArgumentError",
+    "ArgumentParser",
+    "BytesIO",
+    "BytesIOStream",
+    "Namespace",
+    "RawTextHelpFormatter",
+    "StringIO",
+    "TextIOWrapper",
+    "ZipFile",
+    "b64decode",
+    "b64encode",
+    "decode_base_64",
+    "encode_base_64",
+    "getpass",
+    "getuser",
+    "hash_encode",
+    "read_internal_asset",
+    "sha256",
+    "zlib",
+]
+
+# ----------------------------------------------------------------
 # MODIFICATIONS
 # ----------------------------------------------------------------
 
@@ -96,31 +123,3 @@ def read_internal_asset(
     path = os.path.join(root, path)
     with open(path, "r") as fp:
         return "".join(fp.readlines())
-
-
-# ----------------------------------------------------------------
-# EXPORTS
-# ----------------------------------------------------------------
-
-__all__ = [
-    "ENCODING",
-    "ArgumentError",
-    "ArgumentParser",
-    "BytesIO",
-    "BytesIOStream",
-    "Namespace",
-    "RawTextHelpFormatter",
-    "StringIO",
-    "TextIOWrapper",
-    "ZipFile",
-    "b64decode",
-    "b64encode",
-    "decode_base_64",
-    "encode_base_64",
-    "getpass",
-    "getuser",
-    "hash_encode",
-    "read_internal_asset",
-    "sha256",
-    "zlib",
-]

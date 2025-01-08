@@ -18,6 +18,29 @@ import warnings
 from pathlib import Path
 
 # ----------------------------------------------------------------
+# EXPORTS
+# ----------------------------------------------------------------
+
+__all__ = [
+    "Path",
+    "clear_dir_if_exists",
+    "create_dir_if_not_exists",
+    "create_file_if_not_exists",
+    "os",
+    "pipe_call",
+    "platform",
+    "python_command",
+    "remove_dir_if_exists",
+    "remove_file_if_exists",
+    "shutil",
+    "subprocess",
+    "sys",
+    "traceback",
+    "warnings",
+    "write_text_file",
+]
+
+# ----------------------------------------------------------------
 # MODIFICATIONS
 # ----------------------------------------------------------------
 
@@ -127,27 +150,3 @@ def pipe_call(
 
     err_msg = err_msg or f"Shell command < \033[94;1m{' '.join(args)}\033[0m > failed."
     raise Exception(err_msg)
-
-
-# ----------------------------------------------------------------
-# EXPORTS
-# ----------------------------------------------------------------
-
-__all__ = [
-    "Path",
-    "clear_dir_if_exists",
-    "create_dir_if_not_exists",
-    "create_file_if_not_exists",
-    "os",
-    "pipe_call",
-    "platform",
-    "python_command",
-    "remove_dir_if_exists",
-    "remove_file_if_exists",
-    "shutil",
-    "subprocess",
-    "sys",
-    "traceback",
-    "warnings",
-    "write_text_file",
-]

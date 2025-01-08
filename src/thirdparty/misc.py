@@ -5,7 +5,6 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
-# import pendulum
 # for modifications, not export
 import re
 import time
@@ -26,6 +25,39 @@ import pytz
 from codetiming import Timer as TimerBasic
 from codetiming import TimerError
 from pydantic import AwareDatetime
+
+# ----------------------------------------------------------------
+# EXPORTS
+# ----------------------------------------------------------------
+
+__all__ = [
+    "AwareDatetime",
+    "Timer",
+    "TimerError",
+    "TimerQuiet",
+    "copy",
+    "datetime",
+    "dedent",
+    "dedent_full",
+    "dedent_split",
+    "deepcopy",
+    "get_date_stamp",
+    "get_datetime_stamp",
+    "get_timestamp",
+    "itertools_product",
+    # 'lorem',
+    "make_aware_datetime",
+    "make_aware_datetime_or_none",
+    "parse_datetime",
+    "pytz",
+    "re",
+    "reindent_lines",
+    "strip_around",
+    "timedelta",
+    "timezone",
+    "unindent_lines",
+    "unindent_text",
+]
 
 # ----------------------------------------------------------------
 # MODIFICATIONS
@@ -340,38 +372,3 @@ def reindent_lines(lines: list[str], indent: str, unindent: bool = False) -> lis
     if unindent:
         lines = unindent_lines(lines)
     return [indent + line for line in lines]
-
-
-# ----------------------------------------------------------------
-# EXPORTS
-# ----------------------------------------------------------------
-
-__all__ = [
-    "AwareDatetime",
-    "Timer",
-    "TimerError",
-    "TimerQuiet",
-    "copy",
-    "datetime",
-    "dedent",
-    "dedent_full",
-    "dedent_split",
-    "deepcopy",
-    "get_date_stamp",
-    "get_datetime_stamp",
-    "get_timestamp",
-    "itertools_product",
-    # 'lorem',
-    "make_aware_datetime",
-    "make_aware_datetime_or_none",
-    "parse_datetime",
-    # 'pendulum',
-    "pytz",
-    "re",
-    "reindent_lines",
-    "strip_around",
-    "timedelta",
-    "timezone",
-    "unindent_lines",
-    "unindent_text",
-]
