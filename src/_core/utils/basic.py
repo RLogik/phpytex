@@ -5,9 +5,11 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
-from ..thirdparty.misc import *
-from ..thirdparty.system import *
-from ..thirdparty.types import *
+from collections import defaultdict
+
+from ...thirdparty.misc import *
+from ...thirdparty.system import *
+from ...thirdparty.types import *
 
 # ----------------------------------------------------------------
 # EXPORTS
@@ -17,7 +19,7 @@ __all__ = [
     'len_whitespace',
     'size_of_whitespace',
     'unique',
-    'inheritanceOnGraph',
+    'inheritance_on_graph',
 ]
 
 # ----------------------------------------------------------------
@@ -106,8 +108,12 @@ def unique(X: list[Any]) -> list[Any]:
 # ----------------------------------------------------------------
 
 
-def inheritanceOnGraph(edges: list[tuple[str, str]], hasProperty: dict[str, bool]):
-    '''
+def inheritance_on_graph(
+    edges: list[tuple[T, T]],
+    hasProperty: dict[T, bool],
+    /,
+) -> defaultdict[T, bool]:
+    """
     @inputs:
     - `edges` of a finite graph
     - an abstract `hasProperty` dictionary, assigning to each node, if property holds
@@ -116,17 +122,15 @@ def inheritanceOnGraph(edges: list[tuple[str, str]], hasProperty: dict[str, bool
     copy of `hasProperty` wherein all descendants of nodes with property have property
 
     TODO: replace this with method that uses networkx.
-    '''
-    P = []
+    """
+    P: list[T] = []
     for u, value in hasProperty.items():
         if value:
             P.append(u)
-    properties = {u: value for u, value in hasProperty.items()}
-    for u, v in edges:
-        if not (u in properties):
-            properties[u] = False
-        if not (v in properties):
-            properties[v] = False
+
+    properties: defaultdict[T, bool] = defaultdict(lambda: False)
+    properties.update(hasProperty)
+
     # keep updating until stable:
     while True:
         changed = False
@@ -135,6 +139,8 @@ def inheritanceOnGraph(edges: list[tuple[str, str]], hasProperty: dict[str, bool
                 P.append(v)
                 properties[v] = True
                 changed = True
+
         if not changed:
             break
+
     return properties
