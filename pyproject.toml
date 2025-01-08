@@ -38,7 +38,7 @@ dependencies = [
     "pip>=24.3.1",
     # "poetry>=2.0.0",
     "wheel>=0.45.1",
-    "setuptools>=75.7.0",
+    "setuptools>=75.8.0",
     # --------------------------------
     # code - general
     # --------------------------------
@@ -69,7 +69,6 @@ dependencies = [
     # data
     # --------------------------------
     "numpy>=2.2.1",
-    "pandas>=2.2.3",
     # "polars>=1.19.0",
     # "pyarrow>=18.1.0",
     # --------------------------------
@@ -81,7 +80,7 @@ dependencies = [
     # miscellaneous
     # --------------------------------
     "datetime>=5.5",
-    "pendulum>=3.0.0",
+    # "pendulum>=3.0.0",
     "pytz>=2024.2",
     "tzdata>=2024.2", # NOTE: ensures that OS has access to timezones
     "lorem-text>=2.1",
@@ -117,7 +116,7 @@ dev = [
     # --------------------------------
     "pre-commit>=4.0.1",
     "ruff>=0.8.6",
-    "uv>=0.5.15",
+    "uv>=0.5.16",
     # "black[d,jupyter]>=24.10.0",
 ]
 
