@@ -32,15 +32,15 @@ __all__ = [
 # ----------------------------------------------------------------
 
 
-def create_dir_if_not_exists(path: str):
+def create_dir_if_not_exists(path: str | Path, /) -> bool:
     p = Path(path)
     p.mkdir(parents=True, exist_ok=True)
-    return
+    return p.exists()
 
 
-def create_file_if_not_exists(path: str):
-    create_dir_if_not_exists(os.path.dirname(path))
+def create_file_if_not_exists(path: str | Path, /) -> bool:
     p = Path(path)
+    create_dir_if_not_exists(p.parent)
     # ----------------
     # NOTE: set
     # 1. read+write access (=6) for user
@@ -48,40 +48,44 @@ def create_file_if_not_exists(path: str):
     # 3. read access (=4) for others
     # ----------------
     p.touch(mode=0o664, exist_ok=True)
-    return
+    return p.exists()
 
 
-def clear_dir_if_exists(
-    path: str,
-    recursive: bool = True,
-):
-    if not (os.path.exists(path) and os.path.isdir(path)):
-        return
-    for filename in os.listdir(path):
-        path_ = os.path.join(path, filename)
-        if os.path.isfile(path_):
-            os.remove(path_)
-        elif recursive:
-            clear_dir_if_exists(path_, recursive=recursive)
-    return
-
-
-def remove_dir_if_exists(path: str):
-    if not os.path.exists(path):
+def clear_dir_if_exists(path: str | Path) -> bool:
+    p = Path(path) if isinstance(path, str) else path
+    if not (p.exists() and p.is_dir()):
         return True
-    clear_dir_if_exists(path=path, recursive=True)
-    if os.path.isdir(path):
-        os.rmdir(path)
-    ex = os.path.exists(path)
-    return not ex
+
+    # DEV-NOTE: yields actual paths, not just names relative to current path.
+    subpaths = [q for q in p.iterdir() if q.is_dir()]
+    files = [q for q in p.iterdir() if q.is_file()]
+
+    success = True
+
+    # delete folders first
+    for subpath in subpaths:
+        success = remove_dir_if_exists(subpath) and success
+
+    # then delete files
+    for subpath in files:
+        success = remove_file_if_exists(subpath) and success
+
+    return success
 
 
-def remove_file_if_exists(path: str) -> bool:
-    if not os.path.exists(path):
+def remove_dir_if_exists(path: str | Path) -> bool:
+    p = Path(path) if isinstance(path, str) else path
+    if not p.exists():
         return True
-    os.remove(path)
-    ex = os.path.exists(path)
-    return not ex
+    clear_dir_if_exists(p)
+    p.rmdir()
+    return not p.exists()
+
+
+def remove_file_if_exists(path: str | Path) -> bool:
+    p = Path(path) if isinstance(path, str) else path
+    p.unlink(missing_ok=True)
+    return not p.exists()
 
 
 def write_text_file(
