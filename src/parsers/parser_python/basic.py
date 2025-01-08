@@ -5,12 +5,13 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
+import re
+import tokenize
+from typing import Generator
+
 from ..._core.utils.basic import *
+from ..._core.utils.io import *
 from ...models.enums import *
-from ...thirdparty.io import *
-from ...thirdparty.lexers import *
-from ...thirdparty.misc import *
-from ...thirdparty.types import *
 
 # ----------------------------------------------------------------
 # EXPORTS

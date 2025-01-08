@@ -8,7 +8,11 @@
 from __future__ import annotations
 
 import logging
+import os
+import re
 from collections import defaultdict
+from typing import Any
+from typing import Generator
 
 from pydantic import BaseModel
 from pydantic import ConfigDict
@@ -16,10 +20,8 @@ from pydantic import Field
 
 from ..._core.logging import *
 from ..._core.utils.basic import *
+from ..._core.utils.misc import *
 from ...models.internal import *
-from ...thirdparty.misc import *
-from ...thirdparty.system import *
-from ...thirdparty.types import *
 from .type_transpileblock import *
 
 # ----------------------------------------------------------------

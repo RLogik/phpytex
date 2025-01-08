@@ -10,7 +10,6 @@ import logging
 from ..._core.logging import *
 from ...models.application import *
 from ...setup import *
-from ...thirdparty.misc import *
 from .steps import *
 
 # ----------------------------------------------------------------

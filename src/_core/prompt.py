@@ -5,9 +5,9 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
-from ..thirdparty.io import *
-from ..thirdparty.misc import *
-from ..thirdparty.types import *
+import re
+from getpass import getpass
+from typing import Callable
 
 # ----------------------------------------------------------------
 # EXPORTS
@@ -29,7 +29,7 @@ __all__ = [
 # ----------------------------------------------------------------
 
 
-def prompt_user_input(message: str, expected: Callable[[str], bool]) -> Optional[str]:
+def prompt_user_input(message: str, expected: Callable[[str], bool]) -> str | None:
     answer = None
     while True:
         try:
@@ -49,7 +49,7 @@ def prompt_user_input(message: str, expected: Callable[[str], bool]) -> Optional
     return answer
 
 
-def prompt_secure_user_input(message: str, expected: Callable[[str], bool]) -> Optional[str]:
+def prompt_secure_user_input(message: str, expected: Callable[[str], bool]) -> str | None:
     answer = None
     while True:
         try:

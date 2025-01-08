@@ -5,9 +5,10 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
-from ...setup import *
-from ...thirdparty.code import *
-from ...thirdparty.lexers import *
+from lark import Lark
+from pydantic import BaseModel
+from pydantic import ConfigDict
+from pydantic import Field
 
 # ----------------------------------------------------------------
 # EXPORTS
@@ -28,25 +29,49 @@ GRAMMAR = "phpytex.lark"
 # ----------------------------------------------------------------
 
 
-@dataclass
-class Tokeniser:
-    _grammar: str | None = field(default=None)
-    _lexer: dict[str, Lark] = field(default_factory=dict)
+class TokeniserStruct(BaseModel):
+    """
+    Underlying struct for tokeniser.
+    """
 
-    def parse(self, mode: str, text: str):
-        if self._grammar is None:
-            self._grammar = get_grammar(GRAMMAR)
+    model_config = ConfigDict(
+        extra="allow",
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+    )
 
-        if mode not in self._lexer:
-            self._lexer[mode] = Lark(
-                self._grammar,
+    grammar: str | None = Field(default=None)
+    lexer: dict[str, Lark] = Field(default_factory=dict)
+
+
+class Tokeniser(TokeniserStruct):
+    """
+    A class wrapper for lexing/parsing grammars.
+    """
+
+    def parse(
+        self,
+        text: str,
+        /,
+        *,
+        mode: str,
+    ):
+        if self.grammar is None:
+            # TODO: this should not be done here. -> refactor code!
+            from ...setup import get_grammar
+
+            self.grammar = get_grammar(GRAMMAR)
+
+        lexer = self.lexer.get(mode)
+        if lexer is None:
+            lexer = Lark(
+                self.grammar,
                 start=mode,
                 regex=True,
                 parser="earley",  # 'lalr', 'earley', 'cyk'
                 priority="invert",  # auto (default), none, normal, invert
             )
-
-        lexer = self._lexer[mode]
+            self.lexer[mode] = lexer
 
         try:
             return lexer.parse(text)

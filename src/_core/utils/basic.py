@@ -5,11 +5,16 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
+import random
+import re
 from collections import defaultdict
+from typing import Any
+from typing import Literal
+from typing import TypeVar
 
-from ...thirdparty.misc import *
-from ...thirdparty.system import *
-from ...thirdparty.types import *
+from numpy.random import MT19937
+from numpy.random import RandomState
+from numpy.random import SeedSequence
 
 # ----------------------------------------------------------------
 # EXPORTS
@@ -18,6 +23,7 @@ from ...thirdparty.types import *
 __all__ = [
     "inheritance_on_graph",
     "len_whitespace",
+    "reseed",
     "size_of_whitespace",
     "unique",
 ]
@@ -144,3 +150,18 @@ def inheritance_on_graph(
             break
 
     return properties
+
+
+# ----------------------------------------------------------------
+# METHODS: maths
+# ----------------------------------------------------------------
+
+
+def reseed(
+    seed: int | None,
+    legacy: bool = False,
+) -> RandomState:
+    rng = RandomState(MT19937(SeedSequence(seed)))
+    if legacy:
+        random.seed(seed)
+    return rng

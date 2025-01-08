@@ -5,10 +5,11 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
+import re
+from typing import Generator
+
 from ...._core.logging import *
 from ....models.transpilation import *
-from ....thirdparty.misc import *
-from ....thirdparty.types import *
 from ..tokeniser import *
 from .basic import *
 from .lexer_block import *

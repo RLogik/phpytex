@@ -7,14 +7,8 @@
 
 import os
 import platform
-
-# for modifications
 import re
-import shutil
 import subprocess
-import sys
-import traceback
-import warnings
 from pathlib import Path
 
 # ----------------------------------------------------------------
@@ -22,36 +16,29 @@ from pathlib import Path
 # ----------------------------------------------------------------
 
 __all__ = [
-    "Path",
     "clear_dir_if_exists",
     "create_dir_if_not_exists",
     "create_file_if_not_exists",
-    "os",
+    "is_linux",
     "pipe_call",
-    "platform",
     "python_command",
     "remove_dir_if_exists",
     "remove_file_if_exists",
-    "shutil",
-    "subprocess",
-    "sys",
-    "traceback",
-    "warnings",
     "write_text_file",
 ]
 
 # ----------------------------------------------------------------
-# MODIFICATIONS
+# METHODS
 # ----------------------------------------------------------------
 
 
-def create_dir_if_not_exists(path: str) -> bool:
+def create_dir_if_not_exists(path: str):
     p = Path(path)
     p.mkdir(parents=True, exist_ok=True)
-    return p.exists()
+    return
 
 
-def create_file_if_not_exists(path: str) -> bool:
+def create_file_if_not_exists(path: str):
     create_dir_if_not_exists(os.path.dirname(path))
     p = Path(path)
     # ----------------
@@ -61,10 +48,13 @@ def create_file_if_not_exists(path: str) -> bool:
     # 3. read access (=4) for others
     # ----------------
     p.touch(mode=0o664, exist_ok=True)
-    return p.exists()
+    return
 
 
-def clear_dir_if_exists(path: str, recursive: bool = True, is_root: bool = True):
+def clear_dir_if_exists(
+    path: str,
+    recursive: bool = True,
+):
     if not (os.path.exists(path) and os.path.isdir(path)):
         return
     for filename in os.listdir(path):
@@ -72,9 +62,7 @@ def clear_dir_if_exists(path: str, recursive: bool = True, is_root: bool = True)
         if os.path.isfile(path_):
             os.remove(path_)
         elif recursive:
-            clear_dir_if_exists(path_, recursive=recursive, is_root=False)
-    if not is_root:
-        os.rmdir(path)
+            clear_dir_if_exists(path_, recursive=recursive)
     return
 
 

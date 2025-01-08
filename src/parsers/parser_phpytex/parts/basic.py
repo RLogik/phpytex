@@ -5,9 +5,12 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
+import re
+
+from lark import Tree
+
 from ...._core.utils.basic import *
-from ....thirdparty.lexers import *
-from ....thirdparty.misc import *
+from ...._core.utils.misc import *
 
 # ----------------------------------------------------------------
 # EXPORTS

@@ -5,11 +5,12 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
+import json
+from typing import Any
+
+from lark import Tree
+
 from ....models.transpilation import *
-from ....thirdparty.config import *
-from ....thirdparty.lexers import *
-from ....thirdparty.misc import *
-from ....thirdparty.types import *
 from ..tokeniser import *
 from .basic import *
 

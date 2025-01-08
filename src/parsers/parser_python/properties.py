@@ -5,10 +5,10 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
+import tokenize
+
 from ..._core.utils.basic import *
 from ...models.enums import *
-from ...thirdparty.lexers import *
-from ...thirdparty.misc import *
 from .basic import *
 
 # ----------------------------------------------------------------

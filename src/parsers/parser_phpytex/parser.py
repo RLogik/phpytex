@@ -6,13 +6,9 @@
 # ----------------------------------------------------------------
 
 import logging
+from typing import Generator
 
-from ..._core.logging import *
-from ...models.enums import *
 from ...models.transpilation import *
-from ...thirdparty.config import *
-from ...thirdparty.types import *
-from ..parser_python import *
 from .parts import *
 from .tokeniser import *
 
@@ -39,7 +35,7 @@ def parse(
 
     try:
         tokeniser = Tokeniser()
-        u = tokeniser.parse("blocks", text)
+        u = tokeniser.parse(text, mode="blocks")
         yield from lexed_to_blocks(tokeniser, u, offset=offset, indentation=indentation)
 
     except Exception as err:

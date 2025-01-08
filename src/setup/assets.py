@@ -5,10 +5,11 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
+import os
+
 from ..__paths__ import *
+from .._core.utils.io import *
 from ..models.enums import *
-from ..thirdparty.io import *
-from ..thirdparty.system import *
 from . import basic
 
 # ----------------------------------------------------------------

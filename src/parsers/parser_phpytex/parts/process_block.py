@@ -5,11 +5,14 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
+import re
+
+from lark import Tree
+
 from ...._core.utils.basic import *
+from ...._core.utils.misc import *
 from ....models.enums import *
 from ....models.transpilation import *
-from ....thirdparty.lexers import *
-from ....thirdparty.misc import *
 from ... import parser_python
 from ..tokeniser import *
 from .basic import *

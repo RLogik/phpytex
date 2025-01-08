@@ -6,19 +6,19 @@
 # ----------------------------------------------------------------
 
 import logging
+import os
+import re
 
 from ...._core.logging import *
 from ...._core.utils.basic import *
+from ...._core.utils.misc import *
+from ...._core.utils.system import *
 from ....models.enums import *
 from ....models.transpilation import *
 from ....models.user import *
 from ....parsers import parser_phpytex
 from ....queries import user
 from ....setup import *
-from ....thirdparty.maths import *
-from ....thirdparty.misc import *
-from ....thirdparty.system import *
-from ....thirdparty.types import *
 
 # ----------------------------------------------------------------
 # EXPORTS

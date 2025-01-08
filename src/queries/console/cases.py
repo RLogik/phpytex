@@ -5,14 +5,11 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
-from ...__paths__ import *
+from argparse import ArgumentParser
+
 from ..._core.utils.basic import *
+from ..._core.utils.misc import *
 from ...models.application import *
-from ...thirdparty.config import *
-from ...thirdparty.io import *
-from ...thirdparty.misc import *
-from ...thirdparty.system import *
-from ...thirdparty.types import *
 from .basic import *
 
 # ----------------------------------------------------------------

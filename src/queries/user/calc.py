@@ -5,12 +5,11 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
+from typing import Any
+
 from ..._core.utils.basic import *
 from ...models.internal import *
 from ...models.transpilation import *
-from ...thirdparty.maths import *
-from ...thirdparty.system import *
-from ...thirdparty.types import *
 
 # ----------------------------------------------------------------
 # EXPORTS

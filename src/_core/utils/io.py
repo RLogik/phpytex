@@ -5,63 +5,40 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
-# for modifications, not export
+import json
 import os
-import zlib
-from argparse import ArgumentError
-from argparse import ArgumentParser
-from argparse import Namespace
-from argparse import RawTextHelpFormatter
 from base64 import b64decode
 from base64 import b64encode
-from enum import Enum
-from getpass import getpass
-from getpass import getuser
 from hashlib import sha256
 from io import BytesIO
-from io import StringIO
-from io import TextIOWrapper
 from zipfile import ZipFile
+
+import yaml
+
+from ...models.datasources import *
+from .io_yaml import *
 
 # ----------------------------------------------------------------
 # EXPORTS
 # ----------------------------------------------------------------
 
 __all__ = [
-    "ENCODING",
-    "ArgumentError",
-    "ArgumentParser",
-    "BytesIO",
     "BytesIOStream",
-    "Namespace",
-    "RawTextHelpFormatter",
-    "StringIO",
-    "TextIOWrapper",
-    "ZipFile",
-    "b64decode",
-    "b64encode",
     "decode_base_64",
     "encode_base_64",
-    "getpass",
-    "getuser",
     "hash_encode",
+    "parse_contents",
     "read_internal_asset",
-    "sha256",
-    "zlib",
+    "read_yaml",
+    "read_yaml_from_contents",
 ]
 
 # ----------------------------------------------------------------
-# MODIFICATIONS
+# METHODS
 # ----------------------------------------------------------------
 
 
-class ENCODING(Enum):
-    ASCII = "ascii"
-    UTF8 = "utf-8"
-    UNICODE = "unicode_escape"
-
-
-def hash_encode(text: str, encoding: ENCODING = ENCODING.UTF8) -> bytes:
+def hash_encode(text: str, encoding: ENCODING = "utf-8") -> bytes:
     """
     Note:
     A hash encoded value cannot (under current computational methods)
@@ -71,16 +48,16 @@ def hash_encode(text: str, encoding: ENCODING = ENCODING.UTF8) -> bytes:
     by comparing their hashes.
 
     """
-    return sha256(text.encode(encoding.value)).hexdigest().encode(ENCODING.ASCII.value)
+    return sha256(text.encode(encoding)).hexdigest().encode("ascii")
 
 
-def encode_base_64(text: str, encoding: ENCODING = ENCODING.UTF8) -> str:
-    return b64encode(text.encode(encoding.value)).decode(ENCODING.ASCII.value)
+def encode_base_64(text: str, encoding: ENCODING = "utf-8") -> str:
+    return b64encode(text.encode(encoding)).decode("ascii")
 
 
-def decode_base_64(code: str, encoding: ENCODING = ENCODING.UTF8) -> str:
+def decode_base_64(code: str, encoding: ENCODING = "utf-8") -> str:
     try:
-        return b64decode(code.encode(ENCODING.ASCII.value)).decode(encoding.value)
+        return b64decode(code.encode("ascii")).decode(encoding)
 
     except Exception as _:
         return ""
@@ -106,6 +83,45 @@ class BytesIOStream:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         return
+
+
+def read_yaml(path: str):
+    """
+    Reads yaml from a path and uses custom registered constructors for parsing.
+    """
+    register_yaml_constructors()
+    with open(path, "rb") as fp:
+        assets = yaml.load(fp, Loader=yaml.FullLoader)
+        return assets
+
+
+def read_yaml_from_contents(contents: bytes):
+    """
+    Reads yaml from bytes and uses custom registered constructors for parsing.
+    """
+    register_yaml_constructors()
+    with BytesIOStream(contents) as fp:
+        assets = yaml.load(fp, Loader=yaml.FullLoader)
+        return assets
+
+
+def parse_contents(
+    contents: bytes,
+    /,
+    *,
+    format: BASIC_FILETYPES,
+):
+    match format:
+        case ".yaml":
+            # read from contents (assumed to be in yaml-format)
+            return read_yaml_from_contents(contents)
+
+        case ".json":
+            # read from contents (assumed to be in yaml-format)
+            return json.loads(contents)
+
+        case _:
+            raise ValueError(f"No read method developed for {format}")
 
 
 def read_internal_asset(

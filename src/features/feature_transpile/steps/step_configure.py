@@ -5,6 +5,8 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
+import os
+
 from ...._core.logging import *
 from ...._core.utils.basic import *
 from ....models.enums import *
@@ -12,9 +14,6 @@ from ....models.transpilation import *
 from ....models.user import *
 from ....queries import user
 from ....setup import *
-from ....thirdparty.misc import *
-from ....thirdparty.system import *
-from ....thirdparty.types import *
 
 # ----------------------------------------------------------------
 # EXPORTS
@@ -79,7 +78,7 @@ def handle_part_compile(options: UserConfigPartCompileOptions):
     file_input = os.path.abspath(options.root)
     file_output = os.path.abspath(options.output)
 
-    assert (
-        file_input != file_output
-    ), "The output and start ('root'-attribute in config) paths must be different!"
+    assert file_input != file_output, \
+        "The output and start ('root'-attribute in config) paths must be different!"  # fmt: skip
+
     return

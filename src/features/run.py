@@ -11,8 +11,8 @@ If called from e.g. cli.py or api.py, must initialise all paths.
 # ----------------------------------------------------------------
 
 from .._core.logging import *
+from .._core.utils.misc import *
 from ..models.application import *
-from ..thirdparty.misc import *
 from . import feature_transpile
 
 # ----------------------------------------------------------------

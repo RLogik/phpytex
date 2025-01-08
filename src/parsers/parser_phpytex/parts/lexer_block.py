@@ -5,9 +5,11 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
+from typing import Generator
+
+from lark import Tree
+
 from ....models.transpilation import *
-from ....thirdparty.lexers import *
-from ....thirdparty.types import *
 from ..tokeniser import *
 from .basic import *
 from .lexer_quick import *

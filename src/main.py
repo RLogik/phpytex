@@ -11,11 +11,11 @@ import sys
 # NOTE: do not change the directory!
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+from src._core.utils.system import *
 from src.features import *
 from src.models.application import *
 from src.queries.console.client import *
 from src.setup import *
-from src.thirdparty.system import *
 
 # ----------------------------------------------------------------
 # LOCAL CONSTANTS

@@ -5,11 +5,13 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
+import json
+import re
+from fractions import Fraction
+from typing import Any
+from typing import Iterable
+
 from ...models.transpilation import *
-from ...thirdparty.config import *
-from ...thirdparty.maths import *
-from ...thirdparty.misc import *
-from ...thirdparty.types import *
 
 # ----------------------------------------------------------------
 # EXPORTS

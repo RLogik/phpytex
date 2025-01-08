@@ -21,13 +21,17 @@ from typing import TypeVar
 __all__ = [
     "dedent",
     "dedent_full",
+    "dedent_split",
     "get_date_stamp",
     "get_datetime_stamp",
     "get_timestamp",
     "parse_datetime",
+    "reindent_lines",
     "strip_around",
     "timedelta",
     "timezone",
+    "unindent_lines",
+    "unindent_text",
 ]
 
 
@@ -136,3 +140,33 @@ def dedent_full(text: str) -> str:
     (= lines containing at most only white spaces).
     """
     return textwrap_dedent(text)
+
+
+def dedent_split(text: str, full: bool = False) -> list[str]:
+    text = dedent_full(text) if full else dedent(text)
+    return re.split(r"\r?\n", text)
+
+
+def unindent_text(text: str, reference: str = "") -> str:
+    text = f"\n{reference}.\n{text}\n"  # add reference point to first line
+    lines = dedent_split(text)  # dedent, utilising the reference marker
+    lines = lines[1:]  # strip reference marker
+    text = "\n".join(lines)
+    return text
+
+
+def unindent_lines(lines: list[str], reference: str = "") -> list[str]:
+    text = "\n".join(lines)
+    text = f"\n{reference}.\n{text}\n"  # add reference point to first line
+    lines = dedent_split(text)  # dedent, utilising the reference marker
+    return lines[1:]  # strip reference marker
+
+
+def reindent_lines(lines: list[str], indent: str, unindent: bool = False) -> list[str]:
+    """
+    Either adds to indentation (`unindent=False`)
+    or forces an indentation level (`unindent=True`).
+    """
+    if unindent:
+        lines = unindent_lines(lines)
+    return [indent + line for line in lines]

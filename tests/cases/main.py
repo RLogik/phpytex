@@ -12,17 +12,18 @@ os.chdir(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.insert(0, os.getcwd())
 
 import logging
+import re
+import shutil
 
 from src._core.logging import *
+from src._core.utils.io import *
+from src._core.utils.misc import *
+from src._core.utils.system import *
 from src.features import *
 from src.models.application import *
 from src.models.generated.tests import *
 from src.queries.console.cases import *
 from src.setup import *
-from src.thirdparty.config import *
-from src.thirdparty.misc import *
-from src.thirdparty.system import *
-from src.thirdparty.types import *
 
 # ----------------------------------------------------------------
 # CONSTANTS
@@ -53,9 +54,8 @@ if __name__ == "__main__":
     config.quiet_mode.set(args.quiet)
     config.initialise_application(name="tests", debug=args.debug)
 
-    with open(PATH_CONFIG, "rb") as fp:
-        assets = yaml.load(fp, yaml.FullLoader)
-        cfg = TestCaseConfig.model_validate(assets)
+    assets = read_yaml(PATH_CONFIG)
+    cfg = TestCaseConfig.model_validate(assets)
 
     remove_dir_if_exists(PATH_SANDBOX)
     message_pause = f"Output can be temporarily inspected in \033[1m{PATH_SANDBOX}\033[0m"

@@ -9,7 +9,6 @@ from functools import wraps
 from typing import Any
 from typing import Callable
 from typing import Generic
-from typing import Optional
 from typing import ParamSpec
 from typing import TypeVar
 from typing import overload
@@ -143,7 +142,7 @@ def wrap_result(
 def safe_unwrap(
     method: Callable[[], RETURN],
     default: E = None,
-    default_factory: Optional[Callable[[], E]] = None,
+    default_factory: Callable[[], E] | None = None,
 ) -> RETURN | E:
     """
     Calls method and returns default if exception raised.

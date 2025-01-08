@@ -7,12 +7,14 @@
 
 from __future__ import annotations
 
+import re
+from typing import Any
+from typing import Generator
+
 from ..._core.utils.basic import *
+from ..._core.utils.misc import *
 from ...models.generated.app import *
 from ...parsers import parser_python
-from ...thirdparty.code import *
-from ...thirdparty.misc import *
-from ...thirdparty.types import *
 
 # ----------------------------------------------------------------
 # EXPORTS

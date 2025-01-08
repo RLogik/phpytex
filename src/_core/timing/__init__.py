@@ -5,8 +5,9 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
-from ...thirdparty.misc import Timer
-from ...thirdparty.misc import TimerError
+from codetiming import TimerError
+
+from .basic import *
 from .countdown import *
 from .decorators import *
 
@@ -18,6 +19,7 @@ __all__ = [
     "Countdown",
     "Timer",
     "TimerError",
+    "TimerQuiet",
     "add_countdown",
     "add_countdown_async",
 ]

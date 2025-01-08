@@ -5,8 +5,9 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
+from lark import Tree
+
 from ....models.transpilation import *
-from ....thirdparty.lexers import *
 from ..tokeniser import *
 from .basic import *
 from .process_quick import *

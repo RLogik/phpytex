@@ -5,13 +5,13 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
+import os
+import re
+
 from ..._core.utils.basic import *
+from ..._core.utils.io import *
 from ...models.user import *
 from ...setup import *
-from ...thirdparty.config import *
-from ...thirdparty.misc import *
-from ...thirdparty.system import *
-from ...thirdparty.types import *
 
 # ----------------------------------------------------------------
 # EXPORTS
@@ -31,9 +31,8 @@ def load_user_config(path: str) -> UserConfig:
     """
     Loades user config file from directory
     """
-    with open(path, "r") as fp:
-        assets = yaml.load(fp, Loader=yaml.FullLoader)
-        return UserConfig.model_validate(assets)
+    assets = read_yaml(path)
+    return UserConfig.model_validate(assets)
 
 
 def locate_user_config() -> str:
@@ -45,4 +44,5 @@ def locate_user_config() -> str:
     for fname in os.listdir(root):
         if os.path.isfile(fname) and pattern.match(fname):
             return os.path.join(root, fname)
+
     raise Exception("Could not find or read any phpytex configuration files.")

@@ -7,7 +7,9 @@
 
 from __future__ import annotations
 
-from ...thirdparty.types import *
+from typing import Any
+from typing import Generic
+from typing import TypeVar
 
 # ----------------------------------------------------------------
 # EXPORTS

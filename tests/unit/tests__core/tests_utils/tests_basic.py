@@ -8,7 +8,6 @@
 from tests.unit.thirdparty.unit import *
 
 from src._core.utils.basic import *
-from src.thirdparty.types import *
 
 # ----------------------------------------------------------------
 # TESTS
