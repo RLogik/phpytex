@@ -5,19 +5,19 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
+from ..datasources.constants import *
 from ..generated.app import *
-from .encoding import *
-from .mime import *
 
 # ----------------------------------------------------------------
 # EXPORTS
 # ----------------------------------------------------------------
 
 __all__ = [
-    "Encoding",
+    "BASIC_FILETYPES",
+    "ENCODING",
+    "MIME_TYPE",
     "EnumCommentsOptions",
     "EnumFeatures",
     "EnumFilesManagementSystem",
     "EnumProgrammeMode",
-    "MimeType",
 ]
