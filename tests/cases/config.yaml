@@ -2,6 +2,11 @@ cases:
   - tests/cases/case_1a_simple_debug
   - tests/cases/case_1b_simple_transpile
   - tests/cases/case_1c_simple_compile
-  - tests/cases/case_2a_withtree_debug
-  - tests/cases/case_2b_withtree_transpile
-  - tests/cases/case_2c_withtree_compile
+  - tests/cases/case_2a_with-tree_debug
+  - tests/cases/case_2b_with-tree_transpile
+  - tests/cases/case_2c_with-tree_compile
+  - tests/cases/case_3a_code-simple_debug
+  - tests/cases/case_3b_code-simple_transpile
+  - tests/cases/case_4a_code-with-tree_debug
+  - tests/cases/case_4b_code-with-tree_transpile
+  - tests/cases/case_4c_code-with-tree_compile

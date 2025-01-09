@@ -1,0 +1,19 @@
+<<< python, import
+from src.methods import *;
+>>>
+
+\makeatletter
+<<< input f'{__DIR__}/setup-type.tex'; >>>
+<<< input f'{__DIR__}/setup-packages.tex'; >>>
+<<< input f'{__DIR__}/setup-layout.tex'; >>>
+<<< input f'{__DIR__}/setup-title.tex'; >>>
+\makeatother
+
+<<< python
+for name, defn in generate_definitions():
+    if name is not None:
+>>>
+\providecommand{\<<< name; >>>}{}
+\renewcommand{\<<< name; >>>}[0]{<<< defn; >>>}
+<<< escape_once; >>>
+<<< escape_once; >>>
