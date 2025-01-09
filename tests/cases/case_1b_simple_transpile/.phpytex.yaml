@@ -1,4 +1,3 @@
-ignore:      false
 # ----------------------------------------------------------------
 # COMPILE OPTIONS
 # ----------------------------------------------------------------
@@ -7,7 +6,7 @@ compile:
     root:          root.tex
     output:        main.tex
     debug:         false
-    compile-latex: true
+    compile-latex: false
     insert-bib:    true
     comments:      auto
     show-tree:     true
@@ -33,7 +32,7 @@ stamp:
 parameters:
   overwrite: true
   options:
-    FONT_SIZE: 12pt
+    FONT-SIZE: 12pt # this will be 'cleaned' to FONT_SIZE inside parameters.py
     TITLE:     *ref_title
     KEYWORDS:
       - ai

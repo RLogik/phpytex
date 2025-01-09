@@ -1,7 +1,7 @@
 cases:
-  - tests/cases/case_debug_simple
-  - tests/cases/case_debug_withtree
-  - tests/cases/case_no-compile_simple
-  - tests/cases/case_no-compile_withtree
-  - tests/cases/case_compile_simple
-  - tests/cases/case_compile_withtree
+  - tests/cases/case_1a_simple_debug
+  - tests/cases/case_1b_simple_transpile
+  - tests/cases/case_1c_simple_compile
+  - tests/cases/case_2a_withtree_debug
+  - tests/cases/case_2b_withtree_transpile
+  - tests/cases/case_2c_withtree_compile
