@@ -41,6 +41,8 @@ T = TypeVar("T")
 
 def len_whitespace(
     text: str,
+    /,
+    *,
     mode: Literal[-1] | Literal[0] | Literal[1] = 0,
 ) -> int:
     r"""
@@ -75,6 +77,7 @@ def len_whitespace(
             text = re.sub(r"^(\s*).*$", r"\1", text)
         case 1:
             text = re.sub(r"^(|.*\S)(\s*)$", r"\2", text)
+
     for alpha in text:
         match alpha:
             case " ":
@@ -86,12 +89,17 @@ def len_whitespace(
     return n
 
 
-def size_of_whitespace(text: str, indentsymb: str) -> int:
+def size_of_whitespace(
+    text: str,
+    /,
+    *,
+    indent: str,
+) -> int:
     """
     Computes the whole number of indentations (roughly) equivalent to a given whitespace text.
     """
     n = len_whitespace(text)
-    unit = len_whitespace(indentsymb)
+    unit = len_whitespace(indent)
     return n // unit
 
 

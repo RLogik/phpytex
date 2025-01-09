@@ -1,4 +1,3 @@
-ignore:      false
 share-path:  dist
 output-name: paper
 # ----------------------------------------------------------------
@@ -9,7 +8,7 @@ compile:
     root:          root.tex
     output:        main.tex
     debug:         false
-    compile-latex: false
+    compile-latex: true
     insert-bib:    true
     comments:      auto
     show-tree:     true

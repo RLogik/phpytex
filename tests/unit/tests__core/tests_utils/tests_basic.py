@@ -107,7 +107,7 @@ def test_len_whitespace_POSTDENT(
 
 
 @mark.parametrize(
-    ("indent", "symb", "expected"),
+    ("text", "symb", "expected"),
     [
         ("", " ", 0),
         (" ", " ", 1),
@@ -134,16 +134,16 @@ def test_len_whitespace_POSTDENT(
 def test_size_of_whitespace_BASIC_CASES(
     test: TestCase,
     # parameters
-    indent: str,
+    text: str,
     symb: str,
     expected: int,
 ):
-    n = size_of_whitespace(indent, symb)
+    n = size_of_whitespace(text, indent=symb)
     test.assertEqual(n, expected)
 
 
 @mark.parametrize(
-    ("indent", "symb", "expected"),
+    ("text", "symb", "expected"),
     [
         ("\t", " ", 8),
         (" \t", " ", 8),
@@ -173,9 +173,9 @@ def test_size_of_whitespace_BASIC_CASES(
 def test_size_of_whitespace_IMPERFECTIONS(
     test: TestCase,
     # parameters
-    indent: str,
+    text: str,
     symb: str,
     expected: int,
 ):
-    n = size_of_whitespace(indent, symb)
+    n = size_of_whitespace(text, indent=symb)
     test.assertEqual(n, expected)

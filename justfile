@@ -397,13 +397,13 @@ tests-unit:
 test-unit-list-flags:
     @{{PYVENV_ON}} && {{PYVENV}} -m pytest --markers
 
-test-unit-optional path flags="'(azure or remote)'":
+test-unit-optional path flags="dev":
     @just test-unit "{{path}}" -m "{{flags}}"
 
-test-unit-one-optional path method flags="'(azure or remote)'":
+test-unit-one-optional path method flags="dev":
     @just test-unit "{{path}}" -k "{{method}}" -m "{{flags}}"
 
-tests-unit-optional flags="'(azure or remote)'":
+tests-unit-optional flags="dev":
     @just test-unit "tests/unit" -m "{{flags}}"
 
 tests-behave full="false":

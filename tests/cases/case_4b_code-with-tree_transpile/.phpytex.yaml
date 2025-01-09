@@ -1,0 +1,53 @@
+# ----------------------------------------------------------------
+# COMPILE OPTIONS
+# ----------------------------------------------------------------
+compile:
+  options:
+    root:          root.tex
+    output:        main.tex
+    debug:         false
+    compile-latex: false
+    insert-bib:    true
+    comments:      auto
+    show-tree:     true
+    max-length:    10000
+    tabs:          false
+    spaces:        4
+    seed:          81004467
+# ----------------------------------------------------------------
+# STAMP OPTIONS
+# ----------------------------------------------------------------
+stamp:
+  file: stamp.tex
+  overwrite: true
+  options:
+    author:    Max Mustermann
+    created:   27.08.2021
+    edited:    28.08.2021
+    title:     &ref_title The stages of artificial intelligence beyond human intelligence
+    institute: Faculty of mathematics
+# ----------------------------------------------------------------
+# ARTICLE PARAMETERS
+# ----------------------------------------------------------------
+parameters:
+  overwrite: true
+  options:
+    FONT-SIZE: 12pt # this will be 'cleaned' to FONT_SIZE inside parameters.py
+    TITLE:     *ref_title
+    KEYWORDS:
+      - ai
+      - computer science
+      - research
+# ----------------------------------------------------------------
+# DOCUMENT TREE
+# ----------------------------------------------------------------
+files:
+  - root.tex
+folders:
+  src:
+    files:
+      - .index.tex
+      - setup-packages.tex
+      - setup-type.tex
+      - setup-layout.tex
+      - setup-title.tex
