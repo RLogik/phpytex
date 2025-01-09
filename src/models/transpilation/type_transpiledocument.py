@@ -345,8 +345,13 @@ class TranspileDocuments(object):
         Parses as tree structure
         """
         if path is None:
+            # find all roots
             root = TranspileDocumentNode()
             paths_children = self.get_root_paths()
+            # if exists exactly 1 root, then this is "the" root, otherwise treat as multi-root
+            if len(paths_children) == 1:
+                path = paths_children[0]
+                return self.as_tree(path)
 
         else:
             anon = self.anon[path]
