@@ -40,15 +40,15 @@ __all__ = [
 # ----------------------------------------------------------------
 
 
-def parse_datetime(stamp: str) -> datetime:
+def parse_datetime(stamp: str, /) -> datetime:
     return datetime.fromisoformat(stamp.replace("Z", " +00:00"))
 
 
-def get_timestamp(format: str = r"%Y-%m-%d %H:%M:%S%z") -> str:
+def get_timestamp(format: str = r"%Y-%m-%d %H:%M:%S%z", /) -> str:
     return datetime.now().strftime(format)
 
 
-def get_datetime_stamp(rounded: bool = False) -> str:
+def get_datetime_stamp(rounded: bool = False, /) -> str:
     return get_timestamp(r"%Y-%m-%d %H:%M:%S%z" if rounded else r"%Y-%m-%d %H:%M:%S.%f%z")
 
 
@@ -58,6 +58,8 @@ def get_date_stamp() -> str:
 
 def strip_around(
     text: str,
+    /,
+    *,
     first: bool,
     last: bool,
     all: bool = True,
@@ -82,7 +84,12 @@ def strip_around(
     return text
 
 
-def dec_prestrip(first: bool = True, last: bool = True, all: bool = False):
+def dec_prestrip(
+    *,
+    first: bool = True,
+    last: bool = True,
+    all: bool = False,
+):
     """
     Returns a decorator that modifies string -> string methods
     """
@@ -104,7 +111,7 @@ def dec_prestrip(first: bool = True, last: bool = True, all: bool = False):
 
 
 @dec_prestrip(all=False)
-def dedent(text: str) -> str:
+def dedent(text: str, /) -> str:
     r"""
     Remove any common leading whitespace from every line in `text`.
 
@@ -122,7 +129,7 @@ def dedent(text: str) -> str:
 
 
 @dec_prestrip(all=True)
-def dedent_full(text: str) -> str:
+def dedent_full(text: str, /) -> str:
     r"""
     Remove any common leading whitespace from every line in `text`.
 
@@ -142,12 +149,22 @@ def dedent_full(text: str) -> str:
     return textwrap_dedent(text)
 
 
-def dedent_split(text: str, full: bool = False) -> list[str]:
+def dedent_split(
+    text: str,
+    /,
+    *,
+    full: bool = False,
+) -> list[str]:
     text = dedent_full(text) if full else dedent(text)
     return re.split(r"\r?\n", text)
 
 
-def unindent_text(text: str, reference: str = "") -> str:
+def unindent_text(
+    text: str,
+    /,
+    *,
+    reference: str = "",
+) -> str:
     text = f"\n{reference}.\n{text}\n"  # add reference point to first line
     lines = dedent_split(text)  # dedent, utilising the reference marker
     lines = lines[1:]  # strip reference marker
@@ -155,18 +172,28 @@ def unindent_text(text: str, reference: str = "") -> str:
     return text
 
 
-def unindent_lines(lines: list[str], reference: str = "") -> list[str]:
+def unindent_lines(
+    *lines: str,
+    reference: str = "",
+) -> list[str]:
     text = "\n".join(lines)
     text = f"\n{reference}.\n{text}\n"  # add reference point to first line
-    lines = dedent_split(text)  # dedent, utilising the reference marker
-    return lines[1:]  # strip reference marker
+    lines_ = dedent_split(text)  # dedent, utilising the reference marker
+    return lines_[1:]  # strip reference marker
 
 
-def reindent_lines(lines: list[str], indent: str, unindent: bool = False) -> list[str]:
+def reindent_lines(
+    *lines: str,
+    indent: str,
+    unindent: bool = False,
+) -> list[str]:
     """
     Either adds to indentation (`unindent=False`)
     or forces an indentation level (`unindent=True`).
     """
     if unindent:
-        lines = unindent_lines(lines)
-    return [indent + line for line in lines]
+        lines_ = unindent_lines(*lines)
+        return [indent + line for line in lines_]
+
+    else:
+        return [indent + line for line in lines]

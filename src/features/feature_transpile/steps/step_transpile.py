@@ -66,7 +66,7 @@ def step_transpile(cfg_user: UserConfig):
     if cfg_user.stamp is not None:
         name = "stamp"
         preambles.append(name)
-        transpileDocument(
+        transpile_document(
             cfg_user.stamp.file,
             tokeniser=tok,
             options=options,
@@ -80,7 +80,7 @@ def step_transpile(cfg_user: UserConfig):
         )
 
     # Transpile document file:
-    transpileDocument(
+    transpile_document(
         options.root,
         tokeniser=tok,
         options=options,
@@ -112,27 +112,27 @@ def step_transpile(cfg_user: UserConfig):
 
         # Create file:
         path = re.sub(r"([^\.]+)\.", r"\1/", modulename) + ".py"
-        createImportFileParameters(
+        create_import_file_parameters(
+            documents,
             path=path,
             overwrite=cfg_user.parameters.overwrite,
-            documents=documents,
         )
 
         # Add import block for global parameters:
         imports.append(
             TranspileBlock(
                 kind="code",
-                content=f"from {modulename} import *;",
+                content=f"from {modulename} import *",
                 level=0,
                 indentsymb=indentsymb,
             )
         )
 
     # Generate result of transpilation (phpytex -> python):
-    createmetacode(
+    create_metacode(
+        documents,
+        imports,
         options=options,
-        documents=documents,
-        imports=imports,
         preambles=preambles,
         globalvars=list(user.EXPORT_VARS.keys()) + list(documents.variables.keys()),
         seed=options.seed,
@@ -145,7 +145,7 @@ def step_transpile(cfg_user: UserConfig):
 # ----------------------------------------------------------------
 
 
-def transpileDocument(
+def transpile_document(
     path: str,
     /,
     *,
@@ -171,11 +171,8 @@ def transpileDocument(
         logging.error("Could not find or read document \033[1m{path}\033[0m!".format(path=path))
         return
 
-    indentsymb = user.setting_indent_character()
-    indentation = IndentationTracker(
-        symb=indentsymb,
-        pattern=user.setting_indent_character_re(),
-    )
+    symb = user.setting_indent_character()
+    indentation = IndentationTracker(symb=symb)
 
     if is_preamble:
         blocks = TranspileBlocks()
@@ -245,7 +242,7 @@ def transpileDocument(
         n = len(subpaths)
         for k, subpath in enumerate(subpaths):
             is_final = k == n - 1
-            transpileDocument(
+            transpile_document(
                 subpath,
                 tokeniser=tokeniser,
                 options=options,
@@ -259,10 +256,12 @@ def transpileDocument(
     return
 
 
-def createImportFileParameters(
+def create_import_file_parameters(
+    documents: TranspileDocuments,
+    /,
+    *,
     path: str,
     overwrite: bool,
-    documents: TranspileDocuments,
 ):
     if os.path.exists(path) and not overwrite:
         return
@@ -288,10 +287,12 @@ def createImportFileParameters(
     return
 
 
-def createmetacode(
-    options: UserConfigPartCompileOptions,
+def create_metacode(
     documents: TranspileDocuments,
     imports: TranspileBlocks,
+    /,
+    *,
+    options: UserConfigPartCompileOptions,
     preambles: list[str],
     globalvars: list[str],
     seed: int | None,
@@ -302,7 +303,7 @@ def createmetacode(
     lines = []
     lines += dedent_split(
         _lines_pre.format(
-            imports="\n".join(imports.generateCode(align=align)),
+            imports="\n".join(imports.generate_code(align=align)),
             root=os.getcwd(),
             output=options.output,
             name=os.path.splitext(options.output)[0],
@@ -317,7 +318,7 @@ def createmetacode(
         )
     )
     lines.append("")
-    lines += documents.generateCode(
+    lines += documents.generate_code(
         offset=0,
         preambles=preambles,
         globalvars=unique(globalvars),

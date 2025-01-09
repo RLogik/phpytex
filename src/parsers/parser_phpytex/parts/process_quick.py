@@ -138,7 +138,7 @@ def process_block_quick_command(
 
         case "quickescapeonce":
             kind = "code:escape"
-            indentation.decrOffset()
+            indentation.decr_offset()
             parameters = TranspileBlockParameters(level=indentation.level)
 
         case _:

@@ -63,21 +63,23 @@ class TranspileBlock(object):
         return
 
     @property
-    def isCode(self) -> bool:
+    def is_code(self) -> bool:
         return True if re.match(r"^code(:|$)", self.kind) else False
 
     @property
     def content(self) -> Generator[str, None, None]:
-        tab = self.tab() if self.isCode else ""
+        tab = self.tab() if self.is_code else ""
+
         if hasattr(self, "_content"):
             yield "{tab}{line}".format(tab=tab, line=self._content)
+
         else:
-            yield from reindent_lines(self.lines, indent=tab, unindent=False)
+            yield from reindent_lines(*self.lines, indent=tab, unindent=False)
 
     def tab(self, delta: int = 0) -> str:
         return self.indentsymb * (self.level + delta)
 
-    def generateCode(
+    def generate_code(
         self,
         offset: int = 0,
         anon: bool = False,
@@ -86,33 +88,37 @@ class TranspileBlock(object):
     ) -> Generator[str, None, None]:
         state = dict(level=self.level, indentsymb=self.indentsymb)
         self.level += offset
-        if self.kind == "text:empty":
-            yield "{tab}____print('', anon={anon}, hide={hide}, align={align});".format(
-                tab=self.tab(),
-                anon=anon,
-                hide=hide,
-                align=align,
-            )
-        elif self.kind in ["text", "text:comment"]:
-            for line in self.content:
-                yield "{tab}____print('''{expr}''', anon={anon}, hide={hide}, align={align});".format(
+
+        match self.kind, self.subst:
+            case "text:empty", _:
+                yield "{tab}____print('', anon={anon}, hide={hide}, align={align})".format(
                     tab=self.tab(),
-                    expr=parser_python.escape_code(line, fmt=False),
                     anon=anon,
                     hide=hide,
                     align=align,
                 )
-        elif self.kind == "text:subst":
-            if len(self.subst) == 0:
-                yield "{tab}____print('''{expr}'''.format(), anon={anon}, hide={hide}, align={align});".format(
+
+            case "text" | "text:comment", _:
+                for line in self.content:
+                    yield "{tab}____print('''{expr}''', anon={anon}, hide={hide}, align={align})".format(
+                        tab=self.tab(),
+                        expr=parser_python.escape_code(line, fmt=False),
+                        anon=anon,
+                        hide=hide,
+                        align=align,
+                    )
+
+            case "text:subst", subst if len(subst) == 0:
+                yield "{tab}____print('''{expr}'''.format(), anon={anon}, hide={hide}, align={align})".format(
                     tab=self.tab(),
                     expr="\n".join(list(self.content)),
                     anon=anon,
                     hide=hide,
                     align=align,
                 )
-            else:
-                yield "{tab}__MARGIN__ = '{margin}';".format(
+
+            case "text:subst", _:
+                yield "{tab}__MARGIN__ = '{margin}'".format(
                     tab=self.tab(),
                     margin=self.margin,
                 )
@@ -123,7 +129,7 @@ class TranspileBlock(object):
                 for key, value in self.subst.items():
                     level = value.level
                     value_lines = reindent_lines(
-                        value.lines,
+                        *value.lines,
                         indent=self.tab(2),
                         unindent=True,
                     )
@@ -134,24 +140,30 @@ class TranspileBlock(object):
                         value="\n".join(value_lines),
                     )
                     value.level = level
-                yield "{tab}), anon={anon}, hide={hide}, align={align});".format(
+                yield "{tab}), anon={anon}, hide={hide}, align={align})".format(
                     tab=self.tab(),
                     anon=anon,
                     hide=hide,
                     align=align,
                 )
-        elif self.kind in ["code", "code:import", "code:value"]:
-            yield from self.content
-        elif self.kind == "code:set":
-            line = f"{self.parameters.var_name} = {self.parameters.code_value};"
-            block = TranspileBlock(kind="code", content=line, **state)
-            yield from block.generateCode(offset=offset, align=align)
-        elif self.kind == "code:escape":
-            block = TranspileBlock(kind="code", content="pass;", **state)
-            yield from block.generateCode(offset=offset, align=align)
-        elif self.kind == "code:input":
-            pass
+
+            case "code" | "code:import" | "code:value", _:
+                yield from self.content
+
+            case "code:set", _:
+                line = f"{self.parameters.var_name} = {self.parameters.code_value}"
+                block = TranspileBlock(kind="code", content=line, **state)
+                yield from block.generate_code(offset=offset, align=align)
+
+            case "code:escape", _:
+                block = TranspileBlock(kind="code", content="pass", **state)
+                yield from block.generate_code(offset=offset, align=align)
+
+            case "code:input", _:
+                pass
+
         self.level = state["level"]
+
         return
 
 
@@ -172,7 +184,7 @@ class TranspileBlocks(object):
     def append(self, block: TranspileBlock):
         self.blocks.append(block)
 
-    def generateCode(
+    def generate_code(
         self,
         offset: int = 0,
         anon: bool = False,
@@ -180,5 +192,5 @@ class TranspileBlocks(object):
         align: bool = False,
     ) -> Generator[str, None, None]:
         for block in self.blocks:
-            yield from block.generateCode(offset=offset, anon=anon, hide=hide, align=align)
+            yield from block.generate_code(offset=offset, anon=anon, hide=hide, align=align)
         return

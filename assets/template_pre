@@ -30,35 +30,35 @@ ____phpytex_params____ = dict(
         hide=[],
         bib=dict(),
     ),
-    rootdir='{root}',
-    output='{output}',
-    name='{name}',
+    rootdir="{root}",
+    output="{output}",
+    name="{name}",
     compile_latex={compile_latex},
     pdflatex=[
-        # '-interaction=scrollmode',
-        # '-interaction=batchmode',
-        '-interaction=errorstopmode',
-        # '-interaction=nonstopmode',
+        # "-interaction=scrollmode",
+        # "-interaction=batchmode",
+        "-interaction=errorstopmode",
+        # "-interaction=nonstopmode",
     ],
     insert_bib={insert_bib},
     bib_options=[],
-    bib_backend='{backend_bib}',
+    bib_backend="{backend_bib}",
     seed={seed},
     ctr_emptylines=0,
     length=0,
     length_max={length_max},
     length_error=False,
-    indentsymb='{indentsymb}',
-    censorsymb='{censorsymb}',
+    indentsymb="{indentsymb}",
+    censorsymb="{censorsymb}",
 )
 
-__FNAME__ = '<undefined>'
-__ROOT__ = '.'
-__DIR__ = '.'
+__FNAME__ = "<undefined>"
+__ROOT__ = "."
+__DIR__ = "."
 __ANON__ = False
 __HIDE__ = False
 __IGNORE__ = False
-__MARGIN__ = ''
+__MARGIN__ = ""
 
 # ----------------------------------------------------------------
 # MAIN
@@ -71,7 +71,7 @@ def main():
     global __HIDE__
     global __FNAME__
 
-    rootdir = ____phpytex_params____['rootdir']
+    rootdir = ____phpytex_params____["rootdir"]
     os.chdir(rootdir)
 
     ## set rng seed
@@ -81,21 +81,21 @@ def main():
     {mainfct}()
 
     ## compile (latex -> pdf):
-    if ____phpytex_params____['compile_latex']:
+    if ____phpytex_params____["compile_latex"]:
         ____compilelatex()
 
     ## rewrite contents of latex file:
-    contents = ____phpytex_params____['lines']['content']
-    anon_indexes = ____phpytex_params____['lines']['anon']
-    hide_indexes = ____phpytex_params____['lines']['hide']
-    bib = ____phpytex_params____['lines']['bib']
+    contents = ____phpytex_params____["lines"]["content"]
+    anon_indexes = ____phpytex_params____["lines"]["anon"]
+    hide_indexes = ____phpytex_params____["lines"]["hide"]
+    bib = ____phpytex_params____["lines"]["bib"]
     bibcontents = ____get_bib_data()
     ____cleardocument()
     feed_buffer = []
 
     # NOTE: usage of `all_lines_empty` ensure that final line is non-empty
     for index, line in enumerate(contents):
-        tab = re.sub(r'^(\s*)(.*)$', r'\1', line)
+        tab = re.sub(r"^(\s*)(.*)$", r"\1", line)
         anon = index in anon_indexes
         hide = index in hide_indexes
         if hide:
@@ -114,15 +114,15 @@ def main():
             __ANON__ = anon
             __HIDE__ = hide
             # ____printfilestamp(depth=0, start=True, anon=anon, hide=hide)
-            with open(____phpytex_params____['output'], 'a') as fp:
+            with open(____phpytex_params____["output"], "a") as fp:
                 for _line in bibcontents[src]:
                     print(tab + _line, file=fp)
             # ____printfilestamp(depth=0, start=False, anon=anon, hide=hide)
             feed_buffer = []
             continue
         ## or print original line if non-empty:
-        if re.match(r'\S', line):
-            with open(____phpytex_params____['output'], 'a') as fp:
+        if re.match(r"\S", line):
+            with open(____phpytex_params____["output"], "a") as fp:
                 for _line in feed_buffer + [line]:
                     print(_line, file=fp)
             feed_buffer = []
@@ -138,11 +138,11 @@ def main():
 
 
 def ____reseed():
-    '''
+    """
     reseed function
-    '''
+    """
     global ____phpytex_params____
-    seed = ____phpytex_params____['seed']
+    seed = ____phpytex_params____["seed"]
     if isinstance(seed, int):
         random.seed(seed)
         np.random.seed(seed)
@@ -150,30 +150,30 @@ def ____reseed():
 
 
 def ____cleardocument():
-    '''
+    """
     record + print-to-latex:
-    '''
-    with open(____phpytex_params____['output'], 'w') as fp:
-        fp.write('')
+    """
+    with open(____phpytex_params____["output"], "w") as fp:
+        fp.write("")
     return
 
 
 def ____forceprint(s: str, anon: bool = False, hide: bool = False, align: bool = False):
     global ____phpytex_params____
 
-    n = len(____phpytex_params____['lines']['content'])
+    n = len(____phpytex_params____["lines"]["content"])
     first = True
-    with open(____phpytex_params____['output'], 'a') as fp:
-        for line in re.split(r'\r?\n', s):
+    with open(____phpytex_params____["output"], "a") as fp:
+        for line in re.split(r"\r?\n", s):
             if align and not first:
                 line = __MARGIN__ + line
             first = False
             print(line, file=fp)
-            ____phpytex_params____['lines']['content'].append(line)
+            ____phpytex_params____["lines"]["content"].append(line)
             if anon:
-                ____phpytex_params____['lines']['anon'].append(n)
+                ____phpytex_params____["lines"]["anon"].append(n)
             if hide:
-                ____phpytex_params____['lines']['hide'].append(n)
+                ____phpytex_params____["lines"]["hide"].append(n)
             n += 1
     return
 
@@ -186,18 +186,18 @@ def ____print(s: str, anon: bool = False, hide: bool = False, align: bool = Fals
 
     if __IGNORE__:
         return
-    if ____phpytex_params____['length_error']:
+    if ____phpytex_params____["length_error"]:
         return
 
     ## reduces blocks of empty lines to single empty lines:
-    ____phpytex_params____['ctr_emptylines'] = (____phpytex_params____['ctr_emptylines'] + 1) if re.match(r'^\s*$', s) else 0
-    if ____phpytex_params____['ctr_emptylines'] > 1:
+    ____phpytex_params____["ctr_emptylines"] = (____phpytex_params____["ctr_emptylines"] + 1) if re.match(r"^\s*$", s) else 0
+    if ____phpytex_params____["ctr_emptylines"] > 1:
         return
 
     anon = anon or __ANON__
     hide = hide or __HIDE__
-    ____phpytex_params____['length'] += 1
-    ____phpytex_params____['length_error'] = ____phpytex_params____['length_error'] or ( ____phpytex_params____['length'] > ____phpytex_params____['length_max'] )
+    ____phpytex_params____["length"] += 1
+    ____phpytex_params____["length_error"] = ____phpytex_params____["length_error"] or ( ____phpytex_params____["length"] > ____phpytex_params____["length_max"] )
     ____forceprint(s, anon=anon, hide=hide, align=align)
     return
 
@@ -210,66 +210,66 @@ def ____printfilestamp(depth: int, start: bool, anon: bool, hide: bool):
 
     anon = anon or __ANON__
     hide = hide or __HIDE__
-    tab  = ____phpytex_params____['indentsymb'] * depth
-    path = ____phpytex_params____['censorsymb'] if anon else __FNAME__
+    tab  = ____phpytex_params____["indentsymb"] * depth
+    path = ____phpytex_params____["censorsymb"] if anon else __FNAME__
     if start:
-        ____print(f'{{tab}}%% ********************************************************************************', anon=anon, hide=hide)
-        ____print(f'{{tab}}%% FILE: {{path}}', anon=anon, hide=hide)
-        ____print(f'{{tab}}%% ********************************************************************************', anon=anon, hide=hide)
-        ____print('', anon=anon, hide=hide)
+        ____print(f"{{tab}}%% ********************************************************************************", anon=anon, hide=hide)
+        ____print(f"{{tab}}%% FILE: {{path}}", anon=anon, hide=hide)
+        ____print(f"{{tab}}%% ********************************************************************************", anon=anon, hide=hide)
+        ____print("", anon=anon, hide=hide)
     else:
-        ____print(f'{{tab}}%% ********** END OF FILE: {{path}} **********', anon=anon, hide=hide)
+        ____print(f"{{tab}}%% ********** END OF FILE: {{path}} **********", anon=anon, hide=hide)
     return
 
 
 def ____insertbib(
     fname: str,
-    textindent: str = '',
+    textindent: str = "",
     anon: bool = False,
-    mode: str = 'basic',
-    options: str = '',
+    mode: str = "basic",
+    options: str = "",
 ):
-    '''
+    """
     handling of bib
-    '''
+    """
     global ____phpytex_params____
 
     insert = True
 
-    if mode == 'biblatex':
+    if mode == "biblatex":
         insert = False
-        if options == '':
-            line = f'{{textindent}}\\printbibliography'
+        if options == "":
+            line = f"{{textindent}}\\printbibliography"
         else:
-            line = f'{{textindent}}\\printbibliography[{{options}}]'
+            line = f"{{textindent}}\\printbibliography[{{options}}]"
     else:
         # NOTE: older compilers require .bib to be stripped!
         # file = os.path.splitext(fname)[0]
-        # NOTE: \bibliography file argument cannot contain ", ', or  spaces!
-        line = f'{{textindent}}\\bibliography{{{{{{fname}}}}}}'
+        # NOTE: \bibliography file argument cannot contain quotation marks or spaces!
+        line = f"{{textindent}}\\bibliography{{{{{{fname}}}}}}"
 
-    n = len(____phpytex_params____['lines']['content'])
-    with open(____phpytex_params____['output'], 'a') as fp:
+    n = len(____phpytex_params____["lines"]["content"])
+    with open(____phpytex_params____["output"], "a") as fp:
         print(line, file=fp)
 
-    ____phpytex_params____['lines']['content'].append(line)
+    ____phpytex_params____["lines"]["content"].append(line)
 
     ## TODO: This needs to be generalised to allow the possibility of compiling multiple .bib files
-    bibname = ____phpytex_params____['name']
-    src = f'{{bibname}}.bbl'
+    bibname = ____phpytex_params____["name"]
+    src = f"{{bibname}}.bbl"
 
-    if fname not in ____phpytex_params____['lines']['bib']:
-        ____phpytex_params____['lines']['bib'][fname] = (src, [])
+    if fname not in ____phpytex_params____["lines"]["bib"]:
+        ____phpytex_params____["lines"]["bib"][fname] = (src, [])
     if anon:
-        ____phpytex_params____['lines']['anon'].append(n)
-    elif ____phpytex_params____['insert_bib'] and insert:
-        ____phpytex_params____['lines']['bib'][fname][1].append(n)
+        ____phpytex_params____["lines"]["anon"].append(n)
+    elif ____phpytex_params____["insert_bib"] and insert:
+        ____phpytex_params____["lines"]["bib"][fname][1].append(n)
     return
 
 
 def ____get_bib_data() -> dict:
     global ____phpytex_params____
-    bib = ____phpytex_params____['lines']['bib']
+    bib = ____phpytex_params____["lines"]["bib"]
     bibcontents = dict()
     for fname, (src, indexes) in bib.items():
         if src in bibcontents:
@@ -277,46 +277,46 @@ def ____get_bib_data() -> dict:
         try:
             lines = []
             _lines = []
-            with open(src, 'r') as fp:
+            with open(src, "r") as fp:
                 _lines = fp.readlines()
             for line in _lines:
-                line = re.sub(r'[\s\r\n]+$', '', line)
-                if re.match(r'^\s*\%.*', line):
+                line = re.sub(r"[\s\r\n]+$", "", line)
+                if re.match(r"^\s*\%.*", line):
                     continue
                 lines.append(line)
             # Ensure that final line is non-empty
-            while len(lines) > 0 and re.match(r'^\s*$', lines[-1]):
+            while len(lines) > 0 and re.match(r"^\s*$", lines[-1]):
                 lines = lines[:-1]
             bibcontents[src] = lines
         except:
-            print(f'[\x1b[93;1mWARNING\x1b[0m] Bibliography file, \x1b[1m{{src}}\x1b[0m, could not be found or read.')
+            print(f"[\x1b[93;1mWARNING\x1b[0m] Bibliography file, \x1b[1m{{src}}\x1b[0m, could not be found or read.")
     return bibcontents
 
 
 def ____compilelatex():
-    '''
+    """
     handling of pdflatex
-    '''
+    """
     global ____phpytex_params____
 
-    name = ____phpytex_params____['name']
-    bib = ____phpytex_params____['lines']['bib']
-    pdflatex_options = ____phpytex_params____['pdflatex']
-    bib_options = ____phpytex_params____['bib_options']
-    bib_be = ____phpytex_params____['bib_backend']
+    name = ____phpytex_params____["name"]
+    bib = ____phpytex_params____["lines"]["bib"]
+    pdflatex_options = ____phpytex_params____["pdflatex"]
+    bib_options = ____phpytex_params____["bib_options"]
+    bib_be = ____phpytex_params____["bib_backend"]
 
-    print('[\x1b[94;1mINFO\x1b[0m] RUN PDFLATEX')
-    pipe_call(['pdflatex', *pdflatex_options, name])
-    # , err_msg='PDFLATEX encountered a problem.')
+    print("[\x1b[94;1mINFO\x1b[0m] RUN PDFLATEX")
+    pipe_call(["pdflatex", *pdflatex_options, name])
+    # , err_msg="PDFLATEX encountered a problem.")
 
-    print(f'[\x1b[94;1mINFO\x1b[0m] RUN {{bib_be.upper()}}')
+    print(f"[\x1b[94;1mINFO\x1b[0m] RUN {{bib_be.upper()}}")
     sources = []
     for fname, (src, indexes) in bib.items():
         if src in sources:
             continue
         bibname = os.path.splitext(src)[0]
-        pipe_call([f'{{bib_be.lower()}}', *bib_options, bibname])
-        # , err_msg=f'{{bib_be.upper()}} encountered a problem.')
+        pipe_call([f"{{bib_be.lower()}}", *bib_options, bibname])
+        # , err_msg=f"{{bib_be.upper()}} encountered a problem.")
         sources.append(src)
     pass
 
@@ -324,23 +324,24 @@ def ____compilelatex():
 def pipe_call(
     args: list[str],
     cwd=None,
-    err_msg: str = '',
+    err_msg: str = "",
     fname_out: str | None = None,
 ):
-    '''
+    """
     NOTE: subprocess.run is like subprocess.Popen but waits for result
-    '''
+    """
     cwd = cwd if isinstance(cwd, str) else os.getcwd()
     if not isinstance(fname_out, str):
         result = subprocess.run(args, cwd=cwd)
     else:
-        with open(fname_out, 'w') as fp:
+        with open(fname_out, "w") as fp:
             result = subprocess.run(args, cwd=cwd, stdout=fp)
 
     if result.returncode == 0:
         return
 
-    err_msg = err_msg or f"Shell command < \x1b[94;1m{{' '.join(args)}}\x1b[0m > failed."
+    args_str = " ".join(args)
+    err_msg = err_msg or f"Shell command < \x1b[94;1m{{args_str}}\x1b[0m > failed."
     raise Exception(err_msg)
 
 
