@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  version: 1.6.0
+  version: 1.6.1a
   title: Schemata for user - app interaction
 servers:
   - url: "https://github.com/RLogik"

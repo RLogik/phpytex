@@ -1,6 +1,6 @@
 [project]
 name = "phpytex"
-version = "1.6.0"
+version = "1.6.1a"
 description = 'A transpiler which converts python augmented latex to latex'
 urls = {homepage = 'https://github.com/RLogik/phpytex'}
 authors = [
