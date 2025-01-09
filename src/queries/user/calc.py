@@ -5,11 +5,9 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
-from ...thirdparty.system import *
-from ...thirdparty.maths import *
-from ...thirdparty.types import *
+from typing import Any
 
-from ...core.utils import *
+from ..._core.utils.basic import *
 from ...models.internal import *
 from ...models.transpilation import *
 
@@ -18,17 +16,17 @@ from ...models.transpilation import *
 # ----------------------------------------------------------------
 
 __all__ = [
-    'EXPORT_VARS',
-    'setting_indent_character',
-    'setting_indent_character_re',
+    "EXPORT_VARS",
+    "setting_indent_character",
+    "setting_indent_character_re",
 ]
 
 # ----------------------------------------------------------------
 # GLOBAL VARIABLES
 # ----------------------------------------------------------------
 
-setting_indent_character = Property[str]()
-setting_indent_character_re = Property[str]()
+setting_indent_character = FinalProperty[str]()
+setting_indent_character_re = FinalProperty[str]()
 EXPORT_VARS: dict[str, tuple[Any, str]] = {}
 
 # ----------------------------------------------------------------

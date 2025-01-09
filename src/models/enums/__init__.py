@@ -5,8 +5,7 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
-from .mime import *
-from .encoding import *
+from ..datasources.constants import *
 from ..generated.app import *
 
 # ----------------------------------------------------------------
@@ -14,10 +13,11 @@ from ..generated.app import *
 # ----------------------------------------------------------------
 
 __all__ = [
-    'MimeType',
-    'Encoding',
-    'EnumCommentsOptions',
-    'EnumFeatures',
-    'EnumFilesManagementSystem',
-    'EnumProgrammeMode',
+    "BASIC_FILETYPES",
+    "ENCODING",
+    "MIME_TYPE",
+    "EnumCommentsOptions",
+    "EnumFeatures",
+    "EnumFilesManagementSystem",
+    "EnumProgrammeMode",
 ]

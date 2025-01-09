@@ -5,24 +5,24 @@
 
 All URIs are relative to *https://github.com/RLogik*
 
-Class | Method | HTTP request | Description
------------- | ------------- | ------------- | -------------
+| Class | Method | HTTP request | Description |
+|------------ | ------------- | ------------- | -------------|
 
 
 <a name="documentation-for-models"></a>
 ## Documentation for Models
 
- - [EnumCommentsOptions](.//Models/EnumCommentsOptions.md)
- - [EnumFeatures](.//Models/EnumFeatures.md)
- - [EnumFilesManagementSystem](.//Models/EnumFilesManagementSystem.md)
- - [EnumProgrammeMode](.//Models/EnumProgrammeMode.md)
- - [TranspileBlockParameters](.//Models/TranspileBlockParameters.md)
- - [UserConfig](.//Models/UserConfig.md)
- - [UserConfigPartCompile](.//Models/UserConfigPartCompile.md)
- - [UserConfigPartCompileOptions](.//Models/UserConfigPartCompileOptions.md)
- - [UserConfigPartParameters](.//Models/UserConfigPartParameters.md)
- - [UserConfigPartStamp](.//Models/UserConfigPartStamp.md)
- - [UserProjectTree](.//Models/UserProjectTree.md)
+ - [EnumCommentsOptions](./Models/EnumCommentsOptions.md)
+ - [EnumFeatures](./Models/EnumFeatures.md)
+ - [EnumFilesManagementSystem](./Models/EnumFilesManagementSystem.md)
+ - [EnumProgrammeMode](./Models/EnumProgrammeMode.md)
+ - [TranspileBlockParameters](./Models/TranspileBlockParameters.md)
+ - [UserConfig](./Models/UserConfig.md)
+ - [UserConfigPartCompile](./Models/UserConfigPartCompile.md)
+ - [UserConfigPartCompileOptions](./Models/UserConfigPartCompileOptions.md)
+ - [UserConfigPartParameters](./Models/UserConfigPartParameters.md)
+ - [UserConfigPartStamp](./Models/UserConfigPartStamp.md)
+ - [UserProjectTree](./Models/UserProjectTree.md)
 
 
 <a name="documentation-for-authorization"></a>

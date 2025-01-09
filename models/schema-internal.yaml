@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  version: 1.5.2a
+  version: 1.6.0
   title: Schemata for internal app settings
 servers:
   - url: "https://github.com/RLogik"
@@ -23,7 +23,7 @@ components:
         - name
         - description
         - version
-        - homepage
+        - urls
       properties:
         name:
           type: string
@@ -31,9 +31,17 @@ components:
           type: string
         version:
           type: string
-        homepage:
-          type: string
-          format: uri
+        urls:
+          type: object
+          required: []
+          properties:
+            homepage:
+              type: string
+              format: uri
+              default: "https://domain.com"
+          additionalProperties:
+            type: string
+            format: uri
       # NOTE: allow this, as this will be parsed from pyproject.toml
       additionalProperties: true
 

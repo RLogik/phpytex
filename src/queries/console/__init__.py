@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-'''
+"""
 This submodule contains methods for argument command line parsing.
-'''
+"""
 
 # ----------------------------------------------------------------
 # IMPORTS
@@ -16,5 +16,5 @@ from . import client
 # ----------------------------------------------------------------
 
 __all__ = [
-    'client',
+    "client",
 ]

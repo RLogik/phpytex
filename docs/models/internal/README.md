@@ -5,15 +5,16 @@
 
 All URIs are relative to *https://github.com/RLogik*
 
-Class | Method | HTTP request | Description
------------- | ------------- | ------------- | -------------
+| Class | Method | HTTP request | Description |
+|------------ | ------------- | ------------- | -------------|
 
 
 <a name="documentation-for-models"></a>
 ## Documentation for Models
 
- - [AppConfig](.//Models/AppConfig.md)
- - [RepoInfo](.//Models/RepoInfo.md)
+ - [AppConfig](./Models/AppConfig.md)
+ - [RepoInfo](./Models/RepoInfo.md)
+ - [RepoInfo_urls](./Models/RepoInfo_urls.md)
 
 
 <a name="documentation-for-authorization"></a>

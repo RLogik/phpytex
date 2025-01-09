@@ -20,10 +20,10 @@ CURRENT_DIR := invocation_directory()
 OS := if os_family() == "windows" { "windows" } else { "linux" }
 PYVENV := if os_family() == "windows" { "python" } else { "python3" }
 PYVENV_ON := if os_family() == "windows" { ". .venv/Scripts/activate" } else { ". .venv/bin/activate" }
-LINTING := "black"
+LINTING := "ruff"
 GITHOOK_PRECOMMIT := "pre_commit"
 GEN_MODELS := "datamodel_code_generator"
-GEN_APIS := "openapi-generator"
+GEN_APIS := "openapi-generator-cli"
 TOOL_TEST_BDD := "behave"
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -131,7 +131,11 @@ _generate-models path_schema target_path name:
         --encoding "UTF-8" \
         --disable-timestamp \
         --use-schema-description \
+        --use-standard-collections \
+        --use-union-operator \
+        --use-default-kwarg \
         --field-constraints \
+        --output-datetime-class AwareDatetime \
         --capitalise-enum-members \
         --enum-field-as-literal one \
         --set-default-enum-member \
@@ -139,6 +143,7 @@ _generate-models path_schema target_path name:
         --allow-population-by-field-name \
         --snake-case-field \
         --strict-nullable \
+        --use-double-quotes \
         --target-python-version 3.11 \
         --input {{path_schema}}/schema-{{name}}.yaml \
         --output {{target_path}}/{{name}}.py
@@ -241,11 +246,16 @@ build-requirements:
 
 build-requirements-basics:
     @{{PYVENV_ON}} && {{PYVENV}} -m pip install --upgrade pip
-    @{{PYVENV_ON}} && {{PYVENV}} -m pip install --upgrade certifi wheel toml poetry
+    @{{PYVENV_ON}} && {{PYVENV}} -m pip install ruff uv
 
 build-requirements-dependencies:
-    @{{PYVENV_ON}} && {{PYVENV}} -m poetry lock --no-update
-    @{{PYVENV_ON}} && {{PYVENV}} -m poetry install --no-interaction --no-root
+    @{{PYVENV_ON}} && {{PYVENV}} -m uv pip install \
+        --exact \
+        --strict \
+        --compile-bytecode \
+        --no-python-downloads \
+        --requirements pyproject.toml
+    @{{PYVENV_ON}} && {{PYVENV}} -m uv sync
 
 build-models:
     @echo "SUBTASK: build data models from schemata."
@@ -373,15 +383,28 @@ tests-logs log_path="logs":
     @- just tests
     @just _display-logs "{{log_path}}"
 
-tests-unit:
-    @just test-unit "tests/unit"
-
-test-unit path="tests/unit" pattern="tests_ or test_":
+test-unit path *args:
     @just _reset-test-logs "unit"
-    @{{PYVENV_ON}} && {{PYVENV}} -m pytest "{{path}}" \
-        -k "{{pattern}}" \
-        --cov-reset \
-        --cov "src"
+    @{{PYVENV_ON}} && {{PYVENV}} -m pytest "{{path}}" {{args}}
+
+test-unit-one path method:
+    @just test-unit "{{path}}" -k "{{method}}"
+
+tests-unit:
+    @just test-unit "tests/unit" --cov-reset --cov="."
+
+# lists markers for optional tests
+test-unit-list-flags:
+    @{{PYVENV_ON}} && {{PYVENV}} -m pytest --markers
+
+test-unit-optional path flags="'(azure or remote)'":
+    @just test-unit "{{path}}" -m "{{flags}}"
+
+test-unit-one-optional path method flags="'(azure or remote)'":
+    @just test-unit "{{path}}" -k "{{method}}" -m "{{flags}}"
+
+tests-unit-optional flags="'(azure or remote)'":
+    @just test-unit "tests/unit" -m "{{flags}}"
 
 tests-behave full="false":
     @just test-behave "tests/behave" "{{full}}"
@@ -436,14 +459,40 @@ coverage source_path tests_path log_path="logs":
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 lint path:
-    @{{PYVENV_ON}} && {{PYVENV}} -m {{LINTING}} --verbose "{{path}}"
+    @{{PYVENV_ON}} && {{PYVENV}} -m {{LINTING}} check \
+        --respect-gitignore \
+        --show-fixes \
+        --no-unsafe-fixes \
+        --exit-zero \
+        --fix \
+        "{{path}}"
+    @{{PYVENV_ON}} && {{PYVENV}} -m {{LINTING}} format \
+        --respect-gitignore \
+        "{{path}}"
+
+lint-dry path:
+    @{{PYVENV_ON}} && {{PYVENV}} -m {{LINTING}} check \
+        --respect-gitignore \
+        --no-unsafe-fixes \
+        --exit-zero \
+        --diff \
+        "{{path}}"
 
 lint-check path:
-    @{{PYVENV_ON}} && {{PYVENV}} -m {{LINTING}} --check --verbose "{{path}}"
+    @{{PYVENV_ON}} && {{PYVENV}} -m {{LINTING}} check \
+        --respect-gitignore \
+        --no-unsafe-fixes \
+        --exit-zero \
+        --verbose \
+        "{{path}}"
 
 prettify:
-    @{{PYVENV_ON}} && {{PYVENV}} -m {{LINTING}} --verbose src/*
-    @{{PYVENV_ON}} && {{PYVENV}} -m {{LINTING}} --verbose tests/*
+    @just lint "src"
+    @just lint "tests"
+
+prettify-dry:
+    @just lint-dry "src"
+    @just lint-dry "tests"
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # TARGETS: clean

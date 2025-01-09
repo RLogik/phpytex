@@ -1,5 +1,5 @@
 [![Python version: 3.12](https://img.shields.io/badge/python%20version-3.12-1464b4.svg)](https://www.python.org)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Code style: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Parser: Lark](https://img.shields.io/badge/Parser-Lark_v1.1-red)](https://github.com/lark-parser/lark)
 
 [![qa manual:main](https://github.com/RLogik/phpytex/actions/workflows/manual.yaml/badge.svg?branch=main)](https://github.com/RLogikg/phpytex/actions/workflows/manual.yaml)

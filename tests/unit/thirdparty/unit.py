@@ -5,36 +5,39 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
-import anyio
-from contextlib import nullcontext as does_not_raise
+from contextlib import nullcontext as assert_not_raises
 from itertools import product as itertools_product
-from pytest import fixture
-from pytest_lazyfixture import lazy_fixture
+from unittest import TestCase
+from unittest import skip
+from unittest import skipIf
+from unittest import skipUnless
+from unittest.mock import MagicMock
+from unittest.mock import PropertyMock
+from unittest.mock import patch
+
 from pytest import LogCaptureFixture
+from pytest import fixture
 from pytest import mark
 from pytest import raises as assert_raises
 from testfixtures import LogCapture
-from unittest import TestCase
-from unittest.mock import patch
-from unittest.mock import MagicMock
-from unittest.mock import PropertyMock
 
 # ----------------------------------------------------------------
 # EXPORTS
 # ----------------------------------------------------------------
 
 __all__ = [
-    'LogCapture',
-    'LogCaptureFixture',
-    'MagicMock',
-    'PropertyMock',
-    'TestCase',
-    'anyio',
-    'assert_raises',
-    'does_not_raise',
-    'fixture',
-    'itertools_product',
-    'lazy_fixture',
-    'mark',
-    'patch',
+    "LogCapture",
+    "LogCaptureFixture",
+    "MagicMock",
+    "PropertyMock",
+    "TestCase",
+    "assert_not_raises",
+    "assert_raises",
+    "fixture",
+    "itertools_product",
+    "mark",
+    "patch",
+    "skip",
+    "skipIf",
+    "skipUnless",
 ]
