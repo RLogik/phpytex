@@ -1,4 +1,5 @@
-ignore:      false
+share-path:  dist
+output-name: paper
 # ----------------------------------------------------------------
 # COMPILE OPTIONS
 # ----------------------------------------------------------------
@@ -6,7 +7,7 @@ compile:
   options:
     root:          root.tex
     output:        main.tex
-    debug:         false
+    debug:         true
     compile-latex: false
     insert-bib:    true
     comments:      auto
@@ -23,18 +24,18 @@ stamp:
   overwrite: true
   options:
     author:    Max Mustermann
-    created:   27.08.2021
-    edited:    28.08.2021
-    title:     &ref_title The stages of artificial intelligence beyond human intelligence
-    institute: Faculty of mathematics
+    created:   20.08.2021
+    edited:    27.08.2021
+    title:     The stages of artificial intelligence beyond human intelligence
+    institute: Faculty of mathematics,
 # ----------------------------------------------------------------
 # ARTICLE PARAMETERS
 # ----------------------------------------------------------------
 parameters:
+  file: src.parameters
   overwrite: true
   options:
-    FONT-SIZE: 12pt # this will be 'cleaned' to FONT_SIZE inside parameters.py
-    TITLE:     *ref_title
+    FONT_SIZE: 12pt
     KEYWORDS:
       - ai
       - computer science
@@ -44,3 +45,40 @@ parameters:
 # ----------------------------------------------------------------
 files:
   - root.tex
+folders:
+  src:
+    files:
+      - index.tex
+      - methods.py
+      - documentsetup.tex
+      - packages.tex
+      - layout.tex
+      - macros.tex
+  front:
+    files:
+      - index.tex
+      - contents.tex
+      - title.tex
+      - abstract.tex
+  body:
+    folders:
+      part-one:
+        files:
+          - index.tex
+          - intro.tex
+          - definitions.tex
+      part-two:
+        files:
+          - index.tex
+          - case-studies.tex
+          - results.tex
+          - applications.tex
+  back:
+    files:
+      - index.tex
+      - thanks.tex
+      - sources.bib
+  appendix:
+    files:
+      - app-one.tex
+      - app-two.tex

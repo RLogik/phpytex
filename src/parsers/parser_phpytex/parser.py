@@ -38,8 +38,18 @@ def parse(
 
     try:
         u = tokeniser.parse(text, mode="blocks")
-        yield from lexed_to_blocks(tokeniser, u, offset=offset, indentation=indentation)
+        yield from lexed_to_blocks(
+            u,
+            tokeniser=tokeniser,
+            offset=offset,
+            indentation=indentation,
+        )
 
     except Exception as err:
         logging.error(err)
-        yield from lexed_to_block_feed(tokeniser, text, offset=offset, indentation=indentation)
+        yield from lexed_to_block_feed(
+            text,
+            tokeniser=tokeniser,
+            offset=offset,
+            indentation=indentation,
+        )

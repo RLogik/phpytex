@@ -88,7 +88,7 @@ class TranspileDocument(list):
         self.blocks.append(block)
         return
 
-    def generateCode(
+    def generate_code(
         self,
         offset: int = 0,
         globalvars: list[str] = [],
@@ -107,7 +107,7 @@ class TranspileDocument(list):
         yield from TranspileBlock(
             kind="code",
             lines=[
-                "global {name};".format(name=name)
+                f"global {name}"
                 for name in unique(
                     [
                         "__ROOT__",
@@ -123,19 +123,22 @@ class TranspileDocument(list):
                 if name not in ["__STATE__"]
             ]
             + [
-                "__ROOT__ = '.';",
-                f"__DIR__ = '{self.pathfolder}';" f"__FNAME__ = '{self.path}';",
-                "__IGNORE__ = False;",
-                f"__ANON__ = {anon};",
-                f"__HIDE__ = {hide};",
+                "__ROOT__ = '.'",
+                f"__DIR__ = '{self.pathfolder}'",
+                f"__FNAME__ = '{self.path}'",
+                "__IGNORE__ = False",
+                f"__ANON__ = {anon}",
+                f"__HIDE__ = {hide}",
                 "__MARGIN__ = ''",
                 "# Save current state locally. Use to restore state after importing subfiles.",
-                "__STATE__ = (__ROOT__, __DIR__, __FNAME__, __ANON__, __HIDE__, __IGNORE__);",
+                "__STATE__ = (__ROOT__, __DIR__, __FNAME__, __ANON__, __HIDE__, __IGNORE__)",
             ],
-        ).generateCode(offset + 1, anon=False, hide=False, align=align)
+        ).generate_code(offset + 1, anon=False, hide=False, align=align)
         for block in self.blocks:
-            yield from block.generateCode(offset + 1, anon=anon, hide=hide, align=align)
-        yield "{tab}return;".format(tab=self.tab(offset + 1))
+            yield from block.generate_code(offset + 1, anon=anon, hide=hide, align=align)
+
+        tab = self.tab(offset + 1)
+        yield f"{tab}return"
         return
 
 
@@ -315,9 +318,9 @@ class TranspileDocuments(object):
                         TranspileBlock(
                             kind="code",
                             lines=[
-                                f"{flabel}('{_path}');",
+                                f"{flabel}('{_path}')",
                                 "# Restore state of current file:",
-                                "__ROOT__, __DIR__, __FNAME__, __ANON__, __HIDE__, __IGNORE__ = __STATE__;",
+                                "__ROOT__, __DIR__, __FNAME__, __ANON__, __HIDE__, __IGNORE__ = __STATE__",
                             ],
                             **state,
                         )
@@ -327,7 +330,7 @@ class TranspileDocuments(object):
                         TranspileBlock(
                             kind="code",
                             lines=[
-                                f"____insertbib('{_path}', textindent='{parameters.tab}', anon={parameters.anon}, mode='{parameters.bib_mode}', options='{parameters.bib_options}');"
+                                f"____insertbib('{_path}', textindent='{parameters.tab}', anon={parameters.anon}, mode='{parameters.bib_mode}', options='{parameters.bib_options}')"
                             ],
                             **state,
                         )
@@ -371,7 +374,7 @@ class TranspileDocuments(object):
     def documentStamp(self, depth: int, start: bool, anon: bool, hide: bool) -> TranspileBlock:
         return TranspileBlock(
             kind="code",
-            content=f"____printfilestamp(depth={depth}, start={start}, anon={anon}, hide={hide});",
+            content=f"____printfilestamp(depth={depth}, start={start}, anon={anon}, hide={hide})",
             level=0,
             indentsymb=self.indentsymb,
         )
@@ -401,7 +404,7 @@ class TranspileDocuments(object):
             indentsymb=self.indentsymb,
         )
 
-    def generateCode(
+    def generate_code(
         self,
         offset: int = 0,
         preambles: list[str] = [],
@@ -421,12 +424,12 @@ class TranspileDocuments(object):
                 tab=self.tab(offset),
                 path=path,
             )
-            yield "{tab}        {label}();".format(
+            yield "{tab}        {label}()".format(
                 tab=self.tab(offset),
                 label=self.getFunctionName(path),
             )
-            yield "{tab}        return;".format(tab=self.tab(offset))
-        yield "{tab}    raise Exception('{msg}'.format(path));".format(
+            yield "{tab}        return".format(tab=self.tab(offset))
+        yield "{tab}    raise Exception('{msg}'.format(path))".format(
             msg=r"[\033[91;1mERROR\033[0m] Could not find a method associated to the document path \033[1m{}\033[0m.",
             tab=self.tab(offset),
         )
@@ -439,7 +442,7 @@ class TranspileDocuments(object):
                 tab=self.tab(offset),
                 label="{label}_{name}".format(label=self.schemes["pre"], name=name),
             )
-            yield from blocks.generateCode(
+            yield from blocks.generate_code(
                 offset=offset + 1,
                 anon=False,
                 hide=False,
@@ -450,7 +453,7 @@ class TranspileDocuments(object):
         ## generate individual functions for documents
         for path, document in self.documents.items():
             yield ""
-            yield from document.generateCode(
+            yield from document.generate_code(
                 offset=offset,
                 globalvars=globalvars,
                 anon=self.anon[path],
@@ -465,19 +468,19 @@ class TranspileDocuments(object):
             tab=self.tab(offset),
             label=self.schemes["main"],
         )
-        yield "{tab}____cleardocument();".format(tab=self.tab(offset + 1))
+        yield "{tab}____cleardocument()".format(tab=self.tab(offset + 1))
         for name in preambles:
-            yield "{tab}{label}();".format(
+            yield "{tab}{label}()".format(
                 tab=self.tab(offset + 1),
                 label="{label}_{name}".format(label=self.schemes["pre"], name=name),
             )
         for path in self.get_root_paths():
-            yield "{tab}{label}('{path}');".format(
+            yield '{tab}{label}("{path}")'.format(
                 tab=self.tab(offset + 1),
                 label=self.schemes["file"],
                 path=path,
             )
-        yield "{tab}return;".format(tab=self.tab(offset + 1))
+        yield "{tab}return".format(tab=self.tab(offset + 1))
         return
 
 

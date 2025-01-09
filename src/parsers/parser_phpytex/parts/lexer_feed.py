@@ -28,8 +28,10 @@ __all__ = [
 
 
 def lexed_to_block_feed(
-    tokeniser: Tokeniser,
     text: str,
+    /,
+    *,
+    tokeniser: Tokeniser,
     offset: str,
     indentation: IndentationTracker,
 ) -> Generator[TranspileBlock, None, None]:
@@ -63,7 +65,12 @@ def lexed_to_block_feed(
 
         # attempt to parse next block:
         try:
-            yield lexed_to_block(tokeniser, children[0], offset=offset, indentation=indentation)
+            yield lexed_to_block(
+                children[0],
+                tokeniser=tokeniser,
+                offset=offset,
+                indentation=indentation,
+            )
 
         except Exception as err:
             err.add_note(parse_error(lines, linespos_old, linespos))

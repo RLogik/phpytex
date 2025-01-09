@@ -30,8 +30,10 @@ __all__ = [
 
 
 def lexed_to_blocks(
-    tokeniser: Tokeniser,
     u: Tree,
+    /,
+    *,
+    tokeniser: Tokeniser,
     offset: str,
     indentation: IndentationTracker,
 ) -> Generator[TranspileBlock, None, None]:
@@ -39,7 +41,13 @@ def lexed_to_blocks(
     match u.data:
         case "blocks":
             for child in children:
-                yield lexed_to_block(tokeniser, child, offset=offset, indentation=indentation)
+                yield lexed_to_block(
+                    child,
+                    tokeniser=tokeniser,
+                    offset=offset,
+                    indentation=indentation,
+                )
+
             return
 
         case _ as t:
@@ -47,8 +55,10 @@ def lexed_to_blocks(
 
 
 def lexed_to_block(
-    tokeniser: Tokeniser,
     u: Tree,
+    /,
+    *,
+    tokeniser: Tokeniser,
     offset: str,
     indentation: IndentationTracker,
 ) -> TranspileBlock:
@@ -56,7 +66,10 @@ def lexed_to_block(
     match u.data:
         case "blockfeedone" | "block" | "blockcomment":
             return lexed_to_block(
-                tokeniser, children[0], offset=offset, indentation=indentation
+                children[0],
+                tokeniser=tokeniser,
+                offset=offset,
+                indentation=indentation,
             )
 
         case "emptyline":
@@ -100,8 +113,8 @@ def lexed_to_block(
         case "blockcode_regex":
             text = lexed_to_str(u)
             return process_block_code_regex(
-                tokeniser,
                 text,
+                tokeniser=tokeniser,
                 offset=offset,
                 indentation=indentation,
             )

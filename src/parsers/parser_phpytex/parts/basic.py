@@ -34,14 +34,19 @@ def rstrip_code(expr: str) -> str:
 
 
 def lexed_to_str(u: str | Tree) -> str:
-    return u if isinstance(u, str) else "".join([lexed_to_str(uu) for uu in u.children])
+    if isinstance(u, str):
+        return u
+    return "".join([lexed_to_str(uu) for uu in u.children])
 
 
 def filter_subexpr(u: Tree) -> list[Tree]:
     """
     Filters for children which are trees and of 'noncapture' type.
     """
-    return [uu for uu in u.children if isinstance(uu, Tree) and filter_out_type_noncapture(uu)]
+    return [
+        uu for uu in u.children
+        if isinstance(uu, Tree) and filter_out_type_noncapture(uu)
+    ]  # fmt: skip
 
 
 def filter_out_type_noncapture(u: Tree):
@@ -51,6 +56,8 @@ def filter_out_type_noncapture(u: Tree):
 def format_value(lines: list[str], indent: str) -> list[str]:
     if len(lines) == 0:
         return []
-    lines = unindent_lines(lines, reference=indent)
+
+    lines = unindent_lines(*lines, reference=indent)
     lines[-1] = rstrip_code(lines[-1])
+
     return lines

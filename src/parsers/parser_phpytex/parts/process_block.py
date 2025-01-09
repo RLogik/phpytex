@@ -35,6 +35,8 @@ __all__ = [
 
 def process_block_content(
     children: list[Tree],
+    /,
+    *,
     indentation: IndentationTracker,
 ) -> TranspileBlock:
     exprs = []
@@ -74,6 +76,8 @@ def process_block_content(
 
 def process_block_code(
     u: Tree,
+    /,
+    *,
     offset: str,
     indentation: IndentationTracker,
 ) -> TranspileBlock:
@@ -120,28 +124,31 @@ def process_block_code(
                 for line in lines
                 if not re.match(r"^\s*$", line)  # ignore indentation of empty lines
             ]
-            assert all(
-                n >= lenOffset for n in lenIndentation
-            ), "One or more lines inside code block are too far left of acceptable minimal offset."
-            lines = unindent_lines(lines=lines, reference=offset)
-            indents = parser_python.compute_indentations(
-                lines,
-                indentsymb=indentation.symb,
-                encoding="utf-8",
-            )
-            if len(indents) > 0:
-                indentation.setOffset(indents[-1])
+            assert all(n >= lenOffset for n in lenIndentation), \
+                "One or more lines inside code block are too far left of acceptable minimal offset."  # fmt: skip
+
+            lines = unindent_lines(*lines, reference=offset)
+
+            # compute and store the final indentation level
+            level = parser_python.get_size_of_final_indentation(*lines, indent=indentation.symb)
+            if level is not None:
+                indentation.set_offset(level)
 
             return TranspileBlock(
-                kind="code", lines=lines, level=0, indentsymb=indentation.symb
+                kind="code",
+                lines=lines,
+                level=0,
+                indentsymb=indentation.symb,
             )
 
     raise Exception("Could not parse expression!")
 
 
 def process_block_code_regex(
-    tokeniser: Tokeniser,
     text: str,
+    /,
+    *,
+    tokeniser: Tokeniser,
     offset: str,
     indentation: IndentationTracker,
 ) -> TranspileBlock:

@@ -1,0 +1,21 @@
+# ----------------------------------------------------------------
+# COMPILE OPTIONS
+# ----------------------------------------------------------------
+compile:
+  options:
+    root:          root.tex
+    output:        main.tex
+    debug:         false
+    compile-latex: false
+    insert-bib:    true
+    comments:      auto
+    show-tree:     true
+    max-length:    10000
+    tabs:          false
+    spaces:        4
+    seed:          81004467
+# ----------------------------------------------------------------
+# DOCUMENT TREE
+# ----------------------------------------------------------------
+files:
+  - root.tex
