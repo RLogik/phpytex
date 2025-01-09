@@ -11,7 +11,7 @@
 !/justfile
 !/Makefile
 !/pyproject.toml
-!/poetry.lock
+!/*.lock
 !/.pre-commit-config.yaml
 !/.coveragerc
 !/.behaverc

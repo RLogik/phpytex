@@ -9,14 +9,13 @@ import os
 import sys
 
 # NOTE: do not change the directory!
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from src.thirdparty.system import *
-
-from src.setup import *
+from src._core.utils.system import *
+from src.features import *
 from src.models.application import *
 from src.queries.console.client import *
-from src.features import *
+from src.setup import *
 
 # ----------------------------------------------------------------
 # LOCAL CONSTANTS
@@ -28,7 +27,7 @@ PID = os.getpid()
 # EXECUTION
 # ----------------------------------------------------------------
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.tracebacklimit = 0
     config.open_source.set(False)
     args = CliArguments(config.INFO, config.APPCONFIG).parse(*sys.argv[1:])
@@ -40,7 +39,7 @@ if __name__ == '__main__':
     config.pid.set(PID)
     config.path_logging.set(args.log)
     config.quiet_mode.set(args.quiet)
-    config.initialise_application(name='app', debug=args.debug)
+    config.initialise_application(name="app", debug=args.debug)
 
     # set working directory to user option if set
     if args.path is not None:

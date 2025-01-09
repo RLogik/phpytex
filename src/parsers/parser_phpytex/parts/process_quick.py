@@ -5,7 +5,7 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
-from ....thirdparty.lexers import *
+from lark import Tree
 
 from ....models.transpilation import *
 from ..tokeniser import *
@@ -16,7 +16,7 @@ from .basic import *
 # ----------------------------------------------------------------
 
 __all__ = [
-    'process_block_quick_command',
+    "process_block_quick_command",
 ]
 
 # ----------------------------------------------------------------
@@ -32,117 +32,117 @@ def process_block_quick_command(
     t = u.data
     children = filter_subexpr(u)
     match t:
-        case 'quickglobalset':
-            kind = 'code:set'
+        case "quickglobalset":
+            kind = "code:set"
             var_name = lexed_to_str(children[0])
             code_value = rstrip_code(lexed_to_str(children[1])).strip()
             parameters = TranspileBlockParameters(
                 var_name=var_name,
                 code_value=code_value,
-                scope='global',
+                scope="global",
             )
 
-        case 'quicklocalset':
-            kind = 'code:set'
+        case "quicklocalset":
+            kind = "code:set"
             var_name = lexed_to_str(children[0])
             code_value = rstrip_code(lexed_to_str(children[1])).strip()
             parameters = TranspileBlockParameters(
                 var_name=var_name,
                 code_value=code_value,
-                scope='local',
+                scope="local",
             )
 
-        case 'quickinput':
-            kind = 'code:input'
+        case "quickinput":
+            kind = "code:input"
             path = rstrip_code(lexed_to_str(children[0]))
             parameters = TranspileBlockParameters(
                 path=path,
                 tab=textindent,
-                mode='input',
+                mode="input",
                 anon=False,
             )
 
-        case 'quickinput_anon':
-            kind = 'code:input'
+        case "quickinput_anon":
+            kind = "code:input"
             path = rstrip_code(lexed_to_str(children[0]))
             parameters = TranspileBlockParameters(
                 path=path,
                 tab=textindent,
-                mode='input',
+                mode="input",
                 anon=True,
             )
 
-        case 'quickinput_hide':
-            kind = 'code:input'
+        case "quickinput_hide":
+            kind = "code:input"
             path = rstrip_code(lexed_to_str(children[0]))
             parameters = TranspileBlockParameters(
                 path=path,
                 tab=textindent,
-                mode='input',
+                mode="input",
                 anon=True,
                 hide=True,
             )
 
-        case 'quickbib':
-            kind = 'code:input'
+        case "quickbib":
+            kind = "code:input"
             path = rstrip_code(lexed_to_str(children[0]))
             parameters = TranspileBlockParameters(
                 path=path,
                 tab=textindent,
-                mode='bib',
+                mode="bib",
                 anon=False,
-                bib_mode='basic',
-                bib_options='',
+                bib_mode="basic",
+                bib_options="",
             )
 
-        case 'quickbib_anon':
-            kind = 'code:input'
+        case "quickbib_anon":
+            kind = "code:input"
             path = rstrip_code(lexed_to_str(children[0]))
             parameters = TranspileBlockParameters(
                 path=path,
                 tab=textindent,
-                mode='bib',
+                mode="bib",
                 anon=True,
-                bib_mode='basic',
-                bib_options='',
+                bib_mode="basic",
+                bib_options="",
             )
 
-        case 'quickbiblatex':
-            kind = 'code:input'
+        case "quickbiblatex":
+            kind = "code:input"
             path = rstrip_code(lexed_to_str(children[0]))
             parameters = TranspileBlockParameters(
                 path=path,
                 tab=textindent,
-                mode='bib',
+                mode="bib",
                 anon=False,
-                bib_mode='biblatex',
-                bib_options='',
+                bib_mode="biblatex",
+                bib_options="",
             )
 
-        case 'quickbiblatex_anon':
-            kind = 'code:input'
+        case "quickbiblatex_anon":
+            kind = "code:input"
             path = rstrip_code(lexed_to_str(children[0]))
             parameters = TranspileBlockParameters(
                 path=path,
                 tab=textindent,
-                mode='bib',
+                mode="bib",
                 anon=True,
-                bib_mode='biblatex',
-                bib_options='',
+                bib_mode="biblatex",
+                bib_options="",
             )
 
-        case 'quickescape':
-            kind = 'code:escape'
+        case "quickescape":
+            kind = "code:escape"
             indentation.level = 0
             parameters = TranspileBlockParameters(level=0)
 
-        case 'quickescapeonce':
-            kind = 'code:escape'
+        case "quickescapeonce":
+            kind = "code:escape"
             indentation.decrOffset()
             parameters = TranspileBlockParameters(level=indentation.level)
 
         case _:
-            raise Exception('Could not parse expression!')
+            raise Exception("Could not parse expression!")
 
     return TranspileBlock(
         kind=kind,

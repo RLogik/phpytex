@@ -5,37 +5,49 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
-from ....thirdparty.maths import *
-from ....thirdparty.misc import *
-from ....thirdparty.system import *
-from ....thirdparty.types import *
+import logging
+import os
+import re
 
-from ....core.logging import *
-from ....core.utils import *
+from ...._core.logging import *
+from ...._core.utils.basic import *
+from ...._core.utils.misc import *
+from ...._core.utils.system import *
 from ....models.enums import *
 from ....models.transpilation import *
 from ....models.user import *
+from ....parsers import parser_phpytex
 from ....queries import user
 from ....setup import *
-from ....parsers import parser_phpytex
 
 # ----------------------------------------------------------------
 # EXPORTS
 # ----------------------------------------------------------------
 
 __all__ = [
-    'step_transpile',
+    "step_transpile",
 ]
+
+# ----------------------------------------------------------------
+# CONSTANTS
+# ----------------------------------------------------------------
+
+GRAMMAR = "phpytex.lark"
 
 # ----------------------------------------------------------------
 # METHOD: step transpile phpytex to python
 # ----------------------------------------------------------------
 
 
-@echo_function(tag='STEP TRANSPILE ([phpytex -> py] -> ...)', level=LOG_LEVELS.INFO, close=True)
+@echo_function(tag="STEP TRANSPILE ([phpytex -> py] -> ...)", level="INFO", close=True)
 def step_transpile(cfg_user: UserConfig):
+    """
+    Main step to transpile from augmented language to python
+    """
     options = cfg_user.compile.options
     indentsymb = user.setting_indent_character()
+    grammar = assets.get_grammar_transpiler()
+    tok = parser_phpytex.Tokeniser(grammar=grammar)
 
     # only do this once!
     reseed(seed=options.seed, legacy=True)
@@ -50,38 +62,43 @@ def step_transpile(cfg_user: UserConfig):
     )
 
     # Transpile preamble:
+    log_console(".")
     if cfg_user.stamp is not None:
-        name = 'stamp'
+        name = "stamp"
         preambles.append(name)
         transpileDocument(
+            cfg_user.stamp.file,
+            tokeniser=tok,
             options=options,
-            path=cfg_user.stamp.file,
             documents=documents,
             imports=TranspileBlocks(),
             name=name,
             is_preamble=True,
             silent=True,
-            params={'comm': True, 'comm-auto': False, 'show-tree': False},
+            params={"comm": True, "comm-auto": False, "show-tree": False},
+            lex=[False],
         )
 
     # Transpile document file:
     transpileDocument(
+        options.root,
+        tokeniser=tok,
         options=options,
-        path=options.root,
         documents=documents,
         imports=imports,
-        name='',
+        name="",
         is_preamble=False,
         silent=config.quiet_mode(),
         params={
-            'comm': options.comments == EnumCommentsOptions.ON,
-            'comm-auto': options.comments == EnumCommentsOptions.AUTO,
-            'show-tree': options.show_structure,
+            "comm": options.comments == EnumCommentsOptions.ON,
+            "comm-auto": options.comments == EnumCommentsOptions.AUTO,
+            "show-tree": options.show_structure,
         },
+        lex=[True],
     )
 
     # Add document structure:
-    name = 'tree'
+    name = "tree"
     if options.show_structure:
         preambles.append(name)
 
@@ -94,7 +111,7 @@ def step_transpile(cfg_user: UserConfig):
         modulename = cfg_user.parameters.file
 
         # Create file:
-        path = re.sub(r'([^\.]+)\.', r'\1/', modulename) + '.py'
+        path = re.sub(r"([^\.]+)\.", r"\1/", modulename) + ".py"
         createImportFileParameters(
             path=path,
             overwrite=cfg_user.parameters.overwrite,
@@ -104,8 +121,8 @@ def step_transpile(cfg_user: UserConfig):
         # Add import block for global parameters:
         imports.append(
             TranspileBlock(
-                kind='code',
-                content=f'from {modulename} import *;',
+                kind="code",
+                content=f"from {modulename} import *;",
                 level=0,
                 indentsymb=indentsymb,
             )
@@ -129,26 +146,31 @@ def step_transpile(cfg_user: UserConfig):
 
 
 def transpileDocument(
-    options: UserConfigPartCompileOptions,
     path: str,
+    /,
+    *,
+    tokeniser: parser_phpytex.Tokeniser,
+    options: UserConfigPartCompileOptions,
     documents: TranspileDocuments,
     imports: TranspileBlocks,
     chain: list[str] = [],
-    name: str = '',
+    name: str = "",
     is_preamble: bool = False,
     silent: bool = False,
     params: dict[str, bool] = dict(),
+    lex: list[bool] = [],
 ):
     if path in chain:
-        log_error('The document contains a cycle!')
+        logging.error("The document contains a cycle!")
         return
     try:
-        with open(path, 'r') as fp:
-            lines = ''.join(fp.readlines())
-    except:
-        log_error('Could not find or read document \033[1m{path}\033[0m!'.format(path=path))
+        with open(path, "r") as fp:
+            text = "".join(fp.readlines())
+
+    except Exception as _:
+        logging.error("Could not find or read document \033[1m{path}\033[0m!".format(path=path))
         return
-    depth = len(chain)
+
     indentsymb = user.setting_indent_character()
     indentation = IndentationTracker(
         symb=indentsymb,
@@ -157,20 +179,24 @@ def transpileDocument(
 
     if is_preamble:
         blocks = TranspileBlocks()
-        for block in parser_phpytex.parse(lines, indentation, offset=options.offset):
-            if not (block.kind == 'text:comment'):
+        for block in parser_phpytex.parse(
+            text,
+            tokeniser=tokeniser,
+            indentation=indentation,
+            offset=options.offset,
+        ):
+            if not (block.kind == "text:comment"):
                 continue
             blocks.append(block)
-        blocks.append(TranspileBlock(kind='text:empty'))
+
+        blocks.append(TranspileBlock(kind="text:empty"))
         documents.addPreamble(name=name, blocks=blocks)
-        log_console(
-            displayTreeBranch(
-                path=path,
-                anon=False,
-                depth=depth,
-                censorsymb=options.censor_symbol,
-            )
+        branch = display_tree_branch(
+            path=path,
+            anon=False,
+            lex=lex,
         )
+        log_console(branch)
 
     else:
         if path in documents.paths:
@@ -181,41 +207,54 @@ def transpileDocument(
         anon = documents.isAnon(path=path)
         hide = documents.isHidden(path=path)
         blocks = TranspileBlocks()
-        log_console(
-            displayTreeBranch(
-                path=path,
-                anon=anon,
-                depth=depth,
-                censorsymb=options.censor_symbol,
-            )
+        branch = display_tree_branch(
+            path=path,
+            anon=anon,
+            lex=lex,
         )
+        log_console(branch)
 
-        if params['show-tree']:
+        if params["show-tree"]:
             blocks.append(documents.documentStamp(depth=0, start=True, anon=anon, hide=hide))
-        for block in parser_phpytex.parse(lines, indentation, offset=options.offset):
-            if block.kind == 'code:import':
+
+        for block in parser_phpytex.parse(
+            text,
+            tokeniser=tokeniser,
+            indentation=indentation,
+            offset=options.offset,
+        ):
+            if block.kind == "code:import":
                 imports.append(block)
                 continue
-            if block.kind == 'text:comment':
-                if params['comm-auto'] == True:
+
+            if block.kind == "text:comment":
+                if params["comm-auto"] == True:
                     if not block.parameters.keep:
                         continue
-                elif params['comm'] == False:
+
+                elif params["comm"] == False:
                     continue
+
             blocks.append(block)
-        if params['show-tree']:
+
+        if params["show-tree"]:
             blocks.append(documents.documentStamp(depth=0, start=False, anon=anon, hide=hide))
 
         documents.addBlocks(path=path, blocks=blocks)
-        for subpath in documents.getSubPaths(path):
+        subpaths = documents.getSubPaths(path)
+        n = len(subpaths)
+        for k, subpath in enumerate(subpaths):
+            is_final = k == n - 1
             transpileDocument(
+                subpath,
+                tokeniser=tokeniser,
                 options=options,
-                path=subpath,
                 documents=documents,
                 imports=imports,
-                chain=chain + [path],
+                chain=[*chain, path],
                 silent=silent,
                 params=params,
+                lex=[*lex, is_final],
             )
     return
 
@@ -230,20 +269,20 @@ def createImportFileParameters(
 
     lines = []
     lines += dedent_split(
-        '''
+        """
         #!/usr/bin/env python3
         # -*- coding: utf-8 -*-
 
         from fractions import Fraction;
-        '''
+        """
     )
-    lines.append('')
+    lines.append("")
 
     data = {key: None for key, value in documents.variables.items()} | {
         key: coded_value for key, (_, coded_value) in user.EXPORT_VARS.items()
     }
-    lines += [f'{key} = {coded_value}' for key, coded_value in data.items()]
-    lines.append('')
+    lines += [f"{key} = {coded_value}" for key, coded_value in data.items()]
+    lines.append("")
 
     write_text_file(path=path, lines=lines)
     return
@@ -257,13 +296,13 @@ def createmetacode(
     globalvars: list[str],
     seed: int | None,
 ):
-    _lines_pre = get_template_phpytex_lines_pre()
-    _lines_post = get_template_phpytex_lines_post()
+    _lines_pre = assets.get_template_phpytex_lines_pre()
+    _lines_post = assets.get_template_phpytex_lines_post()
     align = options.align
     lines = []
     lines += dedent_split(
         _lines_pre.format(
-            imports='\n'.join(imports.generateCode(align=align)),
+            imports="\n".join(imports.generateCode(align=align)),
             root=os.getcwd(),
             output=options.output,
             name=os.path.splitext(options.output)[0],
@@ -277,31 +316,42 @@ def createmetacode(
             mainfct=FUNCTION_NAME_MAIN,
         )
     )
-    lines.append('')
+    lines.append("")
     lines += documents.generateCode(
         offset=0,
         preambles=preambles,
         globalvars=unique(globalvars),
         align=align,
     )
-    lines.append('')
+    lines.append("")
     lines += dedent_split(_lines_post.format())
     write_text_file(options.transpiled, lines)
     return
 
 
-def displayTreeBranch(
+# ----------------------------------------------------------------
+# METHOD: step transpile phpytex to python
+# ----------------------------------------------------------------
+
+
+def display_tree_branch(
     path: str,
     anon: bool = False,
-    prefix: str = '',
-    indentsymb: str = '    ',
-    branchsymb: str = '  |____',
-    censorsymb: str = '****',
-    depth: int = 0,
+    lex: list[bool] = [],
 ) -> str:
-    return '{prefix}{tab}{branchsymb} {path}'.format(
-        prefix=prefix,
-        tab=indentsymb * (depth if depth == 0 else depth - 1),
-        branchsymb='' if depth == 0 else branchsymb,
-        path=censorsymb if anon else path,
-    )
+    if len(lex) == 0:
+        is_final = True
+        sep = ""
+
+    else:
+        is_final = lex[-1]
+        sep = "└──  " if is_final else "├──  "
+
+    indent = "  "
+    path = "*****" if anon else path
+    prefix = "".join([
+        (" " if is_last else "│") + indent
+        for is_last in lex[:-1]
+    ])  # fmt: skip
+
+    return f"{prefix}{sep}{path}"

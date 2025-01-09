@@ -3,8 +3,6 @@
 
 from __future__ import annotations
 
-from typing import List
-
 from pydantic import BaseModel, ConfigDict
 
 
@@ -14,7 +12,7 @@ class TestCaseConfig(BaseModel):
     """
 
     model_config = ConfigDict(
-        extra='allow',
+        extra="allow",
         populate_by_name=True,
     )
-    cases: List[str]
+    cases: list[str]

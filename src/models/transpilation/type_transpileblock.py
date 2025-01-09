@@ -7,11 +7,12 @@
 
 from __future__ import annotations
 
-from ...thirdparty.code import *
-from ...thirdparty.misc import *
-from ...thirdparty.types import *
+import re
+from typing import Any
+from typing import Generator
 
-from ...core.utils import *
+from ..._core.utils.basic import *
+from ..._core.utils.misc import *
 from ...models.generated.app import *
 from ...parsers import parser_python
 
@@ -20,8 +21,8 @@ from ...parsers import parser_python
 # ----------------------------------------------------------------
 
 __all__ = [
-    'TranspileBlock',
-    'TranspileBlocks',
+    "TranspileBlock",
+    "TranspileBlocks",
 ]
 
 # ----------------------------------------------------------------
@@ -45,9 +46,9 @@ class TranspileBlock(object):
         content: Any = None,
         lines: list[str] = [],
         level: int = 0,
-        indentsymb: str = '    ',
+        indentsymb: str = "    ",
         parameters: TranspileBlockParameters = TranspileBlockParameters(),
-        margin: str = '',
+        margin: str = "",
         **_,
     ):
         self.lines = lines
@@ -63,13 +64,13 @@ class TranspileBlock(object):
 
     @property
     def isCode(self) -> bool:
-        return True if re.match(r'^code(:|$)', self.kind) else False
+        return True if re.match(r"^code(:|$)", self.kind) else False
 
     @property
     def content(self) -> Generator[str, None, None]:
-        tab = self.tab() if self.isCode else ''
-        if hasattr(self, '_content'):
-            yield '{tab}{line}'.format(tab=tab, line=self._content)
+        tab = self.tab() if self.isCode else ""
+        if hasattr(self, "_content"):
+            yield "{tab}{line}".format(tab=tab, line=self._content)
         else:
             yield from reindent_lines(self.lines, indent=tab, unindent=False)
 
@@ -85,39 +86,39 @@ class TranspileBlock(object):
     ) -> Generator[str, None, None]:
         state = dict(level=self.level, indentsymb=self.indentsymb)
         self.level += offset
-        if self.kind == 'text:empty':
-            yield '{tab}____print(\'\', anon={anon}, hide={hide}, align={align});'.format(
+        if self.kind == "text:empty":
+            yield "{tab}____print('', anon={anon}, hide={hide}, align={align});".format(
                 tab=self.tab(),
                 anon=anon,
                 hide=hide,
                 align=align,
             )
-        elif self.kind in ['text', 'text:comment']:
+        elif self.kind in ["text", "text:comment"]:
             for line in self.content:
-                yield '{tab}____print(\'\'\'{expr}\'\'\', anon={anon}, hide={hide}, align={align});'.format(
+                yield "{tab}____print('''{expr}''', anon={anon}, hide={hide}, align={align});".format(
                     tab=self.tab(),
                     expr=parser_python.escape_code(line, fmt=False),
                     anon=anon,
                     hide=hide,
                     align=align,
                 )
-        elif self.kind == 'text:subst':
+        elif self.kind == "text:subst":
             if len(self.subst) == 0:
-                yield '{tab}____print(\'\'\'{expr}\'\'\'.format(), anon={anon}, hide={hide}, align={align});'.format(
+                yield "{tab}____print('''{expr}'''.format(), anon={anon}, hide={hide}, align={align});".format(
                     tab=self.tab(),
-                    expr='\n'.join(list(self.content)),
+                    expr="\n".join(list(self.content)),
                     anon=anon,
                     hide=hide,
                     align=align,
                 )
             else:
-                yield '{tab}__MARGIN__ = \'{margin}\';'.format(
+                yield "{tab}__MARGIN__ = '{margin}';".format(
                     tab=self.tab(),
                     margin=self.margin,
                 )
-                yield '{tab}____print(\'\'\'{expr}\'\'\'.format('.format(
+                yield "{tab}____print('''{expr}'''.format(".format(
                     tab=self.tab(),
-                    expr='\n'.join(list(self.content)),
+                    expr="\n".join(list(self.content)),
                 )
                 for key, value in self.subst.items():
                     level = value.level
@@ -126,31 +127,31 @@ class TranspileBlock(object):
                         indent=self.tab(2),
                         unindent=True,
                     )
-                    value_lines[0] = re.sub(r'^\s*(.*)$', r'\1', value_lines[0])
-                    yield '{tab}{key} = {value},'.format(
+                    value_lines[0] = re.sub(r"^\s*(.*)$", r"\1", value_lines[0])
+                    yield "{tab}{key} = {value},".format(
                         tab=self.tab(1),
                         key=key,
-                        value='\n'.join(value_lines),
+                        value="\n".join(value_lines),
                     )
                     value.level = level
-                yield '{tab}), anon={anon}, hide={hide}, align={align});'.format(
+                yield "{tab}), anon={anon}, hide={hide}, align={align});".format(
                     tab=self.tab(),
                     anon=anon,
                     hide=hide,
                     align=align,
                 )
-        elif self.kind in ['code', 'code:import', 'code:value']:
+        elif self.kind in ["code", "code:import", "code:value"]:
             yield from self.content
-        elif self.kind == 'code:set':
-            line = f'{self.parameters.var_name} = {self.parameters.code_value};'
-            block = TranspileBlock(kind='code', content=line, **state)
+        elif self.kind == "code:set":
+            line = f"{self.parameters.var_name} = {self.parameters.code_value};"
+            block = TranspileBlock(kind="code", content=line, **state)
             yield from block.generateCode(offset=offset, align=align)
-        elif self.kind == 'code:escape':
-            block = TranspileBlock(kind='code', content='pass;', **state)
+        elif self.kind == "code:escape":
+            block = TranspileBlock(kind="code", content="pass;", **state)
             yield from block.generateCode(offset=offset, align=align)
-        elif self.kind == 'code:input':
+        elif self.kind == "code:input":
             pass
-        self.level = state['level']
+        self.level = state["level"]
         return
 
 

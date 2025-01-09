@@ -12,25 +12,29 @@ import os
 # ----------------------------------------------------------------
 
 __all__ = [
-    'get_source_path',
-    'get_root_path',
+    "get_root_path",
+    "get_source_path",
 ]
 
 # ----------------------------------------------------------------
 # CONSTANTS
 # ----------------------------------------------------------------
 
-_path = os.path.dirname(__file__)
-_root = os.path.dirname(_path)
+_source = os.path.dirname(__file__)
+_root = os.path.dirname(_source)
 
 # ----------------------------------------------------------------
 # METHODS
 # ----------------------------------------------------------------
 
 
-def get_source_path() -> str:
-    return _path
+def get_path(root: str, *parts: str) -> str:
+    return root if len(parts) == 0 else os.path.join(root, *parts)
 
 
-def get_root_path() -> str:
-    return _root
+def get_root_path(*parts: str) -> str:
+    return get_path(_root, *parts)
+
+
+def get_source_path(*parts: str) -> str:
+    return get_path(_source, *parts)

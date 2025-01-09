@@ -5,11 +5,11 @@
 # IMPORTS
 # ----------------------------------------------------------------
 
-from ...thirdparty.misc import *
+import logging
 
-from ...setup import *
-from ...core.logging import *
+from ..._core.logging import *
 from ...models.application import *
+from ...setup import *
 from .steps import *
 
 # ----------------------------------------------------------------
@@ -17,7 +17,7 @@ from .steps import *
 # ----------------------------------------------------------------
 
 __all__ = [
-    'endpoint',
+    "endpoint",
 ]
 
 # ----------------------------------------------------------------
@@ -25,7 +25,7 @@ __all__ = [
 # ----------------------------------------------------------------
 
 
-@echo_function(tag='FEATURE {feature.value}', level=LOG_LEVELS.INFO, close=True)
+@echo_function(tag="FEATURE {feature.value}", level="INFO", close=True)
 def endpoint(
     feature: EnumFeatures,
     path_config: str,
@@ -34,7 +34,7 @@ def endpoint(
 ):
     cfg_user = step_configure(path_config, compileoptions=compileoptions, parameters=parameters)
     if cfg_user.ignore:
-        log_info('\033[32;1m(PH(p)y)tex\033[0m transpilation will be skipped.')
+        logging.info("\033[32;1m(PH(p)y)tex\033[0m transpilation will be skipped.")
         return
 
     step_create(cfg_user)
@@ -42,7 +42,7 @@ def endpoint(
 
     if cfg_user.compile.options.debug:
         path = cfg_user.compile.options.transpiled
-        log_info(f'The result of transpilation can be viewed in \033[1m{path}\033[0m')
+        logging.info(f"The result of transpilation can be viewed in \033[1m{path}\033[0m")
         return
 
     step_compile(cfg_user)

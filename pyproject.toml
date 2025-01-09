@@ -1,111 +1,124 @@
-[tool.poetry]
-name = 'phpytex'
-version = '1.5.2a'
+[project]
+name = "phpytex"
+version = "1.5.2a"
 description = 'A transpiler which converts python augmented latex to latex'
-homepage = 'https://github.com/RLogik/phpytex'
+urls = {homepage = 'https://github.com/RLogik/phpytex'}
 authors = [
-    'RLogik <rlogik@users.noreply.github.com>',
+    {name="RLogik", email="rlogik@users.noreply.github.com>"},
 ]
 maintainers = [
-    'RLogik <rlogik@users.noreply.github.com>',
+    {name="RLogik", email="rlogik@users.noreply.github.com>"},
 ]
-license = 'LICENCE'
-readme = 'README.md'
+license = "LICENCE"
+readme = "README.md"
 keywords = [
-    'python',
-    'latex',
-    'transpiler',
-    'lark',
+    "python",
+    "latex",
+    "transpiler",
+    "lark",
 ]
 # cf. https://pypi.org/classifiers
 classifiers = [
-    'Development Status :: 4 - Beta',
-    'Environment :: Console',
-    'Programming Language :: Python',
-    'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3 :: Only',
-    'Programming Language :: Python :: 3.10',
-    'Programming Language :: Python :: 3.11',
-    'Programming Language :: Python :: 3.12',
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 
-[tool.poetry.dependencies]
-# --------------------------------
-# compiler
-# --------------------------------
-python = ">=3.10,<4.0"
-pip = {version='^24.2'}
-poetry = {version='^1.8.2'}
-wheel = {version='^0.43.0'}
-setuptools = {version='^72.0.0'}
-# --------------------------------
-# code - general
-# --------------------------------
-pathlib = {version='^1.0.1'}
-pathspec = {version='^0.12.1'}
-typing = {version='^3.7.4.3'}
-# --------------------------------
-# code - async, distr. system
-# --------------------------------
-asyncio = {version='^3.4.3'}
-anyio = {version='^4.4.0'}
-# --------------------------------
-# config
-# --------------------------------
-toml = {version='^0.10.2'}
-argparse = {version='^1.4.0'}
-python-dotenv = {version='^1.0.1'}
-jsonschema = {version='^4.23.0'}
-lazy-load = {version='^0.8.3'}
-pyyaml = {version='^6.0.1'}
-# --------------------------------
-# models
-# --------------------------------
-dataclasses = {version='^0.6'} # not latest, otherwise conflicts with other packages
-pydantic = {version='~2.8.2'}
-pydantic-yaml = {version='^1.3.0'}
-# --------------------------------
-# data
-# --------------------------------
-numpy = {version='~1,^1.24.0'} # ensures major version = 1, and version >= 1.24.0
-pandas = {version='^2.2.2'}
-# --------------------------------
-# parsing
-# --------------------------------
-lark = {extras=['regex'], version='^1.1.9'}
-lark-parser = {extras=['regex'], version='^0.12.0'}
-# --------------------------------
-# miscellaneous
-# --------------------------------
-datetime = {version='^5.5'}
-pendulum = {version='^3.0.0'}
-pytz = {version='^2024.1'}
-lorem-text = {version='^2.1'}
-flatDict= {version='^4.0.1'}
-codetiming = {version='^1.4.0'}
+dependencies = [
+    # --------------------------------
+    # compiler
+    # --------------------------------
+    # python = ">=3.10,<4.0"
+    "pip>=24.3.1",
+    # "poetry>=2.0.0",
+    "wheel>=0.45.1",
+    "setuptools>=75.8.0",
+    # --------------------------------
+    # code - general
+    # --------------------------------
+    "pathlib>=1.0.1",
+    "pathspec>=0.12.1",
+    "codetiming>=1.4.0",
+    "safetywrap>=1.5.0",
+    # --------------------------------
+    # code - async, distr. system
+    # --------------------------------
+    "asyncio>=3.4.3",
+    "anyio>=4.8.0",
+    # --------------------------------
+    # config
+    # --------------------------------
+    "toml>=0.10.2",
+    "argparse>=1.4.0",
+    "python-dotenv>=1.0.1",
+    "jsonschema>=4.23.0",
+    "lazy-load>=0.8.3",
+    "pyyaml>=6.0.2",
+    # --------------------------------
+    # models
+    # --------------------------------
+    "pydantic>=2.10.4",
+    "pydantic-yaml>=1.4.0",
+    # --------------------------------
+    # data
+    # --------------------------------
+    "numpy>=2.2.1",
+    # "polars>=1.19.0",
+    # "pyarrow>=18.1.0",
+    # --------------------------------
+    # parsing
+    # --------------------------------
+    "lark[regex]>=1.2.2",
+    "lark-parser[regex]>=0.12.0",
+    # --------------------------------
+    # miscellaneous
+    # --------------------------------
+    "datetime>=5.5",
+    # "pendulum>=3.0.0",
+    "pytz>=2024.2",
+    "tzdata>=2024.2", # NOTE: ensures that OS has access to timezones
+    "lorem-text>=2.1",
+    "flatDict>=4.0.1",
+    "codetiming>=1.4.0",
+]
 
-[tool.poetry.dev-dependencies]
-# --------------------------------
-# testing
-# --------------------------------
-coverage = {extras=['toml'], version='^7.6.0'}
-pytest-cov = {version='^5.0.0'}
-pytest-lazy-fixture = {version='^0.6.3'}
-pytest-order = {version='^1.2.1'}
-pytest = {version='^7.4.4,~7'}
-testfixtures = {version='^8.3.0'}
-behave = {version='^1.2.6'}
-# --------------------------------
-# model
-# --------------------------------
-datamodel-code-generator = {version='^0.25.8'}
-openapi-generator-cli = {version='^4.3.1'}
-openapi-generator = {version='^1.0.6'}
-# --------------------------------
-# hooks and linting
-# --------------------------------
-pre-commit = {version='^3.8.0'}
-black = {extras=['d', 'jupyter'], version='^24.4.2'}
+[dependency-groups]
+dev = [
+    # --------------------------------
+    # testing
+    # --------------------------------
+    "coverage[toml]>=7.6.10",
+    "pytest-cov>=6.0.0",
+    # "pytest-lazy-fixture>=0.6.3",
+    "pytest-order>=1.3.0",
+    "pytest>=8.3.4",
+    "testfixtures>=8.3.0",
+    "behave>=1.2.6",
+    # --------------------------------
+    # data, mocks
+    # --------------------------------
+    # "faker>=25.5.0",
+    "mimesis[factory]>=18.0.0",
+    # --------------------------------
+    # model
+    # --------------------------------
+    "datamodel-code-generator>=0.26.4",
+    "openapi-generator-cli>=7.10.0",
+    "openapi-generator>=1.0.6",
+    # --------------------------------
+    # hooks and linting
+    # --------------------------------
+    "pre-commit>=4.0.1",
+    "ruff>=0.8.6",
+    "uv>=0.5.16",
+    # "black[d,jupyter]>=24.10.0",
+]
 
 [tool.setuptools]
 include-package-data = true
@@ -122,15 +135,90 @@ where = [ 'src' ]
 include = [ 'phpytex*' ]
 namespaces = true
 
-[tool.black]
+[tool.uv]
+managed = true
+package = false
+
+# cf. https://docs.astral.sh/ruff/configuration
+# and https://docs.astral.sh/ruff/settings
+[tool.ruff]
+include = ["pyproject.toml", "src/**/*.py", "tests/**/*.py", "*.ipynb", "*.pyi"]
+exclude = ["src/models/generated/**/*.py"]
+respect-gitignore = true
 line-length = 96
-skip-string-normalization = true # prevents ' -> " conversion
-target-version = [ 'py311' ]
-# include = '^.*\.py$' # NOTE: this does nothing!
-# extend-ignore = [ 'E501', 'E703' ] # NOTE: this does not work!
+indent-width = 4
+target-version = "py311"
+fix = true
+
+[tool.ruff.lint]
+fixable = ["ALL"]
+select = ["D", "E", "F", "I", "RUF"]
+ignore = [
+    "ARG001", # allow unused arguments
+    "BLE001", # allow blind exceptions
+    "D100", # do not require docstring for module
+    "D101", # do not require docstring for module
+    "D102", # do not reuire docstring
+    "D103", # do not reuire docstring
+    "D104", # do not reuire docstring
+    "D105", # do not reuire docstring
+    "D106", # do not reuire docstring
+    "D107", # do not reuire docstring
+    "D200", # prevent docstrings from being forced to fit one-line
+    "D203",
+    "D205", # do not require blank line between summary and description in docstring
+    "D211",
+    "D212", # prevent first newline from being removed in docstrings
+    "D400", # prevent grammatical constraints (full stop)
+    "D401", # prevent grammatical constraints (imperative mood)
+    "D403", # prevent case changes in Docstrings.
+    "D404", # allow freedom of expression in docstrings
+    "D415", # do not require punctuation in docstring
+    "EXE001", # allow unused shebangs
+    "E402", # allow module level import to be not at top of file
+    "E501", # ignore "line too long" errors in case "fmt: skip" pragma is used
+    # "E703",
+    "E712", # turn off, as sometimes variables have mixed boolean + string/null types
+    "E731", # allow lambda expressions
+    "F403", # disable as conflicts with *-imports
+    "F405", # disable as conflicts with *-imports
+    # "F541", # allow f-string without placeholders
+    "F841", # unused variables - need to switch off e.g. for decorators
+    "F811", # allow redefinition of methods
+    # "I100", # disable imports from same library being forced into a single ,-separated statement
+    # "I102", # disable multiple import formatting
+    "S110", # allow try-except-pass
+    "TID252", # allow relative imports from parent modules
+    "UP009", # allow utf-8 shebangs
+]
+
+[tool.ruff.lint.isort]
+relative-imports-order = "furthest-to-closest"
+no-sections = false
+from-first = false
+combine-as-imports = false
+case-sensitive = true
+force-single-line = true
+# known-local-folder = ["src", "tests"]
+known-first-party = ["src", "tests"]
+forced-separate = [
+    "tests",
+    "src._core",
+    "src.setup",
+    "src.models",
+    "src",
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+skip-magic-trailing-comma = false # false = allow trailing comma
+docstring-code-format = false
+docstring-code-line-length = "dynamic"
 
 [tool.pytest.ini_options]
-minversion = "7.4.4"
+minversion = "8.3.4"
 testpaths = [
     "tests",
 ]

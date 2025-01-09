@@ -6,6 +6,7 @@
 # ----------------------------------------------------------------
 
 from unittest import TestCase
+
 from pytest import fixture
 
 # ----------------------------------------------------------------
@@ -13,16 +14,16 @@ from pytest import fixture
 # ----------------------------------------------------------------
 
 
-@fixture(scope='session')
+@fixture(scope="session")
 def test():
     return TestCase()
 
 
-@fixture(scope='session')
+@fixture(scope="session")
 def debug():
     def log(*lines: str):
-        with open('logs/debug.log', 'a') as fp:
+        with open("logs/debug.log", "a") as fp:
             for line in lines:
-                print(line, end='\n', file=fp)
+                print(line, end="\n", file=fp)
 
     return log

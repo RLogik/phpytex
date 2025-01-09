@@ -14,8 +14,8 @@ from .lexer_quick import *
 # ----------------------------------------------------------------
 
 __all__ = [
-    'lexed_to_block',
-    'lexed_to_block_feed',
-    'lexed_to_blocks',
-    'lexed_to_quick_block',
+    "lexed_to_block",
+    "lexed_to_block_feed",
+    "lexed_to_blocks",
+    "lexed_to_quick_block",
 ]

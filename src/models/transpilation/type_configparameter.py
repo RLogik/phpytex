@@ -7,21 +7,23 @@
 
 from __future__ import annotations
 
-from ...thirdparty.types import *
+from typing import Any
+from typing import Generic
+from typing import TypeVar
 
 # ----------------------------------------------------------------
 # EXPORTS
 # ----------------------------------------------------------------
 
 __all__ = [
-    'ConfigParameter',
+    "ConfigParameter",
 ]
 
 # ----------------------------------------------------------------
 # GLOBAL VARIABLES
 # ----------------------------------------------------------------
 
-_T = TypeVar('_T')
+_T = TypeVar("_T")
 # bound='<name-of-class>');
 
 # ----------------------------------------------------------------
@@ -52,12 +54,12 @@ class ConfigParameter(Generic[_T]):
 
     @property
     def value(self) -> _T:
-        if self.hasValue and hasattr(self, '_value'):
+        if self.hasValue and hasattr(self, "_value"):
             return self._value
-        elif hasattr(self, '_defaultvalue'):
+        elif hasattr(self, "_defaultvalue"):
             return self._defaultvalue
         raise Exception(
-            'For internal app parameter \033[1m{}\033[0m no value or default value is set!'.format(
+            "For internal app parameter \033[1m{}\033[0m no value or default value is set!".format(
                 self._name
             )
         )
