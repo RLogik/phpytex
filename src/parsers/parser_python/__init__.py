@@ -6,14 +6,16 @@
 # ----------------------------------------------------------------
 
 from .parser import *
-from .properties import *
+from .structure import *
 
 # ----------------------------------------------------------------
 # EXPORTS
 # ----------------------------------------------------------------
 
 __all__ = [
-    "compute_indentations",
     "escape_code",
+    "get_size_of_final_indentation",
+    "get_size_of_first_indentation",
+    "get_sizes_of_final_indentations",
     "unparse",
 ]
