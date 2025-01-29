@@ -188,12 +188,8 @@ def transpile_document(
 
         blocks.append(TranspileBlock(kind="text:empty"))
         documents.addPreamble(name=name, blocks=blocks)
-        branch = display_tree_branch(
-            path=path,
-            anon=False,
-            lex=lex,
-        )
-        log_console(branch)
+        anon = False
+        subpaths = []
 
     else:
         if path in documents.paths:
@@ -204,12 +200,6 @@ def transpile_document(
         anon = documents.isAnon(path=path)
         hide = documents.isHidden(path=path)
         blocks = TranspileBlocks()
-        branch = display_tree_branch(
-            path=path,
-            anon=anon,
-            lex=lex,
-        )
-        log_console(branch)
 
         if params["show-tree"]:
             blocks.append(documents.documentStamp(depth=0, start=True, anon=anon, hide=hide))
@@ -239,20 +229,28 @@ def transpile_document(
 
         documents.addBlocks(path=path, blocks=blocks)
         subpaths = documents.getSubPaths(path)
-        n = len(subpaths)
-        for k, subpath in enumerate(subpaths):
-            is_final = k == n - 1
-            transpile_document(
-                subpath,
-                tokeniser=tokeniser,
-                options=options,
-                documents=documents,
-                imports=imports,
-                chain=[*chain, path],
-                silent=silent,
-                params=params,
-                lex=[*lex, is_final],
-            )
+
+    branch = display_tree_branch(
+        path=path,
+        anon=anon,
+        lex=lex,
+        has_grandchildren=len(subpaths) > 0,
+    )
+    log_console(branch)
+    n = len(subpaths)
+    for k, subpath in enumerate(subpaths):
+        is_final = k == n - 1
+        transpile_document(
+            subpath,
+            tokeniser=tokeniser,
+            options=options,
+            documents=documents,
+            imports=imports,
+            chain=[*chain, path],
+            silent=silent,
+            params=params,
+            lex=[*lex, is_final],
+        )
     return
 
 
@@ -339,6 +337,7 @@ def display_tree_branch(
     path: str,
     anon: bool = False,
     lex: list[bool] = [],
+    has_grandchildren: bool = False,
 ) -> str:
     if len(lex) == 0:
         is_final = True
@@ -346,7 +345,8 @@ def display_tree_branch(
 
     else:
         is_final = lex[-1]
-        sep = "└──  " if is_final else "├──  "
+        conn = "╮ " if has_grandchildren else "─ "
+        sep = f"╰──{conn}" if is_final else f"├──{conn}"
 
     indent = "  "
     path = "*****" if anon else path
