@@ -3,5 +3,5 @@
 
 from fractions import Fraction;
 
-Greeting = "Hello World";
-Planets = ["mercury","venus","terra","mars","jupiter","saturn","uranus","neptune",];
+Greeting = "Hello World"
+Planets = ["mercury","venus","terra","mars","jupiter","saturn","uranus","neptune",]

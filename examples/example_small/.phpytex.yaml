@@ -4,17 +4,17 @@ ignore:      false
 ################################################################################
 compile:
   options:
-    root:       root.tex
-    output:     main.tex
-    debug:      false
-    compile:    false
-    insert-bib: true
-    comments:   auto
-    show-tree:  true
-    max-length: 10000
-    tabs:       false
-    spaces:     4
-    seed:       41019283
+    root:           root.tex
+    output:         main.tex
+    debug:          false
+    compile-latex:  false
+    insert-bib:     true
+    comments:       auto
+    show-structure: true
+    max-length:     10000
+    tabs:           false
+    spaces:         4
+    seed:           41019283
 ################################################################################
 # STAMP OPTIONS
 ################################################################################
