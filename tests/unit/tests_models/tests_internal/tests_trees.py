@@ -188,12 +188,12 @@ def test_class_GenericTree_print(
         dedent(
             """
             Alice: 100
-            ├──  Bob: 3
-            ├──  Charlie: 5
-            │  ├──  Charlie.A: 1
-            │  ├──  Charlie.B: -
-            │  └──  Charlie.C: 2
-            └──  Daniel: 2
+            ├─── Bob: 3
+            ├──╮ Charlie: 5
+            │  ├─── Charlie.A: 1
+            │  ├─── Charlie.B: -
+            │  ╰─── Charlie.C: 2
+            ╰─── Daniel: 2
             """
         ),  # fmt: skip
     )
@@ -203,14 +203,14 @@ def test_class_GenericTree_print(
         dedent(
             """
             Alice: 100
-            ├──  Bob: 3
-            ├──  Charlie: 5
-            │  ├──  Charlie.A: 1
-            │  ├──  Charlie.B: -
-            │  └──  Charlie.C: 2
-            │     ├──  Echo: 7
-            │     └──  Foxtrot: -5
-            └──  Daniel: 2
+            ├─── Bob: 3
+            ├──╮ Charlie: 5
+            │  ├─── Charlie.A: 1
+            │  ├─── Charlie.B: -
+            │  ╰──╮ Charlie.C: 2
+            │     ├─── Echo: 7
+            │     ╰─── Foxtrot: -5
+            ╰─── Daniel: 2
             """
         ),  # fmt: skip
     )

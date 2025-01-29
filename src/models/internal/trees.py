@@ -95,20 +95,24 @@ class GenericTree(BaseModel, Generic[T]):
         n = len(self.children)
         for k, child in enumerate(self.children):
             is_final = k == n - 1
+            sep = "╰──{conn}" if is_final else "├──{conn}"
             if isinstance(child, GenericTree):
+                has_grandchildren = len(child.children) > 0
+                conn = "╮ " if has_grandchildren else "─ "
                 yield from child._recursive_repr(
                     child.root,
                     indent=indent,
                     lex=[*lex, is_final],
-                    sep="└──  " if is_final else "├──  ",
+                    sep=sep.format(conn=conn),
                 )
 
             else:
+                conn = "─ "
                 yield GenericTree._repr_node(
                     child,
                     indent=indent,
                     lex=[*lex, is_final],
-                    sep="└──  " if is_final else "├──  ",
+                    sep=sep.format(conn=conn),
                 )
 
         return
