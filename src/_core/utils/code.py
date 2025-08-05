@@ -106,7 +106,7 @@ def wrap_result(
 def wrap_result(
     method: Callable[PARAMS, RETURN]
     | Callable[PARAMS, Result[RETURN, ERR]]
-    | Callable[PARAMS, RETURN | Result[RETURN, ERR]],  # fmt: skip
+    | Callable[PARAMS, RETURN | Result[RETURN, ERR]],
     /,
 ) -> Callable[PARAMS, Result[RETURN, Exception]] | Callable[PARAMS, Result[RETURN, ERR]]:
     """

@@ -69,7 +69,6 @@ class LoggingLevelFilter(logging.Filter):
         return record.levelno == self.logging_level
 
 
-# fmt: skip
 def configure_logging(
     *,
     name: str,

@@ -171,7 +171,7 @@ def test_class_GenericTree_print(
             """
             Alice: -
             """
-        ),  # fmt: skip
+        ),
     )
     T = example_trivial2
     test.assertEqual(
@@ -180,7 +180,7 @@ def test_class_GenericTree_print(
             """
             Alice: 100
             """
-        ),  # fmt: skip
+        ),
     )
     T = example_non_trivial1
     test.assertEqual(
@@ -195,7 +195,7 @@ def test_class_GenericTree_print(
             │  ╰─── Charlie.C: 2
             ╰─── Daniel: 2
             """
-        ),  # fmt: skip
+        ),
     )
     T = example_non_trivial2
     test.assertEqual(
@@ -212,6 +212,6 @@ def test_class_GenericTree_print(
             │     ╰─── Foxtrot: -5
             ╰─── Daniel: 2
             """
-        ),  # fmt: skip
+        ),
     )
     return

@@ -100,9 +100,7 @@ def parse_json_as_dict(name: str):
 
     def parser(text: str) -> dict:
         result = json.loads(text)
-        assert isinstance(
-            result, dict
-        ), f"{name} expects a JSON-encoded dictionary. Received {text}."
+        assert isinstance(result, dict), f"{name} expects a JSON-encoded dictionary. Received {text}."  # fmt: skip
         return result
 
     return parser

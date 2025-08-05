@@ -114,7 +114,7 @@ def key_constructor(loader: yaml.Loader, node: yaml.Node):
             result = result[key] if key < len(result) else None
 
         else:
-            raise ValueError(f"Could not extract { '-> '.join(keys)} from {value[0]}")
+            raise ValueError(f"Could not extract {'-> '.join(keys)} from {value[0]}")
 
     return result
 
