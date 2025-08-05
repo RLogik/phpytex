@@ -1,4 +1,4 @@
-[![Python version: 3.12](https://img.shields.io/badge/python%20version-3.12-1464b4.svg)](https://www.python.org)
+[![Python version: 3.13](https://img.shields.io/badge/python%20version-3.13-1464b4.svg)](https://www.python.org)
 [![Code style: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Parser: Lark](https://img.shields.io/badge/Parser-Lark_v1.1-red)](https://github.com/lark-parser/lark)
 
@@ -34,7 +34,7 @@ Each case contains a set of initial files and a counterpart folder with the outp
 ### System requirements ###
 
 - Bash (windows users may install [git/bash for windows](https://gitforwindows.org))
-- python `~3.12` (may however work with `3.10`, `3.11`)
+- python `>=3.11` (latest testing with `3.13`)
 
 ### Installation ###
 
