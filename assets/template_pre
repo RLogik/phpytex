@@ -43,7 +43,6 @@ ____phpytex_params____ = dict(
     insert_bib={insert_bib},
     bib_options=[],
     bib_backend="{backend_bib}",
-    seed={seed},
     ctr_emptylines=0,
     length=0,
     length_max={length_max},
@@ -59,6 +58,7 @@ __ANON__ = False
 __HIDE__ = False
 __IGNORE__ = False
 __MARGIN__ = ""
+__SEED__ = {seed}
 
 # ----------------------------------------------------------------
 # MAIN
@@ -141,8 +141,8 @@ def ____reseed():
     """
     reseed function
     """
-    global ____phpytex_params____
-    seed = ____phpytex_params____["seed"]
+    global __SEED__
+    seed = __SEED__
     if isinstance(seed, int):
         random.seed(seed)
         np.random.seed(seed)

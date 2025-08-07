@@ -395,7 +395,6 @@ class TranspileDocuments(object):
             + dedent_split(
                 """
                 %%
-                %% DOCUMENT-RANDOM-SEED: {}
                 %% ********************************************************************************
                 """.format(seed if isinstance(seed, int) else "---")
             )
